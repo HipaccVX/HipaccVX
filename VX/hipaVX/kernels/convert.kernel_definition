@@ -1,0 +1,19 @@
+class Convert_@@@ID@@@ : public Kernel<@@@OUTPUT_DATATYPE@@@> {
+    private:
+        Accessor<@@@INPUT_DATATYPE@@@> &input;
+
+    public:
+        Convert_@@@ID@@@(IterationSpace<@@@OUTPUT_DATATYPE@@@> &iter, Accessor<@@@INPUT_DATATYPE@@@> &input)
+              : Kernel(iter), input(input) {
+            add_accessor(&input);
+        }
+
+        void kernel() {
+            uchar shift = @@@SHIFT@@@;
+            @@@INPUT_DATATYPE@@@ value = input() >> shift;
+            value = value < 0 ? 0 : value;
+            value = value > 255 ? 255 : value;
+
+            output() = (@@@OUTPUT_DATATYPE@@@) value;
+        }
+};

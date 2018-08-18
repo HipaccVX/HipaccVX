@@ -1,0 +1,31 @@
+# qtcreator generated files
+*.creator.user*
+*.pro.user*
+*.pyqtc.user*
+*.qbs.user*
+*.qmlproject.user*
+/share/qtcreator/externaltools
+/share/qtcreator/fonts/
+/share/qtcreator/generic-highlighter/
+/src/app/Info.plist
+/src/plugins/**/*.json
+/src/plugins/coreplugin/ide_version.h
+/src/libs/qt-breakpad/bin
+app_version.h
+phony.c
+
+
+
+
+
+
+#HipaVX outputfiles
+main
+main.hipaVX.cpp
+
+#Hipacc outputfiles
+hipacc_compile_pass/*.cc
+main_*
+
+#Generated images
+hipacc_compile_pass/akif-200x300_bw_*

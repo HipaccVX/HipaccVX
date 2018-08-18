@@ -1,0 +1,50 @@
+	const int coef_sobel_x_@@@ID@@@[3][3] = {
+	    { -1, 0, 1 },
+	    { -2, 0, 2 },
+	    { -1, 0, 1 }};
+	const int coef_sobel_y_@@@ID@@@[3][3] = {
+	    { -1, -2, -1 },
+	    {  0,  0,  0 },
+	    {  1,  2,  1 }};
+
+	Mask<int> mask_sobel_x_@@@ID@@@(coef_sobel_x_@@@ID@@@);
+	Mask<int> mask_sobel_y_@@@ID@@@(coef_sobel_y_@@@ID@@@);
+
+	Domain dom_sobel_x_@@@ID@@@(
+		mask_sobel_x_@@@ID@@@);
+	Domain dom_sobel_y_@@@ID@@@(
+		mask_sobel_y_@@@ID@@@);
+
+	BoundaryCondition<@@@INPUT_DATATYPE@@@> bound_sobel_x_@@@ID@@@(
+		@@@INPUT_IMAGE@@@,
+		dom_sobel_x_@@@ID@@@,
+		@@@BOUNDARY_CONDITION@@@);
+	BoundaryCondition<@@@INPUT_DATATYPE@@@> bound_sobel_y_@@@ID@@@(
+		@@@INPUT_IMAGE@@@,
+		dom_sobel_y_@@@ID@@@,
+		@@@BOUNDARY_CONDITION@@@);
+
+	Accessor<@@@INPUT_DATATYPE@@@> acc_sobel_x_@@@ID@@@(
+		bound_sobel_x_@@@ID@@@);
+	Accessor<@@@INPUT_DATATYPE@@@> acc_sobel_y_@@@ID@@@(
+		bound_sobel_y_@@@ID@@@);
+
+	IterationSpace<@@@OUTPUT_DATATYPE@@@> iter_sobel_x_@@@ID@@@(
+		@@@OUTPUT_IMAGE_X@@@);
+	IterationSpace<@@@OUTPUT_DATATYPE@@@> iter_sobel_y_@@@ID@@@(
+		@@@OUTPUT_IMAGE_Y@@@);
+
+	Sobel_@@@ID@@@ filter_sobel_x_@@@ID@@@(
+		iter_sobel_x_@@@ID@@@,
+		acc_sobel_x_@@@ID@@@,
+		dom_sobel_x_@@@ID@@@,
+		mask_sobel_x_@@@ID@@@);
+
+	Sobel_@@@ID@@@ filter_sobel_y_@@@ID@@@(
+		iter_sobel_y_@@@ID@@@,
+		acc_sobel_y_@@@ID@@@,
+		dom_sobel_y_@@@ID@@@,
+		mask_sobel_y_@@@ID@@@);
+
+	filter_sobel_x_@@@ID@@@.execute();
+	filter_sobel_y_@@@ID@@@.execute();
