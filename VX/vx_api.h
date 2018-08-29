@@ -19,7 +19,6 @@
 #define _OPENVX_API_H_
 
 #include "vx_types.h"
-#include "hipaVX/hipaVX.hpp"
 
 /*!
  * \file

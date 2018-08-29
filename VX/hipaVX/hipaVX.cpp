@@ -1,5 +1,3 @@
-#pragma once
-
 #include "../vx.h"
 
 #include <iostream>
@@ -35,13 +33,11 @@ VX_API_ENTRY vx_status VX_API_CALL vxSetNodeAttribute (vx_node node, vx_enum att
 	return VX_ERROR_NOT_IMPLEMENTED;
 }
 
-
-
-
 VX_API_ENTRY vx_node VX_API_CALL vxGaussian3x3Node(vx_graph graph, vx_image input, vx_image output)
 {
-    return nullptr;
+	return nullptr;
 }
+
 
 VX_API_ENTRY vx_node VX_API_CALL vxSobel3x3Node(vx_graph graph, vx_image input, vx_image output_x, vx_image output_y)
 {
@@ -110,8 +106,8 @@ VX_API_ENTRY vx_image vxCreateImage(vx_context context, vx_uint32 width, vx_uint
 {
 	HipaVX::Image *image;
 	image = new HipaVX::Image(width, height, color);
-    context->images.emplace_back(image);
-    return image;
+	context->images.emplace_back(image);
+	return image;
 }
 
 VX_API_ENTRY vx_status VX_API_CALL vxReleaseImage(vx_image *image)
@@ -123,7 +119,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxReleaseImage(vx_image *image)
 
 VX_API_ENTRY vx_context VX_API_CALL vxCreateContext(void)
 {
-    return new HipaVX::Context();
+	return new HipaVX::Context();
 }
 
 VX_API_ENTRY vx_status VX_API_CALL vxReleaseContext(vx_context *context)
@@ -151,16 +147,15 @@ VX_API_ENTRY vx_status VX_API_CALL vxProcessGraph(vx_graph graph)
 	//First, declare the images
 
 	process_graph(graph);
-    return 0;
+	return 0;
 }
 
 VX_API_ENTRY vx_status VX_API_CALL vxReleaseGraph(vx_graph *graph)
 {
-    return 0;
+	return 0;
 }
 
-
-VX_API_ENTRY vx_scalar VX_API_CALL vxCreateScalar(vx_context context, vx_enum data_type, void *ptr)
+VX_API_ENTRY vx_scalar VX_API_CALL vxCreateScalar(vx_context context, vx_enum data_type, const void *ptr)
 {
 	if (data_type <= VX_TYPE_INVALID || data_type >= VX_TYPE_SCALAR)
 		return nullptr;

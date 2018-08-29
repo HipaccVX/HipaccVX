@@ -3,7 +3,7 @@
 #include <iterator>
 
 #include "VX/vx.h"
-#include "VX/hipaVX/hipaVX.hpp"
+#include "VX/hipaVX/hipaVX_extension.hpp"
 
 #define WIDTH  200
 #define HEIGHT 300
