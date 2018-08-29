@@ -7,7 +7,7 @@ Be sure to set the correct HIPACC Pathvariable in hipacc_compile_pass/Makefile
 
 Write the OpenVX code in main.cpp, then:
 
-```mkdir build && cd build && cmake .. && make && ./main && cp main.hipaVX.cpp ../ && cd ..```
+```mkdir build && cd build && cmake .. && make && cp main ../ && cd .. && ./main```
 
 This creates the transpiled hipaVX.cpp file and copies it into the root of the repository
 
