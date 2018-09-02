@@ -1,12 +1,21 @@
 #include "hipaVX_hipacc_generator.hpp"
 
-
 #include "config_reader.hpp"
+#include <fstream>
+#include <string>
+#include <sstream>
+#include <map>
 
+using std::string;
 
+static string hipaVX_folder = "VX/hipaVX";
 
+static std::map<vx_df_image, string> VX_DF_IMAGE_to_hipacc = {
+	{VX_DF_IMAGE_U8, "uchar"},
+	{VX_DF_IMAGE_S16, "short"},
+};
 
-std::string read_file(const std::string &filename)
+static string read_file(const string &filename)
 {
 	std::ifstream in(filename);
 
@@ -14,7 +23,7 @@ std::string read_file(const std::string &filename)
 	return static_cast<std::stringstream const&>(std::stringstream() << in.rdbuf()).str();
 }
 
-std::string use_template(const std::string &template_string, const std::string &template_variable, const std::string &actual_variable)
+static string use_template(const string &template_string, const string &template_variable, const string &actual_variable)
 {
 	const string temp = "@@@" + template_variable + "@@@";
 	const auto temp_len = temp.length();
@@ -36,23 +45,23 @@ std::string use_template(const std::string &template_string, const std::string &
 	return templated;
 }
 
-std::string use_template(const std::string &template_string, const std::string &template_variable, const int actual_variable)
+static string use_template(const string &template_string, const string &template_variable, const int actual_variable)
 {
 	return use_template(template_string, template_variable, std::to_string(actual_variable));
 }
 
-std::string use_template(const std::string &template_string, const std::string &template_variable, const unsigned int actual_variable)
+static string use_template(const string &template_string, const string &template_variable, const unsigned int actual_variable)
 {
 	return use_template(template_string, template_variable, std::to_string(actual_variable));
 }
 
-void write_file(const std::string &filename, const std::string &content)
+static void write_file(const string &filename, const string &content)
 {
 	std::ofstream out(filename);
 	out << content;
 }
 
-std::string generate_image_name(vx_image image)
+static string generate_image_name(vx_image image)
 {
 	return string("Image_") + std::to_string(image->my_id);
 }
@@ -114,7 +123,68 @@ void process_graph(vx_graph graph)
 namespace generator
 {
 
-std::string node_generator(HipaVX::WriteImageNode* n, Type t)
+string kernel_builder(const std::vector<Kernel_Variable*>& variables, const std::vector<string>& kernel_code, const string& kernel_name)
+{
+
+	string member_variables;
+	string constructor_parameters;
+	string constructor_init_list;
+	string add_accessor;
+
+	string tabs = "\t";
+
+	for(const auto& kv: variables)
+	{
+		string s = kv->generate_kerneldefinition();
+
+		member_variables += tabs + s + ";\n";
+		constructor_parameters += ", " + s;
+		constructor_init_list += ", " + kv->name + "(" + kv->name + ")";
+		if (kv->is_accessor())
+		{
+			add_accessor += tabs + '\t' + "add_accessor(&" + kv->name + ");\n";
+		}
+	}
+
+	string kernel;
+	for(const auto& line: kernel_code)
+	{
+		kernel += tabs + '\t' + line + '\n';
+	}
+
+	string s = read_file(hipaVX_folder + "/kernels/general_kernel_definition");
+	s = use_template(s, "KERNEL_NAME", kernel_name);
+	s = use_template(s, "VARIABLES", member_variables);
+	s = use_template(s, "VARIABLES_CONSTRUCTOR_PARAMS", constructor_parameters);
+	s = use_template(s, "VARIABLES_CONSTRUCTOR_INIT_LIST", constructor_init_list);
+	s = use_template(s, "ADD_ACCESSOR", add_accessor);
+	s = use_template(s, "MISC_CONSTRUCTOR", "");
+	s = use_template(s, "KERNEL", kernel);
+
+	return s;
+}
+
+string kernelcall_builder(const std::vector<Kernelcall_Variable*>& call_variables,
+						  const std::vector<std::vector<Kernelcall_Variable *>>& kernel_calls)
+{
+	string to_return;
+	for(const auto& kv: call_variables)
+	{
+		auto strings = kv->generate_kernelcall();
+		for (const auto& s: strings)
+		{
+			to_return += '\t' + s + '\n';
+		}
+		to_return += '\n';
+	}
+
+	to_return += '\n';
+
+	return to_return;
+}
+
+
+string node_generator(HipaVX::WriteImageNode* n, Type t)
 {
 	if (t == Type::Definition)
 	{
@@ -139,68 +209,7 @@ std::string node_generator(HipaVX::WriteImageNode* n, Type t)
 	}
 	return "SOMETHING IS WRONG";
 }
-
-string kernel_builder(const std::vector<Kernel_Variable*>& variables, const std::vector<string>& kernel_code, const std::string& kernel_name)
-{
-
-	std::string member_variables;
-	std::string constructor_parameters;
-	std::string constructor_init_list;
-	std::string add_accessor;
-
-	string tabs = "\t";
-
-	for(const auto& kv: variables)
-	{
-		std::string s = kv->generate_kerneldefinition_part();
-
-		member_variables += tabs + s + ";\n";
-		constructor_parameters += ", " + s;
-		constructor_init_list += ", " + kv->name + "(" + kv->name + ")";
-		if (kv->is_accessor())
-		{
-			add_accessor += tabs + '\t' + "add_accessor(&" + kv->name + ");\n";
-		}
-	}
-
-	std::string kernel;
-	for(const auto& line: kernel_code)
-	{
-		kernel += tabs + '\t' + line + '\n';
-	}
-
-	string s = read_file(hipaVX_folder + "/kernels/general_kernel_definition");
-	s = use_template(s, "KERNEL_NAME", kernel_name);
-	s = use_template(s, "VARIABLES", member_variables);
-	s = use_template(s, "VARIABLES_CONSTRUCTOR_PARAMS", constructor_parameters);
-	s = use_template(s, "VARIABLES_CONSTRUCTOR_INIT_LIST", constructor_init_list);
-	s = use_template(s, "ADD_ACCESSOR", add_accessor);
-	s = use_template(s, "MISC_CONSTRUCTOR", "");
-	s = use_template(s, "KERNEL", kernel);
-
-	return s;
-}
-
-string kernelcall_builder(const std::vector<Kernelcall_Variable*>& call_variables,
-						  const std::vector<std::vector<Kernelcall_Variable *>>& kernel_calls)
-{
-	std::string to_return;
-	for(const auto& kv: call_variables)
-	{
-		auto strings = kv->generate_kernelcall_part();
-		for (const auto& s: strings)
-		{
-			to_return += '\t' + s + '\n';
-		}
-		to_return += '\n';
-	}
-
-	to_return += '\n';
-
-	return to_return;
-}
-
-std::string node_generator(HipaVX::Sobel3x3Node* n, Type t)
+string node_generator(HipaVX::Sobel3x3Node* n, Type t)
 {
 	if (t == Type::Definition)
 	{
@@ -233,7 +242,7 @@ std::string node_generator(HipaVX::Sobel3x3Node* n, Type t)
 	}
 	return "SOMETHING IS WRONG";
 }
-std::string node_generator(HipaVX::ConvertDepthNode* n, Type t)
+string node_generator(HipaVX::ConvertDepthNode* n, Type t)
 {
 	if (t == Type::Definition)
 	{
@@ -268,43 +277,9 @@ std::string node_generator(HipaVX::ConvertDepthNode* n, Type t)
 
 		return s;
 	}
-
-
-
-
-	if (t == Type::Definition)
-	{
-		string s = read_file(hipaVX_folder + "/kernels/convert.kernel_definition");
-
-		s = use_template(s, "ID", n->my_id);
-		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->src->col]);
-		s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->dst->col]);
-
-		s = use_template(s, "SHIFT", n->shift->i32);
-
-		return s;
-	}
-	else if (t == Type::Call)
-	{
-		string s = read_file(hipaVX_folder + "/kernels/convert.kernel_call");
-
-
-		s = use_template(s, "ID", n->my_id);
-		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->src->col]);
-		s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->dst->col]);
-
-		s = use_template(s, "INPUT_IMAGE", generate_image_name(n->src));
-		s = use_template(s, "INPUT_IMAGE_WIDTH", n->src->w);
-		s = use_template(s, "INPUT_IMAGE_HEIGHT", n->src->h);
-		s = use_template(s, "OUTPUT_IMAGE", generate_image_name(n->dst));
-
-		s = use_template(s, "BOUNDARY_CONDITION", "Boundary::UNDEFINED"); // TODO
-
-		return s;
-	}
 	return "SOMETHING IS WRONG";
 }
-std::string node_generator(HipaVX::MagnitudeNode* n, Type t)
+string node_generator(HipaVX::MagnitudeNode* n, Type t)
 {
 	if (t == Type::Definition)
 	{

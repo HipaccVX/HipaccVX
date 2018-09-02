@@ -33,44 +33,24 @@ std::vector<string> split(const string &text, char sep)
 	return tokens;
 }
 
-string Kernel_General_Variable::generate_kerneldefinition_part()
+string Kernel_General_Variable::generate_kerneldefinition()
 {
 	return datatype + ' ' + name;
 }
-std::vector<string> Kernel_General_Variable::generate_kernelcall_part()
-{
-	throw std::runtime_error("unimplemented");
-}
-
-string Kernel_Accessor::generate_kerneldefinition_part()
+string Kernel_Accessor::generate_kerneldefinition()
 {
 	return "Accessor<@@@INPUT_DATATYPE@@@> &" + name;
 }
-std::vector<string> Kernel_Accessor::generate_kernelcall_part()
-{
-	string line = "Accessor<@@@INPUT_DATATYPE@@@> @@@NAME@@@_@@@ID@@@(" + bc_name + ");";
-	std::vector<string> to_return;
-	to_return.emplace_back(line);
-	return to_return;
-}
-
-string Kernel_Domain::generate_kerneldefinition_part()
+string Kernel_Domain::generate_kerneldefinition()
 {
 	return "Domain &" + name;
 }
-std::vector<string> Kernel_Domain::generate_kernelcall_part()
-{
-	throw std::runtime_error("unimplemented");
-}
-
-string Kernel_Mask::generate_kerneldefinition_part()
+string Kernel_Mask::generate_kerneldefinition()
 {
 	return "Mask<" + datatype + "> &" + name;
 }
-std::vector<string> Kernel_Mask::generate_kernelcall_part()
-{
-	throw std::runtime_error("unimplemented");
-}
+
+
 
 
 // TODO Get a name for this
@@ -93,11 +73,7 @@ std::string asd_type(std::string asd)
 }
 
 
-string Kernelcall_Mask::generate_kerneldefinition_part()
-{
-	throw std::runtime_error("unimplemented");
-}
-std::vector<string> Kernelcall_Mask::generate_kernelcall_part()
+std::vector<string> Kernelcall_Mask::generate_kernelcall()
 {
 	std::vector<string> to_return;
 
@@ -127,11 +103,8 @@ std::vector<string> Kernelcall_Mask::generate_kernelcall_part()
 
 	return to_return;
 }
-string Kernelcall_Domain::generate_kerneldefinition_part()
-{
-	throw std::runtime_error("unimplemented");
-}
-std::vector<string> Kernelcall_Domain::generate_kernelcall_part()
+
+std::vector<string> Kernelcall_Domain::generate_kernelcall()
 {
 	std::vector<string> to_return;
 
@@ -140,11 +113,8 @@ std::vector<string> Kernelcall_Domain::generate_kernelcall_part()
 
 	return to_return;
 }
-string Kernelcall_BoundaryCondition_from_Dom::generate_kerneldefinition_part()
-{
-	throw std::runtime_error("unimplemented");
-}
-std::vector<string> Kernelcall_BoundaryCondition_from_Dom::generate_kernelcall_part()
+
+std::vector<string> Kernelcall_BoundaryCondition_from_Dom::generate_kernelcall()
 {
 	std::vector<string> to_return;
 
@@ -155,11 +125,8 @@ std::vector<string> Kernelcall_BoundaryCondition_from_Dom::generate_kernelcall_p
 
 	return to_return;
 }
-string Kernelcall_BoundaryCondition_from_WH::generate_kerneldefinition_part()
-{
-	throw std::runtime_error("unimplemented");
-}
-std::vector<string> Kernelcall_BoundaryCondition_from_WH::generate_kernelcall_part()
+
+std::vector<string> Kernelcall_BoundaryCondition_from_WH::generate_kernelcall()
 {
 	std::vector<string> to_return;
 
@@ -171,11 +138,8 @@ std::vector<string> Kernelcall_BoundaryCondition_from_WH::generate_kernelcall_pa
 
 	return to_return;
 }
-string Kernelcall_Accessor::generate_kerneldefinition_part()
-{
-	throw std::runtime_error("unimplemented");
-}
-std::vector<string> Kernelcall_Accessor::generate_kernelcall_part()
+
+std::vector<string> Kernelcall_Accessor::generate_kernelcall()
 {
 	std::vector<string> to_return;
 
@@ -184,11 +148,8 @@ std::vector<string> Kernelcall_Accessor::generate_kernelcall_part()
 
 	return to_return;
 }
-string Kernelcall_IterationSpace::generate_kerneldefinition_part()
-{
-	throw std::runtime_error("unimplemented");
-}
-std::vector<string> Kernelcall_IterationSpace::generate_kernelcall_part()
+
+std::vector<string> Kernelcall_IterationSpace::generate_kernelcall()
 {
 	std::vector<string> to_return;
 
@@ -197,11 +158,8 @@ std::vector<string> Kernelcall_IterationSpace::generate_kernelcall_part()
 
 	return to_return;
 }
-string Kernelcall::generate_kerneldefinition_part()
-{
-	throw std::runtime_error("unimplemented");
-}
-std::vector<string> Kernelcall::generate_kernelcall_part()
+
+std::vector<string> Kernelcall::generate_kernelcall()
 {
 	std::vector<string> to_return;
 

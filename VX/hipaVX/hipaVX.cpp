@@ -94,7 +94,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxGetStatus(vx_reference reference)
 
 
 
-vx_image vxCreateImageFromFile(vx_context context, vx_uint32 width, vx_uint32 height, vx_df_image color, string filename)
+vx_image vxCreateImageFromFile(vx_context context, vx_uint32 width, vx_uint32 height, vx_df_image color, std::string filename)
 {
 	HipaVX::FileinputImage *image;
 	image = new HipaVX::FileinputImage(width, height, color, filename);
