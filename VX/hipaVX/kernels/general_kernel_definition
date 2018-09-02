@@ -1,15 +1,17 @@
-class @@@KERNEL_NAME@@@_@@@ID@@@ : public Kernel<@@@OUTPUT_DATATYPE@@@> {
-	private:
+class @@@KERNEL_NAME@@@_@@@ID@@@ : public Kernel<@@@OUTPUT_DATATYPE@@@>
+{
+private:
 @@@VARIABLES@@@
 
-	public:
-		@@@KERNEL_NAME@@@_@@@ID@@@(IterationSpace<@@@OUTPUT_DATATYPE@@@> &iter@@@VARIABLES_CONSTRUCTOR_PARAMS@@@)
-			  : Kernel(iter)@@@VARIABLES_CONSTRUCTOR_INIT_LIST@@@ {
+public:
+	@@@KERNEL_NAME@@@_@@@ID@@@(IterationSpace<@@@OUTPUT_DATATYPE@@@> &iter@@@VARIABLES_CONSTRUCTOR_PARAMS@@@)
+		: Kernel(iter)@@@VARIABLES_CONSTRUCTOR_INIT_LIST@@@
+	{
 @@@ADD_ACCESSOR@@@
 @@@MISC_CONSTRUCTOR@@@
-		}
+	}
 
-		void kernel() {
+	void kernel() {
 @@@KERNEL@@@
-		}
+	}
 };

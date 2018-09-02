@@ -1,0 +1,30 @@
+[KERNELCALL_VARIABLES]
+Mask int mask_x
+Mask int mask_y
+
+Domain dom_x mask_x
+Domain dom_y mask_y
+
+BoundaryCondition TYPE_IN bound_x IMAGE_IN dom_x BOUNDARY_CONDITION
+BoundaryCondition TYPE_IN bound_y IMAGE_IN dom_y BOUNDARY_CONDITION
+
+Accessor TYPE_IN acc_x bound_x
+Accessor TYPE_IN acc_y bound_y
+
+IterationSpace TYPE_OUT iter_x @@@IMAGE_OUT_X@@@
+IterationSpace TYPE_OUT iter_y @@@IMAGE_OUT_Y@@@
+
+Kernel Sobel sobel_x iter_x acc_x dom_x mask_x
+Kernel Sobel sobel_y iter_y acc_y dom_y mask_y
+
+[MASK]
+mask_x
+-1 0 1
+-2 0 2
+-1 0 1
+
+[MASK]
+mask_y
+-1 -2 -1
+ 0  0  0
+ 1  2  1

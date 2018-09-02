@@ -108,9 +108,25 @@ class Kernelcall_BoundaryCondition: public Kernelcall_Variable
 public:
 	std::string datatype;
 	std::string image;
-	Kernelcall_Domain* argument;
 	std::string bc;
 	virtual ~Kernelcall_BoundaryCondition() override = default;
+};
+
+class Kernelcall_BoundaryCondition_from_Dom: public Kernelcall_BoundaryCondition
+{
+public:
+	Kernelcall_Domain* argument;
+	virtual ~Kernelcall_BoundaryCondition_from_Dom() override = default;
+	virtual std::string generate_kerneldefinition_part() override;
+	virtual std::vector<std::string> generate_kernelcall_part() override;
+};
+// From Width/Height
+class Kernelcall_BoundaryCondition_from_WH: public Kernelcall_BoundaryCondition
+{
+public:
+	std::string width;
+	std::string height;
+	virtual ~Kernelcall_BoundaryCondition_from_WH() override = default;
 	virtual std::string generate_kerneldefinition_part() override;
 	virtual std::vector<std::string> generate_kernelcall_part() override;
 };
@@ -125,9 +141,6 @@ public:
 	virtual std::vector<std::string> generate_kernelcall_part() override;
 };
 
-
-
-
 class Kernelcall_IterationSpace: public Kernelcall_Variable
 {
 public:
@@ -138,19 +151,37 @@ public:
 	virtual std::vector<std::string> generate_kernelcall_part() override;
 };
 
+class Kernelcall: public Kernelcall_Variable
+{
+public:
+	std::string kernel_name;
+	std::vector<Kernelcall_Variable*> arguments;
+	virtual ~Kernelcall() override = default;
+	virtual std::string generate_kerneldefinition_part() override;
+	virtual std::vector<std::string> generate_kernelcall_part() override;
+};
+
+
 
 
 // TODO good name?
-struct config_struct___
+struct config_struct_def___
 {
+	std::string name;
 	std::vector<Kernel_Variable*> kv;					// Kernelmembervariables
 	std::vector<std::string> k;							// The actual kernel code
+};
+
+// TODO good name?
+struct config_struct_call___
+{
 	std::vector<Kernelcall_Variable*> kcv;				// Variables needed to call the kernel
 	std::vector<std::vector<Kernelcall_Variable *>> kc;	// The kernel calls
 };
 
 
-config_struct___ read_config(std::string file);
+config_struct_def___ read_config_def(std::string file);
+config_struct_call___ read_config_call(std::string file);
 
 
 

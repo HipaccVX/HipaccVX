@@ -1,0 +1,16 @@
+[NAME]
+Convert
+
+[KERNEL_VARIABLES]
+Accessor input
+
+[KERNEL]
+uchar shift = @@@SHIFT@@@;
+@@@INPUT_DATATYPE@@@ value = input() >> shift;
+value = value < 0 ? 0 : value;
+value = value > 255 ? 255 : value;
+
+output() = (@@@OUTPUT_DATATYPE@@@) value;
+[KERNEL_END]
+
+

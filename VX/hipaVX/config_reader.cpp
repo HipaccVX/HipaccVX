@@ -93,7 +93,6 @@ std::string asd_type(std::string asd)
 }
 
 
-
 string Kernelcall_Mask::generate_kerneldefinition_part()
 {
 	throw std::runtime_error("unimplemented");
@@ -141,17 +140,33 @@ std::vector<string> Kernelcall_Domain::generate_kernelcall_part()
 
 	return to_return;
 }
-string Kernelcall_BoundaryCondition::generate_kerneldefinition_part()
+string Kernelcall_BoundaryCondition_from_Dom::generate_kerneldefinition_part()
 {
 	throw std::runtime_error("unimplemented");
 }
-std::vector<string> Kernelcall_BoundaryCondition::generate_kernelcall_part()
+std::vector<string> Kernelcall_BoundaryCondition_from_Dom::generate_kernelcall_part()
 {
 	std::vector<string> to_return;
 
 	to_return.emplace_back("BoundaryCondition<" + asd_type(datatype) + "> " + get_name() + "(");
 	to_return.emplace_back("\t" + asd_type(image) + ",");
 	to_return.emplace_back("\t" + argument->get_name() + ",");
+	to_return.emplace_back("\t" + asd_type(bc) + ");");
+
+	return to_return;
+}
+string Kernelcall_BoundaryCondition_from_WH::generate_kerneldefinition_part()
+{
+	throw std::runtime_error("unimplemented");
+}
+std::vector<string> Kernelcall_BoundaryCondition_from_WH::generate_kernelcall_part()
+{
+	std::vector<string> to_return;
+
+	to_return.emplace_back("BoundaryCondition<" + asd_type(datatype) + "> " + get_name() + "(");
+	to_return.emplace_back("\t" + asd_type(image) + ",");
+	to_return.emplace_back("\t" + width + ",");
+	to_return.emplace_back("\t" + height + ",");
 	to_return.emplace_back("\t" + asd_type(bc) + ");");
 
 	return to_return;
@@ -177,10 +192,30 @@ std::vector<string> Kernelcall_IterationSpace::generate_kernelcall_part()
 {
 	std::vector<string> to_return;
 
-	string my_name = name + "_@@@ID@@@";
-
-	to_return.emplace_back("IterationSpace<" + asd_type(datatype) + "> " + my_name + "(");
+	to_return.emplace_back("IterationSpace<" + asd_type(datatype) + "> " + get_name() + "(");
 	to_return.emplace_back("\t" + asd_type(image) + ");");
+
+	return to_return;
+}
+string Kernelcall::generate_kerneldefinition_part()
+{
+	throw std::runtime_error("unimplemented");
+}
+std::vector<string> Kernelcall::generate_kernelcall_part()
+{
+	std::vector<string> to_return;
+
+	to_return.emplace_back(kernel_name + "_@@@ID@@@ " + get_name() + "(");
+	for(size_t i = 0; i < arguments.size(); i++)
+	{
+		if(i+1 != arguments.size())
+			to_return.emplace_back("\t" + arguments[i]->get_name() + ",");
+		else
+			to_return.emplace_back("\t" + arguments[i]->get_name() + ");");
+	}
+
+	to_return.emplace_back("");
+	to_return.emplace_back(get_name() + ".execute();");
 
 	return to_return;
 }
@@ -274,18 +309,34 @@ void parse_kernelcall_variables(std::vector<Kernelcall_Variable *> &variables, s
 	}
 	else if (type_of_variable == "BoundaryCondition")
 	{
-		if (splitted.size() < 6)
-			throw_exception("Expected at least six tokens", line);
+		if (splitted.size() < 6 || splitted.size() > 7)
+			throw_exception("Expected at least six and at most seven tokens", line);
 
-		Kernelcall_BoundaryCondition *bc = new Kernelcall_BoundaryCondition();
-		bc->datatype = splitted[1];
-		bc->set_real_name(splitted[2]);
-		bc->image = splitted[3];
-		bc->argument = dynamic_cast<Kernelcall_Domain*> (find_kcv(variables, splitted[4]));
-		if (bc->argument == nullptr)
-			throw_exception("Couldn't find Domain variable for BoundaryCondition (mistyped name?)", line);
-		bc->bc = splitted[5];
-		variables.push_back(bc);
+		if (splitted.size() == 6)
+		{
+			Kernelcall_BoundaryCondition_from_Dom *bc = new Kernelcall_BoundaryCondition_from_Dom();
+			bc->datatype = splitted[1];
+			bc->set_real_name(splitted[2]);
+			bc->image = splitted[3];
+			bc->argument = dynamic_cast<Kernelcall_Domain*> (find_kcv(variables, splitted[4]));
+			if (bc->argument == nullptr)
+				throw_exception("Couldn't find Domain variable for BoundaryCondition (mistyped name?)", line);
+			bc->bc = splitted[5];
+			variables.push_back(bc);
+		}
+		else
+		{
+			Kernelcall_BoundaryCondition_from_WH *bc = new Kernelcall_BoundaryCondition_from_WH();
+			bc->datatype = splitted[1];
+			bc->set_real_name(splitted[2]);
+			bc->image = splitted[3];
+			bc->width = splitted[4];
+			bc->height = splitted[5];
+			bc->bc = splitted[6];
+			variables.push_back(bc);
+		}
+
+
 	}
 	else if (type_of_variable == "Accessor")
 	{
@@ -306,6 +357,24 @@ void parse_kernelcall_variables(std::vector<Kernelcall_Variable *> &variables, s
 		is->set_real_name(splitted[2]);
 		is->image = splitted[3];
 		variables.push_back(is);
+	}
+	else if (type_of_variable == "Kernel")
+	{
+		if (splitted.size() < 4)
+			throw_exception("Expected at least four tokens", line);
+		Kernelcall *kc = new Kernelcall();
+		kc->kernel_name = splitted[1];
+		kc->set_real_name(splitted[2]);
+
+		for(size_t i = 3; i < splitted.size(); i++)
+		{
+			Kernelcall_Variable* kc_arg = dynamic_cast<Kernelcall_Variable*> (find_kcv(variables, splitted[i]));
+			if (kc_arg == nullptr)
+				throw_exception("Couldn't find Argument variable for Kernelcall (mistyped name?), \"" + splitted[i] + "\"", line);
+			kc->arguments.emplace_back(kc_arg);
+		}
+
+		variables.push_back(kc);
 	}
 	else
 	{
@@ -343,7 +412,68 @@ void parse_kernelcall_mask(std::vector<Kernelcall_Variable *> &variables, string
 	current->len_dims[1]++;
 }
 
-config_struct___ read_config(string file)
+config_struct_def___ read_config_def(string file)
+{
+	std::ifstream in(file);
+
+	string line;
+	my_state state = my_state::invalid;
+
+	std::vector<Kernel_Variable*> kernel_variables;
+	std::vector<string> kernel;
+
+	std::string kernel_name;
+
+	while (std::getline(in, line))
+	{
+		if (line == "[KERNEL_VARIABLES]")
+		{
+			state = my_state::kernel_variables;
+		}
+		else if (line == "[KERNEL]")
+		{
+			state = my_state::kernel;
+		}
+		else if (line == "[KERNEL_END]")
+		{
+			state = my_state::invalid;
+		}
+		else if (line == "[NAME]")
+		{
+			state = my_state::name;
+		}
+
+		else
+		{
+			switch (state)
+			{
+			case my_state::kernel_variables:
+				parse_kernel_variables(kernel_variables, line);
+				break;
+			case my_state::kernel:
+				kernel.push_back(line);
+				break;
+			case my_state::name:
+			{
+				auto splitted = split(line, ' ');
+				if (splitted.size() != 0)
+					kernel_name = splitted[0];
+			}	break;
+			case my_state::invalid:
+			default:
+				break;
+			}
+		}
+	}
+
+	config_struct_def___ cs;
+	cs.kv = kernel_variables;
+	cs.k = kernel;
+	cs.name = kernel_name;
+	return cs;
+}
+
+config_struct_call___ read_config_call(string file)
 {
 	std::ifstream in(file);
 
@@ -352,7 +482,6 @@ config_struct___ read_config(string file)
 
 	std::vector<Kernel_Variable*> kernel_variables;
 	std::vector<Kernelcall_Variable*> kernelcall_variables;
-	std::vector<string> kernel;
 	std::vector<std::vector<Kernelcall_Variable *>> kernel_calls;
 
 	std::string kernel_name;
@@ -360,22 +489,7 @@ config_struct___ read_config(string file)
 	bool switched_category = true;
 	while (std::getline(in, line))
 	{
-		if (line == "[KERNEL_VARIABLES]")
-		{
-			state = my_state::kernel_variables;
-			switched_category = true;
-		}
-		else if (line == "[KERNEL]")
-		{
-			state = my_state::kernel;
-			switched_category = true;
-		}
-		else if (line == "[KERNEL_END]")
-		{
-			state = my_state::invalid;
-			switched_category = true;
-		}
-		else if (line == "[KERNELCALL_VARIABLES]")
+		if (line == "[KERNELCALL_VARIABLES]")
 		{
 			state = my_state::kernelcall_variables;
 			switched_category = true;
@@ -400,12 +514,6 @@ config_struct___ read_config(string file)
 		{
 			switch (state)
 			{
-			case my_state::kernel_variables:
-				parse_kernel_variables(kernel_variables, line);
-				break;
-			case my_state::kernel:
-				kernel.push_back(line);
-				break;
 			case my_state::kernelcall_variables:
 				parse_kernelcall_variables(kernelcall_variables, line);
 				break;
@@ -441,10 +549,9 @@ config_struct___ read_config(string file)
 		}
 	}
 
-	config_struct___ cs;
-	cs.kv = kernel_variables;
-	cs.k = kernel;
+	config_struct_call___ cs;
 	cs.kcv = kernelcall_variables;
 	cs.kc = kernel_calls;
 	return cs;
 }
+

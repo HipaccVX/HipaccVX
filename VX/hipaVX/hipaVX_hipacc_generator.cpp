@@ -148,7 +148,7 @@ string kernel_builder(const std::vector<Kernel_Variable*>& variables, const std:
 	std::string constructor_init_list;
 	std::string add_accessor;
 
-	string tabs = "\t\t";
+	string tabs = "\t";
 
 	for(const auto& kv: variables)
 	{
@@ -181,10 +181,8 @@ string kernel_builder(const std::vector<Kernel_Variable*>& variables, const std:
 	return s;
 }
 
-string kernelcall_builder(const std::vector<Kernel_Variable*>& variables,
-						  const std::vector<Kernelcall_Variable*>& call_variables,
-						  const std::vector<std::vector<Kernelcall_Variable *>>& kernel_calls,
-						  const std::string& kernel_name)
+string kernelcall_builder(const std::vector<Kernelcall_Variable*>& call_variables,
+						  const std::vector<std::vector<Kernelcall_Variable *>>& kernel_calls)
 {
 	std::string to_return;
 	for(const auto& kv: call_variables)
@@ -199,33 +197,16 @@ string kernelcall_builder(const std::vector<Kernel_Variable*>& variables,
 
 	to_return += '\n';
 
-	for(size_t i = 0; i < kernel_calls.size(); i++)
-	{
-		const auto& call = kernel_calls[i];
-		std::string instance_name = kernel_name + "_instance_" + std::to_string(i);
-		to_return += '\t' + kernel_name + "_@@@ID@@@ " + instance_name + "(\n";
-		for(size_t j = 0; j < call.size(); j++)
-		{
-			if(j != call.size()-1)
-				to_return += "\t\t" + call[j]->get_name() + ",\n";
-			else
-				to_return += "\t\t" + call[j]->get_name() + ");\n";
-		}
-
-		to_return += '\t' + instance_name + ".execute();\n\n";
-	}
-
 	return to_return;
 }
 
 std::string node_generator(HipaVX::Sobel3x3Node* n, Type t)
 {
-	auto cs = read_config(hipaVX_folder + "/kernels/sobel.def");
-
-
 	if (t == Type::Definition)
 	{
-		string s = kernel_builder(cs.kv, cs.k, "Sobel");
+		auto cs = read_config_def(hipaVX_folder + "/kernels/sobel.def");
+
+		string s = kernel_builder(cs.kv, cs.k, cs.name);
 
 		s = use_template(s, "ID", n->my_id);
 		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->src->col]);
@@ -235,7 +216,8 @@ std::string node_generator(HipaVX::Sobel3x3Node* n, Type t)
 	}
 	else if (t == Type::Call)
 	{
-		string s = kernelcall_builder(cs.kv, cs.kcv, cs.kc, "Sobel");
+		auto cs = read_config_call(hipaVX_folder + "/kernels/sobel.call");
+		string s = kernelcall_builder(cs.kcv, cs.kc);
 
 		s = use_template(s, "ID", n->my_id);
 		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->src->col]);
@@ -249,38 +231,47 @@ std::string node_generator(HipaVX::Sobel3x3Node* n, Type t)
 
 		return s;
 	}
-
+	return "SOMETHING IS WRONG";
+}
+std::string node_generator(HipaVX::ConvertDepthNode* n, Type t)
+{
 	if (t == Type::Definition)
 	{
-		string s = read_file(hipaVX_folder + "/kernels/sobel.kernel_definition");
+		auto cs = read_config_def(hipaVX_folder + "/kernels/convert.def");
+
+		string s = kernel_builder(cs.kv, cs.k, cs.name);
 
 		s = use_template(s, "ID", n->my_id);
 		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->src->col]);
-		s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->dst_x->col]);
+		s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->dst->col]);
+
+		s = use_template(s, "SHIFT", n->shift->i32);
 
 		return s;
 	}
 	else if (t == Type::Call)
 	{
-		string s = read_file(hipaVX_folder + "/kernels/sobel.kernel_call");
+		auto cs = read_config_call(hipaVX_folder + "/kernels/convert.call");
+		string s = kernelcall_builder(cs.kcv, cs.kc);
 
 
 		s = use_template(s, "ID", n->my_id);
 		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->src->col]);
-		s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->dst_x->col]);
+		s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->dst->col]);
 
 		s = use_template(s, "INPUT_IMAGE", generate_image_name(n->src));
-		s = use_template(s, "OUTPUT_IMAGE_X", generate_image_name(n->dst_x));
-		s = use_template(s, "OUTPUT_IMAGE_Y", generate_image_name(n->dst_y));
+		s = use_template(s, "IMAGE_IN_WIDTH", n->src->w);
+		s = use_template(s, "IMAGE_IN_HEIGHT", n->src->h);
+		s = use_template(s, "OUTPUT_IMAGE", generate_image_name(n->dst));
 
 		s = use_template(s, "BOUNDARY_CONDITION", "Boundary::UNDEFINED"); // TODO
 
 		return s;
 	}
-	return "SOMETHING IS WRONG";
-}
-std::string node_generator(HipaVX::ConvertDepthNode* n, Type t)
-{
+
+
+
+
 	if (t == Type::Definition)
 	{
 		string s = read_file(hipaVX_folder + "/kernels/convert.kernel_definition");
@@ -317,7 +308,9 @@ std::string node_generator(HipaVX::MagnitudeNode* n, Type t)
 {
 	if (t == Type::Definition)
 	{
-		string s = read_file(hipaVX_folder + "/kernels/magnitude.kernel_definition");
+		auto cs = read_config_def(hipaVX_folder + "/kernels/magnitude.def");
+
+		string s = kernel_builder(cs.kv, cs.k, cs.name);
 
 		s = use_template(s, "ID", n->my_id);
 		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->grad_x->col]);
@@ -327,8 +320,8 @@ std::string node_generator(HipaVX::MagnitudeNode* n, Type t)
 	}
 	else if (t == Type::Call)
 	{
-		string s = read_file(hipaVX_folder + "/kernels/magnitude.kernel_call");
-
+		auto cs = read_config_call(hipaVX_folder + "/kernels/magnitude.call");
+		string s = kernelcall_builder(cs.kcv, cs.kc);
 
 		s = use_template(s, "ID", n->my_id);
 		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->grad_x->col]);
@@ -336,8 +329,8 @@ std::string node_generator(HipaVX::MagnitudeNode* n, Type t)
 
 		s = use_template(s, "INPUT_IMAGE_GRAD_X", generate_image_name(n->grad_x));
 		s = use_template(s, "INPUT_IMAGE_GRAD_Y", generate_image_name(n->grad_y));
-		s = use_template(s, "INPUT_IMAGE_WIDTH", n->grad_x->w);
-		s = use_template(s, "INPUT_IMAGE_HEIGHT", n->grad_x->h);
+		s = use_template(s, "IMAGE_IN_WIDTH", n->grad_x->w);
+		s = use_template(s, "IMAGE_IN_HEIGHT", n->grad_x->h);
 		s = use_template(s, "OUTPUT_IMAGE", generate_image_name(n->mag));
 
 		s = use_template(s, "BOUNDARY_CONDITION", "Boundary::UNDEFINED"); // TODO
