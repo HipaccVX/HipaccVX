@@ -151,6 +151,96 @@ public:
 	virtual std::string generateNodeCall() override;
 };
 
+
+class AbsDiffNode: public Node
+{
+public:
+	virtual ~AbsDiffNode() override = default;
+	Image *in_1;
+	Image *in_2;
+	Image *out;
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+};
+class AddNode: public Node
+{
+public:
+	virtual ~AddNode() override = default;
+	Image *in_1;
+	Image *in_2;
+	Image *out;
+
+	vx_enum policy;
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+};
+class SubtractNode: public Node
+{
+public:
+	virtual ~SubtractNode() override = default;
+	Image *in_1;
+	Image *in_2;
+	Image *out;
+
+	vx_enum policy;
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+};
+
+class AndNode: public Node
+{
+public:
+	virtual ~AndNode() override = default;
+	Image *in_1;
+	Image *in_2;
+	Image *out;
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+};
+class XorNode: public Node
+{
+public:
+	virtual ~XorNode() override = default;
+	Image *in_1;
+	Image *in_2;
+	Image *out;
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+};
+class OrNode: public Node
+{
+public:
+	virtual ~OrNode() override = default;
+	Image *in_1;
+	Image *in_2;
+	Image *out;
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+};
+class NotNode: public Node
+{
+public:
+	virtual ~NotNode() override = default;
+	Image *in;
+	Image *out;
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+};
+
 }
 
 namespace generator
@@ -165,4 +255,13 @@ std::string node_generator(HipaVX::WriteImageNode* n, Type t);
 std::string node_generator(HipaVX::Sobel3x3Node* n, Type t);
 std::string node_generator(HipaVX::ConvertDepthNode* n, Type t);
 std::string node_generator(HipaVX::MagnitudeNode* n, Type t);
+
+std::string node_generator(HipaVX::AbsDiffNode* n, Type t);
+std::string node_generator(HipaVX::AddNode* n, Type t);
+std::string node_generator(HipaVX::SubtractNode* n, Type t);
+
+std::string node_generator(HipaVX::AndNode* n, Type t);
+std::string node_generator(HipaVX::XorNode* n, Type t);
+std::string node_generator(HipaVX::OrNode* n, Type t);
+std::string node_generator(HipaVX::NotNode* n, Type t);
 }

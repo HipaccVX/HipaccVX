@@ -1,0 +1,10 @@
+[NAME]
+Or
+
+[KERNEL_VARIABLES]
+Accessor input1
+Accessor input2
+
+[KERNEL]
+output() = input1() | input2();
+[KERNEL_END]

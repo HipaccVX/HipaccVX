@@ -25,6 +25,13 @@ int main()
 			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_S16),                /* 2: sobel_Y */
 			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_S16),                /* 3: sobel_mag */
 			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),                 /* 4: out */
+
+			vxCreateImageFromFile(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8, "random_in.png"),
+			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),                 /* 6: AND */
+			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),                 /* 7: OR */
+
+			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),                 /* 8: XOR */
+			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),                 /* 9: XOR_XOR */
 		};
 
 		int32_t two = 2;
@@ -46,6 +53,15 @@ int main()
 				vxFWriteImageNode(graph, images[2], "akif-200x300_bw_sobel_y.png"),
 				vxFWriteImageNode(graph, images[3], "akif-200x300_bw_mag.png"),
 				vxFWriteImageNode(graph, images[4], "akif-200x300_bw_out.png"),
+
+
+				vxAndNode(graph, images[4], images[5], images[6]),
+				vxOrNode(graph, images[4], images[6], images[7]),
+				vxFWriteImageNode(graph, images[7], "akif-200x300_bw_out_and_or.png"),
+
+				vxXorNode(graph, images[4], images[5], images[8]),
+				vxXorNode(graph, images[8], images[5], images[9]),
+				vxFWriteImageNode(graph, images[9], "akif-200x300_bw_xor_xor.png"),
 			};
 
             //Step4.Verify Graph

@@ -78,6 +78,49 @@ VX_API_ENTRY vx_node VX_API_CALL vxMagnitudeNode(vx_graph graph, vx_image grad_x
 	return node;
 }
 
+VX_API_ENTRY vx_node VX_API_CALL vxAndNode(vx_graph graph, vx_image in1, vx_image in2, vx_image out)
+{
+	auto node = new HipaVX::AndNode();
+	node->in_1 = in1;
+	node->in_2 = in2;
+	node->out = out;
+	graph->graph.emplace_back(node);
+	graph->built = false;
+	return node;
+}
+VX_API_ENTRY vx_node VX_API_CALL vxOrNode(vx_graph graph, vx_image in1, vx_image in2, vx_image out)
+{
+	auto node = new HipaVX::OrNode();
+	node->in_1 = in1;
+	node->in_2 = in2;
+	node->out = out;
+	graph->graph.emplace_back(node);
+	graph->built = false;
+	return node;
+}
+VX_API_ENTRY vx_node VX_API_CALL vxXorNode(vx_graph graph, vx_image in1, vx_image in2, vx_image out)
+{
+	auto node = new HipaVX::XorNode();
+	node->in_1 = in1;
+	node->in_2 = in2;
+	node->out = out;
+	graph->graph.emplace_back(node);
+	graph->built = false;
+	return node;
+}
+VX_API_ENTRY vx_node VX_API_CALL vxNotNode(vx_graph graph, vx_image input, vx_image output)
+{
+	auto node = new HipaVX::NotNode();
+	node->in = input;
+	node->out = output;
+	graph->graph.emplace_back(node);
+	graph->built = false;
+	return node;
+}
+
+
+
+
 
 VX_API_ENTRY vx_status VX_API_CALL vxReleaseNode(vx_node *node)
 {

@@ -314,4 +314,154 @@ string node_generator(HipaVX::MagnitudeNode* n, Type t)
 	}
 	return "SOMETHING IS WRONG";
 }
+
+string node_generator(HipaVX::AndNode* n, Type t)
+{
+	if (t == Type::Definition)
+	{
+		auto cs = read_config_def(hipaVX_folder + "/kernels/and.def");
+
+		string s = kernel_builder(cs.kv, cs.k, cs.name);
+
+		s = use_template(s, "ID", n->my_id);
+		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in_1->col]);
+		s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
+
+		return s;
+	}
+	else if (t == Type::Call)
+	{
+		auto cs = read_config_call(hipaVX_folder + "/kernels/and.call");
+		string s = kernelcall_builder(cs.kcv, cs.kc);
+
+		s = use_template(s, "ID", n->my_id);
+		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in_1->col]);
+		s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
+
+		s = use_template(s, "IMAGE_IN_1", generate_image_name(n->in_1));
+		s = use_template(s, "IMAGE_IN_2", generate_image_name(n->in_2));
+		s = use_template(s, "IMAGE_IN_WIDTH", n->in_1->w);
+		s = use_template(s, "IMAGE_IN_HEIGHT", n->in_1->h);
+		s = use_template(s, "OUTPUT_IMAGE", generate_image_name(n->out));
+
+		s = use_template(s, "BOUNDARY_CONDITION", "Boundary::UNDEFINED"); // TODO
+
+		return s;
+	}
+	return "SOMETHING IS WRONG";
+}
+string node_generator(HipaVX::XorNode* n, Type t)
+{
+	if (t == Type::Definition)
+	{
+		auto cs = read_config_def(hipaVX_folder + "/kernels/xor.def");
+
+		string s = kernel_builder(cs.kv, cs.k, cs.name);
+
+		s = use_template(s, "ID", n->my_id);
+		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in_1->col]);
+		s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
+
+		return s;
+	}
+	else if (t == Type::Call)
+	{
+		auto cs = read_config_call(hipaVX_folder + "/kernels/xor.call");
+		string s = kernelcall_builder(cs.kcv, cs.kc);
+
+		s = use_template(s, "ID", n->my_id);
+		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in_1->col]);
+		s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
+
+		s = use_template(s, "IMAGE_IN_1", generate_image_name(n->in_1));
+		s = use_template(s, "IMAGE_IN_2", generate_image_name(n->in_2));
+		s = use_template(s, "IMAGE_IN_WIDTH", n->in_1->w);
+		s = use_template(s, "IMAGE_IN_HEIGHT", n->in_1->h);
+		s = use_template(s, "OUTPUT_IMAGE", generate_image_name(n->out));
+
+		s = use_template(s, "BOUNDARY_CONDITION", "Boundary::UNDEFINED"); // TODO
+
+		return s;
+	}
+	return "SOMETHING IS WRONG";
+}
+string node_generator(HipaVX::OrNode* n, Type t)
+{
+	if (t == Type::Definition)
+	{
+		auto cs = read_config_def(hipaVX_folder + "/kernels/or.def");
+
+		string s = kernel_builder(cs.kv, cs.k, cs.name);
+
+		s = use_template(s, "ID", n->my_id);
+		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in_1->col]);
+		s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
+
+		return s;
+	}
+	else if (t == Type::Call)
+	{
+		auto cs = read_config_call(hipaVX_folder + "/kernels/or.call");
+		string s = kernelcall_builder(cs.kcv, cs.kc);
+
+		s = use_template(s, "ID", n->my_id);
+		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in_1->col]);
+		s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
+
+		s = use_template(s, "IMAGE_IN_1", generate_image_name(n->in_1));
+		s = use_template(s, "IMAGE_IN_2", generate_image_name(n->in_2));
+		s = use_template(s, "IMAGE_IN_WIDTH", n->in_1->w);
+		s = use_template(s, "IMAGE_IN_HEIGHT", n->in_1->h);
+		s = use_template(s, "OUTPUT_IMAGE", generate_image_name(n->out));
+
+		s = use_template(s, "BOUNDARY_CONDITION", "Boundary::UNDEFINED"); // TODO
+
+		return s;
+	}
+	return "SOMETHING IS WRONG";
+}
+string node_generator(HipaVX::NotNode* n, Type t)
+{
+	if (t == Type::Definition)
+	{
+		auto cs = read_config_def(hipaVX_folder + "/kernels/and.def");
+
+		string s = kernel_builder(cs.kv, cs.k, cs.name);
+
+		s = use_template(s, "ID", n->my_id);
+		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in->col]);
+		s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
+
+		return s;
+	}
+	else if (t == Type::Call)
+	{
+		auto cs = read_config_call(hipaVX_folder + "/kernels/and.call");
+		string s = kernelcall_builder(cs.kcv, cs.kc);
+
+		s = use_template(s, "ID", n->my_id);
+		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in->col]);
+		s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
+
+		s = use_template(s, "IMAGE_IN", generate_image_name(n->in));
+		s = use_template(s, "IMAGE_IN_WIDTH", n->in->w);
+		s = use_template(s, "IMAGE_IN_HEIGHT", n->in->h);
+		s = use_template(s, "OUTPUT_IMAGE", generate_image_name(n->out));
+
+		s = use_template(s, "BOUNDARY_CONDITION", "Boundary::UNDEFINED"); // TODO
+
+		return s;
+	}
+	return "SOMETHING IS WRONG";
+}
+
+
+string node_generator(HipaVX::AbsDiffNode* n, Type t)
+{}
+string node_generator(HipaVX::AddNode* n, Type t)
+{}
+string node_generator(HipaVX::SubtractNode* n, Type t)
+{}
+
+
 }

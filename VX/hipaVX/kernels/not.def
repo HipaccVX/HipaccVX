@@ -1,0 +1,9 @@
+[NAME]
+Not
+
+[KERNEL_VARIABLES]
+Accessor input
+
+[KERNEL]
+output() = ~input();
+[KERNEL_END]

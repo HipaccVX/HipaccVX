@@ -51,12 +51,10 @@ std::vector<Image *> WriteImageNode::get_used_images()
 	used_images.emplace_back(src);
 	return used_images;
 }
-
 std::string WriteImageNode::generateClassDefinition()
 {
 	return generator::node_generator(this, generator::Type::Definition);
 }
-
 std::string WriteImageNode::generateNodeCall()
 {
 	return generator::node_generator(this, generator::Type::Call);
@@ -70,12 +68,10 @@ std::vector<Image *> Sobel3x3Node::get_used_images()
 	used_images.emplace_back(dst_y);
 	return used_images;
 }
-
 std::string Sobel3x3Node::generateClassDefinition()
 {
 	return generator::node_generator(this, generator::Type::Definition);
 }
-
 std::string Sobel3x3Node::generateNodeCall()
 {
 	return generator::node_generator(this, generator::Type::Call);
@@ -88,12 +84,10 @@ std::vector<Image *> ConvertDepthNode::get_used_images()
 	used_images.emplace_back(dst);
 	return used_images;
 }
-
 std::string ConvertDepthNode::generateClassDefinition()
 {
 	return generator::node_generator(this, generator::Type::Definition);
 }
-
 std::string ConvertDepthNode::generateNodeCall()
 {
 	return generator::node_generator(this, generator::Type::Call);
@@ -107,13 +101,129 @@ std::vector<Image *> MagnitudeNode::get_used_images()
 	used_images.emplace_back(mag);
 	return used_images;
 }
-
 std::string MagnitudeNode::generateClassDefinition()
 {
 	return generator::node_generator(this, generator::Type::Definition);
 }
-
 std::string MagnitudeNode::generateNodeCall()
+{
+	return generator::node_generator(this, generator::Type::Call);
+}
+
+std::vector<Image *> AbsDiffNode::get_used_images()
+{
+	std::vector<Image*> used_images;
+	used_images.emplace_back(in_1);
+	used_images.emplace_back(in_2);
+	used_images.emplace_back(out);
+	return used_images;
+}
+std::string AbsDiffNode::generateClassDefinition()
+{
+	return generator::node_generator(this, generator::Type::Definition);
+}
+std::string AbsDiffNode::generateNodeCall()
+{
+	return generator::node_generator(this, generator::Type::Call);
+}
+
+std::vector<Image *> AddNode::get_used_images()
+{
+	std::vector<Image*> used_images;
+	used_images.emplace_back(in_1);
+	used_images.emplace_back(in_2);
+	used_images.emplace_back(out);
+	return used_images;
+}
+std::string AddNode::generateClassDefinition()
+{
+	return generator::node_generator(this, generator::Type::Definition);
+}
+std::string AddNode::generateNodeCall()
+{
+	return generator::node_generator(this, generator::Type::Call);
+}
+
+std::vector<Image *> SubtractNode::get_used_images()
+{
+	std::vector<Image*> used_images;
+	used_images.emplace_back(in_1);
+	used_images.emplace_back(in_2);
+	used_images.emplace_back(out);
+	return used_images;
+}
+std::string SubtractNode::generateClassDefinition()
+{
+	return generator::node_generator(this, generator::Type::Definition);
+}
+std::string SubtractNode::generateNodeCall()
+{
+	return generator::node_generator(this, generator::Type::Call);
+}
+
+std::vector<Image *> AndNode::get_used_images()
+{
+	std::vector<Image*> used_images;
+	used_images.emplace_back(in_1);
+	used_images.emplace_back(in_2);
+	used_images.emplace_back(out);
+	return used_images;
+}
+std::string AndNode::generateClassDefinition()
+{
+	return generator::node_generator(this, generator::Type::Definition);
+}
+std::string AndNode::generateNodeCall()
+{
+	return generator::node_generator(this, generator::Type::Call);
+}
+
+std::vector<Image *> XorNode::get_used_images()
+{
+	std::vector<Image*> used_images;
+	used_images.emplace_back(in_1);
+	used_images.emplace_back(in_2);
+	used_images.emplace_back(out);
+	return used_images;
+}
+std::string XorNode::generateClassDefinition()
+{
+	return generator::node_generator(this, generator::Type::Definition);
+}
+std::string XorNode::generateNodeCall()
+{
+	return generator::node_generator(this, generator::Type::Call);
+}
+
+std::vector<Image *> OrNode::get_used_images()
+{
+	std::vector<Image*> used_images;
+	used_images.emplace_back(in_1);
+	used_images.emplace_back(in_2);
+	used_images.emplace_back(out);
+	return used_images;
+}
+std::string OrNode::generateClassDefinition()
+{
+	return generator::node_generator(this, generator::Type::Definition);
+}
+std::string OrNode::generateNodeCall()
+{
+	return generator::node_generator(this, generator::Type::Call);
+}
+
+std::vector<Image *> NotNode::get_used_images()
+{
+	std::vector<Image*> used_images;
+	used_images.emplace_back(in);
+	used_images.emplace_back(out);
+	return used_images;
+}
+std::string NotNode::generateClassDefinition()
+{
+	return generator::node_generator(this, generator::Type::Definition);
+}
+std::string NotNode::generateNodeCall()
 {
 	return generator::node_generator(this, generator::Type::Call);
 }
