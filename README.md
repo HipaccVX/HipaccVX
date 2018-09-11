@@ -75,8 +75,8 @@ In- and Outputimages are in the hipacc_compile_pass folder
 1. In order to make the next step easier and more generic for HipaCC generation a kind of templating language was used. There is a file for the kernels definition (`.def`) and instructions how to call it (`.call`).
 
 1. In `std::string node_generator(..., Type t)` you will need to handle two cases:
- 1. `generator::Type::Definition` : This is usually used for the class definitions in the generated file. The `std::string` returned from this function will get pasted outside of `main`
- 1. `generator::Type::Call` : This is used to place code into the `main` function.
+    1. `generator::Type::Definition` : This is usually used for the class definitions in the generated file. The `std::string` returned from this function will get pasted outside of `main`
+    1. `generator::Type::Call` : This is used to place code into the `main` function.
 
 1. Add the declaration of the API-call in hipaVX_extension.hpp if the new kernel is an extension and not an implementation of the standard OpenVX functions
 
