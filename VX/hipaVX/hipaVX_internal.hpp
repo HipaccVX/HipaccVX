@@ -103,8 +103,8 @@ class WriteImageNode: public Node
 {
 public:
 	virtual ~WriteImageNode() override = default;
-	Image *src;
-	std::string dst_file;
+	Image *in;
+	std::string out_file;
 	virtual std::vector<Image*> get_used_images() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
@@ -114,9 +114,9 @@ class Sobel3x3Node: public Node
 {
 public:
 	virtual ~Sobel3x3Node() override = default;
-	Image *src;
-	Image *dst_x;
-	Image *dst_y;
+	Image *in;
+	Image *out_x;
+	Image *out_y;
 
 	virtual std::vector<Image*> get_used_images() override;
 	virtual std::string generateClassDefinition() override;
@@ -127,8 +127,8 @@ class ConvertDepthNode: public Node
 {
 public:
 	virtual ~ConvertDepthNode() override = default;
-	Image *src;
-	Image *dst;
+	Image *in;
+	Image *out;
 
 	vx_enum policy;
 	vx_scalar shift;
@@ -241,6 +241,60 @@ public:
 	virtual std::string generateNodeCall() override;
 };
 
+class BoxFilter: public Node
+{
+public:
+	virtual ~BoxFilter() override = default;
+
+	Image *in;
+	Image *out;
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+};
+class GaussianFilter: public Node
+{
+public:
+	virtual ~GaussianFilter() override = default;
+
+	Image *in;
+	Image *out;
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+};
+
+class Dilate: public Node
+{
+public:
+	virtual ~Dilate() override = default;
+
+	Image *in;
+	Image *out;
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+};
+class Erode: public Node
+{
+public:
+	virtual ~Erode() override = default;
+
+	Image *in;
+	Image *out;
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+};
+
+
+
+
+
 }
 
 namespace generator
@@ -264,4 +318,11 @@ std::string node_generator(HipaVX::AndNode* n, Type t);
 std::string node_generator(HipaVX::XorNode* n, Type t);
 std::string node_generator(HipaVX::OrNode* n, Type t);
 std::string node_generator(HipaVX::NotNode* n, Type t);
+
+std::string node_generator(HipaVX::BoxFilter* n, Type t);
+std::string node_generator(HipaVX::GaussianFilter* n, Type t);
+
+std::string node_generator(HipaVX::Dilate* n, Type t);
+std::string node_generator(HipaVX::Erode* n, Type t);
+
 }

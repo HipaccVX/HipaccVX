@@ -1,0 +1,22 @@
+[NAME]
+AbsDiff
+
+[KERNEL_VARIABLES]
+Accessor input1
+Accessor input2
+
+[KERNEL]
+if(@@@U8@@@)
+{
+	output() = abs(input1() - input2());
+}
+else if(@@@S16@@@)
+{
+	int out = abs((int) (input1()) - input2());
+
+	if (out > 32767) // max s16
+		out = 32767;
+
+	output() = out;
+}
+[KERNEL_END]

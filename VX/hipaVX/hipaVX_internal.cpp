@@ -48,7 +48,7 @@ void Graph::build()
 std::vector<Image *> WriteImageNode::get_used_images()
 {
 	std::vector<Image*> used_images;
-	used_images.emplace_back(src);
+	used_images.emplace_back(in);
 	return used_images;
 }
 std::string WriteImageNode::generateClassDefinition()
@@ -63,9 +63,9 @@ std::string WriteImageNode::generateNodeCall()
 std::vector<Image *> Sobel3x3Node::get_used_images()
 {
 	std::vector<Image*> used_images;
-	used_images.emplace_back(src);
-	used_images.emplace_back(dst_x);
-	used_images.emplace_back(dst_y);
+	used_images.emplace_back(in);
+	used_images.emplace_back(out_x);
+	used_images.emplace_back(out_y);
 	return used_images;
 }
 std::string Sobel3x3Node::generateClassDefinition()
@@ -80,8 +80,8 @@ std::string Sobel3x3Node::generateNodeCall()
 std::vector<Image *> ConvertDepthNode::get_used_images()
 {
 	std::vector<Image*> used_images;
-	used_images.emplace_back(src);
-	used_images.emplace_back(dst);
+	used_images.emplace_back(in);
+	used_images.emplace_back(out);
 	return used_images;
 }
 std::string ConvertDepthNode::generateClassDefinition()
@@ -227,6 +227,72 @@ std::string NotNode::generateNodeCall()
 {
 	return generator::node_generator(this, generator::Type::Call);
 }
+
+std::vector<Image *> BoxFilter::get_used_images()
+{
+	std::vector<Image*> used_images;
+	used_images.emplace_back(in);
+	used_images.emplace_back(out);
+	return used_images;
+}
+std::string BoxFilter::generateClassDefinition()
+{
+	return generator::node_generator(this, generator::Type::Definition);
+}
+std::string BoxFilter::generateNodeCall()
+{
+	return generator::node_generator(this, generator::Type::Call);
+}
+
+std::vector<Image *> GaussianFilter::get_used_images()
+{
+	std::vector<Image*> used_images;
+	used_images.emplace_back(in);
+	used_images.emplace_back(out);
+	return used_images;
+}
+std::string GaussianFilter::generateClassDefinition()
+{
+	return generator::node_generator(this, generator::Type::Definition);
+}
+std::string GaussianFilter::generateNodeCall()
+{
+	return generator::node_generator(this, generator::Type::Call);
+}
+
+std::vector<Image *> Dilate::get_used_images()
+{
+	std::vector<Image*> used_images;
+	used_images.emplace_back(in);
+	used_images.emplace_back(out);
+	return used_images;
+}
+std::string Dilate::generateClassDefinition()
+{
+	return generator::node_generator(this, generator::Type::Definition);
+}
+std::string Dilate::generateNodeCall()
+{
+	return generator::node_generator(this, generator::Type::Call);
+}
+
+std::vector<Image *> Erode::get_used_images()
+{
+	std::vector<Image*> used_images;
+	used_images.emplace_back(in);
+	used_images.emplace_back(out);
+	return used_images;
+}
+std::string Erode::generateClassDefinition()
+{
+	return generator::node_generator(this, generator::Type::Definition);
+}
+std::string Erode::generateNodeCall()
+{
+	return generator::node_generator(this, generator::Type::Call);
+}
+
+
 
 }
 

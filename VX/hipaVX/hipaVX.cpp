@@ -16,8 +16,8 @@
 vx_node vxFWriteImageNode(vx_graph graph, vx_image image, std::string file)
 {
 	HipaVX::WriteImageNode *win = new HipaVX::WriteImageNode();
-	win->src = image;
-	win->dst_file = file;
+	win->in = image;
+	win->out_file = file;
 	graph->graph.emplace_back(win);
 	graph->built = false;
 	return win;
@@ -33,12 +33,6 @@ VX_API_ENTRY vx_status VX_API_CALL vxSetNodeAttribute (vx_node node, vx_enum att
 	return VX_ERROR_NOT_IMPLEMENTED;
 }
 
-VX_API_ENTRY vx_node VX_API_CALL vxGaussian3x3Node(vx_graph graph, vx_image input, vx_image output)
-{
-	return nullptr;
-}
-
-
 VX_API_ENTRY vx_node VX_API_CALL vxSobel3x3Node(vx_graph graph, vx_image input, vx_image output_x, vx_image output_y)
 {
 	if (input->col != VX_DF_IMAGE_U8)
@@ -47,9 +41,9 @@ VX_API_ENTRY vx_node VX_API_CALL vxSobel3x3Node(vx_graph graph, vx_image input, 
 		return nullptr;
 
 	HipaVX::Sobel3x3Node *sobel = new HipaVX::Sobel3x3Node();
-	sobel->src = input;
-	sobel->dst_x = output_x;
-	sobel->dst_y = output_y;
+	sobel->in = input;
+	sobel->out_x = output_x;
+	sobel->out_y = output_y;
 	graph->graph.emplace_back(sobel);
 	graph->built = false;
 	return sobel;
@@ -58,8 +52,8 @@ VX_API_ENTRY vx_node VX_API_CALL vxSobel3x3Node(vx_graph graph, vx_image input, 
 VX_API_ENTRY vx_node VX_API_CALL vxConvertDepthNode(vx_graph graph, vx_image input, vx_image output, vx_enum policy, vx_scalar shift)
 {
 	auto node = new HipaVX::ConvertDepthNode();
-	node->src = input;
-	node->dst = output;
+	node->in = input;
+	node->out = output;
 	node->policy = policy;
 	node->shift = shift;
 	graph->graph.emplace_back(node);
@@ -118,6 +112,122 @@ VX_API_ENTRY vx_node VX_API_CALL vxNotNode(vx_graph graph, vx_image input, vx_im
 	return node;
 }
 
+VX_API_ENTRY vx_node VX_API_CALL vxAbsDiffNode(vx_graph graph, vx_image in1, vx_image in2, vx_image out)
+{
+	if (out->col == VX_DF_IMAGE_U8 && (in1->col != VX_DF_IMAGE_U8 ||
+									   in2->col != VX_DF_IMAGE_U8))
+		return nullptr;
+
+	if (in1->col != VX_DF_IMAGE_U8 && in1->col != VX_DF_IMAGE_S16)
+		return nullptr;
+	if (in2->col != VX_DF_IMAGE_U8 && in2->col != VX_DF_IMAGE_S16)
+		return nullptr;
+	if (out->col != VX_DF_IMAGE_U8 && out->col != VX_DF_IMAGE_S16)
+		return nullptr;
+
+	auto node = new HipaVX::AbsDiffNode();
+	node->in_1 = in1;
+	node->in_2 = in2;
+	node->out = out;
+	graph->graph.emplace_back(node);
+	graph->built = false;
+	return node;
+}
+VX_API_ENTRY vx_node VX_API_CALL vxAddNode(vx_graph graph, vx_image in1, vx_image in2, vx_enum policy, vx_image out)
+{
+	if (out->col == VX_DF_IMAGE_U8 && (in1->col != VX_DF_IMAGE_U8 ||
+									   in2->col != VX_DF_IMAGE_U8))
+		return nullptr;
+
+	if (in1->col != VX_DF_IMAGE_U8 && in1->col != VX_DF_IMAGE_S16)
+		return nullptr;
+	if (in2->col != VX_DF_IMAGE_U8 && in2->col != VX_DF_IMAGE_S16)
+		return nullptr;
+	if (out->col != VX_DF_IMAGE_U8 && out->col != VX_DF_IMAGE_S16)
+		return nullptr;
+
+	auto node = new HipaVX::AddNode();
+	node->in_1 = in1;
+	node->in_2 = in2;
+	node->policy = policy;
+	node->out = out;
+	graph->graph.emplace_back(node);
+	graph->built = false;
+	return node;
+}
+VX_API_ENTRY vx_node VX_API_CALL vxSubtractNode(vx_graph graph, vx_image in1, vx_image in2, vx_enum policy, vx_image out)
+{
+	if (out->col == VX_DF_IMAGE_U8 && (in1->col != VX_DF_IMAGE_U8 ||
+									   in2->col != VX_DF_IMAGE_U8))
+		return nullptr;
+
+	if (in1->col != VX_DF_IMAGE_U8 && in1->col != VX_DF_IMAGE_S16)
+		return nullptr;
+	if (in2->col != VX_DF_IMAGE_U8 && in2->col != VX_DF_IMAGE_S16)
+		return nullptr;
+	if (out->col != VX_DF_IMAGE_U8 && out->col != VX_DF_IMAGE_S16)
+		return nullptr;
+
+	auto node = new HipaVX::SubtractNode();
+	node->in_1 = in1;
+	node->in_2 = in2;
+	node->policy = policy;
+	node->out = out;
+	graph->graph.emplace_back(node);
+	graph->built = false;
+	return node;
+}
+
+VX_API_ENTRY vx_node VX_API_CALL vxBox3x3Node(vx_graph graph, vx_image input, vx_image output)
+{
+	if (input->col != VX_DF_IMAGE_U8 || output->col != VX_DF_IMAGE_U8)
+		return nullptr;
+
+	HipaVX::BoxFilter *box = new HipaVX::BoxFilter();
+	box->in = input;
+	box->out = output;
+	graph->graph.emplace_back(box);
+	graph->built = false;
+	return box;
+}
+VX_API_ENTRY vx_node VX_API_CALL vxGaussian3x3Node(vx_graph graph, vx_image input, vx_image output)
+{
+	if (input->col != VX_DF_IMAGE_U8 || output->col != VX_DF_IMAGE_U8)
+		return nullptr;
+
+	HipaVX::GaussianFilter *gaussian = new HipaVX::GaussianFilter();
+	gaussian->in = input;
+	gaussian->out = output;
+	graph->graph.emplace_back(gaussian);
+	graph->built = false;
+	return gaussian;
+}
+
+
+VX_API_ENTRY vx_node VX_API_CALL vxDilate3x3Node(vx_graph graph, vx_image input, vx_image output)
+{
+	if (input->col != VX_DF_IMAGE_U8 || output->col != VX_DF_IMAGE_U8)
+		return nullptr;
+
+	HipaVX::Dilate *dilate = new HipaVX::Dilate();
+	dilate->in = input;
+	dilate->out = output;
+	graph->graph.emplace_back(dilate);
+	graph->built = false;
+	return dilate;
+}
+VX_API_ENTRY vx_node VX_API_CALL vxErode3x3Node(vx_graph graph, vx_image input, vx_image output)
+{
+	if (input->col != VX_DF_IMAGE_U8 || output->col != VX_DF_IMAGE_U8)
+		return nullptr;
+
+	HipaVX::Erode *erode = new HipaVX::Erode();
+	erode->in = input;
+	erode->out = output;
+	graph->graph.emplace_back(erode);
+	graph->built = false;
+	return erode;
+}
 
 
 

@@ -1,0 +1,25 @@
+[NAME]
+Subtract
+
+[KERNEL_VARIABLES]
+Accessor input1
+Accessor input2
+
+[KERNEL]
+int out = ((int) input1()) - input2();
+if(@@@U8@@@ && @@@SATURATE@@@)
+{
+	if (out > 255) // max u8
+		out = 255;
+	else if (out < 255) // min u8
+		out = 0;
+}
+else if (@@@S16@@@ && @@@SATURATE@@@)
+{
+	if (out > 32767) // max s16
+		out = 32767;
+	else if (out < -32768) // min s16
+		out = -32768;
+}
+output() = out;
+[KERNEL_END]

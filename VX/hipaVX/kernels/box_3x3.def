@@ -1,5 +1,5 @@
 [NAME]
-Sobel
+Box_3x3
 
 [KERNEL_VARIABLES]
 Accessor input
@@ -9,7 +9,7 @@ Mask int mask
 [KERNEL]
 output() = reduce(dom, Reduce::SUM, [&] () -> @@@OUTPUT_DATATYPE@@@
 	{
-		return mask(dom) * input(dom);
+		return mask(dom) * input(dom) / 9;
 	});
 [KERNEL_END]
 

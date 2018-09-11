@@ -94,6 +94,9 @@ class Kernelcall_Domain: public Kernelcall_Variable
 {
 public:
 	Kernelcall_Mask* argument;
+
+	std::string width;
+	std::string height;
 	virtual ~Kernelcall_Domain() override = default;
 	virtual std::vector<std::string> generate_kernelcall() override;
 };

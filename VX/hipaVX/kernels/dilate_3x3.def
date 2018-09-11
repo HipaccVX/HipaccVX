@@ -1,0 +1,14 @@
+[NAME]
+Dilate_3x3
+
+[KERNEL_VARIABLES]
+Accessor input
+Domain dom
+
+[KERNEL]
+output() = reduce(dom, Reduce::MAX, [&] () -> @@@OUTPUT_DATATYPE@@@
+	{
+		return input(dom);
+	});
+[KERNEL_END]
+

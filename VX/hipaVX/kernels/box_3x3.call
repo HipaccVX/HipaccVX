@@ -1,0 +1,19 @@
+[KERNELCALL_VARIABLES]
+Mask int mask
+
+Domain dom mask
+
+BoundaryCondition TYPE_IN bound IMAGE_IN dom BOUNDARY_CONDITION
+
+Accessor TYPE_IN acc bound
+
+IterationSpace TYPE_OUT iter IMAGE_OUT
+
+Kernel Box_3x3 box_3x3 iter acc dom mask
+
+[MASK]
+mask
+1 1 1
+1 1 1
+1 1 1
+

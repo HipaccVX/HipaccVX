@@ -109,7 +109,15 @@ std::vector<string> Kernelcall_Domain::generate_kernelcall()
 	std::vector<string> to_return;
 
 	to_return.emplace_back("Domain " + get_name() + "(");
-	to_return.emplace_back("\t" + argument->get_name() + ");");
+	if (argument != nullptr)
+	{
+		to_return.emplace_back("\t" + argument->get_name() + ");");
+	}
+	else
+	{
+		to_return.emplace_back("\t" + width + ",");
+		to_return.emplace_back("\t" + height + ");");
+	}
 
 	return to_return;
 }
@@ -177,6 +185,10 @@ std::vector<string> Kernelcall::generate_kernelcall()
 
 	return to_return;
 }
+
+
+
+
 
 void parse_kernel_variables(std::vector<Kernel_Variable *> &variables, string line)
 {
@@ -258,11 +270,24 @@ void parse_kernelcall_variables(std::vector<Kernelcall_Variable *> &variables, s
 	}
 	else if (type_of_variable == "Domain")
 	{
+		if (splitted.size() < 3 || splitted.size() > 4)
+			throw_exception("Expected at least three and at most four tokens", line);
+
 		Kernelcall_Domain *d = new Kernelcall_Domain();
 		d->set_real_name(splitted[1]);
-		d->argument = dynamic_cast<Kernelcall_Mask*> (find_kcv(variables, splitted[2]));
-		if (d->argument == nullptr)
-			throw_exception("Couldn't find mask variable for domain (mistyped name?)", line);
+
+		if (splitted.size() == 3)
+		{
+			d->argument = dynamic_cast<Kernelcall_Mask*> (find_kcv(variables, splitted[2]));
+			if (d->argument == nullptr)
+				throw_exception("Couldn't find mask variable for domain (mistyped name?)", line);
+		}
+		else
+		{
+			d->argument = nullptr;
+			d->width = splitted[2];
+			d->height = splitted[3];
+		}
 		variables.push_back(d);
 	}
 	else if (type_of_variable == "BoundaryCondition")

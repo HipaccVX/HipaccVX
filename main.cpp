@@ -32,6 +32,17 @@ int main()
 
 			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),                 /* 8: XOR */
 			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),                 /* 9: XOR_XOR */
+
+			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),                 /*10: absdiff */
+			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),                 /*11: add */
+			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),                 /*12: sub */
+
+			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),                 /*13: Box_3x3 */
+
+			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),                 /*14: dilate */
+			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),                 /*15: erode */
+
+			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),                 /*16: gaussian */
 		};
 
 		int32_t two = 2;
@@ -62,6 +73,24 @@ int main()
 				vxXorNode(graph, images[4], images[5], images[8]),
 				vxXorNode(graph, images[8], images[5], images[9]),
 				vxFWriteImageNode(graph, images[9], "akif-200x300_bw_xor_xor.png"),
+
+				vxAbsDiffNode(graph, images[0], images[5], images[10]),
+				vxFWriteImageNode(graph, images[10], "akif-200x300_bw_abs_diff.png"),
+
+				vxAddNode(graph, images[0], images[5], VX_CONVERT_POLICY_WRAP, images[11]),
+				vxSubtractNode(graph, images[11], images[5], VX_CONVERT_POLICY_WRAP, images[12]),
+				vxFWriteImageNode(graph, images[12], "akif-200x300_bw_add_sub.png"),
+
+
+				vxDilate3x3Node(graph, images[0], images[14]),
+				vxFWriteImageNode(graph, images[14], "akif-200x300_bw_dilate.png"),
+				vxErode3x3Node(graph, images[0], images[15]),
+				vxFWriteImageNode(graph, images[15], "akif-200x300_bw_erode.png"),
+
+				vxBox3x3Node(graph, images[0], images[13]),
+				vxFWriteImageNode(graph, images[13], "akif-200x300_bw_box.png"),
+				vxGaussian3x3Node(graph, images[0], images[16]),
+				vxFWriteImageNode(graph, images[16], "akif-200x300_bw_gaussian.png"),
 			};
 
             //Step4.Verify Graph
@@ -72,10 +101,10 @@ int main()
                 status = vxProcessGraph(graph);
             }
 
-			for (i = 0; i < 8; i++)
+			/*for (i = 0; i < 8; i++)
             {
                 vxReleaseNode(&nodes[i]);
-            }
+			}*/
 
             vxReleaseGraph(&graph);
 		}

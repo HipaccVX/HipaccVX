@@ -74,7 +74,7 @@ main_opencl-%: $$@.cc
 
 clean:
 	rm -rf jni libs obj
-	rm -f *cc *.cu *.cubin *.rs *.fs *.jpg
+	rm -f *cc *.cu *.cubin *.rs *.fs *.jpg akif-200x300_bw_*.png
 
 distclean: clean
 	rm -f main_* *.cl
