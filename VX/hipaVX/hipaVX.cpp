@@ -229,6 +229,31 @@ VX_API_ENTRY vx_node VX_API_CALL vxErode3x3Node(vx_graph graph, vx_image input, 
 	return erode;
 }
 
+VX_API_ENTRY vx_node VX_API_CALL vxHarrisCornersNode (vx_graph graph, vx_image input, vx_scalar strength_thresh, vx_scalar min_distance,
+													  vx_scalar sensitivity, vx_int32 gradient_size, vx_int32 block_size,
+													  vx_array corners, vx_scalar num_corners)
+{
+	if (input->col != VX_DF_IMAGE_U8)
+		return nullptr;
+
+	if (gradient_size != 3 && block_size != 3)
+		return nullptr;
+
+	HipaVX::HarrisCorners *harris = new HipaVX::HarrisCorners(input);
+	harris->strength_thresh = strength_thresh;
+	harris->min_distance = min_distance;
+	harris->sensitivity = sensitivity;
+	harris->gradient_size = gradient_size;
+	harris->block_size = block_size;
+	harris->corners = corners;
+	harris->num_corners = num_corners;
+
+	graph->graph.emplace_back(harris);
+	graph->built = false;
+	return harris;
+}
+
+
 
 
 
@@ -255,12 +280,22 @@ vx_image vxCreateImageFromFile(vx_context context, vx_uint32 width, vx_uint32 he
 	return image;
 }
 
-VX_API_ENTRY vx_image vxCreateImage(vx_context context, vx_uint32 width, vx_uint32 height, vx_df_image color)
+VX_API_ENTRY vx_image VX_API_CALL vxCreateImage(vx_context context, vx_uint32 width, vx_uint32 height, vx_df_image color)
 {
 	HipaVX::Image *image;
 	image = new HipaVX::Image(width, height, color);
 	context->images.emplace_back(image);
 	return image;
+}
+
+VX_API_ENTRY vx_array VX_API_CALL vxCreateArray(vx_context context, vx_enum item_type, vx_size capacity)
+{
+	if (item_type != VX_TYPE_KEYPOINT)
+		throw std::runtime_error("vx_array: Only VX_TYPE_KEYPOINT is currently supported");
+
+	HipaVX::Array *arr = new HipaVX::Array(item_type, capacity, 2);
+	context->images.emplace_back(arr);
+	return arr;
 }
 
 VX_API_ENTRY vx_status VX_API_CALL vxReleaseImage(vx_image *image)

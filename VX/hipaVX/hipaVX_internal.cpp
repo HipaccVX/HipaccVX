@@ -9,7 +9,13 @@ Scalar::Scalar(vx_type_e t, const void *ptr)
 	switch(type)
 	{
 	case VX_TYPE_INT32:
-		i32=*((vx_int32*) ptr);
+		i32 = *((vx_int32*) ptr);
+		break;
+	case VX_TYPE_FLOAT32:
+		f32 = *((vx_float32*) ptr);
+		break;
+	default:
+		throw std::runtime_error("Unsupported vx_type_e in Scalar constructor");
 	}
 }
 
@@ -17,6 +23,13 @@ int Image::next_id = 0;
 Image::Image(vx_uint32 width, vx_uint32 height, vx_df_image color)
 	:my_id(next_id++), w(width), h(height), col(color)
 {
+}
+
+Array::Array(vx_enum item_type, vx_size cap, vx_size rows)
+	:Image(rows, cap, VX_DF_IMAGE_S32)
+{
+	type = item_type;
+	capacity = cap;
 }
 
 FileinputImage::FileinputImage(vx_uint32 width, vx_uint32 height, vx_df_image color, std::string filename)
@@ -291,6 +304,36 @@ std::string Erode::generateNodeCall()
 {
 	return generator::node_generator(this, generator::Type::Call);
 }
+
+std::vector<Image *> HarrisCorners::get_used_images()
+{
+	std::vector<Image*> used_images;
+	used_images.emplace_back(in);
+	used_images.emplace_back(&Gx);
+	used_images.emplace_back(&Gy);
+	used_images.emplace_back(&square_Gx);
+	used_images.emplace_back(&square_Gy);
+	used_images.emplace_back(&square_Gx_sum);
+	used_images.emplace_back(&square_Gy_sum);
+	used_images.emplace_back(&trace_A);
+	used_images.emplace_back(&det_A_minuend);
+	used_images.emplace_back(&det_A_mul_Gx_Gy);
+	used_images.emplace_back(&det_A_mul_Gx_Gy_sum);
+	used_images.emplace_back(&det_A_subtrahend);
+	used_images.emplace_back(&det_A);
+	used_images.emplace_back(&Mc);
+	used_images.emplace_back(&Vc);
+	return used_images;
+}
+std::string HarrisCorners::generateClassDefinition()
+{
+	return generator::node_generator(this, generator::Type::Definition);
+}
+std::string HarrisCorners::generateNodeCall()
+{
+	return generator::node_generator(this, generator::Type::Call);
+}
+
 
 
 

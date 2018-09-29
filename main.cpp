@@ -46,8 +46,16 @@ int main()
 		};
 
 		int32_t two = 2;
-
 		vx_scalar two_scalar = vxCreateScalar(context, VX_TYPE_INT32, (void*) &two);
+
+		//0.0005f, 5.0f, 0.04f
+		float harris_strength_f = 0.00005f;
+		vx_scalar harris_strength = vxCreateScalar(context, VX_TYPE_FLOAT32, (void*) &harris_strength_f);
+		float harris_min_distance_f = 5.0f;
+		vx_scalar harris_min_distance = vxCreateScalar(context, VX_TYPE_FLOAT32, (void*) &harris_min_distance_f);
+		float harris_sensitivity_f = 0.04f;
+		vx_scalar harris_sensitivity = vxCreateScalar(context, VX_TYPE_FLOAT32, (void*) &harris_sensitivity_f);
+		vx_array harris_corners = vxCreateArray(context, VX_TYPE_KEYPOINT, 1000);
 
 		//Step 2.Create Graph
 		vx_graph graph = vxCreateGraph(context);
@@ -56,7 +64,7 @@ int main()
 			printf("graph has been created... \n");
 			//Step 3.Create node and add into a graph
 			vx_node nodes[] = {
-				vxSobel3x3Node(graph, images[0], images[1], images[2]),
+				/*vxSobel3x3Node(graph, images[0], images[1], images[2]),
 				vxMagnitudeNode(graph, images[1], images[2], images[3]),
 				vxConvertDepthNode(graph, images[3], images[4], VX_CONVERT_POLICY_SATURATE, two_scalar),
 
@@ -89,8 +97,12 @@ int main()
 
 				vxBox3x3Node(graph, images[0], images[13]),
 				vxFWriteImageNode(graph, images[13], "akif-200x300_bw_box.png"),
-				vxGaussian3x3Node(graph, images[0], images[16]),
-				vxFWriteImageNode(graph, images[16], "akif-200x300_bw_gaussian.png"),
+				vxGaussian3x3Node(graph, images[0], images[16]),*/
+				vxFWriteImageNode(graph, images[16], "akif-200x300_bw_gaussian.png"),/**/
+
+				vxHarrisCornersNode(graph, images[0], harris_strength, harris_min_distance,
+									harris_sensitivity, 3, 3, nullptr, nullptr),
+				//vxFWriteImageNode(graph, images[17], "akif-200x300_bw_harris.png"),
 			};
 
             //Step4.Verify Graph

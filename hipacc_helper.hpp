@@ -3,10 +3,13 @@
 
 #include <iostream>
 #include <vector>
+#include <algorithm>
 #include <chrono>
 #include <cstring>
 #include <cstdlib>
 #include <ctime>
+#include <cstring>
+#include "VX/vx.h"
 
 #ifdef USE_OPENCV
 # include <opencv2/opencv.hpp>
@@ -19,6 +22,141 @@ double time_ms () {
     return std::chrono::duration_cast<std::chrono::milliseconds>(time).count();
 }
 
+
+
+
+template<typename T>
+void draw_cross(const unsigned int width, const unsigned int height, const T* in, std::vector<vx_keypoint_t> features, T* out, T cross_value)
+{
+	for(int y = 0; y != height; y++)
+	{
+		for(int x = 0; x != width; x++)
+		{
+			out[y * width + x] = in[y * width + x];
+		}
+	}
+
+	for(auto& feature: features)
+	{
+		std::vector<std::vector<int>> cross {          {-1, 0},
+											 { 0, -1}, { 0, 0}, { 0,  1},
+													   { 1, 0}          };
+		for (int i = 0; i < 5; i++)
+		{
+			int cross_y = feature.y + cross[i][0];
+			int cross_x = feature.x + cross[i][1];
+
+			if (cross_x < 0 || cross_x >= width)
+				continue;
+			if (cross_y < 0 || cross_y >= height)
+				continue;
+			out[cross_y * width + cross_x] = cross_value;
+		}
+	}
+}
+
+
+template<typename T>
+std::vector<vx_keypoint_t> euclidian_single_feature(const unsigned int width, const unsigned int height, const T* in, float eucl_dist)
+{
+	std::vector<vx_keypoint_t> features;
+	for(int i = 0; i < 200*300; i++)
+	{
+		if (in[i] == 0)
+			continue;
+		vx_keypoint_t keypoint;
+		keypoint.x = i % 200;
+		keypoint.y = i / 200;
+		keypoint.strength = in[i];
+		keypoint.scale = 0;
+		keypoint.orientation = 0;
+		keypoint.tracking_status = 1;
+		keypoint.error = 0;
+		features.emplace_back(keypoint);
+	}
+
+
+	std::sort(features.begin(), features.end(),
+			  [](const vx_keypoint_t &t1, const vx_keypoint_t &t2)
+		{
+			return t1.strength > t2.strength;
+		});
+
+
+	std::vector<vx_keypoint_t> final_features;
+
+	float eucl_dist_sq = eucl_dist*eucl_dist;
+	for(int i = 0; i < features.size(); i++)
+	{
+		auto& keypoint = features[i];
+		int my_x = keypoint.x;
+		int my_y = keypoint.y;
+
+		bool alone = true;
+
+		for (int j = 0; j < i; j++)
+		{
+			auto& other_keypoint = features[j];
+			int other_x = other_keypoint.x;
+			int other_y = other_keypoint.y;
+
+			if ((my_x - other_x) * (my_x - other_x) + (my_y - other_y) * (my_y - other_y) <= eucl_dist_sq)
+			{
+				alone = false;
+				break;
+			}
+		}
+
+		if (alone)
+			final_features.emplace_back(keypoint);
+	}
+	return final_features;
+}
+
+template<typename T>
+void non_max_supression(const unsigned int width, const unsigned int height, const T* in, T* out)
+{
+	static std::vector<std::vector<int>> offset {{-1, -1}, {-1, 0}, {-1,  1},
+												 { 0, -1},          { 0,  1},
+												 { 1, -1}, { 1, 0}, { 1,  1}};
+	bool reset = false;
+	for(int y = 0; y != height; y++)
+	{
+		for(int x = 0; x != width; x++)
+		{
+
+			reset = false;
+			for (int i = 0; i < 8 && !reset; i++)
+			{
+				int neighbour_y = y + offset[i][0];
+				int neighbour_x = x + offset[i][1];
+
+				T my_value = in[y * width + x];
+
+				if (neighbour_x < 0 || neighbour_x >= width)
+					continue;
+				if (neighbour_y < 0 || neighbour_y >= height)
+					continue;
+
+				if (i < 4) // >=
+				{
+					if (my_value <  in[neighbour_y * width + neighbour_x])
+						reset = true;
+				}
+				else // >
+				{
+					if (my_value <= in[neighbour_y * width + neighbour_x])
+						reset = true;
+				}
+			}
+
+			if (reset)
+				out[y * width + x] = 0;
+			else
+				out[y * width + x] = in[y * width + x];
+		}
+	}
+}
 
 template<typename T>
 T* load_data(const unsigned int width, const unsigned int height,

@@ -13,6 +13,8 @@ static string hipaVX_folder = "VX/hipaVX";
 static std::map<vx_df_image, string> VX_DF_IMAGE_to_hipacc = {
 	{VX_DF_IMAGE_U8, "uchar"},
 	{VX_DF_IMAGE_S16, "short"},
+	{VX_DF_IMAGE_S32, "int"},
+	{VX_TYPE_FLOAT32, "float"} //Not really a vx_df_image type
 };
 
 static string read_file(const string &filename)
@@ -40,6 +42,8 @@ static string use_template(const string &template_string, const string &template
 		auto last = templated.substr(index + temp_len);
 
 		templated = first + actual_variable + last;
+
+		index += actual_variable.length();
 	}
 
 	return templated;
@@ -51,6 +55,11 @@ static string use_template(const string &template_string, const string &template
 }
 
 static string use_template(const string &template_string, const string &template_variable, const unsigned int actual_variable)
+{
+	return use_template(template_string, template_variable, std::to_string(actual_variable));
+}
+
+static string use_template(const string &template_string, const string &template_variable, const double actual_variable)
 {
 	return use_template(template_string, template_variable, std::to_string(actual_variable));
 }
@@ -125,7 +134,6 @@ namespace generator
 
 string kernel_builder(const std::vector<Kernel_Variable*>& variables, const std::vector<string>& kernel_code, const string& kernel_name)
 {
-
 	string member_variables;
 	string constructor_parameters;
 	string constructor_init_list;
@@ -213,7 +221,7 @@ string node_generator(HipaVX::Sobel3x3Node* n, Type t)
 {
 	if (t == Type::Definition)
 	{
-		auto cs = read_config_def(hipaVX_folder + "/kernels/sobel.def");
+		auto cs = read_config_def(hipaVX_folder + "/kernels/local/linear_mask.def");
 
 		string s = kernel_builder(cs.kv, cs.k, cs.name);
 
@@ -221,11 +229,15 @@ string node_generator(HipaVX::Sobel3x3Node* n, Type t)
 		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in->col]);
 		s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out_x->col]);
 
+		s = use_template(s, "ELEMENT_OPERATION", "");
+		s = use_template(s, "SUM_OPERATION", "");
+		s = use_template(s, "SUM_DATATYPE", "int");
+
 		return s;
 	}
 	else if (t == Type::Call)
 	{
-		auto cs = read_config_call(hipaVX_folder + "/kernels/sobel.call");
+		auto cs = read_config_call(hipaVX_folder + "/kernels/local/sobel.call");
 		string s = kernelcall_builder(cs.kcv);
 
 		s = use_template(s, "ID", n->my_id);
@@ -246,7 +258,7 @@ string node_generator(HipaVX::ConvertDepthNode* n, Type t)
 {
 	if (t == Type::Definition)
 	{
-		auto cs = read_config_def(hipaVX_folder + "/kernels/convert.def");
+		auto cs = read_config_def(hipaVX_folder + "/kernels/point/convert.def");
 
 		string s = kernel_builder(cs.kv, cs.k, cs.name);
 
@@ -260,7 +272,7 @@ string node_generator(HipaVX::ConvertDepthNode* n, Type t)
 	}
 	else if (t == Type::Call)
 	{
-		auto cs = read_config_call(hipaVX_folder + "/kernels/convert.call");
+		auto cs = read_config_call(hipaVX_folder + "/kernels/point/convert.call");
 		string s = kernelcall_builder(cs.kcv);
 
 
@@ -283,7 +295,7 @@ string node_generator(HipaVX::MagnitudeNode* n, Type t)
 {
 	if (t == Type::Definition)
 	{
-		auto cs = read_config_def(hipaVX_folder + "/kernels/magnitude.def");
+		auto cs = read_config_def(hipaVX_folder + "/kernels/point/magnitude.def");
 
 		string s = kernel_builder(cs.kv, cs.k, cs.name);
 
@@ -295,7 +307,7 @@ string node_generator(HipaVX::MagnitudeNode* n, Type t)
 	}
 	else if (t == Type::Call)
 	{
-		auto cs = read_config_call(hipaVX_folder + "/kernels/magnitude.call");
+		auto cs = read_config_call(hipaVX_folder + "/kernels/point/magnitude.call");
 		string s = kernelcall_builder(cs.kcv);
 
 		s = use_template(s, "ID", n->my_id);
@@ -319,7 +331,7 @@ string node_generator(HipaVX::AndNode* n, Type t)
 {
 	if (t == Type::Definition)
 	{
-		auto cs = read_config_def(hipaVX_folder + "/kernels/and.def");
+		auto cs = read_config_def(hipaVX_folder + "/kernels/point/simple.def");
 
 		string s = kernel_builder(cs.kv, cs.k, cs.name);
 
@@ -327,11 +339,14 @@ string node_generator(HipaVX::AndNode* n, Type t)
 		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in_1->col]);
 		s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
 
+		s = use_template(s, "CONVERT_DATATYPE", "");
+		s = use_template(s, "OPERATION", "&");
+
 		return s;
 	}
 	else if (t == Type::Call)
 	{
-		auto cs = read_config_call(hipaVX_folder + "/kernels/and.call");
+		auto cs = read_config_call(hipaVX_folder + "/kernels/point/and.call");
 		string s = kernelcall_builder(cs.kcv);
 
 		s = use_template(s, "ID", n->my_id);
@@ -354,7 +369,7 @@ string node_generator(HipaVX::XorNode* n, Type t)
 {
 	if (t == Type::Definition)
 	{
-		auto cs = read_config_def(hipaVX_folder + "/kernels/xor.def");
+		auto cs = read_config_def(hipaVX_folder + "/kernels/point/simple.def");
 
 		string s = kernel_builder(cs.kv, cs.k, cs.name);
 
@@ -362,11 +377,14 @@ string node_generator(HipaVX::XorNode* n, Type t)
 		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in_1->col]);
 		s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
 
+		s = use_template(s, "CONVERT_DATATYPE", "");
+		s = use_template(s, "OPERATION", "^");
+
 		return s;
 	}
 	else if (t == Type::Call)
 	{
-		auto cs = read_config_call(hipaVX_folder + "/kernels/xor.call");
+		auto cs = read_config_call(hipaVX_folder + "/kernels/point/xor.call");
 		string s = kernelcall_builder(cs.kcv);
 
 		s = use_template(s, "ID", n->my_id);
@@ -389,7 +407,7 @@ string node_generator(HipaVX::OrNode* n, Type t)
 {
 	if (t == Type::Definition)
 	{
-		auto cs = read_config_def(hipaVX_folder + "/kernels/or.def");
+		auto cs = read_config_def(hipaVX_folder + "/kernels/point/simple.def");
 
 		string s = kernel_builder(cs.kv, cs.k, cs.name);
 
@@ -397,11 +415,14 @@ string node_generator(HipaVX::OrNode* n, Type t)
 		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in_1->col]);
 		s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
 
+		s = use_template(s, "CONVERT_DATATYPE", "");
+		s = use_template(s, "OPERATION", "|");
+
 		return s;
 	}
 	else if (t == Type::Call)
 	{
-		auto cs = read_config_call(hipaVX_folder + "/kernels/or.call");
+		auto cs = read_config_call(hipaVX_folder + "/kernels/point/or.call");
 		string s = kernelcall_builder(cs.kcv);
 
 		s = use_template(s, "ID", n->my_id);
@@ -424,7 +445,7 @@ string node_generator(HipaVX::NotNode* n, Type t)
 {
 	if (t == Type::Definition)
 	{
-		auto cs = read_config_def(hipaVX_folder + "/kernels/and.def");
+		auto cs = read_config_def(hipaVX_folder + "/kernels/point/and.def");
 
 		string s = kernel_builder(cs.kv, cs.k, cs.name);
 
@@ -436,7 +457,7 @@ string node_generator(HipaVX::NotNode* n, Type t)
 	}
 	else if (t == Type::Call)
 	{
-		auto cs = read_config_call(hipaVX_folder + "/kernels/and.call");
+		auto cs = read_config_call(hipaVX_folder + "/kernels/point/and.call");
 		string s = kernelcall_builder(cs.kcv);
 
 		s = use_template(s, "ID", n->my_id);
@@ -460,7 +481,7 @@ string node_generator(HipaVX::AbsDiffNode* n, Type t)
 {
 	if (t == Type::Definition)
 	{
-		auto cs = read_config_def(hipaVX_folder + "/kernels/abs_diff.def");
+		auto cs = read_config_def(hipaVX_folder + "/kernels/point/abs_diff.def");
 
 		string s = kernel_builder(cs.kv, cs.k, cs.name);
 
@@ -483,7 +504,7 @@ string node_generator(HipaVX::AbsDiffNode* n, Type t)
 	}
 	else if (t == Type::Call)
 	{
-		auto cs = read_config_call(hipaVX_folder + "/kernels/abs_diff.call");
+		auto cs = read_config_call(hipaVX_folder + "/kernels/point/abs_diff.call");
 		string s = kernelcall_builder(cs.kcv);
 
 		s = use_template(s, "ID", n->my_id);
@@ -506,7 +527,7 @@ string node_generator(HipaVX::AddNode* n, Type t)
 {
 	if (t == Type::Definition)
 	{
-		auto cs = read_config_def(hipaVX_folder + "/kernels/add.def");
+		auto cs = read_config_def(hipaVX_folder + "/kernels/point/add.def");
 
 		string s = kernel_builder(cs.kv, cs.k, cs.name);
 
@@ -540,7 +561,7 @@ string node_generator(HipaVX::AddNode* n, Type t)
 	}
 	else if (t == Type::Call)
 	{
-		auto cs = read_config_call(hipaVX_folder + "/kernels/add.call");
+		auto cs = read_config_call(hipaVX_folder + "/kernels/point/add.call");
 		string s = kernelcall_builder(cs.kcv);
 
 		s = use_template(s, "ID", n->my_id);
@@ -563,7 +584,7 @@ string node_generator(HipaVX::SubtractNode* n, Type t)
 {
 	if (t == Type::Definition)
 	{
-		auto cs = read_config_def(hipaVX_folder + "/kernels/subtract.def");
+		auto cs = read_config_def(hipaVX_folder + "/kernels/point/subtract.def");
 
 		string s = kernel_builder(cs.kv, cs.k, cs.name);
 
@@ -597,7 +618,7 @@ string node_generator(HipaVX::SubtractNode* n, Type t)
 	}
 	else if (t == Type::Call)
 	{
-		auto cs = read_config_call(hipaVX_folder + "/kernels/subtract.call");
+		auto cs = read_config_call(hipaVX_folder + "/kernels/point/subtract.call");
 		string s = kernelcall_builder(cs.kcv);
 
 		s = use_template(s, "ID", n->my_id);
@@ -621,7 +642,7 @@ string node_generator(HipaVX::BoxFilter* n, Type t)
 {
 	if (t == Type::Definition)
 	{
-		auto cs = read_config_def(hipaVX_folder + "/kernels/box_3x3.def");
+		auto cs = read_config_def(hipaVX_folder + "/kernels/local/linear_mask.def");
 
 		string s = kernel_builder(cs.kv, cs.k, cs.name);
 
@@ -629,11 +650,15 @@ string node_generator(HipaVX::BoxFilter* n, Type t)
 		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in->col]);
 		s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
 
+		s = use_template(s, "ELEMENT_OPERATION", "");
+		s = use_template(s, "SUM_OPERATION", " / 9");
+		s = use_template(s, "SUM_DATATYPE", "int");
+
 		return s;
 	}
 	else if (t == Type::Call)
 	{
-		auto cs = read_config_call(hipaVX_folder + "/kernels/box_3x3.call");
+		auto cs = read_config_call(hipaVX_folder + "/kernels/local/box_3x3.call");
 		string s = kernelcall_builder(cs.kcv);
 
 		s = use_template(s, "ID", n->my_id);
@@ -653,7 +678,7 @@ string node_generator(HipaVX::GaussianFilter* n, Type t)
 {
 	if (t == Type::Definition)
 	{
-		auto cs = read_config_def(hipaVX_folder + "/kernels/gaussian_3x3.def");
+		auto cs = read_config_def(hipaVX_folder + "/kernels/local/linear_mask.def");
 
 		string s = kernel_builder(cs.kv, cs.k, cs.name);
 
@@ -661,11 +686,15 @@ string node_generator(HipaVX::GaussianFilter* n, Type t)
 		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in->col]);
 		s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
 
+		s = use_template(s, "ELEMENT_OPERATION", "");
+		s = use_template(s, "SUM_OPERATION", " / 16");
+		s = use_template(s, "SUM_DATATYPE", "int");
+
 		return s;
 	}
 	else if (t == Type::Call)
 	{
-		auto cs = read_config_call(hipaVX_folder + "/kernels/gaussian_3x3.call");
+		auto cs = read_config_call(hipaVX_folder + "/kernels/local/gaussian_3x3.call");
 		string s = kernelcall_builder(cs.kcv);
 
 		s = use_template(s, "ID", n->my_id);
@@ -689,7 +718,7 @@ string node_generator(HipaVX::Dilate* n, Type t)
 {
 	if (t == Type::Definition)
 	{
-		auto cs = read_config_def(hipaVX_folder + "/kernels/dilate_3x3.def");
+		auto cs = read_config_def(hipaVX_folder + "/kernels/local/dilate_3x3.def");
 
 		string s = kernel_builder(cs.kv, cs.k, cs.name);
 
@@ -701,7 +730,7 @@ string node_generator(HipaVX::Dilate* n, Type t)
 	}
 	else if (t == Type::Call)
 	{
-		auto cs = read_config_call(hipaVX_folder + "/kernels/dilate_3x3.call");
+		auto cs = read_config_call(hipaVX_folder + "/kernels/local/dilate_3x3.call");
 		string s = kernelcall_builder(cs.kcv);
 
 		s = use_template(s, "ID", n->my_id);
@@ -723,7 +752,7 @@ string node_generator(HipaVX::Erode* n, Type t)
 {
 	if (t == Type::Definition)
 	{
-		auto cs = read_config_def(hipaVX_folder + "/kernels/erode_3x3.def");
+		auto cs = read_config_def(hipaVX_folder + "/kernels/local/erode_3x3.def");
 
 		string s = kernel_builder(cs.kv, cs.k, cs.name);
 
@@ -735,7 +764,7 @@ string node_generator(HipaVX::Erode* n, Type t)
 	}
 	else if (t == Type::Call)
 	{
-		auto cs = read_config_call(hipaVX_folder + "/kernels/erode_3x3.call");
+		auto cs = read_config_call(hipaVX_folder + "/kernels/local/erode_3x3.call");
 		string s = kernelcall_builder(cs.kcv);
 
 		s = use_template(s, "ID", n->my_id);
@@ -748,6 +777,164 @@ string node_generator(HipaVX::Erode* n, Type t)
 		s = use_template(s, "OUTPUT_IMAGE", generate_image_name(n->out));
 
 		s = use_template(s, "BOUNDARY_CONDITION", "Boundary::UNDEFINED"); // TODO
+
+		return s;
+	}
+	return "SOMETHING IS WRONG";
+}
+
+string node_generator(HipaVX::HarrisCorners* n, Type t)
+{
+	//return "";
+
+	if (t == Type::Definition)
+	{
+		auto linear_mask_cs = read_config_def(hipaVX_folder + "/kernels/local/linear_mask.def");
+		auto square_cs = read_config_def(hipaVX_folder + "/kernels/point/square.def");
+		auto simple_point_cs = read_config_def(hipaVX_folder + "/kernels/point/simple.def");
+		auto abstract_1_acc_cs = read_config_def(hipaVX_folder + "/kernels/point/abstract_1_acc.def");
+		auto abstract_2_acc_cs = read_config_def(hipaVX_folder + "/kernels/point/abstract_2_acc.def");
+
+		// Sobel Kernel
+		auto sobel = kernel_builder(linear_mask_cs.kv, linear_mask_cs.k, linear_mask_cs.name + "_Sobel");
+		sobel = use_template(sobel, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in->col]);
+		sobel = use_template(sobel, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
+		sobel = use_template(sobel, "ELEMENT_OPERATION", "");
+		sobel = use_template(sobel, "SUM_OPERATION", " / (4.0f * 255 * " + std::to_string(n->block_size) + ")");
+		sobel = use_template(sobel, "SUM_DATATYPE", "int");
+
+		// Square Kernel
+		auto square = kernel_builder(square_cs.kv, square_cs.k, square_cs.name);
+		square = use_template(square, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
+		square = use_template(square, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
+
+		// "Sum_Mask" Kernel
+		auto sum_mask = kernel_builder(linear_mask_cs.kv, linear_mask_cs.k, linear_mask_cs.name + "_Sum");
+		sum_mask = use_template(sum_mask, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
+		sum_mask = use_template(sum_mask, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
+		sum_mask = use_template(sum_mask, "ELEMENT_OPERATION", "");
+		sum_mask = use_template(sum_mask, "SUM_OPERATION", "");
+		sum_mask = use_template(sum_mask, "SUM_DATATYPE", "float");
+
+		// Point Sum Kernel
+		auto point_sum = kernel_builder(simple_point_cs.kv, simple_point_cs.k, simple_point_cs.name + "_Sum");
+		point_sum = use_template(point_sum, "CONVERT_DATATYPE", "");
+		point_sum = use_template(point_sum, "OPERATION", "+");
+		point_sum = use_template(point_sum, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
+		point_sum = use_template(point_sum, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
+
+		// Point Subtraction Kernel
+		auto point_sub = kernel_builder(simple_point_cs.kv, simple_point_cs.k, simple_point_cs.name + "_Sub");
+		point_sub = use_template(point_sub, "CONVERT_DATATYPE", "");
+		point_sub = use_template(point_sub, "OPERATION", "-");
+		point_sub = use_template(point_sub, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
+		point_sub = use_template(point_sub, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
+
+		// Point Prod Kernel
+		auto point_prod = kernel_builder(simple_point_cs.kv, simple_point_cs.k, simple_point_cs.name + "_Prod");
+		point_prod = use_template(point_prod, "CONVERT_DATATYPE", "");
+		point_prod = use_template(point_prod, "OPERATION", "*");
+		point_prod = use_template(point_prod, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
+		point_prod = use_template(point_prod, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
+
+		// M_c Kernel
+		auto m_c = kernel_builder(abstract_2_acc_cs.kv, abstract_2_acc_cs.k, abstract_2_acc_cs.name + "_M_c");
+		m_c = use_template(m_c, "KERNEL", "output() = input1() - @@@K@@@ * input2() * input2();");
+		m_c = use_template(m_c, "K", std::to_string(n->sensitivity->f32));
+		m_c = use_template(m_c, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
+		m_c = use_template(m_c, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
+
+		// V_c Kernel
+		auto v_c = kernel_builder(abstract_1_acc_cs.kv, abstract_1_acc_cs.k, abstract_1_acc_cs.name + "_V_c");
+		v_c = use_template(v_c, "KERNEL", "float out = input();\n"
+										  "\t\tif (out <= @@@THRESHOLD@@@)\n"
+										  "\t\t\tout = 0;\n"
+										  "\t\toutput() = out;");
+		v_c = use_template(v_c, "THRESHOLD", std::to_string(n->strength_thresh->f32));
+		v_c = use_template(v_c, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
+		v_c = use_template(v_c, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
+
+		string s;
+		s += sobel;
+		s += square;
+		s += sum_mask;
+		s += point_sum;
+		s += point_sub;
+		s += point_prod;
+		s += m_c;
+		s += v_c;
+
+		s = use_template(s, "ID", n->my_id);
+
+		return s;
+	}
+	else if (t == Type::Call)
+	{
+		auto cs = read_config_call(hipaVX_folder + "/kernels/harris_corners.call");
+		string s = kernelcall_builder(cs.kcv);
+
+
+		s += "\t@@@V_C_TYPE_OUT@@@ *v_c_@@@ID@@@_data = @@@IMAGE_V_C@@@.data();\n";
+		s += "\tstd::vector<@@@V_C_TYPE_OUT@@@> v_c_suppressed_@@@ID@@@(@@@IMAGE_IN_WIDTH@@@ * @@@IMAGE_IN_HEIGHT@@@);\n";
+		s += "\tnon_max_supression(@@@IMAGE_IN_WIDTH@@@, @@@IMAGE_IN_HEIGHT@@@, v_c_@@@ID@@@_data, v_c_suppressed_@@@ID@@@.data());\n";
+		s += "\tauto features = euclidian_single_feature(@@@IMAGE_IN_WIDTH@@@, @@@IMAGE_IN_HEIGHT@@@, v_c_suppressed_@@@ID@@@.data(), @@@EUCLIDIAN_DISTANCE@@@);\n";
+
+		s += "\t@@@SOBEL_TYPE_IN@@@ *input_image_@@@ID@@@_data = @@@INPUT_IMAGE@@@.data();\n";
+		s += "\tstd::vector<uchar> out_data(@@@IMAGE_IN_WIDTH@@@ * @@@IMAGE_IN_HEIGHT@@@);\n";
+		s += "\tdraw_cross(@@@IMAGE_IN_WIDTH@@@, @@@IMAGE_IN_HEIGHT@@@, input_image_@@@ID@@@_data, features, out_data.data(), (uchar) 255);\n";
+		s += "\tsave_data(@@@IMAGE_IN_WIDTH@@@, @@@IMAGE_IN_HEIGHT@@@, 1, out_data.data(), \"Please just work.png\");\n";
+
+		s = use_template(s, "ID", n->my_id);
+		s = use_template(s, "BOUNDARY_CONDITION", "Boundary::UNDEFINED"); // TODO
+		s = use_template(s, "INPUT_IMAGE", generate_image_name(n->in));
+		s = use_template(s, "EUCLIDIAN_DISTANCE", n->min_distance->f32);
+
+		s = use_template(s, "IMAGE_IN_WIDTH", n->in->w);
+		s = use_template(s, "IMAGE_IN_HEIGHT", n->in->h);
+
+
+		s = use_template(s, "SOBEL_TYPE_IN", VX_DF_IMAGE_to_hipacc[n->in->col]);
+		s = use_template(s, "SOBEL_TYPE_OUT", VX_DF_IMAGE_to_hipacc[n->Gx.col]);
+
+		s = use_template(s, "SQUARE_TYPE_IN", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
+		s = use_template(s, "SQUARE_TYPE_OUT", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
+
+		s = use_template(s, "SUM_TYPE_IN", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
+		s = use_template(s, "SUM_TYPE_OUT", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
+
+		s = use_template(s, "PROD_TYPE_IN", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
+		s = use_template(s, "PROD_TYPE_OUT", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
+
+		s = use_template(s, "SUB_TYPE_IN", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
+		s = use_template(s, "SUB_TYPE_OUT", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
+
+		s = use_template(s, "DET_TYPE_OUT", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
+
+		s = use_template(s, "M_C_TYPE_IN", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
+		s = use_template(s, "M_C_TYPE_OUT", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
+
+		s = use_template(s, "V_C_TYPE_IN", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
+		s = use_template(s, "V_C_TYPE_OUT", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
+
+
+
+
+		s = use_template(s, "IMAGE_GX", generate_image_name(&n->Gx));
+		s = use_template(s, "IMAGE_GY", generate_image_name(&n->Gy));
+		s = use_template(s, "IMAGE_SQUARE_GX", generate_image_name(&n->square_Gx));
+		s = use_template(s, "IMAGE_SQUARE_GY", generate_image_name(&n->square_Gy));
+		s = use_template(s, "IMAGE_SQUARE_GX_SUM", generate_image_name(&n->square_Gx_sum));
+		s = use_template(s, "IMAGE_SQUARE_GY_SUM", generate_image_name(&n->square_Gy_sum));
+		s = use_template(s, "IMAGE_TRACE", generate_image_name(&n->trace_A));
+		s = use_template(s, "IMAGE_DET_MINUEND", generate_image_name(&n->det_A_minuend));
+		s = use_template(s, "IMAGE_MUL_GX_GY", generate_image_name(&n->det_A_mul_Gx_Gy));
+		s = use_template(s, "IMAGE_MUL_GX_GY_SUM", generate_image_name(&n->det_A_mul_Gx_Gy_sum));
+		s = use_template(s, "IMAGE_DET_SUBTRAHEND", generate_image_name(&n->det_A_subtrahend));
+		s = use_template(s, "IMAGE_DET", generate_image_name(&n->det_A));
+		s = use_template(s, "IMAGE_M_C", generate_image_name(&n->Mc));
+		s = use_template(s, "IMAGE_V_C", generate_image_name(&n->Vc));
+
+
 
 		return s;
 	}

@@ -289,7 +289,11 @@ typedef struct _vx_remap *vx_remap;
 /*! \brief The Array Object. Array is a strongly-typed container for other data structures.
  * \ingroup group_array
  */
-typedef struct _vx_array *vx_array;
+namespace HipaVX
+{
+class Array;
+}
+typedef HipaVX::Array *vx_array;
 
 /*! \brief The ObjectArray Object. ObjectArray is a strongly-typed container of OpenVX data-objects.
  * \ingroup group_object_array

@@ -14,8 +14,8 @@ Accessor TYPE_IN acc_y bound_y
 IterationSpace TYPE_OUT iter_x @@@IMAGE_OUT_X@@@
 IterationSpace TYPE_OUT iter_y @@@IMAGE_OUT_Y@@@
 
-Kernel Sobel sobel_x iter_x acc_x dom_x mask_x
-Kernel Sobel sobel_y iter_y acc_y dom_y mask_y
+Kernel Linear_Mask sobel_x iter_x acc_x dom_x mask_x
+Kernel Linear_Mask sobel_y iter_y acc_y dom_y mask_y
 
 [MASK]
 mask_x

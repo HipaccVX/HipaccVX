@@ -409,7 +409,11 @@ config_struct_def___ read_config_def(string file)
 
 	while (std::getline(in, line))
 	{
-		if (line == "[KERNEL_VARIABLES]")
+		if (line.size() > 0 && line[0] == '#')
+		{
+			continue;
+		}
+		else if (line == "[KERNEL_VARIABLES]")
 		{
 			state = my_state::kernel_variables;
 		}
@@ -472,7 +476,11 @@ config_struct_call___ read_config_call(string file)
 	bool switched_category = true;
 	while (std::getline(in, line))
 	{
-		if (line == "[KERNELCALL_VARIABLES]")
+		if (line.size() > 0 && line[0] == '#')
+		{
+			continue;
+		}
+		else if (line == "[KERNELCALL_VARIABLES]")
 		{
 			state = my_state::kernelcall_variables;
 			switched_category = true;

@@ -1,10 +1,10 @@
 [NAME]
-And
+Simple_Point
 
 [KERNEL_VARIABLES]
 Accessor input1
 Accessor input2
 
 [KERNEL]
-output() = input1() & input2();
+output() = @@@OPERATION@@@
 [KERNEL_END]

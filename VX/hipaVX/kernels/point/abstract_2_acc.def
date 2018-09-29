@@ -1,10 +1,10 @@
 [NAME]
-Xor
+Abstract_2_Acc
 
 [KERNEL_VARIABLES]
 Accessor input1
 Accessor input2
 
 [KERNEL]
-output() = input1() ^ input2();
+@@@KERNEL@@@
 [KERNEL_END]
