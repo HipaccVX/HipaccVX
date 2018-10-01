@@ -6,9 +6,12 @@ PKG_CONFIG := $(shell which pkg-config)
 
 # Search Hipacc (prefer relative path over package path over PATH env var)
 #HIPACC_DIR ?= "/home/burak/Documents/Uni/hipacc/installation/hipacc-0.8.2"
-LLVM_DIR   ?= "/scratch-local2/opt/llvm/llvm_install-5.0.1"
-LIBCXX_DIR ?= "/scratch-local2/opt/libcxx/libcxx-50_/install"
-HIPACC_DIR ?= "/scratch-local2/projects/hipacc/hipacc-install"
+HIPACC_DIR          ?= "/home/burak/Documents/Uni/hipacc/installation/hipacc-0.8.2"
+CLANG_INCLUDE_PATH   ?= "/home/burak/Documents/Uni/hipacc/installation/hipacc-0.8.2/include/clang"
+LIBCXX_INCLUDE_PATH ?= "/home/burak/Documents/Uni/hipacc/installation/hipacc-0.8.2/include/c++/v1"
+#HIPACC_DIR          ?= "/scratch-local2/projects/hipacc/hipacc-install"
+#LLVM_INCLUDE_PATH   ?= "/scratch-local2/opt/llvm/llvm_install-5.0.1/lib/clang/5.0.1/include/"
+#LIBCXX_INCLUDE_PATH ?= "/scratch-local2/opt/libcxx/libcxx-50_/install/include/c++/v1"
 
 HIPACC := "$(HIPACC_DIR)/bin/hipacc"
 ifndef HIPACC
@@ -28,8 +31,8 @@ OCL_LIB_DIR   = $(CXX_LIB_DIR)
 OCL_LINK      = $(CXX_LINK) -lOpenCL
 
 HIPACC_FLAGS   = -std=c++11  -nostdinc++
-HIPACC_INCLUDE = -I $(LIBCXX_DIR)/include/c++/v1  \
-                 -I $(LLVM_DIR)/lib/clang/5.0.1/include/  \
+HIPACC_INCLUDE = -I $(LIBCXX_INCLUDE_PATH)  \
+                 -I $(CLANG_INCLUDE_PATH)  \
 				 -I $(HIPACC_DIR)/include/dsl  \
                  -I ./hipaVX
 
