@@ -5,33 +5,32 @@ PKG_CONFIG := $(shell which pkg-config)
 ################################################################################
 
 # Search Hipacc (prefer relative path over package path over PATH env var)
-HIPACC := "/home/burak/Documents/Uni/hipacc/installation/hipacc-0.8.2/bin/hipacc"
+#HIPACC_DIR ?= "/home/burak/Documents/Uni/hipacc/installation/hipacc-0.8.2"
+LLVM_DIR   ?= "/scratch-local2/opt/llvm/llvm_install-5.0.1"
+LIBCXX_DIR ?= "/scratch-local2/opt/libcxx/libcxx-50_/install"
+HIPACC_DIR ?= "/scratch-local2/projects/hipacc/hipacc-install"
+
+HIPACC := "$(HIPACC_DIR)/bin/hipacc"
 ifndef HIPACC
   $(error "Error: Could not find binary 'hipacc' in PATH")
 endif
 
 ################################################################################
 
-# Set paths for build tools
-HIPACC_PATH := $(shell dirname $(HIPACC))/..
-
-
-################################################################################
-
 # Set compiler options
 CXX_FLAGS     = -std=c++11 -O2
-CXX_INCLUDE   = -I $(HIPACC_PATH)/include
-CXX_LIB_DIR   = -L $(HIPACC_PATH)/lib
+CXX_INCLUDE   = -I $(HIPACC_DIR)/include
+CXX_LIB_DIR   = -L $(HIPACC_DIR)/lib
 CXX_LINK      = -lhipaccRuntime
 
 OCL_INCLUDE   = $(CXX_INCLUDE)
 OCL_LIB_DIR   = $(CXX_LIB_DIR)
 OCL_LINK      = $(CXX_LINK) -lOpenCL
 
-HIPACC_FLAGS   = -std=c++11 -nostdinc++
-HIPACC_INCLUDE = -I $(HIPACC_PATH)/include/dsl \
-                 -I $(HIPACC_PATH)/include/c++/v1 \
-                 -I $(HIPACC_PATH)/include/clang \
+HIPACC_FLAGS   = -std=c++11  -nostdinc++
+HIPACC_INCLUDE = -I $(LIBCXX_DIR)/include/c++/v1  \
+                 -I $(LLVM_DIR)/lib/clang/5.0.1/include/  \
+				 -I $(HIPACC_DIR)/include/dsl  \
                  -I ./hipaVX
 
 ifdef PKG_CONFIG
