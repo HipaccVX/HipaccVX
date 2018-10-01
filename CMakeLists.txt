@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.4.3)
 
 
-set (CMAKE_CXX_STANDARD 17)
+set (CMAKE_CXX_STANDARD 11)
 
 file(GLOB_RECURSE HipaVX_SRC ${CMAKE_CURRENT_SOURCE_DIR}/VX/hipaVX/*)
 add_library (HipaVX ${HipaVX_SRC})
