@@ -20,16 +20,15 @@ Scalar::Scalar(vx_type_e t, const void *ptr)
 }
 
 int Image::next_id = 0;
+
 Image::Image(vx_uint32 width, vx_uint32 height, vx_df_image color)
 	:my_id(next_id++), w(width), h(height), col(color)
 {
 }
 
 Array::Array(vx_enum item_type, vx_size cap, vx_size rows)
-	:Image(rows, cap, VX_DF_IMAGE_S32)
+	:Image(rows, cap, VX_DF_IMAGE_S32), type(item_type), capacity(cap)
 {
-	type = item_type;
-	capacity = cap;
 }
 
 FileinputImage::FileinputImage(vx_uint32 width, vx_uint32 height, vx_df_image color, std::string filename)
@@ -323,6 +322,8 @@ std::vector<Image *> HarrisCorners::get_used_images()
 	used_images.emplace_back(&det_A);
 	used_images.emplace_back(&Mc);
 	used_images.emplace_back(&Vc);
+
+	used_images.emplace_back(corners);
 	return used_images;
 }
 std::string HarrisCorners::generateClassDefinition()

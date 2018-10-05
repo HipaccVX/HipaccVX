@@ -87,13 +87,22 @@ void process_graph(vx_graph graph)
 		string image_name = generate_image_name(image);
 
 		string temp = image_decl_template;
-		// BAD HACK
-		if(const HipaVX::FileinputImage* fim = dynamic_cast<const HipaVX::FileinputImage*>(image))
+
+		// BAD HACKs
+		const HipaVX::FileinputImage* fim = dynamic_cast<const HipaVX::FileinputImage*>(image);
+		const HipaVX::Array* arr = dynamic_cast<const HipaVX::Array*>(image);
+		if(fim)
 		{
 			const string fim_decl_template = "\t@@@DATATYPE@@@ *@@@IMAGE_NAME@@@_input = load_data<@@@DATATYPE@@@>(@@@IMAGE_WIDTH@@@, @@@IMAGE_HEIGHT@@@, 1, \"@@@FILENAME@@@\");\n"
 											 "\tImage<@@@DATATYPE@@@> @@@IMAGE_NAME@@@(@@@IMAGE_WIDTH@@@, @@@IMAGE_HEIGHT@@@, @@@IMAGE_NAME@@@_input);\n";
 			temp = fim_decl_template;
 			temp = use_template(temp, "FILENAME", fim->file);
+		}
+		else if(arr)
+		{
+			continue;//Currently arr is only used in Harris corner
+			// There is a bug where reads of images after writes are not transpiled correctly
+			// Therefore i write to this array when constructing -> constructor has to be called later
 		}
 
 		temp = use_template(temp, "DATATYPE", VX_DF_IMAGE_to_hipacc[image->col]);
@@ -877,12 +886,31 @@ string node_generator(HipaVX::HarrisCorners* n, Type t)
 		s += "\t@@@V_C_TYPE_OUT@@@ *v_c_@@@ID@@@_data = @@@IMAGE_V_C@@@.data();\n";
 		s += "\tstd::vector<@@@V_C_TYPE_OUT@@@> v_c_suppressed_@@@ID@@@(@@@IMAGE_IN_WIDTH@@@ * @@@IMAGE_IN_HEIGHT@@@);\n";
 		s += "\tnon_max_supression(@@@IMAGE_IN_WIDTH@@@, @@@IMAGE_IN_HEIGHT@@@, v_c_@@@ID@@@_data, v_c_suppressed_@@@ID@@@.data());\n";
-		s += "\tauto features = euclidian_single_feature(@@@IMAGE_IN_WIDTH@@@, @@@IMAGE_IN_HEIGHT@@@, v_c_suppressed_@@@ID@@@.data(), @@@EUCLIDIAN_DISTANCE@@@);\n";
+		s += "\tauto features_@@@ID@@@ = euclidian_single_feature(@@@IMAGE_IN_WIDTH@@@, @@@IMAGE_IN_HEIGHT@@@, v_c_suppressed_@@@ID@@@.data(), @@@EUCLIDIAN_DISTANCE@@@);\n";
+		s += "\t@@@NUM_KEYPOINTS@@@ = features_@@@ID@@@.size();\n";
+		s += "\tfeatures_@@@ID@@@.resize(@@@MAX_KEYPOINTS@@@);\n";
+		s += "\tstd::vector<int> cont_features_@@@ID@@@ = create_contiguous_array_from_keypoints(features_@@@ID@@@);\n";
+		//s += "\t@@@CORNERS_ARRAY@@@ = cont_features_@@@ID@@@.data();\n"; //Not working due to a current bug
+
+		s += "\tImage<int> @@@CORNERS_ARRAY@@@(7, @@@MAX_KEYPOINTS@@@, cont_features_@@@ID@@@.data());\n";
+
+		s += "\n";
+
+
+
+
+
+
 
 		s += "\t@@@SOBEL_TYPE_IN@@@ *input_image_@@@ID@@@_data = @@@INPUT_IMAGE@@@.data();\n";
-		s += "\tstd::vector<uchar> out_data(@@@IMAGE_IN_WIDTH@@@ * @@@IMAGE_IN_HEIGHT@@@);\n";
-		s += "\tdraw_cross(@@@IMAGE_IN_WIDTH@@@, @@@IMAGE_IN_HEIGHT@@@, input_image_@@@ID@@@_data, features, out_data.data(), (uchar) 255);\n";
-		s += "\tsave_data(@@@IMAGE_IN_WIDTH@@@, @@@IMAGE_IN_HEIGHT@@@, 1, out_data.data(), \"Please just work.png\");\n";
+		s += "\tstd::vector<uchar> out_data_@@@ID@@@(@@@IMAGE_IN_WIDTH@@@ * @@@IMAGE_IN_HEIGHT@@@);\n";
+		s += "\tdraw_cross(@@@IMAGE_IN_WIDTH@@@, @@@IMAGE_IN_HEIGHT@@@, input_image_@@@ID@@@_data, features_@@@ID@@@, out_data_@@@ID@@@.data(), (uchar) 255);\n";
+		s += "\tsave_data(@@@IMAGE_IN_WIDTH@@@, @@@IMAGE_IN_HEIGHT@@@, 1, out_data_@@@ID@@@.data(), \"Please just work.png\");\n";
+
+
+
+
+
 
 		s = use_template(s, "ID", n->my_id);
 		s = use_template(s, "BOUNDARY_CONDITION", "Boundary::UNDEFINED"); // TODO
@@ -934,6 +962,11 @@ string node_generator(HipaVX::HarrisCorners* n, Type t)
 		s = use_template(s, "IMAGE_M_C", generate_image_name(&n->Mc));
 		s = use_template(s, "IMAGE_V_C", generate_image_name(&n->Vc));
 
+
+		//s = use_template(s, "NUM_KEYPOINTS", n->num_corners); // TODO
+		s = use_template(s, "NUM_KEYPOINTS", "int a");
+		s = use_template(s, "MAX_KEYPOINTS", n->corners->h);
+		s = use_template(s, "CORNERS_ARRAY", generate_image_name(n->corners));
 
 
 		return s;

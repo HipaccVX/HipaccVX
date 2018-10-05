@@ -23,6 +23,21 @@ double time_ms () {
 }
 
 
+std::vector<int> create_contiguous_array_from_keypoints(std::vector<vx_keypoint_t> features)
+{
+  std::vector<int> toReturn(features.size() * 7); //vx_keypoint_t has 7 members
+  for(int i = 0; i < features.size() * 7; i += 7)
+  {
+    toReturn[i+0] = reinterpret_cast<int>(features[i/7].x);
+    toReturn[i+1] = reinterpret_cast<int>(features[i/7].y);
+    toReturn[i+2] = *reinterpret_cast<int*>(&(features[i/7].strength));
+    toReturn[i+3] = *reinterpret_cast<int*>(&(features[i/7].scale));
+    toReturn[i+4] = *reinterpret_cast<int*>(&(features[i/7].orientation));
+    toReturn[i+5] = reinterpret_cast<int>(features[i/7].tracking_status);
+    toReturn[i+6] = *reinterpret_cast<int*>(&(features[i/7].error));
+  }
+  return toReturn;
+}
 
 
 template<typename T>

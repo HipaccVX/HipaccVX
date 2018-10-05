@@ -293,7 +293,7 @@ VX_API_ENTRY vx_array VX_API_CALL vxCreateArray(vx_context context, vx_enum item
 	if (item_type != VX_TYPE_KEYPOINT)
 		throw std::runtime_error("vx_array: Only VX_TYPE_KEYPOINT is currently supported");
 
-	HipaVX::Array *arr = new HipaVX::Array(item_type, capacity, 2);
+	HipaVX::Array *arr = new HipaVX::Array(item_type, capacity, 7); // vx_keypoint_t has 7 32bit members
 	context->images.emplace_back(arr);
 	return arr;
 }

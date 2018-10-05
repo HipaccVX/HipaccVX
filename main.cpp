@@ -55,7 +55,8 @@ int main()
 		vx_scalar harris_min_distance = vxCreateScalar(context, VX_TYPE_FLOAT32, (void*) &harris_min_distance_f);
 		float harris_sensitivity_f = 0.04f;
 		vx_scalar harris_sensitivity = vxCreateScalar(context, VX_TYPE_FLOAT32, (void*) &harris_sensitivity_f);
-		vx_array harris_corners = vxCreateArray(context, VX_TYPE_KEYPOINT, 1000);
+		vx_array harris_corners = vxCreateArray(context, VX_TYPE_KEYPOINT, 10);
+		vx_scalar harris_corners_num = vxCreateScalar(context, VX_TYPE_INT32, (void*) &two);
 
 		//Step 2.Create Graph
 		vx_graph graph = vxCreateGraph(context);
@@ -101,7 +102,7 @@ int main()
 				vxFWriteImageNode(graph, images[16], "akif-200x300_bw_gaussian.png"),/**/
 
 				vxHarrisCornersNode(graph, images[0], harris_strength, harris_min_distance,
-									harris_sensitivity, 3, 3, nullptr, nullptr),
+									harris_sensitivity, 3, 3, harris_corners, harris_corners_num),
 				//vxFWriteImageNode(graph, images[17], "akif-200x300_bw_harris.png"),
 			};
 
