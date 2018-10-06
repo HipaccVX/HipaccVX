@@ -336,6 +336,21 @@ std::string HarrisCorners::generateNodeCall()
 	return generator::node_generator(this, generator::Type::Call);
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 std::vector<Image *> Sobel3_3::get_used_images()
 {
 	std::vector<Image*> used_images;
@@ -359,9 +374,6 @@ std::string Sobel3_3::generateNodeCall()
 }
 void Sobel3_3::build()
 {
-	sobel_x.build();
-	sobel_y.build();
-
 	sobel_x.dim[0] = sobel_x.dim[1] = sobel_y.dim[0] = sobel_y.dim[1] = 3;
 
 	sobel_x.mask = {-1,  0,  1,
@@ -378,7 +390,35 @@ void Sobel3_3::build()
 	sobel_x.out = out_x;
 	sobel_y.in = in;
 	sobel_y.out = out_y;
+
+	sobel_x.build();
+	sobel_y.build();
 }
+
+
+
+
+
+
+std::vector<Image *> SimplePoint::get_used_images()
+{
+	std::vector<Image*> used_images;
+	used_images.emplace_back(in_1);
+	used_images.emplace_back(in_2);
+	used_images.emplace_back(out);
+	return used_images;
+}
+std::string SimplePoint::generateClassDefinition()
+{
+	return generator::node_generator(this, generator::Type::Definition);
+}
+std::string SimplePoint::generateNodeCall()
+{
+	return generator::node_generator(this, generator::Type::Call);
+}
+
+
+
 
 
 }

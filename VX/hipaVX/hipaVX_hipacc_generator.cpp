@@ -975,6 +975,17 @@ string node_generator(HipaVX::HarrisCorners* n, Type t)
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
 #include <type_traits>
 template <typename T>
 std::string node_generator(HipaVX::LinearMask<T>* n, Type t)
@@ -1034,6 +1045,46 @@ std::string node_generator(HipaVX::LinearMask<T>* n, Type t)
 // Explicit instantiation
 template std::string node_generator<float>(HipaVX::LinearMask<float>* n, Type t);
 template std::string node_generator<int>(HipaVX::LinearMask<int>* n, Type t);
+
+
+string node_generator(HipaVX::SimplePoint* n, Type t)
+{
+	if (t == Type::Definition)
+	{
+		auto cs = read_config_def(hipaVX_folder + "/kernels/point/simple.def");
+
+		string s = kernel_builder(cs.kv, cs.k, cs.name);
+
+		s = use_template(s, "ID", n->my_id);
+		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in_1->col]);
+		s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
+
+		s = use_template(s, "CONVERT_DATATYPE", "");
+		s = use_template(s, "OPERATION", n->operation);
+
+		return s;
+	}
+	else if (t == Type::Call)
+	{
+		auto cs = read_config_call(hipaVX_folder + "/kernels/point/and.call");
+		string s = kernelcall_builder(cs.kcv);
+
+		s = use_template(s, "ID", n->my_id);
+		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in_1->col]);
+		s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
+
+		s = use_template(s, "IMAGE_IN_1", generate_image_name(n->in_1));
+		s = use_template(s, "IMAGE_IN_2", generate_image_name(n->in_2));
+		s = use_template(s, "IMAGE_IN_WIDTH", n->in_1->w);
+		s = use_template(s, "IMAGE_IN_HEIGHT", n->in_1->h);
+		s = use_template(s, "OUTPUT_IMAGE", generate_image_name(n->out));
+
+		s = use_template(s, "BOUNDARY_CONDITION", "Boundary::UNDEFINED"); // TODO
+
+		return s;
+	}
+	return "SOMETHING IS WRONG";
+}
 
 
 }

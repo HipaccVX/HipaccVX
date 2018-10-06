@@ -364,6 +364,62 @@ public:
 	virtual std::string generateNodeCall() override;
 };
 
+
+
+
+// Experimental new stuff
+
+class SimplePoint: public Node
+{
+public:
+	virtual ~SimplePoint() override = default;
+
+	Image *in_1;
+	Image *in_2;
+	Image *out;
+	std::string operation;
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+};
+class SimplePointAdd: public SimplePoint
+{
+public:
+	SimplePointAdd()
+	{
+		operation = "+";
+	}
+	virtual ~SimplePointAdd() override = default;
+};
+class SimplePointSub: public SimplePoint
+{
+public:
+	SimplePointSub()
+	{
+		operation = "-";
+	}
+	virtual ~SimplePointSub() override = default;
+};
+class SimplePointMul: public SimplePoint
+{
+public:
+	SimplePointMul()
+	{
+		operation = "*";
+	}
+	virtual ~SimplePointMul() override = default;
+};
+class SimplePointDiv: public SimplePoint
+{
+public:
+	SimplePointDiv()
+	{
+		operation = "/";
+	}
+	virtual ~SimplePointDiv() override = default;
+};
+
 template <typename T>
 class LinearMask: public Node
 {
@@ -495,11 +551,15 @@ std::string node_generator(HipaVX::Dilate* n, Type t);
 std::string node_generator(HipaVX::Erode* n, Type t);
 
 std::string node_generator(HipaVX::HarrisCorners* n, Type t);
-std::string node_generator(HipaVX::Sobel3_3* n, Type t);
+
+
+
+
 
 
 template <typename T>
 std::string node_generator(HipaVX::LinearMask<T>* n, Type t);
+std::string node_generator(HipaVX::SimplePoint* n, Type t);
 
 
 
