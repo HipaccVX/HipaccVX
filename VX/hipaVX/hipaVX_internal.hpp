@@ -87,6 +87,7 @@ public:
 	virtual std::vector<Image*> get_used_images() = 0;
 	virtual std::string generateClassDefinition() = 0;
 	virtual std::string generateNodeCall() = 0;
+	virtual void build(){}
 };
 
 class Graph
@@ -363,6 +364,104 @@ public:
 	virtual std::string generateNodeCall() override;
 };
 
+template <typename T>
+class LinearMask: public Node
+{
+public:
+	virtual ~LinearMask() override = default;
+	std::vector<T> mask;
+	int dim[2]; //dim[0] = x, dim[1] = y
+	float normalization;
+
+	Image *in;
+	Image *out;
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+};
+
+class Sobel3_3: public Node
+{
+public:
+	virtual ~Sobel3_3() override = default;
+
+	LinearMask<int> sobel_x;
+	LinearMask<int> sobel_y;
+
+
+	Image *in;
+	Image *out_x;
+	Image *out_y;
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+	virtual void build() override;
+};
+
+class HarrisCorners2: public Node
+{
+public:
+	HarrisCorners2(Image *in)
+		:in(in),
+		  Gx(in->w, in->h, VX_TYPE_FLOAT32),
+		  Gy(in->w, in->h, VX_TYPE_FLOAT32),
+		  square_Gx(in->w, in->h, VX_TYPE_FLOAT32),
+		  square_Gy(in->w, in->h, VX_TYPE_FLOAT32),
+		  square_Gx_sum(in->w, in->h, VX_TYPE_FLOAT32),
+		  square_Gy_sum(in->w, in->h, VX_TYPE_FLOAT32),
+		  trace_A(in->w, in->h, VX_TYPE_FLOAT32),
+		  det_A_minuend(in->w, in->h, VX_TYPE_FLOAT32),
+		  det_A_mul_Gx_Gy(in->w, in->h, VX_TYPE_FLOAT32),
+		  det_A_mul_Gx_Gy_sum(in->w, in->h, VX_TYPE_FLOAT32),
+		  det_A_subtrahend(in->w, in->h, VX_TYPE_FLOAT32),
+		  det_A(in->w, in->h, VX_TYPE_FLOAT32),
+		  Mc(in->w, in->h, VX_TYPE_FLOAT32),
+		  Vc(in->w, in->h, VX_TYPE_FLOAT32)
+	{
+	}
+	virtual ~HarrisCorners2() override = default;
+
+	Image *in;
+	Scalar *strength_thresh;
+	Scalar *min_distance;
+	Scalar *sensitivity;
+	vx_int32 gradient_size;
+	vx_int32 block_size;
+	Array *corners;
+	Scalar *num_corners;
+
+	Image Gx;
+	Image Gy;
+
+	Image square_Gx;
+	Image square_Gy;
+
+	Image square_Gx_sum;
+	Image square_Gy_sum;
+
+	//Mask A
+	Image trace_A;
+
+
+	Image det_A_minuend;
+
+	Image det_A_mul_Gx_Gy;
+	Image det_A_mul_Gx_Gy_sum;
+	Image det_A_subtrahend;
+
+	Image det_A;
+
+
+	Image Mc;
+	Image Vc;
+
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+};
 
 
 }
@@ -396,5 +495,43 @@ std::string node_generator(HipaVX::Dilate* n, Type t);
 std::string node_generator(HipaVX::Erode* n, Type t);
 
 std::string node_generator(HipaVX::HarrisCorners* n, Type t);
+std::string node_generator(HipaVX::Sobel3_3* n, Type t);
+
+
+template <typename T>
+std::string node_generator(HipaVX::LinearMask<T>* n, Type t);
+
+
+
+
 
 }
+
+
+
+namespace HipaVX
+{
+template <typename T>
+std::vector<Image *> LinearMask<T>::get_used_images()
+{
+	std::vector<Image*> used_images;
+	used_images.emplace_back(in);
+	used_images.emplace_back(out);
+	return used_images;
+}
+template <typename T>
+std::string LinearMask<T>::generateClassDefinition()
+{
+	return generator::node_generator(this, generator::Type::Definition);
+}
+template <typename T>
+std::string LinearMask<T>::generateNodeCall()
+{
+	return generator::node_generator(this, generator::Type::Call);
+}
+}
+
+
+
+
+

@@ -47,6 +47,7 @@ void Graph::build()
 
 	for (auto& node: graph)
 	{
+		node->build();
 		auto used_images_node = node->get_used_images();
 		used_images.insert(used_images.end(), used_images_node.cbegin(), used_images_node.cend());
 	}
@@ -335,7 +336,49 @@ std::string HarrisCorners::generateNodeCall()
 	return generator::node_generator(this, generator::Type::Call);
 }
 
+std::vector<Image *> Sobel3_3::get_used_images()
+{
+	std::vector<Image*> used_images;
+	auto x = sobel_x.get_used_images();
+	auto y = sobel_y.get_used_images();
+	std::copy(x.begin(), x.end(), std::back_inserter(used_images));
+	std::copy(y.begin(), y.end(), std::back_inserter(used_images));
+	return used_images;
+}
+std::string Sobel3_3::generateClassDefinition()
+{
+	std::string s = generator::node_generator(&sobel_x, generator::Type::Definition);
+	s += "\n" + generator::node_generator(&sobel_y, generator::Type::Definition);
+	return s;
+}
+std::string Sobel3_3::generateNodeCall()
+{
+	std::string s = generator::node_generator(&sobel_x, generator::Type::Call);
+	s += "\n" + generator::node_generator(&sobel_y, generator::Type::Call);
+	return s;
+}
+void Sobel3_3::build()
+{
+	sobel_x.build();
+	sobel_y.build();
 
+	sobel_x.dim[0] = sobel_x.dim[1] = sobel_y.dim[0] = sobel_y.dim[1] = 3;
+
+	sobel_x.mask = {-1,  0,  1,
+					-2,  0,  2,
+					-1,  0,  1};
+
+	sobel_y.mask = {-1, -2, -1,
+					 0,  0,  0,
+					 1,  2,  1};
+
+	sobel_x.normalization = sobel_y.normalization = 1;
+
+	sobel_x.in = in;
+	sobel_x.out = out_x;
+	sobel_y.in = in;
+	sobel_y.out = out_y;
+}
 
 
 }

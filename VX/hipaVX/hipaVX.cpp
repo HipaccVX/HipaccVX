@@ -40,12 +40,23 @@ VX_API_ENTRY vx_node VX_API_CALL vxSobel3x3Node(vx_graph graph, vx_image input, 
 	if (output_x->col != VX_DF_IMAGE_S16 || output_y->col != VX_DF_IMAGE_S16)
 		return nullptr;
 
-	HipaVX::Sobel3x3Node *sobel = new HipaVX::Sobel3x3Node();
+	/*HipaVX::Sobel3x3Node *sobel = new HipaVX::Sobel3x3Node();
 	sobel->in = input;
 	sobel->out_x = output_x;
 	sobel->out_y = output_y;
 	graph->graph.emplace_back(sobel);
-	graph->built = false;
+	graph->built = false;/**/
+
+
+	HipaVX::Sobel3_3 *sobel = new HipaVX::Sobel3_3();
+	sobel->in = input;
+	sobel->out_x = output_x;
+	sobel->out_y = output_y;
+	graph->graph.emplace_back(sobel);
+	graph->built = false;/**/
+
+
+
 	return sobel;
 }
 

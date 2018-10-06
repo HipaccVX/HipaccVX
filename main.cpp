@@ -65,14 +65,14 @@ int main()
 			printf("graph has been created... \n");
 			//Step 3.Create node and add into a graph
 			vx_node nodes[] = {
-				/*vxSobel3x3Node(graph, images[0], images[1], images[2]),
+				vxSobel3x3Node(graph, images[0], images[1], images[2]),
 				vxMagnitudeNode(graph, images[1], images[2], images[3]),
 				vxConvertDepthNode(graph, images[3], images[4], VX_CONVERT_POLICY_SATURATE, two_scalar),
 
 				vxFWriteImageNode(graph, images[1], "akif-200x300_bw_sobel_x.png"),
 				vxFWriteImageNode(graph, images[2], "akif-200x300_bw_sobel_y.png"),
 				vxFWriteImageNode(graph, images[3], "akif-200x300_bw_mag.png"),
-				vxFWriteImageNode(graph, images[4], "akif-200x300_bw_out.png"),
+				vxFWriteImageNode(graph, images[4], "akif-200x300_bw_out.png")/*,
 
 
 				vxAndNode(graph, images[4], images[5], images[6]),
@@ -99,10 +99,10 @@ int main()
 				vxBox3x3Node(graph, images[0], images[13]),
 				vxFWriteImageNode(graph, images[13], "akif-200x300_bw_box.png"),
 				vxGaussian3x3Node(graph, images[0], images[16]),*/
-				vxFWriteImageNode(graph, images[16], "akif-200x300_bw_gaussian.png"),/**/
+				/*vxFWriteImageNode(graph, images[16], "akif-200x300_bw_gaussian.png"),/**/
 
-				vxHarrisCornersNode(graph, images[0], harris_strength, harris_min_distance,
-									harris_sensitivity, 3, 3, harris_corners, harris_corners_num),
+				/*vxHarrisCornersNode(graph, images[0], harris_strength, harris_min_distance,
+									harris_sensitivity, 3, 3, harris_corners, harris_corners_num),*/
 				//vxFWriteImageNode(graph, images[17], "akif-200x300_bw_harris.png"),
 			};
 

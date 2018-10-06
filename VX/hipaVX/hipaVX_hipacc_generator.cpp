@@ -974,4 +974,66 @@ string node_generator(HipaVX::HarrisCorners* n, Type t)
 	return "SOMETHING IS WRONG";
 }
 
+
+#include <type_traits>
+template <typename T>
+std::string node_generator(HipaVX::LinearMask<T>* n, Type t)
+{
+	if (t == Type::Definition)
+	{
+		auto cs = read_config_def(hipaVX_folder + "/kernels/local/linear_mask.def");
+
+		string s = kernel_builder(cs.kv, cs.k, cs.name);
+
+		s = use_template(s, "ID", n->my_id);
+		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in->col]);
+		s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
+
+		s = use_template(s, "ELEMENT_OPERATION", "");
+		s = use_template(s, "SUM_OPERATION", " * " + std::to_string(n->normalization));
+		if (std::is_same<T, int>::value)
+			s = use_template(s, "SUM_DATATYPE", "int");
+		else if (std::is_same<T, float>::value)
+			s = use_template(s, "SUM_DATATYPE", "float");
+		else
+			throw std::runtime_error("Unsupported type in node_generator(HipaVX::LinearMask<T>* n, Type t)");
+
+		return s;
+	}
+	else if (t == Type::Call)
+	{
+		auto cs = read_config_call(hipaVX_folder + "/kernels/local/linear_mask.call");
+
+		//Modify the mask
+		auto mask_it = std::find_if(cs.kcv.begin(), cs.kcv.end(), [](Kernelcall_Variable* kcv)
+		{
+			return kcv->get_real_name() == "mask";
+		});
+		Kernelcall_Mask *kcm = dynamic_cast<Kernelcall_Mask*>(*mask_it);
+		kcm->len_dims[0] = n->dim[0];
+		kcm->len_dims[1] = n->dim[1];
+		kcm->flat_mask.clear();
+		for (int i = 0; i < kcm->len_dims[0]*kcm->len_dims[1]; i++)
+			kcm->flat_mask.push_back(std::to_string(n->mask[i]));
+
+		string s = kernelcall_builder(cs.kcv);
+
+		s = use_template(s, "ID", n->my_id);
+		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in->col]);
+		s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
+
+		s = use_template(s, "INPUT_IMAGE", generate_image_name(n->in));
+		s = use_template(s, "OUTPUT_IMAGE", generate_image_name(n->out));
+
+		s = use_template(s, "BOUNDARY_CONDITION", "Boundary::UNDEFINED"); // TODO
+
+		return s;
+	}
+	return "SOMETHING IS WRONG";
+}
+// Explicit instantiation
+template std::string node_generator<float>(HipaVX::LinearMask<float>* n, Type t);
+template std::string node_generator<int>(HipaVX::LinearMask<int>* n, Type t);
+
+
 }
