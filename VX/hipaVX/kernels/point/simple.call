@@ -7,4 +7,4 @@ Accessor TYPE_IN acc_2 bound_2
 
 IterationSpace TYPE_OUT iter IMAGE_OUT
 
-Kernel Simple_Point or iter acc_1 acc_2
+Kernel Simple_Point simple_point iter acc_1 acc_2

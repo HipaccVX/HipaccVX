@@ -73,23 +73,6 @@ std::string WriteImageNode::generateNodeCall()
 	return generator::node_generator(this, generator::Type::Call);
 }
 
-std::vector<Image *> Sobel3x3Node::get_used_images()
-{
-	std::vector<Image*> used_images;
-	used_images.emplace_back(in);
-	used_images.emplace_back(out_x);
-	used_images.emplace_back(out_y);
-	return used_images;
-}
-std::string Sobel3x3Node::generateClassDefinition()
-{
-	return generator::node_generator(this, generator::Type::Definition);
-}
-std::string Sobel3x3Node::generateNodeCall()
-{
-	return generator::node_generator(this, generator::Type::Call);
-}
-
 std::vector<Image *> ConvertDepthNode::get_used_images()
 {
 	std::vector<Image*> used_images;
@@ -106,125 +89,6 @@ std::string ConvertDepthNode::generateNodeCall()
 	return generator::node_generator(this, generator::Type::Call);
 }
 
-std::vector<Image *> MagnitudeNode::get_used_images()
-{
-	std::vector<Image*> used_images;
-	used_images.emplace_back(grad_x);
-	used_images.emplace_back(grad_y);
-	used_images.emplace_back(mag);
-	return used_images;
-}
-std::string MagnitudeNode::generateClassDefinition()
-{
-	return generator::node_generator(this, generator::Type::Definition);
-}
-std::string MagnitudeNode::generateNodeCall()
-{
-	return generator::node_generator(this, generator::Type::Call);
-}
-
-std::vector<Image *> AbsDiffNode::get_used_images()
-{
-	std::vector<Image*> used_images;
-	used_images.emplace_back(in_1);
-	used_images.emplace_back(in_2);
-	used_images.emplace_back(out);
-	return used_images;
-}
-std::string AbsDiffNode::generateClassDefinition()
-{
-	return generator::node_generator(this, generator::Type::Definition);
-}
-std::string AbsDiffNode::generateNodeCall()
-{
-	return generator::node_generator(this, generator::Type::Call);
-}
-
-std::vector<Image *> AddNode::get_used_images()
-{
-	std::vector<Image*> used_images;
-	used_images.emplace_back(in_1);
-	used_images.emplace_back(in_2);
-	used_images.emplace_back(out);
-	return used_images;
-}
-std::string AddNode::generateClassDefinition()
-{
-	return generator::node_generator(this, generator::Type::Definition);
-}
-std::string AddNode::generateNodeCall()
-{
-	return generator::node_generator(this, generator::Type::Call);
-}
-
-std::vector<Image *> SubtractNode::get_used_images()
-{
-	std::vector<Image*> used_images;
-	used_images.emplace_back(in_1);
-	used_images.emplace_back(in_2);
-	used_images.emplace_back(out);
-	return used_images;
-}
-std::string SubtractNode::generateClassDefinition()
-{
-	return generator::node_generator(this, generator::Type::Definition);
-}
-std::string SubtractNode::generateNodeCall()
-{
-	return generator::node_generator(this, generator::Type::Call);
-}
-
-std::vector<Image *> AndNode::get_used_images()
-{
-	std::vector<Image*> used_images;
-	used_images.emplace_back(in_1);
-	used_images.emplace_back(in_2);
-	used_images.emplace_back(out);
-	return used_images;
-}
-std::string AndNode::generateClassDefinition()
-{
-	return generator::node_generator(this, generator::Type::Definition);
-}
-std::string AndNode::generateNodeCall()
-{
-	return generator::node_generator(this, generator::Type::Call);
-}
-
-std::vector<Image *> XorNode::get_used_images()
-{
-	std::vector<Image*> used_images;
-	used_images.emplace_back(in_1);
-	used_images.emplace_back(in_2);
-	used_images.emplace_back(out);
-	return used_images;
-}
-std::string XorNode::generateClassDefinition()
-{
-	return generator::node_generator(this, generator::Type::Definition);
-}
-std::string XorNode::generateNodeCall()
-{
-	return generator::node_generator(this, generator::Type::Call);
-}
-
-std::vector<Image *> OrNode::get_used_images()
-{
-	std::vector<Image*> used_images;
-	used_images.emplace_back(in_1);
-	used_images.emplace_back(in_2);
-	used_images.emplace_back(out);
-	return used_images;
-}
-std::string OrNode::generateClassDefinition()
-{
-	return generator::node_generator(this, generator::Type::Definition);
-}
-std::string OrNode::generateNodeCall()
-{
-	return generator::node_generator(this, generator::Type::Call);
-}
-
 std::vector<Image *> NotNode::get_used_images()
 {
 	std::vector<Image*> used_images;
@@ -237,38 +101,6 @@ std::string NotNode::generateClassDefinition()
 	return generator::node_generator(this, generator::Type::Definition);
 }
 std::string NotNode::generateNodeCall()
-{
-	return generator::node_generator(this, generator::Type::Call);
-}
-
-std::vector<Image *> BoxFilter::get_used_images()
-{
-	std::vector<Image*> used_images;
-	used_images.emplace_back(in);
-	used_images.emplace_back(out);
-	return used_images;
-}
-std::string BoxFilter::generateClassDefinition()
-{
-	return generator::node_generator(this, generator::Type::Definition);
-}
-std::string BoxFilter::generateNodeCall()
-{
-	return generator::node_generator(this, generator::Type::Call);
-}
-
-std::vector<Image *> GaussianFilter::get_used_images()
-{
-	std::vector<Image*> used_images;
-	used_images.emplace_back(in);
-	used_images.emplace_back(out);
-	return used_images;
-}
-std::string GaussianFilter::generateClassDefinition()
-{
-	return generator::node_generator(this, generator::Type::Definition);
-}
-std::string GaussianFilter::generateNodeCall()
 {
 	return generator::node_generator(this, generator::Type::Call);
 }
@@ -305,36 +137,6 @@ std::string Erode::generateNodeCall()
 	return generator::node_generator(this, generator::Type::Call);
 }
 
-std::vector<Image *> HarrisCorners::get_used_images()
-{
-	std::vector<Image*> used_images;
-	used_images.emplace_back(in);
-	used_images.emplace_back(&Gx);
-	used_images.emplace_back(&Gy);
-	used_images.emplace_back(&square_Gx);
-	used_images.emplace_back(&square_Gy);
-	used_images.emplace_back(&square_Gx_sum);
-	used_images.emplace_back(&square_Gy_sum);
-	used_images.emplace_back(&trace_A);
-	used_images.emplace_back(&det_A_minuend);
-	used_images.emplace_back(&det_A_mul_Gx_Gy);
-	used_images.emplace_back(&det_A_mul_Gx_Gy_sum);
-	used_images.emplace_back(&det_A_subtrahend);
-	used_images.emplace_back(&det_A);
-	used_images.emplace_back(&Mc);
-	used_images.emplace_back(&Vc);
-
-	used_images.emplace_back(corners);
-	return used_images;
-}
-std::string HarrisCorners::generateClassDefinition()
-{
-	return generator::node_generator(this, generator::Type::Definition);
-}
-std::string HarrisCorners::generateNodeCall()
-{
-	return generator::node_generator(this, generator::Type::Call);
-}
 
 
 
@@ -347,11 +149,7 @@ std::string HarrisCorners::generateNodeCall()
 
 
 
-
-
-
-
-std::vector<Image *> Sobel3_3::get_used_images()
+std::vector<Image *> Sobel3x3Node::get_used_images()
 {
 	std::vector<Image*> used_images;
 	auto x = sobel_x.get_used_images();
@@ -360,19 +158,19 @@ std::vector<Image *> Sobel3_3::get_used_images()
 	std::copy(y.begin(), y.end(), std::back_inserter(used_images));
 	return used_images;
 }
-std::string Sobel3_3::generateClassDefinition()
+std::string Sobel3x3Node::generateClassDefinition()
 {
-	std::string s = generator::node_generator(&sobel_x, generator::Type::Definition);
-	s += "\n" + generator::node_generator(&sobel_y, generator::Type::Definition);
+	std::string s = sobel_x.generateClassDefinition();
+	s += "\n" + sobel_y.generateClassDefinition();
 	return s;
 }
-std::string Sobel3_3::generateNodeCall()
+std::string Sobel3x3Node::generateNodeCall()
 {
-	std::string s = generator::node_generator(&sobel_x, generator::Type::Call);
-	s += "\n" + generator::node_generator(&sobel_y, generator::Type::Call);
+	std::string s = sobel_x.generateNodeCall();
+	s += "\n" + sobel_y.generateNodeCall();
 	return s;
 }
-void Sobel3_3::build()
+void Sobel3x3Node::build()
 {
 	sobel_x.dim[0] = sobel_x.dim[1] = sobel_y.dim[0] = sobel_y.dim[1] = 3;
 
@@ -396,8 +194,229 @@ void Sobel3_3::build()
 }
 
 
+std::vector<Image *> Add3_3::get_used_images()
+{
+	std::vector<Image*> used_images;
+	auto a = add.get_used_images();
+	std::copy(a.begin(), a.end(), std::back_inserter(used_images));
+	return used_images;
+}
+std::string Add3_3::generateClassDefinition()
+{
+	std::string s = generator::node_generator(&add, generator::Type::Definition);
+	return s;
+}
+std::string Add3_3::generateNodeCall()
+{
+	std::string s = generator::node_generator(&add, generator::Type::Call);
+	return s;
+}
+void Add3_3::build()
+{
+	add.dim[0] = add.dim[1] = 3;
+
+	add.mask = {1, 1, 1,
+				1, 1, 1,
+				1, 1, 1};
+
+	add.normalization = 1;
+
+	add.in = in;
+	add.out = out;
+
+	add.build();
+}
 
 
+
+
+std::vector<Image *> HarrisCorners::get_used_images()
+{
+	std::vector<Image*> used_images;
+	auto a = sobel.get_used_images();
+	auto b = sobel_x_norm.get_used_images();
+	auto c = sobel_y_norm.get_used_images();
+	auto d = sobel_x_square.get_used_images();
+	auto e = sobel_y_square.get_used_images();
+	auto f = sobel_x_y.get_used_images();
+	auto g = gx_square_A.get_used_images();
+	auto h = gy_square_A.get_used_images();
+	auto i = gx_gy_A.get_used_images();
+	auto j = trace_add.get_used_images();
+	auto k = gx_A_gy_A.get_used_images();
+	auto l = gx_gy_A_square.get_used_images();
+	auto m = det_kernel.get_used_images();
+	auto n = trace_A_square_kernel.get_used_images();
+	auto o = trace_A_square_k_kernel.get_used_images();
+	auto p = Mc_kernel.get_used_images();
+	std::copy(a.begin(), a.end(), std::back_inserter(used_images));
+	std::copy(b.begin(), b.end(), std::back_inserter(used_images));
+	std::copy(c.begin(), c.end(), std::back_inserter(used_images));
+	std::copy(d.begin(), d.end(), std::back_inserter(used_images));
+	std::copy(e.begin(), e.end(), std::back_inserter(used_images));
+	std::copy(f.begin(), f.end(), std::back_inserter(used_images));
+	std::copy(g.begin(), g.end(), std::back_inserter(used_images));
+	std::copy(h.begin(), h.end(), std::back_inserter(used_images));
+	std::copy(i.begin(), i.end(), std::back_inserter(used_images));
+	std::copy(j.begin(), j.end(), std::back_inserter(used_images));
+	std::copy(k.begin(), k.end(), std::back_inserter(used_images));
+	std::copy(l.begin(), l.end(), std::back_inserter(used_images));
+	std::copy(m.begin(), m.end(), std::back_inserter(used_images));
+	std::copy(n.begin(), n.end(), std::back_inserter(used_images));
+	std::copy(o.begin(), o.end(), std::back_inserter(used_images));
+	std::copy(p.begin(), p.end(), std::back_inserter(used_images));
+	used_images.push_back(&Vc);
+	return used_images;
+}
+std::string HarrisCorners::generateClassDefinition()
+{
+	std::string s = sobel.generateClassDefinition();
+	s += "\n" + sobel_x_norm.generateClassDefinition();
+	s += "\n" + sobel_y_norm.generateClassDefinition();
+	s += "\n" + sobel_x_square.generateClassDefinition();
+	s += "\n" + sobel_y_square.generateClassDefinition();
+	s += "\n" + sobel_x_y.generateClassDefinition();
+	s += "\n" + gx_square_A.generateClassDefinition();
+	s += "\n" + gy_square_A.generateClassDefinition();
+	s += "\n" + gx_gy_A.generateClassDefinition();
+	s += "\n" + trace_add.generateClassDefinition();
+	s += "\n" + gx_A_gy_A.generateClassDefinition();
+	s += "\n" + gx_gy_A_square.generateClassDefinition();
+	s += "\n" + det_kernel.generateClassDefinition();
+	s += "\n" + trace_A_square_kernel.generateClassDefinition();
+	s += "\n" + trace_A_square_k_kernel.generateClassDefinition();
+	s += "\n" + Mc_kernel.generateClassDefinition();
+	s += "\n" + generator::node_generator(this, generator::Type::Definition);
+	return s;
+}
+std::string HarrisCorners::generateNodeCall()
+{
+	std::string s = sobel.generateNodeCall();
+	s += "\n" + sobel_x_norm.generateNodeCall();
+	s += "\n" + sobel_y_norm.generateNodeCall();
+	s += "\n" + sobel_x_square.generateNodeCall();
+	s += "\n" + sobel_y_square.generateNodeCall();
+	s += "\n" + sobel_x_y.generateNodeCall();
+	s += "\n" + gx_square_A.generateNodeCall();
+	s += "\n" + gy_square_A.generateNodeCall();
+	s += "\n" + gx_gy_A.generateNodeCall();
+	s += "\n" + trace_add.generateNodeCall();
+	s += "\n" + gx_A_gy_A.generateNodeCall();
+	s += "\n" + gx_gy_A_square.generateNodeCall();
+	s += "\n" + det_kernel.generateNodeCall();
+	s += "\n" + trace_A_square_kernel.generateNodeCall();
+	s += "\n" + trace_A_square_k_kernel.generateNodeCall();
+	s += "\n" + Mc_kernel.generateNodeCall();
+	s += "\n" + generator::node_generator(this, generator::Type::Call);
+	return s;
+}
+void HarrisCorners::build()
+{
+	sobel.in = in;
+	sobel.out_x = &sob_x;
+	sobel.out_y = &sob_y;
+
+	sobel_x_norm.in = &sob_x;
+	sobel_x_norm.out = &Gx;
+	sobel_y_norm.in = &sob_y;
+	sobel_y_norm.out = &Gy;
+	sobel_x_norm.scalar = sobel_y_norm.scalar = 1.f / (4 * 255 * 3/*b*/); // For 3x3 Sobel
+
+	sobel_x_square.in_1 = &Gx;
+	sobel_x_square.in_2 = &Gx;
+	sobel_x_square.out = &square_Gx;
+	sobel_y_square.in_1 = &Gy;
+	sobel_y_square.in_2 = &Gy;
+	sobel_y_square.out = &square_Gy;
+
+	sobel_x_y.in_1 = &Gx;
+	sobel_x_y.in_2 = &Gy;
+	sobel_x_y.out = &det_A_mul_Gx_Gy;
+
+	gx_square_A.in = &square_Gx;
+	gx_square_A.out = &square_Gx_sum;
+	gy_square_A.in = &square_Gy;
+	gy_square_A.out = &square_Gy_sum;
+	gx_gy_A.in = &det_A_mul_Gx_Gy;
+	gx_gy_A.out = &det_A_mul_Gx_Gy_sum;
+
+	trace_add.in_1 = &square_Gx_sum;
+	trace_add.in_2 = &square_Gy_sum;
+	trace_add.out = &trace_A;
+
+
+	gx_A_gy_A.in_1 = &square_Gx_sum;
+	gx_A_gy_A.in_2 = &square_Gy_sum;
+	gx_A_gy_A.out = &det_A_minuend;
+
+	gx_gy_A_square.in_1 = &det_A_mul_Gx_Gy_sum;
+	gx_gy_A_square.in_2 = &det_A_mul_Gx_Gy_sum;
+	gx_gy_A_square.out = &det_A_subtrahend;
+
+	det_kernel.in_1 = &det_A_minuend;
+	det_kernel.in_2 = &det_A_subtrahend;
+	det_kernel.out = &det_A;
+
+	trace_A_square_kernel.in_1 = &trace_A;
+	trace_A_square_kernel.in_2 = &trace_A;
+	trace_A_square_kernel.out = &trace_A_square;
+
+	trace_A_square_k_kernel.in = &trace_A_square;
+	trace_A_square_k_kernel.scalar = sensitivity->f32;
+	trace_A_square_k_kernel.out = &trace_A_square_k;
+
+	Mc_kernel.in_1 = &det_A;
+	Mc_kernel.in_2 = &trace_A_square_k;
+	Mc_kernel.out = &Mc;
+
+
+
+	sobel.build();
+	sobel_x_norm.build();
+	sobel_y_norm.build();
+	sobel_x_square.build();
+	sobel_y_square.build();
+	sobel_x_y.build();
+	gx_square_A.build();
+	gy_square_A.build();
+	gx_gy_A.build();
+	trace_add.build();
+	gx_A_gy_A.build();
+	gx_gy_A_square.build();
+	det_kernel.build();
+	trace_A_square_kernel.build();
+	trace_A_square_k_kernel.build();
+	Mc_kernel.build();
+}
+
+
+
+
+std::vector<Image *> SquareNode::get_used_images()
+{
+	std::vector<Image*> used_images;
+	auto a = mul_node.get_used_images();
+	std::copy(a.begin(), a.end(), std::back_inserter(used_images));
+	return used_images;
+}
+std::string SquareNode::generateClassDefinition()
+{
+	std::string s = mul_node.generateClassDefinition();
+	return s;
+}
+std::string SquareNode::generateNodeCall()
+{
+	std::string s = mul_node.generateNodeCall();
+	return s;
+}
+void SquareNode::build()
+{
+	mul_node.in_1 = in;
+	mul_node.in_2 = in;
+	mul_node.out = out;
+
+	mul_node.build();
+}
 
 
 std::vector<Image *> SimplePoint::get_used_images()
@@ -417,7 +436,268 @@ std::string SimplePoint::generateNodeCall()
 	return generator::node_generator(this, generator::Type::Call);
 }
 
+std::vector<Image *> SaturateNode::get_used_images()
+{
+	std::vector<Image*> used_images;
+	used_images.emplace_back(in);
+	used_images.emplace_back(out);
+	return used_images;
+}
+std::string SaturateNode::generateClassDefinition()
+{
+	return generator::node_generator(this, generator::Type::Definition);
+}
+std::string SaturateNode::generateNodeCall()
+{
+	return generator::node_generator(this, generator::Type::Call);
+}
 
+std::vector<Image *> SqrtNode::get_used_images()
+{
+	std::vector<Image*> used_images;
+	used_images.emplace_back(in);
+	used_images.emplace_back(out);
+	return used_images;
+}
+std::string SqrtNode::generateClassDefinition()
+{
+	return generator::node_generator(this, generator::Type::Definition);
+}
+std::string SqrtNode::generateNodeCall()
+{
+	return generator::node_generator(this, generator::Type::Call);
+}
+
+std::vector<Image *> AbsNode::get_used_images()
+{
+	std::vector<Image*> used_images;
+	used_images.emplace_back(in);
+	used_images.emplace_back(out);
+	return used_images;
+}
+std::string AbsNode::generateClassDefinition()
+{
+	return generator::node_generator(this, generator::Type::Definition);
+}
+std::string AbsNode::generateNodeCall()
+{
+	return generator::node_generator(this, generator::Type::Call);
+}
+
+std::vector<Image *> AbsDiffNode::get_used_images()
+{
+	std::vector<Image*> used_images;
+	auto a = diff_node.get_used_images();
+	auto b = abs_node.get_used_images();
+	std::copy(a.begin(), a.end(), std::back_inserter(used_images));
+	std::copy(b.begin(), b.end(), std::back_inserter(used_images));
+
+	if (saturate)
+	{
+		auto c = saturate_node.get_used_images();
+		std::copy(c.begin(), c.end(), std::back_inserter(used_images));
+	}
+	return used_images;
+}
+std::string AbsDiffNode::generateClassDefinition()
+{
+	std::string s = diff_node.generateClassDefinition();
+	s += "\n" + abs_node.generateClassDefinition();
+	if (saturate)
+		s += "\n" + saturate_node.generateClassDefinition();
+	return s;
+}
+std::string AbsDiffNode::generateNodeCall()
+{
+	std::string s = diff_node.generateNodeCall();
+	s += "\n" + abs_node.generateNodeCall();
+	if (saturate)
+		s += "\n" + saturate_node.generateNodeCall();
+	return s;
+}
+void AbsDiffNode::build()
+{
+	//saturate_node is only used when input is S16
+	saturate = in_1->col == VX_DF_IMAGE_S16 || in_2->col == VX_DF_IMAGE_S16;
+
+	diff_node.in_1 = in_1;
+	diff_node.in_2 = in_2;
+	diff_image.reset(new Image(in_1->w, in_2->h, VX_DF_IMAGE_S32));
+	diff_node.out = diff_image.get();
+
+	abs_node.in = diff_image.get();
+	if (!saturate)
+	{
+		abs_node.out = out;
+	}
+	else
+	{
+		abs_image.reset(new Image(in_1->w, in_2->h, VX_DF_IMAGE_S32));
+		abs_node.out = abs_image.get();
+
+		saturate_node.in = abs_image.get();
+		saturate_node.out = out;
+	}
+
+	diff_node.build();
+	abs_node.build();
+	if (saturate)
+		saturate_node.build();
+}
+
+std::vector<Image *> AddNode::get_used_images()
+{
+	std::vector<Image*> used_images;
+	auto a = add_node.get_used_images();
+	std::copy(a.begin(), a.end(), std::back_inserter(used_images));
+
+	if (policy == VX_CONVERT_POLICY_SATURATE)
+	{
+		auto c = saturate_node.get_used_images();
+		std::copy(c.begin(), c.end(), std::back_inserter(used_images));
+	}
+	return used_images;
+}
+std::string AddNode::generateClassDefinition()
+{
+	std::string s = add_node.generateClassDefinition();
+	if (policy == VX_CONVERT_POLICY_SATURATE)
+		s += "\n" + saturate_node.generateClassDefinition();
+	return s;
+}
+std::string AddNode::generateNodeCall()
+{
+	std::string s = add_node.generateNodeCall();
+	if (policy == VX_CONVERT_POLICY_SATURATE)
+		s += "\n" + saturate_node.generateNodeCall();
+	return s;
+}
+void AddNode::build()
+{
+	add_node.in_1 = in_1;
+	add_node.in_2 = in_2;
+	if (policy != VX_CONVERT_POLICY_SATURATE)
+	{
+		add_node.out = out;
+	}
+	else
+	{
+		add_image.reset(new Image(in_1->w, in_2->h, VX_DF_IMAGE_S32));
+		add_node.out = add_image.get();
+
+		saturate_node.in = add_image.get();
+		saturate_node.out = out;
+	}
+
+	add_node.build();
+	if (policy == VX_CONVERT_POLICY_SATURATE)
+		saturate_node.build();
+}
+
+std::vector<Image *> SubtractNode::get_used_images()
+{
+	std::vector<Image*> used_images;
+	auto a = diff_node.get_used_images();
+	std::copy(a.begin(), a.end(), std::back_inserter(used_images));
+
+	if (policy == VX_CONVERT_POLICY_SATURATE)
+	{
+		auto c = saturate_node.get_used_images();
+		std::copy(c.begin(), c.end(), std::back_inserter(used_images));
+	}
+	return used_images;
+}
+std::string SubtractNode::generateClassDefinition()
+{
+	std::string s = diff_node.generateClassDefinition();
+	if (policy == VX_CONVERT_POLICY_SATURATE)
+		s += "\n" + saturate_node.generateClassDefinition();
+	return s;
+}
+std::string SubtractNode::generateNodeCall()
+{
+	std::string s = diff_node.generateNodeCall();
+	if (policy == VX_CONVERT_POLICY_SATURATE)
+		s += "\n" + saturate_node.generateNodeCall();
+	return s;
+}
+void SubtractNode::build()
+{
+	diff_node.in_1 = in_1;
+	diff_node.in_2 = in_2;
+	if (policy != VX_CONVERT_POLICY_SATURATE)
+	{
+		diff_node.out = out;
+	}
+	else
+	{
+		diff_image.reset(new Image(in_1->w, in_2->h, VX_DF_IMAGE_S32));
+		diff_node.out = diff_image.get();
+
+		saturate_node.in = diff_image.get();
+		saturate_node.out = out;
+	}
+
+	diff_node.build();
+	if (policy == VX_CONVERT_POLICY_SATURATE)
+		saturate_node.build();
+}
+
+std::vector<Image *> MagnitudeNode::get_used_images()
+{
+	std::vector<Image*> used_images;
+	auto a = grad_x_square_node.get_used_images();
+	auto b = grad_y_square_node.get_used_images();
+	auto c = add_node.get_used_images();
+	auto d = sqrt_node.get_used_images();
+	auto e = saturate_node.get_used_images();
+	std::copy(a.begin(), a.end(), std::back_inserter(used_images));
+	std::copy(b.begin(), b.end(), std::back_inserter(used_images));
+	std::copy(c.begin(), c.end(), std::back_inserter(used_images));
+	std::copy(d.begin(), d.end(), std::back_inserter(used_images));
+	std::copy(e.begin(), e.end(), std::back_inserter(used_images));
+	return used_images;
+}
+std::string MagnitudeNode::generateClassDefinition()
+{
+	std::string s = grad_x_square_node.generateClassDefinition();
+	s += "\n" + grad_y_square_node.generateClassDefinition();
+	s += "\n" + add_node.generateClassDefinition();
+	s += "\n" + sqrt_node.generateClassDefinition();
+	s += "\n" + saturate_node.generateClassDefinition();
+	return s;
+}
+std::string MagnitudeNode::generateNodeCall()
+{
+	std::string s = grad_x_square_node.generateNodeCall();
+	s += "\n" + grad_y_square_node.generateNodeCall();
+	s += "\n" + add_node.generateNodeCall();
+	s += "\n" + sqrt_node.generateNodeCall();
+	s += "\n" + saturate_node.generateNodeCall();
+	return s;
+}
+void MagnitudeNode::build()
+{
+	grad_x_square_node.in = in_1;
+	grad_x_square_image.reset(new Image(in_1->w, in_1->h, VX_DF_IMAGE_S32));
+	grad_x_square_node.out = grad_x_square_image.get();
+
+	grad_y_square_node.in = in_2;
+	grad_y_square_image.reset(new Image(in_1->w, in_1->h, VX_DF_IMAGE_S32));
+	grad_y_square_node.out = grad_y_square_image.get();
+
+	add_node.in_1 = grad_x_square_image.get();
+	add_node.in_2 = grad_y_square_image.get();
+	add_image.reset(new Image(in_1->w, in_1->h, VX_DF_IMAGE_S32));
+	add_node.out = add_image.get();
+
+	sqrt_node.in = grad_x_square_image.get();
+	sqrt_image.reset(new Image(in_1->w, in_2->h, VX_DF_IMAGE_S32));
+	sqrt_node.out = sqrt_image.get();
+
+	saturate_node.in = sqrt_image.get();
+	saturate_node.out = out;
+}
 
 
 

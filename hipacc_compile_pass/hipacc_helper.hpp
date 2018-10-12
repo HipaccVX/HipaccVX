@@ -67,6 +67,7 @@ void draw_cross(const unsigned int width, const unsigned int height, const T* in
 				continue;
 			out[cross_y * width + cross_x] = cross_value;
 		}
+    out[feature.y * width + feature.x] = 255 - cross_value;
 	}
 }
 

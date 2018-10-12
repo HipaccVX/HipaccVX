@@ -1,0 +1,9 @@
+[NAME]
+Abs
+
+[KERNEL_VARIABLES]
+Accessor input
+
+[KERNEL]
+output() = abs(input());
+[KERNEL_END]

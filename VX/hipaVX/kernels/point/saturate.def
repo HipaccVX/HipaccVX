@@ -1,20 +1,19 @@
 [NAME]
-Add
+Saturate
 
 [KERNEL_VARIABLES]
-Accessor input1
-Accessor input2
+Accessor input
 
 [KERNEL]
-int out = ((int) input1()) + input2();
-if(@@@U8@@@ && @@@SATURATE@@@)
+int out = input()
+if(@@@U8@@@)
 {
 	if (out > 255) // max u8
 		out = 255;
 	else if (out < 255) // min u8
 		out = 0;
 }
-else if (@@@S16@@@ && @@@SATURATE@@@)
+else if (@@@S16@@@)
 {
 	if (out > 32767) // max s16
 		out = 32767;

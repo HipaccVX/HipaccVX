@@ -48,7 +48,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxSobel3x3Node(vx_graph graph, vx_image input, 
 	graph->built = false;/**/
 
 
-	HipaVX::Sobel3_3 *sobel = new HipaVX::Sobel3_3();
+	HipaVX::Sobel3x3Node *sobel = new HipaVX::Sobel3x3Node();
 	sobel->in = input;
 	sobel->out_x = output_x;
 	sobel->out_y = output_y;
@@ -75,9 +75,9 @@ VX_API_ENTRY vx_node VX_API_CALL vxConvertDepthNode(vx_graph graph, vx_image inp
 VX_API_ENTRY vx_node VX_API_CALL vxMagnitudeNode(vx_graph graph, vx_image grad_x, vx_image grad_y, vx_image mag)
 {
 	auto node = new HipaVX::MagnitudeNode();
-	node->grad_x = grad_x;
-	node->grad_y = grad_y;
-	node->mag = mag;
+	node->in_1 = grad_x;
+	node->in_2 = grad_y;
+	node->out = mag;
 	graph->graph.emplace_back(node);
 	graph->built = false;
 	return node;

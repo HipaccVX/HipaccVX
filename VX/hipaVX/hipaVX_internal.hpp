@@ -120,19 +120,6 @@ public:
 	virtual std::string generateNodeCall() override;
 };
 
-class Sobel3x3Node: public Node
-{
-public:
-	virtual ~Sobel3x3Node() override = default;
-	Image *in;
-	Image *out_x;
-	Image *out_y;
-
-	virtual std::vector<Image*> get_used_images() override;
-	virtual std::string generateClassDefinition() override;
-	virtual std::string generateNodeCall() override;
-};
-
 class ConvertDepthNode: public Node
 {
 public:
@@ -148,97 +135,6 @@ public:
 	virtual std::string generateNodeCall() override;
 };
 
-class MagnitudeNode: public Node
-{
-public:
-	virtual ~MagnitudeNode() override = default;
-	Image *grad_x;
-	Image *grad_y;
-	Image *mag;
-
-	virtual std::vector<Image*> get_used_images() override;
-	virtual std::string generateClassDefinition() override;
-	virtual std::string generateNodeCall() override;
-};
-
-
-class AbsDiffNode: public Node
-{
-public:
-	virtual ~AbsDiffNode() override = default;
-	Image *in_1;
-	Image *in_2;
-	Image *out;
-
-	virtual std::vector<Image*> get_used_images() override;
-	virtual std::string generateClassDefinition() override;
-	virtual std::string generateNodeCall() override;
-};
-class AddNode: public Node
-{
-public:
-	virtual ~AddNode() override = default;
-	Image *in_1;
-	Image *in_2;
-	Image *out;
-
-	vx_enum policy;
-
-	virtual std::vector<Image*> get_used_images() override;
-	virtual std::string generateClassDefinition() override;
-	virtual std::string generateNodeCall() override;
-};
-class SubtractNode: public Node
-{
-public:
-	virtual ~SubtractNode() override = default;
-	Image *in_1;
-	Image *in_2;
-	Image *out;
-
-	vx_enum policy;
-
-	virtual std::vector<Image*> get_used_images() override;
-	virtual std::string generateClassDefinition() override;
-	virtual std::string generateNodeCall() override;
-};
-
-class AndNode: public Node
-{
-public:
-	virtual ~AndNode() override = default;
-	Image *in_1;
-	Image *in_2;
-	Image *out;
-
-	virtual std::vector<Image*> get_used_images() override;
-	virtual std::string generateClassDefinition() override;
-	virtual std::string generateNodeCall() override;
-};
-class XorNode: public Node
-{
-public:
-	virtual ~XorNode() override = default;
-	Image *in_1;
-	Image *in_2;
-	Image *out;
-
-	virtual std::vector<Image*> get_used_images() override;
-	virtual std::string generateClassDefinition() override;
-	virtual std::string generateNodeCall() override;
-};
-class OrNode: public Node
-{
-public:
-	virtual ~OrNode() override = default;
-	Image *in_1;
-	Image *in_2;
-	Image *out;
-
-	virtual std::vector<Image*> get_used_images() override;
-	virtual std::string generateClassDefinition() override;
-	virtual std::string generateNodeCall() override;
-};
 class NotNode: public Node
 {
 public:
@@ -251,30 +147,6 @@ public:
 	virtual std::string generateNodeCall() override;
 };
 
-class BoxFilter: public Node
-{
-public:
-	virtual ~BoxFilter() override = default;
-
-	Image *in;
-	Image *out;
-
-	virtual std::vector<Image*> get_used_images() override;
-	virtual std::string generateClassDefinition() override;
-	virtual std::string generateNodeCall() override;
-};
-class GaussianFilter: public Node
-{
-public:
-	virtual ~GaussianFilter() override = default;
-
-	Image *in;
-	Image *out;
-
-	virtual std::vector<Image*> get_used_images() override;
-	virtual std::string generateClassDefinition() override;
-	virtual std::string generateNodeCall() override;
-};
 
 class Dilate: public Node
 {
@@ -301,68 +173,8 @@ public:
 	virtual std::string generateNodeCall() override;
 };
 
-class HarrisCorners: public Node
-{
-public:
-	HarrisCorners(Image *in)
-		:in(in),
-		  Gx(in->w, in->h, VX_TYPE_FLOAT32),
-		  Gy(in->w, in->h, VX_TYPE_FLOAT32),
-		  square_Gx(in->w, in->h, VX_TYPE_FLOAT32),
-		  square_Gy(in->w, in->h, VX_TYPE_FLOAT32),
-		  square_Gx_sum(in->w, in->h, VX_TYPE_FLOAT32),
-		  square_Gy_sum(in->w, in->h, VX_TYPE_FLOAT32),
-		  trace_A(in->w, in->h, VX_TYPE_FLOAT32),
-		  det_A_minuend(in->w, in->h, VX_TYPE_FLOAT32),
-		  det_A_mul_Gx_Gy(in->w, in->h, VX_TYPE_FLOAT32),
-		  det_A_mul_Gx_Gy_sum(in->w, in->h, VX_TYPE_FLOAT32),
-		  det_A_subtrahend(in->w, in->h, VX_TYPE_FLOAT32),
-		  det_A(in->w, in->h, VX_TYPE_FLOAT32),
-		  Mc(in->w, in->h, VX_TYPE_FLOAT32),
-		  Vc(in->w, in->h, VX_TYPE_FLOAT32)
-	{
-	}
-	virtual ~HarrisCorners() override = default;
-
-	Image *in;
-	Scalar *strength_thresh;
-	Scalar *min_distance;
-	Scalar *sensitivity;
-	vx_int32 gradient_size;
-	vx_int32 block_size;
-	Array *corners;
-	Scalar *num_corners;
-
-	Image Gx;
-	Image Gy;
-
-	Image square_Gx;
-	Image square_Gy;
-
-	Image square_Gx_sum;
-	Image square_Gy_sum;
-
-	//Mask A
-	Image trace_A;
 
 
-	Image det_A_minuend;
-
-	Image det_A_mul_Gx_Gy;
-	Image det_A_mul_Gx_Gy_sum;
-	Image det_A_subtrahend;
-
-	Image det_A;
-
-
-	Image Mc;
-	Image Vc;
-
-
-	virtual std::vector<Image*> get_used_images() override;
-	virtual std::string generateClassDefinition() override;
-	virtual std::string generateNodeCall() override;
-};
 
 
 
@@ -421,6 +233,117 @@ public:
 };
 
 template <typename T>
+class SimplePointScalar: public Node
+{
+public:
+	virtual ~SimplePointScalar() override = default;
+
+	Image *in;
+	T scalar;
+	Image *out;
+	std::string operation;
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+};
+template <typename T>
+class SimplePointScalarAdd: public SimplePointScalar<T>
+{
+public:
+	SimplePointScalarAdd()
+	{
+		this->operation = "+";
+	}
+	virtual ~SimplePointScalarAdd() override = default;
+};
+template <typename T>
+class SimplePointScalarSub: public SimplePointScalar<T>
+{
+public:
+	SimplePointScalarSub()
+	{
+		this->operation = "-";
+	}
+	virtual ~SimplePointScalarSub() override = default;
+};
+template <typename T>
+class SimplePointScalarMul: public SimplePointScalar<T>
+{
+public:
+	SimplePointScalarMul()
+	{
+		this->operation = "*";
+	}
+	virtual ~SimplePointScalarMul() override = default;
+};
+template <typename T>
+class SimplePointScalarDiv: public SimplePointScalar<T>
+{
+public:
+	SimplePointScalarDiv()
+	{
+		this->operation = "/";
+	}
+	virtual ~SimplePointScalarDiv() override = default;
+};
+
+class SquareNode: public Node
+{
+public:
+	virtual ~SquareNode() override = default;
+	Image *in;
+	Image *out;
+
+	SimplePointMul mul_node;
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+	virtual void build() override;
+};
+
+class AndNode: public SimplePoint
+{
+public:
+	AndNode()
+	{
+		operation = "&";
+	}
+	virtual ~AndNode() override = default;
+};
+class XorNode: public SimplePoint
+{
+public:
+	XorNode()
+	{
+		operation = "^";
+	}
+	virtual ~XorNode() override = default;
+};
+class OrNode: public SimplePoint
+{
+public:
+	OrNode()
+	{
+		operation = "|";
+	}
+	virtual ~OrNode() override = default;
+};
+
+class SaturateNode: public Node
+{
+public:
+	virtual ~SaturateNode() override = default;
+	Image *in;
+	Image *out;
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+};
+
+template <typename T>
 class LinearMask: public Node
 {
 public:
@@ -432,15 +355,18 @@ public:
 	Image *in;
 	Image *out;
 
+	bool use_image_datatype_for_sum = true;
+	vx_df_image sum_datatype;
+
 	virtual std::vector<Image*> get_used_images() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
 };
 
-class Sobel3_3: public Node
+class Sobel3x3Node: public Node
 {
 public:
-	virtual ~Sobel3_3() override = default;
+	virtual ~Sobel3x3Node() override = default;
 
 	LinearMask<int> sobel_x;
 	LinearMask<int> sobel_y;
@@ -456,11 +382,57 @@ public:
 	virtual void build() override;
 };
 
-class HarrisCorners2: public Node
+class BoxFilter: public LinearMask<int>
 {
 public:
-	HarrisCorners2(Image *in)
+	BoxFilter()
+	{
+		this->mask = {1, 1, 1, 1, 1, 1, 1, 1, 1};
+		this->dim[0] = this->dim[1] = 3;
+		this->normalization = 1.0f / 9;
+		this->use_image_datatype_for_sum = false;
+		this->sum_datatype = VX_DF_IMAGE_S16;
+	}
+	virtual ~BoxFilter() override = default;
+};
+class GaussianFilter: public LinearMask<int>
+{
+public:
+	GaussianFilter()
+	{
+		this->mask = {1, 2, 1, 2, 4, 2, 1, 2, 1};
+		this->dim[0] = this->dim[1] = 3;
+		this->normalization = 1.0f / 16;
+		this->use_image_datatype_for_sum = false;
+		this->sum_datatype = VX_DF_IMAGE_S16;
+	}
+	virtual ~GaussianFilter() override = default;
+};
+
+
+class Add3_3: public Node
+{
+public:
+	virtual ~Add3_3() override = default;
+
+	LinearMask<int> add;
+
+	Image *in;
+	Image *out;
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+	virtual void build() override;
+};
+
+class HarrisCorners: public Node
+{
+public:
+	HarrisCorners(Image *in)
 		:in(in),
+		  sob_x(in->w, in->h, VX_TYPE_FLOAT32),
+		  sob_y(in->w, in->h, VX_TYPE_FLOAT32),
 		  Gx(in->w, in->h, VX_TYPE_FLOAT32),
 		  Gy(in->w, in->h, VX_TYPE_FLOAT32),
 		  square_Gx(in->w, in->h, VX_TYPE_FLOAT32),
@@ -473,11 +445,40 @@ public:
 		  det_A_mul_Gx_Gy_sum(in->w, in->h, VX_TYPE_FLOAT32),
 		  det_A_subtrahend(in->w, in->h, VX_TYPE_FLOAT32),
 		  det_A(in->w, in->h, VX_TYPE_FLOAT32),
+		  trace_A_square(in->w, in->h, VX_TYPE_FLOAT32),
+		  trace_A_square_k(in->w, in->h, VX_TYPE_FLOAT32),
 		  Mc(in->w, in->h, VX_TYPE_FLOAT32),
 		  Vc(in->w, in->h, VX_TYPE_FLOAT32)
 	{
 	}
-	virtual ~HarrisCorners2() override = default;
+	virtual ~HarrisCorners() override = default;
+
+	Sobel3x3Node sobel;
+	SimplePointScalarMul<float> sobel_x_norm;//Gx
+	SimplePointScalarMul<float> sobel_y_norm;//Gy
+	SimplePointMul sobel_x_square;//Gx²
+	SimplePointMul sobel_y_square;//Gx²
+
+	SimplePointMul sobel_x_y;//Gx*Gy
+
+	Add3_3 gx_square_A;
+	Add3_3 gy_square_A;
+	Add3_3 gx_gy_A;
+
+	SimplePointAdd trace_add;
+
+	SimplePointMul gx_A_gy_A; //gx_A² * gy_A²
+	SimplePointMul gx_gy_A_square; //gx_gy_A * gx_gy_A
+	SimplePointSub det_kernel;
+
+	SimplePointMul trace_A_square_kernel;
+
+	SimplePointScalarMul<float> trace_A_square_k_kernel;
+
+	SimplePointSub Mc_kernel;
+
+
+
 
 	Image *in;
 	Scalar *strength_thresh;
@@ -487,6 +488,12 @@ public:
 	vx_int32 block_size;
 	Array *corners;
 	Scalar *num_corners;
+
+
+
+
+	Image sob_x;
+	Image sob_y;
 
 	Image Gx;
 	Image Gy;
@@ -509,14 +516,139 @@ public:
 
 	Image det_A;
 
-
+	Image trace_A_square;
+	Image trace_A_square_k;
 	Image Mc;
+
+
+
+
 	Image Vc;
 
 
 	virtual std::vector<Image*> get_used_images() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
+	virtual void build() override;
+};
+
+class SqrtNode: public Node
+{
+public:
+	virtual ~SqrtNode() override = default;
+	Image *in;
+	Image *out;
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+};
+class AbsNode: public Node
+{
+public:
+	virtual ~AbsNode() override = default;
+	Image *in;
+	Image *out;
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+};
+
+
+class AbsDiffNode: public Node
+{
+public:
+	virtual ~AbsDiffNode() override = default;
+	Image *in_1;
+	Image *in_2;
+	Image *out;
+
+	SimplePointSub diff_node;
+	std::unique_ptr<Image> diff_image;
+
+	AbsNode abs_node;
+	std::unique_ptr<Image> abs_image;
+
+	SaturateNode saturate_node;
+
+	bool saturate;
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+	virtual void build() override;
+};
+
+class AddNode: public Node
+{
+public:
+	virtual ~AddNode() override = default;
+	Image *in_1;
+	Image *in_2;
+	Image *out;
+
+	SimplePointAdd add_node;
+	std::unique_ptr<Image> add_image;
+
+	SaturateNode saturate_node;
+
+	vx_enum policy;
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+	virtual void build() override;
+};
+class SubtractNode: public Node
+{
+public:
+	virtual ~SubtractNode() override = default;
+	Image *in_1;
+	Image *in_2;
+	Image *out;
+
+	SimplePointSub diff_node;
+	std::unique_ptr<Image> diff_image;
+
+	SaturateNode saturate_node;
+
+	vx_enum policy;
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+	virtual void build() override;
+};
+
+
+class MagnitudeNode: public Node
+{
+public:
+	virtual ~MagnitudeNode() override = default;
+
+	Image *in_1;
+	Image *in_2;
+
+	Image *out;
+
+	SquareNode grad_x_square_node;
+	std::unique_ptr<Image> grad_x_square_image;
+	SquareNode grad_y_square_node;
+	std::unique_ptr<Image> grad_y_square_image;
+
+	SimplePointAdd add_node;
+	std::unique_ptr<Image> add_image;
+
+	SqrtNode sqrt_node;
+	std::unique_ptr<Image> sqrt_image;
+
+	SaturateNode saturate_node;
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+	virtual void build() override;
 };
 
 
@@ -531,17 +663,8 @@ enum class Type
 };
 
 std::string node_generator(HipaVX::WriteImageNode* n, Type t);
-std::string node_generator(HipaVX::Sobel3x3Node* n, Type t);
 std::string node_generator(HipaVX::ConvertDepthNode* n, Type t);
-std::string node_generator(HipaVX::MagnitudeNode* n, Type t);
 
-std::string node_generator(HipaVX::AbsDiffNode* n, Type t);
-std::string node_generator(HipaVX::AddNode* n, Type t);
-std::string node_generator(HipaVX::SubtractNode* n, Type t);
-
-std::string node_generator(HipaVX::AndNode* n, Type t);
-std::string node_generator(HipaVX::XorNode* n, Type t);
-std::string node_generator(HipaVX::OrNode* n, Type t);
 std::string node_generator(HipaVX::NotNode* n, Type t);
 
 std::string node_generator(HipaVX::BoxFilter* n, Type t);
@@ -550,7 +673,6 @@ std::string node_generator(HipaVX::GaussianFilter* n, Type t);
 std::string node_generator(HipaVX::Dilate* n, Type t);
 std::string node_generator(HipaVX::Erode* n, Type t);
 
-std::string node_generator(HipaVX::HarrisCorners* n, Type t);
 
 
 
@@ -560,12 +682,22 @@ std::string node_generator(HipaVX::HarrisCorners* n, Type t);
 template <typename T>
 std::string node_generator(HipaVX::LinearMask<T>* n, Type t);
 std::string node_generator(HipaVX::SimplePoint* n, Type t);
+template <typename T>
+std::string node_generator(HipaVX::SimplePointScalar<T>* n, Type t);
+std::string node_generator(HipaVX::HarrisCorners* n, Type t);
 
+std::string node_generator(HipaVX::SaturateNode* n, Type t);
+std::string node_generator(HipaVX::AbsNode* n, Type t);
+std::string node_generator(HipaVX::SqrtNode* n, Type t);
 
 
 
 
 }
+
+
+
+
 
 
 
@@ -586,6 +718,26 @@ std::string LinearMask<T>::generateClassDefinition()
 }
 template <typename T>
 std::string LinearMask<T>::generateNodeCall()
+{
+	return generator::node_generator(this, generator::Type::Call);
+}
+
+
+template <typename T>
+std::vector<Image *> SimplePointScalar<T>::get_used_images()
+{
+	std::vector<Image*> used_images;
+	used_images.emplace_back(in);
+	used_images.emplace_back(out);
+	return used_images;
+}
+template <typename T>
+std::string SimplePointScalar<T>::generateClassDefinition()
+{
+	return generator::node_generator(this, generator::Type::Definition);
+}
+template <typename T>
+std::string SimplePointScalar<T>::generateNodeCall()
 {
 	return generator::node_generator(this, generator::Type::Call);
 }
