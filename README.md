@@ -21,7 +21,7 @@ In- and Outputimages are in the hipacc_compile_pass folder
 
 - [x] Absolute Difference
 - [x] Accumulate
-- [ ] Accumulate Squared
+- [x] Accumulate Squared
 - [ ] Accumulate Weighted
 - [x] Arithmetic Addition
 - [x] Arithmetic Subtraction

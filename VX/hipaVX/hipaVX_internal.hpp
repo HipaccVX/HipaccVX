@@ -753,6 +753,33 @@ public:
 	virtual void build() override;
 };
 
+class VXAccumulateSquareNode: public Node
+{
+public:
+	virtual ~VXAccumulateSquareNode() override = default;
+	Image *in;
+	Image *in_out;
+	Scalar *shift;
+
+	SquareNode square_node;
+	std::unique_ptr<Image> square_image;
+
+	ConvertDepthNode depth_node;
+	std::unique_ptr<Scalar> depth_scalar;
+	std::unique_ptr<Image> depth_image;
+
+	SimplePointAdd add_node;
+	std::unique_ptr<Image> add_image;
+
+	SaturateNode saturate_node;
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+	virtual void build() override;
+};
+
+
 }
 
 namespace generator

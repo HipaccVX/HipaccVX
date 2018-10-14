@@ -910,6 +910,64 @@ void VXAccumulateNode::build()
 	saturate_node.build();
 }
 
+std::vector<Image *> VXAccumulateSquareNode::get_used_images()
+{
+	std::vector<Image*> used_images;
+	auto a = square_node.get_used_images();
+	auto b = depth_node.get_used_images();
+	auto c = add_node.get_used_images();
+	auto d = saturate_node.get_used_images();
+	std::copy(a.begin(), a.end(), std::back_inserter(used_images));
+	std::copy(b.begin(), b.end(), std::back_inserter(used_images));
+	std::copy(c.begin(), c.end(), std::back_inserter(used_images));
+	std::copy(d.begin(), d.end(), std::back_inserter(used_images));
+	return used_images;
+}
+std::string VXAccumulateSquareNode::generateClassDefinition()
+{
+	std::string s = square_node.generateClassDefinition();
+	s += "\n" + depth_node.generateClassDefinition();
+	s += "\n" + add_node.generateClassDefinition();
+	s += "\n" + saturate_node.generateClassDefinition();
+	return s;
+}
+std::string VXAccumulateSquareNode::generateNodeCall()
+{
+	std::string s = add_node.generateNodeCall();
+	s += "\n" + depth_node.generateNodeCall();
+	s += "\n" + add_node.generateNodeCall();
+	s += "\n" + saturate_node.generateNodeCall();
+	return s;
+}
+void VXAccumulateSquareNode::build()
+{
+	square_node.in = in;
+	square_image.reset(new Image(in->w, in->h, VX_DF_IMAGE_S16));
+	square_node.out = square_image.get();
+
+	depth_node.in = in;
+	depth_image.reset(new Image(in->w, in->h, VX_DF_IMAGE_S16));
+	depth_node.out = square_image.get();
+	depth_node.policy = VX_CONVERT_POLICY_WRAP;
+	int32_t signed_shift = shift->ui32;
+	depth_scalar.reset(new Scalar(VX_TYPE_UINT32, &signed_shift));
+	depth_node.shift = depth_scalar.get();
+
+
+	add_node.in_1 = square_image.get();
+	add_node.in_2 = in_out;
+	add_image.reset(new Image(in->w, in->h, VX_DF_IMAGE_S16));
+	add_node.out = add_image.get();
+
+	saturate_node.in = add_image.get();
+	saturate_node.out = in_out;
+
+	square_node.build();
+	depth_node.build();
+	add_node.build();
+	saturate_node.build();
+}
+
 
 
 }

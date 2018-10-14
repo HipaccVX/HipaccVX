@@ -319,6 +319,23 @@ VX_API_ENTRY vx_node VX_API_CALL vxAccumulateImageNode (vx_graph graph, vx_image
 	return accum_node;
 }
 
+VX_API_ENTRY vx_node VX_API_CALL vxAccumulateSquareImageNode (vx_graph graph, vx_image input, vx_scalar shift, vx_image accum)
+{
+	if (input->col != VX_DF_IMAGE_U8 || accum->col != VX_DF_IMAGE_S16)
+		return nullptr;
+
+	if (shift->ui32 > 15)
+		return nullptr;
+
+	HipaVX::VXAccumulateSquareNode *accum_square_node = new HipaVX::VXAccumulateSquareNode();
+	accum_square_node->in = input;
+	accum_square_node->in_out = accum;
+	accum_square_node->shift = shift;
+	graph->graph.emplace_back(accum_square_node);
+	graph->built = false;
+	return accum_square_node;
+}
+
 
 
 
