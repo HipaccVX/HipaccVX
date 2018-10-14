@@ -1,9 +1,0 @@
-[NAME]
-Sqrt
-
-[KERNEL_VARIABLES]
-Accessor input
-
-[KERNEL]
-output() = sqrt(input());
-[KERNEL_END]
