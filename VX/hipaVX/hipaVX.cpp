@@ -336,6 +336,22 @@ VX_API_ENTRY vx_node VX_API_CALL vxAccumulateSquareImageNode (vx_graph graph, vx
 	return accum_square_node;
 }
 
+VX_API_ENTRY vx_node VX_API_CALL vxAccumulateWeightedImageNode (vx_graph graph, vx_image input, vx_scalar alpha, vx_image accum)
+{
+	if (input->col != VX_DF_IMAGE_U8 || accum->col != VX_DF_IMAGE_U8)
+		return nullptr;
+
+	if (alpha->f32 < 0 || alpha->f32 > 1)
+		return nullptr;
+
+	HipaVX::VXAccumulateWeightedNode *accum_weighted_node = new HipaVX::VXAccumulateWeightedNode();
+	accum_weighted_node->in = input;
+	accum_weighted_node->in_out = accum;
+	accum_weighted_node->alpha = alpha;
+	graph->graph.emplace_back(accum_weighted_node);
+	graph->built = false;
+	return accum_weighted_node;
+}
 
 
 

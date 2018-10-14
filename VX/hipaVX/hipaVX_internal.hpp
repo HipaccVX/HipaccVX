@@ -779,6 +779,30 @@ public:
 	virtual void build() override;
 };
 
+class VXAccumulateWeightedNode: public Node
+{
+public:
+	virtual ~VXAccumulateWeightedNode() override = default;
+	Image *in;
+	Image *in_out;
+	Scalar *alpha;
+
+
+	SimplePointScalarMul<float> mul_scalar_left_node;
+	std::unique_ptr<Image> mul_scalar_left_image;
+
+	SimplePointScalarMul<float> mul_scalar_right_node;
+	std::unique_ptr<Image> mul_scalar_right_image;
+
+	SimplePointAdd add_node;
+	std::unique_ptr<Image> add_image;
+
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+	virtual void build() override;
+};
 
 }
 

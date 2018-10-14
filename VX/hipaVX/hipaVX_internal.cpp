@@ -968,6 +968,53 @@ void VXAccumulateSquareNode::build()
 	saturate_node.build();
 }
 
+std::vector<Image *> VXAccumulateWeightedNode::get_used_images()
+{
+	std::vector<Image*> used_images;
+	auto a = mul_scalar_left_node.get_used_images();
+	auto b = mul_scalar_right_node.get_used_images();
+	auto c = add_node.get_used_images();
+	std::copy(a.begin(), a.end(), std::back_inserter(used_images));
+	std::copy(b.begin(), b.end(), std::back_inserter(used_images));
+	std::copy(c.begin(), c.end(), std::back_inserter(used_images));
+	return used_images;
+}
+std::string VXAccumulateWeightedNode::generateClassDefinition()
+{
+	std::string s = mul_scalar_left_node.generateClassDefinition();
+	s += "\n" + mul_scalar_right_node.generateClassDefinition();
+	s += "\n" + add_node.generateClassDefinition();
+	return s;
+}
+std::string VXAccumulateWeightedNode::generateNodeCall()
+{
+	std::string s = mul_scalar_left_node.generateNodeCall();
+	s += "\n" + mul_scalar_right_node.generateNodeCall();
+	s += "\n" + add_node.generateNodeCall();
+	return s;
+}
+void VXAccumulateWeightedNode::build()
+{
+	mul_scalar_left_node.in = in;
+	mul_scalar_left_image.reset(new Image(in->w, in->h, VX_TYPE_FLOAT32));
+	mul_scalar_left_node.out = mul_scalar_left_image.get();
+	mul_scalar_left_node.scalar = 1.f - alpha->f32;
+
+	mul_scalar_right_node.in = in_out;
+	mul_scalar_right_image.reset(new Image(in->w, in->h, VX_TYPE_FLOAT32));
+	mul_scalar_right_node.out = mul_scalar_right_image.get();
+	mul_scalar_right_node.scalar = alpha->f32;
+
+	add_node.in_1 = mul_scalar_left_image.get();
+	add_node.in_2 = mul_scalar_right_image.get();
+	add_image.reset(new Image(in->w, in->h, VX_DF_IMAGE_S16));
+	add_node.out = in_out;
+
+
+	mul_scalar_left_node.build();
+	mul_scalar_right_node.build();
+	add_node.build();
+}
 
 
 }
