@@ -20,7 +20,7 @@ In- and Outputimages are in the hipacc_compile_pass folder
 ## OpenVX
 
 - [x] Absolute Difference
-- [ ] Accumulate
+- [x] Accumulate
 - [ ] Accumulate Squared
 - [ ] Accumulate Weighted
 - [x] Arithmetic Addition

@@ -314,7 +314,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxAccumulateImageNode (vx_graph graph, vx_image
 	HipaVX::VXAccumulateNode *accum_node = new HipaVX::VXAccumulateNode();
 	accum_node->in = input;
 	accum_node->in_out = accum;
-	graph->graph.emplace_back(accum);
+	graph->graph.emplace_back(accum_node);
 	graph->built = false;
 	return accum_node;
 }
