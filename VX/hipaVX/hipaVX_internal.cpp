@@ -816,6 +816,64 @@ void PhaseNode::build()
 	mapping_node.build();
 }
 
+std::vector<Image *> VXMultiplyNode::get_used_images()
+{
+	std::vector<Image*> used_images;
+	auto a = mul_node.get_used_images();
+	std::copy(a.begin(), a.end(), std::back_inserter(used_images));
+	auto b = mul_scalar_node.get_used_images();
+	std::copy(b.begin(), b.end(), std::back_inserter(used_images));
+
+	if (overflow_policy == VX_CONVERT_POLICY_SATURATE)
+	{
+		auto c = saturate_node.get_used_images();
+		std::copy(c.begin(), c.end(), std::back_inserter(used_images));
+	}
+	return used_images;
+}
+std::string VXMultiplyNode::generateClassDefinition()
+{
+	std::string s = mul_node.generateClassDefinition();
+	s += "\n" + mul_scalar_node.generateClassDefinition();
+	if (overflow_policy == VX_CONVERT_POLICY_SATURATE)
+		s += "\n" + saturate_node.generateClassDefinition();
+	return s;
+}
+std::string VXMultiplyNode::generateNodeCall()
+{
+	std::string s = mul_node.generateNodeCall();
+	s += "\n" + mul_scalar_node.generateNodeCall();
+	if (overflow_policy == VX_CONVERT_POLICY_SATURATE)
+		s += "\n" + saturate_node.generateNodeCall();
+	return s;
+}
+void VXMultiplyNode::build()
+{
+	mul_node.in_1 = in_1;
+	mul_node.in_2 = in_2;
+	mul_image.reset(new Image(in_1->w, in_2->h, VX_DF_IMAGE_S32));
+	mul_node.out = mul_image.get();
+
+	mul_scalar_node.out = mul_image.get();
+	if (overflow_policy != VX_CONVERT_POLICY_SATURATE)
+	{
+		mul_scalar_node.out = out;
+	}
+	else
+	{
+		mul_scalar_image.reset(new Image(in_1->w, in_2->h, VX_DF_IMAGE_S32));
+		mul_scalar_node.out = mul_scalar_image.get();
+
+		saturate_node.in = mul_scalar_image.get();
+		saturate_node.out = out;
+	}
+
+	mul_node.build();
+	mul_scalar_node.build();
+	if (overflow_policy == VX_CONVERT_POLICY_SATURATE)
+		saturate_node.build();
+}
+
 
 
 }

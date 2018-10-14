@@ -20,9 +20,9 @@ In- and Outputimages are in the hipacc_compile_pass folder
 ## OpenVX
 
 - [x] Absolute Difference
-- [ ] ~~Accumulate~~
-- [ ] ~~Accumulate Squared~~
-- [ ] ~~Accumulate Weighted~~
+- [ ] Accumulate
+- [ ] Accumulate Squared
+- [ ] Accumulate Weighted
 - [x] Arithmetic Addition
 - [x] Arithmetic Subtraction
 - [x] Bitwise AND
@@ -54,7 +54,7 @@ In- and Outputimages are in the hipacc_compile_pass folder
 - [ ] Min, Max Location
 - [ ] Optical Flow Pyramid (LK)
 - [x] Phase
-- [ ] Pixel-wise Multiplication (No rounding support)
+- [x] Pixel-wise Multiplication (No rounding support)
 - [ ] Remap
 - [ ] Scale Image
 - [x] Sobel 3x3

@@ -707,6 +707,34 @@ public:
 	virtual void build() override;
 };
 
+class VXMultiplyNode: public Node
+{
+public:
+	virtual ~VXMultiplyNode() override = default;
+	Image *in_1;
+	Image *in_2;
+	Image *out;
+	Scalar *scalar;
+
+	vx_enum overflow_policy;
+	vx_enum rounding_policy;
+
+
+	SimplePointMul mul_node;
+	std::unique_ptr<Image> mul_image;
+
+	SimplePointScalarMul<float> mul_scalar_node;
+	std::unique_ptr<Image> mul_scalar_image;
+
+	SaturateNode saturate_node;
+
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+	virtual void build() override;
+};
+
 
 }
 

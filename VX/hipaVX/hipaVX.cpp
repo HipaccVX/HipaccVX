@@ -278,6 +278,33 @@ VX_API_ENTRY vx_node VX_API_CALL vxPhaseNode (vx_graph graph, vx_image grad_x, v
 	return phase;
 }
 
+vx_node VX_API_CALL vxMultiplyNode (vx_graph graph, vx_image in1, vx_image in2, vx_scalar scale, vx_enum overflow_policy, vx_enum rounding_policy, vx_image out)
+{
+	if (out->col == VX_DF_IMAGE_U8 && (in1->col != VX_DF_IMAGE_U8 ||
+									   in2->col != VX_DF_IMAGE_U8))
+		return nullptr;
+
+	if (in1->col != VX_DF_IMAGE_U8 && in1->col != VX_DF_IMAGE_S16)
+		return nullptr;
+	if (in2->col != VX_DF_IMAGE_U8 && in2->col != VX_DF_IMAGE_S16)
+		return nullptr;
+	if (out->col != VX_DF_IMAGE_U8 && out->col != VX_DF_IMAGE_S16)
+		return nullptr;
+
+	if (rounding_policy == VX_ROUND_POLICY_TO_NEAREST_EVEN)
+		return nullptr; //Only truncation is currently supported
+
+	HipaVX::VXMultiplyNode *multiply = new HipaVX::VXMultiplyNode();
+	multiply->in_1 = in1;
+	multiply->in_2 = in2;
+	multiply->out = out;
+	multiply->scalar = scale;
+	multiply->overflow_policy = overflow_policy;
+	multiply->rounding_policy = rounding_policy;
+	graph->graph.emplace_back(multiply);
+	graph->built = false;
+	return multiply;
+}
 
 
 
