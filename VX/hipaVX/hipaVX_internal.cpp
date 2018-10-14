@@ -874,6 +874,41 @@ void VXMultiplyNode::build()
 		saturate_node.build();
 }
 
+std::vector<Image *> VXAccumulateNode::get_used_images()
+{
+	std::vector<Image*> used_images;
+	auto a = add_node.get_used_images();
+	auto c = saturate_node.get_used_images();
+	std::copy(a.begin(), a.end(), std::back_inserter(used_images));
+	std::copy(c.begin(), c.end(), std::back_inserter(used_images));
+	return used_images;
+}
+std::string VXAccumulateNode::generateClassDefinition()
+{
+	std::string s = add_node.generateClassDefinition();
+	s += "\n" + saturate_node.generateClassDefinition();
+	return s;
+}
+std::string VXAccumulateNode::generateNodeCall()
+{
+	std::string s = add_node.generateNodeCall();
+	s += "\n" + saturate_node.generateNodeCall();
+	return s;
+}
+void VXAccumulateNode::build()
+{
+	add_node.in_1 = in;
+	add_node.in_2 = in_out;
+	add_image.reset(new Image(in->w, in->h, VX_DF_IMAGE_S32));
+	add_node.out = add_image.get();
+
+	saturate_node.in = add_image.get();
+	saturate_node.out = in_out;
+
+	add_node.build();
+	saturate_node.build();
+}
+
 
 
 }

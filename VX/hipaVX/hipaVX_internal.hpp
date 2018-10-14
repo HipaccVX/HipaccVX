@@ -735,6 +735,23 @@ public:
 	virtual void build() override;
 };
 
+class VXAccumulateNode: public Node
+{
+public:
+	virtual ~VXAccumulateNode() override = default;
+	Image *in;
+	Image *in_out;
+
+	SimplePointAdd add_node;
+	std::unique_ptr<Image> add_image;
+
+	SaturateNode saturate_node;
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+	virtual void build() override;
+};
 
 }
 

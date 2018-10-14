@@ -278,7 +278,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxPhaseNode (vx_graph graph, vx_image grad_x, v
 	return phase;
 }
 
-vx_node VX_API_CALL vxMultiplyNode (vx_graph graph, vx_image in1, vx_image in2, vx_scalar scale, vx_enum overflow_policy, vx_enum rounding_policy, vx_image out)
+VX_API_ENTRY vx_node VX_API_CALL vxMultiplyNode (vx_graph graph, vx_image in1, vx_image in2, vx_scalar scale, vx_enum overflow_policy, vx_enum rounding_policy, vx_image out)
 {
 	if (out->col == VX_DF_IMAGE_U8 && (in1->col != VX_DF_IMAGE_U8 ||
 									   in2->col != VX_DF_IMAGE_U8))
@@ -305,6 +305,20 @@ vx_node VX_API_CALL vxMultiplyNode (vx_graph graph, vx_image in1, vx_image in2, 
 	graph->built = false;
 	return multiply;
 }
+
+VX_API_ENTRY vx_node VX_API_CALL vxAccumulateImageNode (vx_graph graph, vx_image input, vx_image accum)
+{
+	if (input->col != VX_DF_IMAGE_U8 || accum->col != VX_DF_IMAGE_S16)
+		return nullptr;
+
+	HipaVX::VXAccumulateNode *accum_node = new HipaVX::VXAccumulateNode();
+	accum_node->in = input;
+	accum_node->in_out = accum;
+	graph->graph.emplace_back(accum);
+	graph->built = false;
+	return accum_node;
+}
+
 
 
 
