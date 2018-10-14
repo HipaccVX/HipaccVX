@@ -264,6 +264,19 @@ VX_API_ENTRY vx_node VX_API_CALL vxHarrisCornersNode (vx_graph graph, vx_image i
 	return harris;
 }
 
+VX_API_ENTRY vx_node VX_API_CALL vxPhaseNode (vx_graph graph, vx_image grad_x, vx_image grad_y, vx_image orientation)
+{
+	if (grad_x->col != VX_DF_IMAGE_S16 || grad_y->col != VX_DF_IMAGE_S16 || orientation->col != VX_DF_IMAGE_U8)
+		return nullptr;
+
+	HipaVX::PhaseNode *phase = new HipaVX::PhaseNode();
+	phase->in_1 = grad_x;
+	phase->in_2 = grad_y;
+	phase->out = orientation;
+	graph->graph.emplace_back(phase);
+	graph->built = false;
+	return phase;
+}
 
 
 

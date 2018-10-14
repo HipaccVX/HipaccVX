@@ -452,37 +452,102 @@ std::string SaturateNode::generateNodeCall()
 	return generator::node_generator(this, generator::Type::Call);
 }
 
-std::vector<Image *> SqrtNode::get_used_images()
+std::vector<Image *> UnaryFunctionNode::get_used_images()
 {
 	std::vector<Image*> used_images;
 	used_images.emplace_back(in);
 	used_images.emplace_back(out);
 	return used_images;
 }
-std::string SqrtNode::generateClassDefinition()
+std::string UnaryFunctionNode::generateClassDefinition()
 {
 	return generator::node_generator(this, generator::Type::Definition);
 }
-std::string SqrtNode::generateNodeCall()
+std::string UnaryFunctionNode::generateNodeCall()
 {
 	return generator::node_generator(this, generator::Type::Call);
+}
+
+
+std::vector<Image *> SqrtNode::get_used_images()
+{
+	std::vector<Image*> used_images;
+	auto a = function_node.get_used_images();
+	std::copy(a.begin(), a.end(), std::back_inserter(used_images));
+	return used_images;
+}
+std::string SqrtNode::generateClassDefinition()
+{
+	std::string s = function_node.generateClassDefinition();
+	return s;
+}
+std::string SqrtNode::generateNodeCall()
+{
+	std::string s = function_node.generateNodeCall();
+	return s;
+}
+void SqrtNode::build()
+{
+	function_node.in = in;
+	function_node.out = out;
+	function_node.function = "sqrt";
+
+	function_node.build();
 }
 
 std::vector<Image *> AbsNode::get_used_images()
 {
 	std::vector<Image*> used_images;
-	used_images.emplace_back(in);
-	used_images.emplace_back(out);
+	auto a = function_node.get_used_images();
+	std::copy(a.begin(), a.end(), std::back_inserter(used_images));
 	return used_images;
 }
 std::string AbsNode::generateClassDefinition()
 {
-	return generator::node_generator(this, generator::Type::Definition);
+	std::string s = function_node.generateClassDefinition();
+	return s;
 }
 std::string AbsNode::generateNodeCall()
 {
-	return generator::node_generator(this, generator::Type::Call);
+	std::string s = function_node.generateNodeCall();
+	return s;
 }
+void AbsNode::build()
+{
+	function_node.in = in;
+	function_node.out = out;
+	function_node.function = "abs";
+
+	function_node.build();
+}
+
+std::vector<Image *> Atan2Node::get_used_images()
+{
+	std::vector<Image*> used_images;
+	auto a = function_node.get_used_images();
+	std::copy(a.begin(), a.end(), std::back_inserter(used_images));
+	return used_images;
+}
+std::string Atan2Node::generateClassDefinition()
+{
+	std::string s = function_node.generateClassDefinition();
+	return s;
+}
+std::string Atan2Node::generateNodeCall()
+{
+	std::string s = function_node.generateNodeCall();
+	return s;
+}
+void Atan2Node::build()
+{
+	function_node.in = in;
+	function_node.out = out;
+	function_node.function = "atan2";
+
+	function_node.build();
+}
+
+
 
 std::vector<Image *> AbsDiffNode::get_used_images()
 {
@@ -697,6 +762,58 @@ void MagnitudeNode::build()
 
 	saturate_node.in = sqrt_image.get();
 	saturate_node.out = out;
+
+
+	grad_x_square_node.build();
+	grad_y_square_node.build();
+	add_node.build();
+	sqrt_node.build();
+	saturate_node.build();
+}
+
+std::vector<Image *> PhaseNode::get_used_images()
+{
+	std::vector<Image*> used_images;
+	auto a = div_node.get_used_images();
+	auto b = atan2_node.get_used_images();
+	auto c = mapping_node.get_used_images();
+	std::copy(a.begin(), a.end(), std::back_inserter(used_images));
+	std::copy(b.begin(), b.end(), std::back_inserter(used_images));
+	std::copy(c.begin(), c.end(), std::back_inserter(used_images));
+	return used_images;
+}
+std::string PhaseNode::generateClassDefinition()
+{
+	std::string s = div_node.generateClassDefinition();
+	s += "\n" + atan2_node.generateClassDefinition();
+	s += "\n" + mapping_node.generateClassDefinition();
+	return s;
+}
+std::string PhaseNode::generateNodeCall()
+{
+	std::string s = div_node.generateNodeCall();
+	s += "\n" + atan2_node.generateNodeCall();
+	s += "\n" + mapping_node.generateNodeCall();
+	return s;
+}
+void PhaseNode::build()
+{
+	div_node.in_1 = in_1;
+	div_node.in_2 = in_2;
+	div_image.reset(new Image(in_1->w, in_2->h, VX_TYPE_FLOAT32));
+	div_node.out = div_image.get();
+
+	atan2_node.in = div_image.get();
+	atan2_image.reset(new Image(in_1->w, in_2->h, VX_TYPE_FLOAT32));
+	atan2_node.out = atan2_image.get();
+
+	mapping_node.in = atan2_image.get();
+	mapping_node.scalar = 255.f / (M_2_PIf32);
+	mapping_node.out = out;
+
+	div_node.build();
+	atan2_node.build();
+	mapping_node.build();
 }
 
 

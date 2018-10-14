@@ -53,8 +53,8 @@ In- and Outputimages are in the hipacc_compile_pass folder
 - [ ] Median Filter
 - [ ] Min, Max Location
 - [ ] Optical Flow Pyramid (LK)
-- [ ] Phase
-- [ ] Pixel-wise Multiplication
+- [x] Phase
+- [ ] Pixel-wise Multiplication (No rounding support)
 - [ ] Remap
 - [ ] Scale Image
 - [x] Sobel 3x3

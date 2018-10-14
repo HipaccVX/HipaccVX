@@ -532,6 +532,20 @@ public:
 	virtual void build() override;
 };
 
+class UnaryFunctionNode: public Node
+{
+public:
+	virtual ~UnaryFunctionNode() override = default;
+	Image *in;
+	Image *out;
+
+	std::string function;
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+};
+
 class SqrtNode: public Node
 {
 public:
@@ -539,9 +553,12 @@ public:
 	Image *in;
 	Image *out;
 
+	UnaryFunctionNode function_node;
+
 	virtual std::vector<Image*> get_used_images() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
+	virtual void build() override;
 };
 class AbsNode: public Node
 {
@@ -550,9 +567,26 @@ public:
 	Image *in;
 	Image *out;
 
+	UnaryFunctionNode function_node;
+
 	virtual std::vector<Image*> get_used_images() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
+	virtual void build() override;
+};
+class Atan2Node: public Node
+{
+public:
+	virtual ~Atan2Node() override = default;
+	Image *in;
+	Image *out;
+
+	UnaryFunctionNode function_node;
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+	virtual void build() override;
 };
 
 
@@ -651,6 +685,28 @@ public:
 	virtual void build() override;
 };
 
+class PhaseNode: public Node
+{
+public:
+	virtual ~PhaseNode() override = default;
+	Image *in_1;
+	Image *in_2;
+	Image *out;
+
+	SimplePointDiv div_node;
+	std::unique_ptr<Image> div_image;
+
+	Atan2Node atan2_node;
+	std::unique_ptr<Image> atan2_image;
+
+	SimplePointScalarMul<float> mapping_node;
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+	virtual void build() override;
+};
+
 
 }
 
@@ -667,13 +723,8 @@ std::string node_generator(HipaVX::ConvertDepthNode* n, Type t);
 
 std::string node_generator(HipaVX::NotNode* n, Type t);
 
-std::string node_generator(HipaVX::BoxFilter* n, Type t);
-std::string node_generator(HipaVX::GaussianFilter* n, Type t);
-
 std::string node_generator(HipaVX::Dilate* n, Type t);
 std::string node_generator(HipaVX::Erode* n, Type t);
-
-
 
 
 
@@ -687,8 +738,7 @@ std::string node_generator(HipaVX::SimplePointScalar<T>* n, Type t);
 std::string node_generator(HipaVX::HarrisCorners* n, Type t);
 
 std::string node_generator(HipaVX::SaturateNode* n, Type t);
-std::string node_generator(HipaVX::AbsNode* n, Type t);
-std::string node_generator(HipaVX::SqrtNode* n, Type t);
+std::string node_generator(HipaVX::UnaryFunctionNode* n, Type t);
 
 
 

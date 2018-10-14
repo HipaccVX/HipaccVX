@@ -5,7 +5,7 @@ Saturate
 Accessor input
 
 [KERNEL]
-int out = input()
+int out = input();
 if(@@@U8@@@)
 {
 	if (out > 255) // max u8

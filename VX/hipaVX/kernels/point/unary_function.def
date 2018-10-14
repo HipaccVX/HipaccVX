@@ -1,0 +1,9 @@
+[NAME]
+UnaryFunction
+
+[KERNEL_VARIABLES]
+Accessor input
+
+[KERNEL]
+output() = @@@FUNCTION@@@(input());
+[KERNEL_END]
