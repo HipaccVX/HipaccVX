@@ -1082,6 +1082,58 @@ void VXAccumulateWeightedNode::build()
 	add_node.build();
 }
 
+std::vector<Image *> VXConvolveNode::get_used_images()
+{
+	std::vector<Image*> used_images;
+	auto a = lin_mask_node.get_used_images();
+	std::copy(a.begin(), a.end(), std::back_inserter(used_images));
+	if (out->col == VX_DF_IMAGE_U8)
+	{
+		auto c = saturate_node.get_used_images();
+		std::copy(c.begin(), c.end(), std::back_inserter(used_images));
+	}
+	return used_images;
+}
+std::string VXConvolveNode::generateClassDefinition()
+{
+	std::string s = lin_mask_node.generateClassDefinition();
+	if (out->col == VX_DF_IMAGE_U8)
+		s += "\n" + saturate_node.generateClassDefinition();
+	return s;
+}
+std::string VXConvolveNode::generateNodeCall()
+{
+	std::string s = lin_mask_node.generateNodeCall();
+	if (out->col == VX_DF_IMAGE_U8)
+		s += "\n" + saturate_node.generateNodeCall();
+	return s;
+}
+void VXConvolveNode::build()
+{
+	lin_mask_node.in = in;
+	lin_mask_node.dim[0] = convolution->rows;
+	lin_mask_node.dim[1] = convolution->columns;
+	lin_mask_node.mask.reserve(lin_mask_node.dim[0] * lin_mask_node.dim[1]);
+	for (unsigned int i = 0; i < lin_mask_node.dim[0] * lin_mask_node.dim[1]; i++)
+		lin_mask_node.mask[i] = convolution->coefficients[i];
+	lin_mask_node.normalization = 1.f / convolution->scale;
+
+	if (out->col != VX_DF_IMAGE_U8)
+	{
+		lin_mask_node.out = out;
+	}
+	else
+	{
+		lin_mask_image.reset(new Image(in->w, in->h, VX_DF_IMAGE_S16));
+		lin_mask_node.out = lin_mask_image.get();
+
+		saturate_node.in = lin_mask_image.get();
+		saturate_node.out = out;
+	}
+	lin_mask_node.build();
+	saturate_node.build();
+}
+
 
 }
 

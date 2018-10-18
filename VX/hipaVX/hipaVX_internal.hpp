@@ -124,6 +124,15 @@ public:
 	std::vector<Graph*> graphs;
 };
 
+class Convolution
+{
+public:
+	std::vector<vx_int16> coefficients;
+	vx_size  rows;
+	vx_size  columns;
+	vx_uint32 scale;
+};
+
 
 class WriteImageNode: public Node
 {
@@ -881,6 +890,29 @@ public:
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
 };
+
+class VXConvolveNode: public Node
+{
+public:
+	virtual ~VXConvolveNode() override = default;
+	Image *in;
+	Image *out;
+	Convolution *convolution;
+
+	LinearMask<short> lin_mask_node;
+	std::unique_ptr<Image> lin_mask_image;
+
+	SaturateNode saturate_node;
+
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+	virtual void build() override;
+};
+
+
+
 }
 
 namespace generator

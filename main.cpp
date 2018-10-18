@@ -52,6 +52,8 @@ int main()
 			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),                 /*20: g */
 			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),                 /*21: b */
 			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),                 /*22: a */
+
+			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),                 /*23: custom convolve scharr_x */
 		};
 
 		int32_t two = 2;
@@ -72,6 +74,16 @@ int main()
 		vxSetThresholdAttribute(thresh, VX_THRESHOLD_THRESHOLD_LOWER, &some_int, sizeof(some_int));
 		some_int = 200;
 		vxSetThresholdAttribute(thresh, VX_THRESHOLD_THRESHOLD_UPPER, &some_int, sizeof(some_int));
+
+		vx_convolution scharr_x = vxCreateConvolution(context, 3, 3);
+		vx_int16 gx[3][3] = {
+				{  3, 0, -3},
+				{ 10, 0,-10},
+				{  3, 0, -3},
+			};
+		vx_uint32 scale = 2;
+		vxCopyConvolutionCoefficients(scharr_x, (vx_int16*)gx, VX_WRITE_ONLY, VX_MEMORY_TYPE_HOST);
+		vxSetConvolutionAttribute(scharr_x, VX_CONVOLUTION_SCALE, &scale, sizeof(scale));
 
 		//Step 2.Create Graph
 		vx_graph graph = vxCreateGraph(context);
@@ -132,6 +144,9 @@ int main()
 				vxFWriteImageNode(graph, images[20], "akif-200x300_rgba_g.png"),
 				vxFWriteImageNode(graph, images[21], "akif-200x300_rgba_b.png"),
 				vxFWriteImageNode(graph, images[22], "akif-200x300_rgba_a.png"),
+
+				vxConvolveNode(graph, images[0], scharr_x, images[23]),
+				vxFWriteImageNode(graph, images[23], "akif-200x300_bw_scharr_x.png"),
 			};
 
             //Step4.Verify Graph

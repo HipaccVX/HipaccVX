@@ -35,7 +35,7 @@ In- and Outputimages are in the hipacc_compile_pass folder
 - [x] Channel Extract
 - [ ] Color Convert
 - [x] Convert Bit depth
-- [ ] Custom Convolution
+- [x] Custom Convolution
 - [x] Dilate Image
 - [ ] Equalize Histogram
 - [x] Erode Image

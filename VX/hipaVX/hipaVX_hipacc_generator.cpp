@@ -14,6 +14,7 @@ static std::map<vx_df_image, string> VX_DF_IMAGE_to_hipacc = {
 	{VX_DF_IMAGE_U8, "uchar"},
 	{VX_DF_IMAGE_S16, "short"},
 	{VX_DF_IMAGE_S32, "int"},
+	{VX_DF_IMAGE_U32, "uint"},
 	{VX_DF_IMAGE_RGBX, "uchar4"},
 	{VX_TYPE_FLOAT32, "float"} //Not really a vx_df_image type
 };
@@ -507,6 +508,7 @@ std::string node_generator(HipaVX::LinearMask<T>* n, Type t)
 // Explicit instantiation
 template std::string node_generator<float>(HipaVX::LinearMask<float>* n, Type t);
 template std::string node_generator<int>(HipaVX::LinearMask<int>* n, Type t);
+template std::string node_generator<short>(HipaVX::LinearMask<short>* n, Type t);
 
 template <typename T>
 std::string node_generator(HipaVX::SimplePointScalar<T>* n, Type t)
@@ -549,6 +551,7 @@ std::string node_generator(HipaVX::SimplePointScalar<T>* n, Type t)
 // Explicit instantiation
 template std::string node_generator<float>(HipaVX::SimplePointScalar<float>* n, Type t);
 template std::string node_generator<int>(HipaVX::SimplePointScalar<int>* n, Type t);
+template std::string node_generator<uint>(HipaVX::SimplePointScalar<uint>* n, Type t);
 
 template <typename T>
 std::string node_generator(HipaVX::ConditionalAssignmentNode<T>* n, Type t)

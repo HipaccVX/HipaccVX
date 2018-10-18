@@ -282,7 +282,11 @@ typedef HipaVX::Threshold *vx_threshold;
  * \extends vx_reference
  * \ingroup group_convolution
  */
-typedef struct _vx_convolution *vx_convolution;
+namespace HipaVX
+{
+class Convolution;
+}
+typedef HipaVX::Convolution *vx_convolution;
 
 /*! \brief The remap table Object. A remap table contains per-pixel mapping of
  * output pixels to input pixels.

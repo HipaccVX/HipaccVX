@@ -382,6 +382,23 @@ VX_API_ENTRY vx_node VX_API_CALL vxChannelExtractNode (vx_graph graph, vx_image 
 	return channel_extract;
 }
 
+VX_API_ENTRY vx_node VX_API_CALL vxConvolveNode (vx_graph graph, vx_image input, vx_convolution conv, vx_image output)
+{
+	if (input->col != VX_DF_IMAGE_U8)
+		return nullptr;
+
+	if (output->col != VX_DF_IMAGE_U8 && output->col != VX_DF_IMAGE_S16)
+		return nullptr;
+
+	HipaVX::VXConvolveNode *convolve_node = new HipaVX::VXConvolveNode();
+	convolve_node->in = input;
+	convolve_node->convolution = conv;
+	convolve_node->out = output;
+	graph->graph.emplace_back(convolve_node);
+	graph->built = false;
+	return convolve_node;
+}
+
 VX_API_ENTRY vx_status VX_API_CALL vxReleaseNode(vx_node *node)
 {
 	return 0;
@@ -429,6 +446,38 @@ VX_API_ENTRY vx_status VX_API_CALL vxSetThresholdAttribute (vx_threshold thresh,
 	return VX_SUCCESS;
 }
 
+
+
+VX_API_ENTRY vx_convolution VX_API_CALL vxCreateConvolution (vx_context context, vx_size columns, vx_size rows)
+{
+	HipaVX::Convolution *conv = new HipaVX::Convolution();
+	conv->columns = columns;
+	conv->rows = rows;
+	conv->coefficients.resize(conv->columns * conv->rows);
+	return conv;
+}
+VX_API_ENTRY vx_status VX_API_CALL vxCopyConvolutionCoefficients (vx_convolution conv, void *user_ptr, vx_enum usage, vx_enum user_mem_type)
+{
+	if (usage != VX_WRITE_ONLY && user_mem_type != VX_MEMORY_TYPE_HOST)
+		return VX_FAILURE;
+
+	vx_int16 *int16_ptr = (vx_int16*) user_ptr;
+	for(unsigned int i = 0; i < conv->coefficients.size(); i++)
+	{
+		conv->coefficients[i] = int16_ptr[i];
+	}
+
+	return VX_SUCCESS;
+}
+VX_API_ENTRY vx_status VX_API_CALL vxSetConvolutionAttribute (vx_convolution conv, vx_enum attribute, const void *ptr, vx_size size)
+{
+	if (attribute != VX_CONVOLUTION_SCALE)
+		return VX_FAILURE;
+
+	conv->scale = *((vx_uint32*) ptr);
+
+	return VX_SUCCESS;
+}
 
 vx_image vxCreateImageFromFile(vx_context context, vx_uint32 width, vx_uint32 height, vx_df_image color, std::string filename)
 {
