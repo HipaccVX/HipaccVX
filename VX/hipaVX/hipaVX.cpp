@@ -368,7 +368,19 @@ VX_API_ENTRY vx_node VX_API_CALL vxThresholdNode (vx_graph graph, vx_image input
 	return thresh_node;
 }
 
+VX_API_ENTRY vx_node VX_API_CALL vxChannelExtractNode (vx_graph graph, vx_image input, vx_enum channel, vx_image output)
+{
+	if (output->col != VX_DF_IMAGE_U8)
+		return nullptr;
 
+	HipaVX::VXChannelExtractNode *channel_extract = new HipaVX::VXChannelExtractNode();
+	channel_extract->in = input;
+	channel_extract->channel = (vx_channel_e) channel;
+	channel_extract->out = output;
+	graph->graph.emplace_back(channel_extract);
+	graph->built = false;
+	return channel_extract;
+}
 
 VX_API_ENTRY vx_status VX_API_CALL vxReleaseNode(vx_node *node)
 {

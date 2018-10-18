@@ -46,6 +46,12 @@ int main()
 			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),                 /*16: gaussian */
 
 			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),                 /*17: thresh */
+
+			vxCreateImageFromFile(context, WIDTH, HEIGHT, VX_DF_IMAGE_RGBX, "akif-200x300_rgba.png"), /*18: thresh */
+			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),                 /*19: r */
+			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),                 /*20: g */
+			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),                 /*21: b */
+			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),                 /*22: a */
 		};
 
 		int32_t two = 2;
@@ -116,6 +122,16 @@ int main()
 
 				vxThresholdNode(graph, images[0], thresh, images[17]),
 				vxFWriteImageNode(graph, images[17], "akif-200x300_bw_thresh.png"),
+
+
+				vxChannelExtractNode(graph, images[18], VX_CHANNEL_R, images[19]),
+				vxChannelExtractNode(graph, images[18], VX_CHANNEL_G, images[20]),
+				vxChannelExtractNode(graph, images[18], VX_CHANNEL_B, images[21]),
+				vxChannelExtractNode(graph, images[18], VX_CHANNEL_A, images[22]),
+				vxFWriteImageNode(graph, images[19], "akif-200x300_rgba_r.png"),
+				vxFWriteImageNode(graph, images[20], "akif-200x300_rgba_g.png"),
+				vxFWriteImageNode(graph, images[21], "akif-200x300_rgba_b.png"),
+				vxFWriteImageNode(graph, images[22], "akif-200x300_rgba_a.png"),
 			};
 
             //Step4.Verify Graph

@@ -14,6 +14,7 @@ static std::map<vx_df_image, string> VX_DF_IMAGE_to_hipacc = {
 	{VX_DF_IMAGE_U8, "uchar"},
 	{VX_DF_IMAGE_S16, "short"},
 	{VX_DF_IMAGE_S32, "int"},
+	{VX_DF_IMAGE_RGBX, "uchar4"},
 	{VX_TYPE_FLOAT32, "float"} //Not really a vx_df_image type
 };
 
@@ -93,8 +94,18 @@ void process_graph(vx_graph graph)
 		const HipaVX::Array* arr = dynamic_cast<const HipaVX::Array*>(image);
 		if(fim)
 		{
-			const string fim_decl_template = "\t@@@DATATYPE@@@ *@@@IMAGE_NAME@@@_input = load_data<@@@DATATYPE@@@>(@@@IMAGE_WIDTH@@@, @@@IMAGE_HEIGHT@@@, 1, \"@@@FILENAME@@@\");\n"
-											 "\tImage<@@@DATATYPE@@@> @@@IMAGE_NAME@@@(@@@IMAGE_WIDTH@@@, @@@IMAGE_HEIGHT@@@, @@@IMAGE_NAME@@@_input);\n";
+			string fim_decl_template;
+			if (fim->col == VX_DF_IMAGE_RGBX)
+			{
+				fim_decl_template = "\t@@@DATATYPE@@@ *@@@IMAGE_NAME@@@_input = (@@@DATATYPE@@@*) load_data<uchar>(@@@IMAGE_WIDTH@@@, @@@IMAGE_HEIGHT@@@, 4, \"@@@FILENAME@@@\");\n"
+									"\tImage<@@@DATATYPE@@@> @@@IMAGE_NAME@@@(@@@IMAGE_WIDTH@@@, @@@IMAGE_HEIGHT@@@, @@@IMAGE_NAME@@@_input);\n";
+			}
+			else
+			{
+				fim_decl_template = "\t@@@DATATYPE@@@ *@@@IMAGE_NAME@@@_input = load_data<@@@DATATYPE@@@>(@@@IMAGE_WIDTH@@@, @@@IMAGE_HEIGHT@@@, 1, \"@@@FILENAME@@@\");\n"
+									"\tImage<@@@DATATYPE@@@> @@@IMAGE_NAME@@@(@@@IMAGE_WIDTH@@@, @@@IMAGE_HEIGHT@@@, @@@IMAGE_NAME@@@_input);\n";
+			}
+
 			temp = fim_decl_template;
 			temp = use_template(temp, "FILENAME", fim->file);
 		}
@@ -368,7 +379,64 @@ string node_generator(HipaVX::Erode* n, Type t)
 	return "SOMETHING IS WRONG";
 }
 
+string node_generator(HipaVX::VXChannelExtractNode* n, Type t)
+{
+	if (t == Type::Definition)
+	{
+		auto cs = read_config_def(hipaVX_folder + "/kernels/point/channel_extract.def");
 
+		string s = kernel_builder(cs.kv, cs.k, cs.name);
+
+		s = use_template(s, "ID", n->my_id);
+		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in->col]);
+		s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
+
+		string channel;
+		switch(n->channel)
+		{
+		case VX_CHANNEL_B:
+		case VX_CHANNEL_0:
+			channel = "x";
+			break;
+		case VX_CHANNEL_G:
+		case VX_CHANNEL_1:
+			channel = "y";
+			break;
+		case VX_CHANNEL_R:
+		case VX_CHANNEL_2:
+			channel = "z";
+			break;
+		case VX_CHANNEL_A:
+		case VX_CHANNEL_3:
+			channel = "w";
+			break;
+		default:
+			throw std::runtime_error("Unsupported channeltype in string node_generator(HipaVX::VXChannelExtractNode* n, Type t)");
+		}
+		s = use_template(s, "CHANNEL", channel);
+
+		return s;
+	}
+	else if (t == Type::Call)
+	{
+		auto cs = read_config_call(hipaVX_folder + "/kernels/point/channel_extract.call");
+		string s = kernelcall_builder(cs.kcv);
+
+		s = use_template(s, "ID", n->my_id);
+		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in->col]);
+		s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
+		s = use_template(s, "IMAGE_IN_WIDTH", n->in->w);
+		s = use_template(s, "IMAGE_IN_HEIGHT", n->in->h);
+
+		s = use_template(s, "INPUT_IMAGE", generate_image_name(n->in));
+		s = use_template(s, "OUTPUT_IMAGE", generate_image_name(n->out));
+
+		s = use_template(s, "BOUNDARY_CONDITION", "Boundary::UNDEFINED"); // TODO
+
+		return s;
+	}
+	return "SOMETHING IS WRONG";
+}
 
 
 

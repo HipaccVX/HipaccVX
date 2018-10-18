@@ -32,7 +32,7 @@ In- and Outputimages are in the hipacc_compile_pass folder
 - [x] Box Filter
 - [ ] Canny Edge Detector
 - [ ] Channel Combine
-- [ ] Channel Extract
+- [x] Channel Extract
 - [ ] Color Convert
 - [x] Convert Bit depth
 - [ ] Custom Convolution

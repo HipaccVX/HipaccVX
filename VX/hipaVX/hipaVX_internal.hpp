@@ -869,6 +869,18 @@ public:
 	virtual void build() override;
 };
 
+class VXChannelExtractNode: public Node
+{
+public:
+	virtual ~VXChannelExtractNode() override = default;
+	Image *in;
+	vx_channel_e channel;
+	Image *out;
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+};
 }
 
 namespace generator
@@ -889,6 +901,7 @@ std::string node_generator(HipaVX::Erode* n, Type t);
 
 
 
+std::string node_generator(HipaVX::VXChannelExtractNode* n, Type t);
 
 
 template <typename T>

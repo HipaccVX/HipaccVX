@@ -196,6 +196,22 @@ void VXThresholdNode::build()
 
 
 
+std::vector<Image *> VXChannelExtractNode::get_used_images()
+{
+	std::vector<Image*> used_images;
+	used_images.emplace_back(in);
+	used_images.emplace_back(out);
+	return used_images;
+}
+std::string VXChannelExtractNode::generateClassDefinition()
+{
+	return generator::node_generator(this, generator::Type::Definition);
+}
+std::string VXChannelExtractNode::generateNodeCall()
+{
+	return generator::node_generator(this, generator::Type::Call);
+}
+
 
 
 
