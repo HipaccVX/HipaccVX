@@ -1,4 +1,5 @@
 #include "../vx.h"
+#include "../vx_compatibility.h"
 
 #include <iostream>
 #include <vector>
@@ -353,6 +354,20 @@ VX_API_ENTRY vx_node VX_API_CALL vxAccumulateWeightedImageNode (vx_graph graph, 
 	return accum_weighted_node;
 }
 
+VX_API_ENTRY vx_node VX_API_CALL vxThresholdNode (vx_graph graph, vx_image input, vx_threshold thresh, vx_image output)
+{
+	if (input->col != VX_DF_IMAGE_U8)
+		return nullptr;
+
+	HipaVX::VXThresholdNode *thresh_node = new HipaVX::VXThresholdNode();
+	thresh_node->in = input;
+	thresh_node->threshold = thresh;
+	thresh_node->out = output;
+	graph->graph.emplace_back(thresh_node);
+	graph->built = false;
+	return thresh_node;
+}
+
 
 
 VX_API_ENTRY vx_status VX_API_CALL vxReleaseNode(vx_node *node)
@@ -361,13 +376,46 @@ VX_API_ENTRY vx_status VX_API_CALL vxReleaseNode(vx_node *node)
 }
 
 
-
 VX_API_ENTRY vx_status VX_API_CALL vxGetStatus(vx_reference reference)
 {
 	return VX_SUCCESS;
 }
 
+VX_API_ENTRY vx_threshold VX_API_CALL vxCreateThresholdForImage (vx_context context,vx_enum thresh_type, vx_df_image input_format, vx_df_image output_format)
+{
+	HipaVX::Threshold *t = new HipaVX::Threshold;
 
+	t->type = (vx_threshold_type_e) thresh_type;
+	t->input_format = input_format;
+	t->output_format = output_format;
+
+	return t;
+}
+VX_API_ENTRY vx_status VX_API_CALL vxSetThresholdAttribute (vx_threshold thresh, vx_enum attribute, const void *ptr, vx_size size)
+{
+	vx_int32 *int32_ptr = (vx_int32 *)ptr;
+	switch (attribute)
+	{
+	case VX_THRESHOLD_THRESHOLD_VALUE:
+		thresh->value = *int32_ptr;
+		break;
+	case VX_THRESHOLD_THRESHOLD_LOWER:
+		thresh->lower = *int32_ptr;
+		break;
+	case VX_THRESHOLD_THRESHOLD_UPPER:
+		thresh->upper = *int32_ptr;
+		break;
+	case VX_THRESHOLD_TRUE_VALUE:
+		thresh->true_value = *int32_ptr;
+		break;
+	case VX_THRESHOLD_FALSE_VALUE:
+		thresh->false_value = *int32_ptr;
+		break;
+	default:
+		return VX_FAILURE;
+	}
+	return VX_SUCCESS;
+}
 
 
 vx_image vxCreateImageFromFile(vx_context context, vx_uint32 width, vx_uint32 height, vx_df_image color, std::string filename)

@@ -100,6 +100,22 @@ public:
 	void build();
 };
 
+class Threshold
+{
+public:
+	vx_threshold_type_e type;
+
+	vx_int32 value;
+	vx_int32 lower;
+	vx_int32 upper;
+
+	vx_int32 true_value = 255;
+	vx_int32 false_value = 0;
+
+	vx_df_image input_format;
+	vx_df_image output_format;
+};
+
 class Context
 {
 public:
@@ -655,6 +671,55 @@ public:
 	virtual void build() override;
 };
 
+class ImageComparision
+{
+public:
+	std::string comp_op;
+	std::string value;
+	bool image_is_first_operand = true;
+};
+
+template <typename T>
+class ConditionalAssignmentNode: public Node
+{
+public:
+	virtual ~ConditionalAssignmentNode() override = default;
+
+	Image *in;
+	Image *out;
+
+	std::vector<ImageComparision> comparision;
+	std::vector<std::string> chaining_operators;
+	T true_value;
+	T false_value;
+
+	bool use_image_datatype_for_sum = true;
+	vx_df_image sum_datatype;
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+};
+
+class VXThresholdNode: public Node
+{
+public:
+	virtual ~VXThresholdNode() override = default;
+
+	Image *in;
+	Image *out;
+	Threshold *threshold;
+
+
+	ConditionalAssignmentNode<int> comparision_node;
+	ConditionalAssignmentNode<int> less_node;
+
+
+	virtual std::vector<Image*> get_used_images() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+	virtual void build() override;
+};
 
 class MagnitudeNode: public Node
 {
@@ -835,6 +900,8 @@ std::string node_generator(HipaVX::HarrisCorners* n, Type t);
 
 std::string node_generator(HipaVX::SaturateNode* n, Type t);
 std::string node_generator(HipaVX::UnaryFunctionNode* n, Type t);
+template <typename T>
+std::string node_generator(HipaVX::ConditionalAssignmentNode<T>* n, Type t);
 
 
 
@@ -887,6 +954,31 @@ std::string SimplePointScalar<T>::generateNodeCall()
 {
 	return generator::node_generator(this, generator::Type::Call);
 }
+
+
+template <typename T>
+std::vector<Image *> ConditionalAssignmentNode<T>::get_used_images()
+{
+	std::vector<Image*> used_images;
+	used_images.emplace_back(in);
+	used_images.emplace_back(out);
+	return used_images;
+}
+template <typename T>
+std::string ConditionalAssignmentNode<T>::generateClassDefinition()
+{
+	return generator::node_generator(this, generator::Type::Definition);
+}
+template <typename T>
+std::string ConditionalAssignmentNode<T>::generateNodeCall()
+{
+	return generator::node_generator(this, generator::Type::Call);
+}
+
+
+
+
+
 }
 
 

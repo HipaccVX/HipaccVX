@@ -139,10 +139,60 @@ std::string Erode::generateNodeCall()
 
 
 
+std::vector<Image *> VXThresholdNode::get_used_images()
+{
+	std::vector<Image*> used_images;
+	auto x = comparision_node.get_used_images();
+	std::copy(x.begin(), x.end(), std::back_inserter(used_images));
+	return used_images;
+}
+std::string VXThresholdNode::generateClassDefinition()
+{
+	std::string s = comparision_node.generateClassDefinition();
+	return s;
+}
+std::string VXThresholdNode::generateNodeCall()
+{
+	std::string s = comparision_node.generateNodeCall();
+	return s;
+}
+void VXThresholdNode::build()
+{
+	comparision_node.in = in;
+	comparision_node.out = out;
+
+	if (threshold->type == VX_THRESHOLD_TYPE_BINARY)
+	{
+		ImageComparision ic;
+		ic.comp_op = ">";
+		ic.value = std::to_string(threshold->value);
+
+		comparision_node.comparision.emplace_back(ic);
 
 
+		comparision_node.true_value = threshold->true_value;
+		comparision_node.false_value = threshold->false_value;
+	}
+	else
+	{
+		ImageComparision ic;
+		ic.comp_op = ">";
+		ic.value = std::to_string(threshold->upper);
 
+		ImageComparision ic2;
+		ic2.comp_op = "<";
+		ic2.value = std::to_string(threshold->lower);
 
+		comparision_node.comparision.emplace_back(ic);
+		comparision_node.chaining_operators.emplace_back("||");
+		comparision_node.comparision.emplace_back(ic2);
+
+		comparision_node.true_value = threshold->false_value;
+		comparision_node.false_value = threshold->true_value;
+	}
+
+	comparision_node.build();
+}
 
 
 

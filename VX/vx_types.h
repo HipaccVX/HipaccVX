@@ -272,7 +272,11 @@ typedef struct _vx_pyramid *vx_pyramid;
  * \extends vx_reference
  * \ingroup group_threshold
  */
-typedef struct _vx_threshold *vx_threshold;
+namespace HipaVX
+{
+class Threshold;
+}
+typedef HipaVX::Threshold *vx_threshold;
 
 /*! \brief The Convolution Object. A user-defined convolution kernel of MxM elements.
  * \extends vx_reference

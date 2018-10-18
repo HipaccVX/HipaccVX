@@ -3,6 +3,7 @@
 #include <iterator>
 
 #include "VX/vx.h"
+#include "VX/vx_compatibility.h"
 #include "VX/hipaVX/hipaVX_extension.hpp"
 
 #define WIDTH  200
@@ -43,6 +44,8 @@ int main()
 			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),                 /*15: erode */
 
 			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),                 /*16: gaussian */
+
+			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),                 /*17: thresh */
 		};
 
 		int32_t two = 2;
@@ -57,6 +60,12 @@ int main()
 		vx_scalar harris_sensitivity = vxCreateScalar(context, VX_TYPE_FLOAT32, (void*) &harris_sensitivity_f);
 		vx_array harris_corners = vxCreateArray(context, VX_TYPE_KEYPOINT, 100);
 		vx_scalar harris_corners_num = vxCreateScalar(context, VX_TYPE_INT32, (void*) &two);
+
+		vx_threshold thresh = vxCreateThresholdForImage(context, VX_THRESHOLD_TYPE_RANGE, VX_DF_IMAGE_U8, VX_DF_IMAGE_U8);
+		vx_int32 some_int = 100;
+		vxSetThresholdAttribute(thresh, VX_THRESHOLD_THRESHOLD_LOWER, &some_int, sizeof(some_int));
+		some_int = 200;
+		vxSetThresholdAttribute(thresh, VX_THRESHOLD_THRESHOLD_UPPER, &some_int, sizeof(some_int));
 
 		//Step 2.Create Graph
 		vx_graph graph = vxCreateGraph(context);
@@ -104,6 +113,9 @@ int main()
 				vxHarrisCornersNode(graph, images[0], harris_strength, harris_min_distance,
 									harris_sensitivity, 3, 3, harris_corners, harris_corners_num),
 				//vxFWriteImageNode(graph, images[17], "akif-200x300_bw_harris.png"),
+
+				vxThresholdNode(graph, images[0], thresh, images[17]),
+				vxFWriteImageNode(graph, images[17], "akif-200x300_bw_thresh.png"),
 			};
 
             //Step4.Verify Graph

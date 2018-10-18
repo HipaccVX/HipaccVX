@@ -268,7 +268,7 @@ string node_generator(HipaVX::NotNode* n, Type t)
 {
 	if (t == Type::Definition)
 	{
-		auto cs = read_config_def(hipaVX_folder + "/kernels/point/and.def");
+		auto cs = read_config_def(hipaVX_folder + "/kernels/point/not.def");
 
 		string s = kernel_builder(cs.kv, cs.k, cs.name);
 
@@ -280,7 +280,7 @@ string node_generator(HipaVX::NotNode* n, Type t)
 	}
 	else if (t == Type::Call)
 	{
-		auto cs = read_config_call(hipaVX_folder + "/kernels/point/and.call");
+		auto cs = read_config_call(hipaVX_folder + "/kernels/point/not.call");
 		string s = kernelcall_builder(cs.kcv);
 
 		s = use_template(s, "ID", n->my_id);
@@ -481,6 +481,65 @@ std::string node_generator(HipaVX::SimplePointScalar<T>* n, Type t)
 // Explicit instantiation
 template std::string node_generator<float>(HipaVX::SimplePointScalar<float>* n, Type t);
 template std::string node_generator<int>(HipaVX::SimplePointScalar<int>* n, Type t);
+
+template <typename T>
+std::string node_generator(HipaVX::ConditionalAssignmentNode<T>* n, Type t)
+{
+	if (t == Type::Definition)
+	{
+		auto cs = read_config_def(hipaVX_folder + "/kernels/point/conditional_assigment.def");
+
+		string s = kernel_builder(cs.kv, cs.k, cs.name);
+
+		std::string condition = "";
+
+		for(unsigned int i = 0; i < n->comparision.size(); i++)
+		{
+			HipaVX::ImageComparision &ic = n->comparision[i];
+			if (ic.image_is_first_operand)
+				condition += "input() " + ic.comp_op + " " + ic.value;
+			else
+				condition += ic.value + " " + ic.comp_op + " input()";
+
+			if (i < n->chaining_operators.size())
+				condition += " " + n->chaining_operators[i] + " ";
+		}
+
+		s = use_template(s, "ID", n->my_id);
+		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in->col]);
+		s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
+		s = use_template(s, "CONDITION", condition);
+		s = use_template(s, "TRUE_VALUE", n->true_value);
+		s = use_template(s, "FALSE_VALUE", n->false_value);
+
+		return s;
+	}
+	else if (t == Type::Call)
+	{
+		auto cs = read_config_call(hipaVX_folder + "/kernels/point/conditional_assigment.call");
+		string s = kernelcall_builder(cs.kcv);
+
+		s = use_template(s, "ID", n->my_id);
+		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in->col]);
+		s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
+
+		s = use_template(s, "INPUT_IMAGE", generate_image_name(n->in));
+		s = use_template(s, "IMAGE_IN_WIDTH", n->in->w);
+		s = use_template(s, "IMAGE_IN_HEIGHT", n->in->h);
+		s = use_template(s, "OUTPUT_IMAGE", generate_image_name(n->out));
+
+		s = use_template(s, "BOUNDARY_CONDITION", "Boundary::UNDEFINED"); // TODO
+
+		return s;
+	}
+	return "SOMETHING IS WRONG";
+}
+// Explicit instantiation
+template std::string node_generator<float>(HipaVX::ConditionalAssignmentNode<float>* n, Type t);
+template std::string node_generator<int>(HipaVX::ConditionalAssignmentNode<int>* n, Type t);
+template std::string node_generator<u_char>(HipaVX::ConditionalAssignmentNode<u_char>* n, Type t);
+
+
 
 string node_generator(HipaVX::SimplePoint* n, Type t)
 {

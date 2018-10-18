@@ -1,0 +1,12 @@
+[NAME]
+ConditionalAssignment
+
+[KERNEL_VARIABLES]
+Accessor input
+
+[KERNEL]
+if (@@@CONDITION@@@)
+	output() = @@@TRUE_VALUE@@@;
+else
+	output() = @@@FALSE_VALUE@@@;
+[KERNEL_END]

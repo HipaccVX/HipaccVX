@@ -59,7 +59,7 @@ In- and Outputimages are in the hipacc_compile_pass folder
 - [ ] Scale Image
 - [x] Sobel 3x3
 - [ ] TableLookup
-- [ ] Thresholding
+- [x] Thresholding
 - [ ] Warp Affine
 - [ ] Warp Perspective
 
