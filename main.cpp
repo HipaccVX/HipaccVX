@@ -1,6 +1,7 @@
 
 #include <iostream>
 #include <iterator>
+#include <vector>
 
 #include "VX/vx.h"
 #include "VX/vx_compatibility.h"
@@ -54,6 +55,8 @@ int main()
 			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),                 /*22: a */
 
 			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),                 /*23: custom convolve scharr_x */
+
+			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),                 /*24: custom hipacc kernel bilateral */
 		};
 
 		int32_t two = 2;
@@ -84,6 +87,24 @@ int main()
 		vx_uint32 scale = 2;
 		vxCopyConvolutionCoefficients(scharr_x, (vx_int16*)gx, VX_WRITE_ONLY, VX_MEMORY_TYPE_HOST);
 		vxSetConvolutionAttribute(scharr_x, VX_CONVOLUTION_SCALE, &scale, sizeof(scale));
+
+		const float coef_bilateral[25] = {
+			 0.018316f, 0.082085f, 0.135335f, 0.082085f, 0.018316f ,
+			 0.082085f, 0.367879f, 0.606531f, 0.367879f, 0.082085f ,
+			 0.135335f, 0.606531f, 1.000000f, 0.606531f, 0.135335f ,
+			 0.082085f, 0.367879f, 0.606531f, 0.367879f, 0.082085f ,
+			 0.018316f, 0.082085f, 0.135335f, 0.082085f, 0.018316f
+		};
+		vx_matrix sigma_s = vxCreateMatrix(context, VX_TYPE_FLOAT32, 5, 5);
+		vxCopyMatrix(sigma_s, (void*)coef_bilateral, VX_WRITE_ONLY, VX_MEMORY_TYPE_HOST);
+
+		int32_t sixteen = 16;
+		vx_scalar sigma_r = vxCreateScalar(context, VX_TYPE_INT32, &sixteen);
+
+		std::vector<vx_reference> bilateral_parameters;
+		bilateral_parameters.push_back((vx_reference) images[0]);
+		bilateral_parameters.push_back((vx_reference) sigma_s);
+		bilateral_parameters.push_back((vx_reference) sigma_r);
 
 		//Step 2.Create Graph
 		vx_graph graph = vxCreateGraph(context);
@@ -147,6 +168,9 @@ int main()
 
 				vxConvolveNode(graph, images[0], scharr_x, images[23]),
 				vxFWriteImageNode(graph, images[23], "akif-200x300_bw_scharr_x.png"),
+
+				vxHipaccNode(graph, "external_kernels/BilateralFilter.cpp", bilateral_parameters.data(), bilateral_parameters.size(), images[24]),
+				vxFWriteImageNode(graph, images[24], "akif-200x300_bw_customhipacc_bilateral.png"),
 			};
 
             //Step4.Verify Graph

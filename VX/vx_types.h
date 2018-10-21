@@ -263,7 +263,11 @@ typedef struct _vx_distribution *vx_distribution;
  * \extends vx_reference
  * \ingroup group_matrix
  */
-typedef struct _vx_matrix *vx_matrix;
+namespace HipaVX
+{
+class Matrix;
+}
+typedef HipaVX::Matrix *vx_matrix;
 
 /*! \brief The Image Pyramid object. A set of scaled images.
  * \extends vx_reference
@@ -1880,5 +1884,142 @@ typedef void (VX_CALLBACK *vx_log_callback_f)(vx_context context,
 enum vx_map_flag_e {
      VX_NOGAP_X = 1,  /*!< \brief No Gap. */
 };
+
+#include <vector>
+#include <string>
+
+namespace HipaVX
+{
+class Object
+{
+	static int next_id;
+public:
+	const int my_id;
+	Object();
+
+	vx_type_e type;
+};
+
+class Scalar: public Object
+{
+public:
+	Scalar(vx_type_e t, const void *ptr);
+
+	vx_type_e data_type;
+	union
+	{
+		vx_char c;
+		vx_int8 i8;
+		vx_uint8 ui8;
+		vx_int16 i16;
+		vx_uint16 ui16;
+		vx_int32 i32;
+		vx_uint32 ui32;
+		vx_int64 i64;
+		vx_uint64 ui64;
+		vx_float32 f32;
+		vx_float64 f64;
+		vx_enum e;
+		vx_size s;
+		vx_df_image df_image;
+		vx_bool b;
+	};
+
+};
+
+
+class Image: public Object
+{
+public:
+	Image(vx_uint32 width, vx_uint32 height, vx_df_image color);
+	virtual ~Image() = default;
+	vx_uint32 w, h;
+	vx_df_image col;
+};
+
+class Array: public Image
+{
+public:
+	Array(vx_enum item_type, vx_size cap, vx_size rows);
+	virtual ~Array() = default;
+	vx_enum type;
+	vx_size capacity;
+};
+
+
+class Node: public Object
+{
+public:
+	Node()
+	{
+		type = VX_TYPE_NODE;
+	}
+	virtual ~Node() = default;
+
+	vx_border_e border_mode = VX_BORDER_UNDEFINED;
+
+	virtual std::vector<Image*> get_used_images() = 0;
+	virtual std::string generateClassDefinition() = 0;
+	virtual std::string generateNodeCall() = 0;
+	virtual void build(){}
+};
+
+class Graph: public Object
+{
+public:
+	std::vector<Node*> graph;
+	bool built = false;
+
+	std::vector<Image*> used_images;
+	void build();
+};
+
+class Matrix: public Object
+{
+public:
+	Matrix()
+	{
+		type = VX_TYPE_MATRIX;
+	}
+
+	vx_enum data_type;
+	vx_size rows;
+	vx_size columns;
+	std::vector<u_char> mat;
+};
+
+class Threshold: public Object
+{
+public:
+	vx_threshold_type_e type;
+
+	vx_int32 value;
+	vx_int32 lower;
+	vx_int32 upper;
+
+	vx_int32 true_value = 255;
+	vx_int32 false_value = 0;
+
+	vx_df_image input_format;
+	vx_df_image output_format;
+};
+
+class Context: public Object
+{
+public:
+
+	std::vector<Image*> images;
+	std::vector<Graph*> graphs;
+};
+
+class Convolution: public Object
+{
+public:
+	std::vector<vx_int16> coefficients;
+	vx_size  rows;
+	vx_size  columns;
+	vx_uint32 scale;
+};
+}
 
 #endif

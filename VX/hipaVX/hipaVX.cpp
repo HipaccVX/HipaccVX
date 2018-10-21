@@ -448,6 +448,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxSetThresholdAttribute (vx_threshold thresh,
 
 
 
+
 VX_API_ENTRY vx_convolution VX_API_CALL vxCreateConvolution (vx_context context, vx_size columns, vx_size rows)
 {
 	HipaVX::Convolution *conv = new HipaVX::Convolution();
@@ -485,6 +486,57 @@ vx_image vxCreateImageFromFile(vx_context context, vx_uint32 width, vx_uint32 he
 	image = new HipaVX::FileinputImage(width, height, color, filename);
 	context->images.emplace_back(image);
 	return image;
+}
+
+vx_node vxHipaccNode(vx_graph graph, std::string filename, vx_reference *parameters, vx_size count, vx_image out)
+{
+	HipaVX::HipaccNode *hipaccNode = new HipaVX::HipaccNode();
+
+	hipaccNode->filename = filename;
+	hipaccNode->out = out;
+	for(vx_size i = 0; i < count; i++)
+		hipaccNode->parameters.push_back(parameters[i]);
+
+	graph->graph.emplace_back(hipaccNode);
+	graph->built = false;
+
+	return hipaccNode;
+}
+
+VX_API_ENTRY vx_matrix VX_API_CALL vxCreateMatrix (vx_context c, vx_enum data_type, vx_size columns, vx_size rows)
+{
+	if (data_type != VX_TYPE_UINT8 && data_type != VX_TYPE_INT32 && data_type != VX_TYPE_FLOAT32)
+		return nullptr;
+
+
+	HipaVX::Matrix *mat = new HipaVX::Matrix();
+
+	mat->data_type = data_type;
+	mat->columns = columns;
+	mat->rows = rows;
+	mat->mat.resize(sizeof(int32_t) * columns * rows); //Optimization available: Only resize to what you actually need (e.g. in uint8 case)
+
+	return mat;
+}
+VX_API_ENTRY vx_status VX_API_CALL vxCopyMatrix (vx_matrix matrix, void *user_ptr, vx_enum usage, vx_enum user_mem_type)
+{
+	if (usage != VX_WRITE_ONLY)
+		return VX_FAILURE;
+	if (user_mem_type != VX_MEMORY_TYPE_HOST)
+		return VX_FAILURE;
+
+	switch(matrix->data_type)
+	{
+	case VX_TYPE_UINT8:
+		std::memcpy(matrix->mat.data(), user_ptr, matrix->columns * matrix->rows);
+		break;
+	case VX_TYPE_INT32:
+	case VX_TYPE_FLOAT32:
+		std::memcpy(matrix->mat.data(), user_ptr, matrix->columns * matrix->rows * 4);
+		break;
+	}
+
+	return VX_SUCCESS;
 }
 
 VX_API_ENTRY vx_image VX_API_CALL vxCreateImage(vx_context context, vx_uint32 width, vx_uint32 height, vx_df_image color)

@@ -104,6 +104,15 @@ std::vector<string> Kernelcall_Mask::generate_kernelcall()
 	return to_return;
 }
 
+std::vector<string> Kernelcall_General_Variable::generate_kernelcall()
+{
+	std::vector<string> to_return;
+
+	to_return.emplace_back(datatype + " " + get_name() + " = " + value + ";");
+
+	return to_return;
+}
+
 std::vector<string> Kernelcall_Domain::generate_kernelcall()
 {
 	std::vector<string> to_return;
@@ -469,7 +478,6 @@ config_struct_call___ read_config_call(string file)
 
 	std::vector<Kernel_Variable*> kernel_variables;
 	std::vector<Kernelcall_Variable*> kernelcall_variables;
-	std::vector<std::vector<Kernelcall_Variable *>> kernel_calls;
 
 	std::string kernel_name;
 
@@ -495,11 +503,6 @@ config_struct_call___ read_config_call(string file)
 			state = my_state::name;
 			switched_category = true;
 		}
-		else if (line == "[KERNEL_CALLS]")
-		{
-			state = my_state::calls;
-			switched_category = true;
-		}
 
 		else
 		{
@@ -517,22 +520,6 @@ config_struct_call___ read_config_call(string file)
 				if (splitted.size() != 0)
 					kernel_name = splitted[0];
 			}	break;
-			case my_state::calls:
-			{
-				auto splitted = split(line, ' ');
-				if (splitted.size() != 0)
-				{
-					std::vector<Kernelcall_Variable*> kernel_call_parameters;
-					for(const auto& variable_name: splitted)
-					{
-						auto kcv = find_kcv(kernelcall_variables, variable_name);
-						if (kcv == nullptr)
-							throw_exception("Couldn't find variable \"" + variable_name + "\"", line);
-						kernel_call_parameters.emplace_back(kcv);
-					}
-					kernel_calls.emplace_back(kernel_call_parameters);
-				}
-			}	break;
 			case my_state::invalid:
 			default:
 				break;
@@ -542,7 +529,6 @@ config_struct_call___ read_config_call(string file)
 
 	config_struct_call___ cs;
 	cs.kcv = kernelcall_variables;
-	cs.kc = kernel_calls;
 	return cs;
 }
 

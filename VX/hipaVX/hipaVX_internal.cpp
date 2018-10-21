@@ -11,9 +11,10 @@ Object::Object()
 }
 
 Scalar::Scalar(vx_type_e t, const void *ptr)
-	:type(t)
+	:data_type(t)
 {
-	switch(type)
+	type = VX_TYPE_SCALAR;
+	switch(data_type)
 	{
 	case VX_TYPE_INT32:
 		i32 = *((vx_int32*) ptr);
@@ -29,11 +30,13 @@ Scalar::Scalar(vx_type_e t, const void *ptr)
 Image::Image(vx_uint32 width, vx_uint32 height, vx_df_image color)
 	:w(width), h(height), col(color)
 {
+	type = VX_TYPE_IMAGE;
 }
 
 Array::Array(vx_enum item_type, vx_size cap, vx_size rows)
 	:Image(rows, cap, VX_DF_IMAGE_S32), type(item_type), capacity(cap)
 {
+	type = VX_TYPE_ARRAY;
 }
 
 FileinputImage::FileinputImage(vx_uint32 width, vx_uint32 height, vx_df_image color, std::string filename)
@@ -1133,6 +1136,28 @@ void VXConvolveNode::build()
 	}
 	lin_mask_node.build();
 	saturate_node.build();
+}
+
+std::vector<Image *> HipaccNode::get_used_images()
+{
+	std::vector<Image *> images;
+	for (auto param: parameters)
+	{
+		if (param->type == VX_TYPE_IMAGE)
+		{
+			Image *img = (Image*) param;
+			images.push_back(img);
+		}
+	}
+	return images;
+}
+std::string HipaccNode::generateClassDefinition()
+{
+	return generator::node_generator(this, generator::Type::Definition);
+}
+std::string HipaccNode::generateNodeCall()
+{
+	return generator::node_generator(this, generator::Type::Call);
 }
 
 

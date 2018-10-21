@@ -75,6 +75,7 @@ class Kernelcall_General_Variable: public Kernelcall_Variable
 {
 public:
 	std::string datatype;
+	std::string value;
 
 	virtual ~Kernelcall_General_Variable() override = default;
 	virtual std::vector<std::string> generate_kernelcall() override;
@@ -169,7 +170,6 @@ struct config_struct_def___
 struct config_struct_call___
 {
 	std::vector<Kernelcall_Variable*> kcv;				// Variables needed to call the kernel
-	std::vector<std::vector<Kernelcall_Variable *>> kc;	// The kernel calls
 };
 
 
