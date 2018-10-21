@@ -3,6 +3,13 @@
 
 namespace HipaVX
 {
+
+int Object::next_id = 0;
+Object::Object()
+	:my_id(next_id++)
+{
+}
+
 Scalar::Scalar(vx_type_e t, const void *ptr)
 	:type(t)
 {
@@ -19,10 +26,8 @@ Scalar::Scalar(vx_type_e t, const void *ptr)
 	}
 }
 
-int Image::next_id = 0;
-
 Image::Image(vx_uint32 width, vx_uint32 height, vx_df_image color)
-	:my_id(next_id++), w(width), h(height), col(color)
+	:w(width), h(height), col(color)
 {
 }
 
@@ -36,10 +41,6 @@ FileinputImage::FileinputImage(vx_uint32 width, vx_uint32 height, vx_df_image co
 {
 }
 
-int Node::next_id = 0;
-Node::Node()
-	:my_id(next_id++)
-{}
 
 void Graph::build()
 {

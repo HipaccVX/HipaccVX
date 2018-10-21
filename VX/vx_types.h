@@ -139,7 +139,11 @@ typedef double   vx_float64;
  * error may be returned from the API.
  * \ingroup group_reference
  */
-typedef struct _vx_reference *vx_reference;
+namespace HipaVX
+{
+class Object;
+}
+typedef HipaVX::Object *vx_reference;
 
 /*! \brief Sets the standard enumeration type size to be a fixed quantity.
  * \details All enumerable fields must use this type as the container to

@@ -16,8 +16,15 @@
 
 namespace HipaVX
 {
+class Object
+{
+	static int next_id;
+public:
+	const int my_id;
+	Object();
+};
 
-class Scalar
+class Scalar: public Object
 {
 public:
 	Scalar(vx_type_e t, const void *ptr);
@@ -45,11 +52,9 @@ public:
 };
 
 
-class Image
+class Image: public Object
 {
-	static int next_id;
 public:
-	const int my_id;
 	Image(vx_uint32 width, vx_uint32 height, vx_df_image color);
 	virtual ~Image() = default;
 	vx_uint32 w, h;
@@ -74,12 +79,9 @@ public:
 };
 
 
-class Node
+class Node: public Object
 {
-	static int next_id;
 public:
-	const int my_id;
-	Node();
 	virtual ~Node() = default;
 
 	vx_border_e border_mode = VX_BORDER_UNDEFINED;
@@ -90,7 +92,7 @@ public:
 	virtual void build(){}
 };
 
-class Graph
+class Graph: public Object
 {
 public:
 	std::vector<Node*> graph;
@@ -100,7 +102,7 @@ public:
 	void build();
 };
 
-class Threshold
+class Threshold: public Object
 {
 public:
 	vx_threshold_type_e type;
@@ -116,7 +118,7 @@ public:
 	vx_df_image output_format;
 };
 
-class Context
+class Context: public Object
 {
 public:
 
@@ -124,7 +126,7 @@ public:
 	std::vector<Graph*> graphs;
 };
 
-class Convolution
+class Convolution: public Object
 {
 public:
 	std::vector<vx_int16> coefficients;
