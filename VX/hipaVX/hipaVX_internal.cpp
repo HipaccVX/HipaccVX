@@ -62,6 +62,10 @@ void Graph::build()
 	built = true;
 }
 
+WriteImageNode::WriteImageNode()
+{
+	node_name = "Image Writer";
+}
 std::vector<Image *> WriteImageNode::get_used_images()
 {
 	std::vector<Image*> used_images;
@@ -77,6 +81,10 @@ std::string WriteImageNode::generateNodeCall()
 	return generator::node_generator(this, generator::Type::Call);
 }
 
+ConvertDepthNode::ConvertDepthNode()
+{
+	node_name = "Depth Converter";
+}
 std::vector<Image *> ConvertDepthNode::get_used_images()
 {
 	std::vector<Image*> used_images;
@@ -93,6 +101,10 @@ std::string ConvertDepthNode::generateNodeCall()
 	return generator::node_generator(this, generator::Type::Call);
 }
 
+NotNode::NotNode()
+{
+	node_name = "Not";
+}
 std::vector<Image *> NotNode::get_used_images()
 {
 	std::vector<Image*> used_images;
@@ -109,6 +121,10 @@ std::string NotNode::generateNodeCall()
 	return generator::node_generator(this, generator::Type::Call);
 }
 
+Dilate::Dilate()
+{
+	node_name = "Dilate";
+}
 std::vector<Image *> Dilate::get_used_images()
 {
 	std::vector<Image*> used_images;
@@ -125,6 +141,10 @@ std::string Dilate::generateNodeCall()
 	return generator::node_generator(this, generator::Type::Call);
 }
 
+Erode::Erode()
+{
+	node_name = "Erode";
+}
 std::vector<Image *> Erode::get_used_images()
 {
 	std::vector<Image*> used_images;
@@ -142,7 +162,10 @@ std::string Erode::generateNodeCall()
 }
 
 
-
+VXThresholdNode::VXThresholdNode()
+{
+	node_name = "VX Threshold";
+}
 std::vector<Image *> VXThresholdNode::get_used_images()
 {
 	std::vector<Image*> used_images;
@@ -200,25 +223,11 @@ void VXThresholdNode::build()
 
 
 
-std::vector<Image *> VXChannelExtractNode::get_used_images()
+
+Sobel3x3Node::Sobel3x3Node()
 {
-	std::vector<Image*> used_images;
-	used_images.emplace_back(in);
-	used_images.emplace_back(out);
-	return used_images;
+	node_name = "Sobel 3x3";
 }
-std::string VXChannelExtractNode::generateClassDefinition()
-{
-	return generator::node_generator(this, generator::Type::Definition);
-}
-std::string VXChannelExtractNode::generateNodeCall()
-{
-	return generator::node_generator(this, generator::Type::Call);
-}
-
-
-
-
 std::vector<Image *> Sobel3x3Node::get_used_images()
 {
 	std::vector<Image*> used_images;
@@ -263,7 +272,10 @@ void Sobel3x3Node::build()
 	sobel_y.build();
 }
 
-
+Add3_3::Add3_3()
+{
+	node_name = "Add 3x3";
+}
 std::vector<Image *> Add3_3::get_used_images()
 {
 	std::vector<Image*> used_images;
@@ -461,7 +473,10 @@ void HarrisCorners::build()
 
 
 
-
+SquareNode::SquareNode()
+{
+	node_name = "Square";
+}
 std::vector<Image *> SquareNode::get_used_images()
 {
 	std::vector<Image*> used_images;
@@ -506,6 +521,10 @@ std::string SimplePoint::generateNodeCall()
 	return generator::node_generator(this, generator::Type::Call);
 }
 
+SaturateNode::SaturateNode()
+{
+	node_name = "Saturate";
+}
 std::vector<Image *> SaturateNode::get_used_images()
 {
 	std::vector<Image*> used_images;
@@ -522,6 +541,10 @@ std::string SaturateNode::generateNodeCall()
 	return generator::node_generator(this, generator::Type::Call);
 }
 
+UnaryFunctionNode::UnaryFunctionNode()
+{
+	node_name = "General unary Function";
+}
 std::vector<Image *> UnaryFunctionNode::get_used_images()
 {
 	std::vector<Image*> used_images;
@@ -538,7 +561,10 @@ std::string UnaryFunctionNode::generateNodeCall()
 	return generator::node_generator(this, generator::Type::Call);
 }
 
-
+SqrtNode::SqrtNode()
+{
+	node_name = "Sqrt";
+}
 std::vector<Image *> SqrtNode::get_used_images()
 {
 	std::vector<Image*> used_images;
@@ -565,6 +591,10 @@ void SqrtNode::build()
 	function_node.build();
 }
 
+AbsNode::AbsNode()
+{
+	node_name = "Abs";
+}
 std::vector<Image *> AbsNode::get_used_images()
 {
 	std::vector<Image*> used_images;
@@ -591,6 +621,10 @@ void AbsNode::build()
 	function_node.build();
 }
 
+Atan2Node::Atan2Node()
+{
+	node_name = "Atan2";
+}
 std::vector<Image *> Atan2Node::get_used_images()
 {
 	std::vector<Image*> used_images;
@@ -618,7 +652,10 @@ void Atan2Node::build()
 }
 
 
-
+AbsDiffNode::AbsDiffNode()
+{
+	node_name = "Absolute Difference";
+}
 std::vector<Image *> AbsDiffNode::get_used_images()
 {
 	std::vector<Image*> used_images;
@@ -680,7 +717,11 @@ void AbsDiffNode::build()
 		saturate_node.build();
 }
 
-std::vector<Image *> AddNode::get_used_images()
+VXAddNode::VXAddNode()
+{
+	node_name = "VX Addition Node";
+}
+std::vector<Image *> VXAddNode::get_used_images()
 {
 	std::vector<Image*> used_images;
 	auto a = add_node.get_used_images();
@@ -693,21 +734,21 @@ std::vector<Image *> AddNode::get_used_images()
 	}
 	return used_images;
 }
-std::string AddNode::generateClassDefinition()
+std::string VXAddNode::generateClassDefinition()
 {
 	std::string s = add_node.generateClassDefinition();
 	if (policy == VX_CONVERT_POLICY_SATURATE)
 		s += "\n" + saturate_node.generateClassDefinition();
 	return s;
 }
-std::string AddNode::generateNodeCall()
+std::string VXAddNode::generateNodeCall()
 {
 	std::string s = add_node.generateNodeCall();
 	if (policy == VX_CONVERT_POLICY_SATURATE)
 		s += "\n" + saturate_node.generateNodeCall();
 	return s;
 }
-void AddNode::build()
+void VXAddNode::build()
 {
 	add_node.in_1 = in_1;
 	add_node.in_2 = in_2;
@@ -729,7 +770,11 @@ void AddNode::build()
 		saturate_node.build();
 }
 
-std::vector<Image *> SubtractNode::get_used_images()
+VXSubtractNode::VXSubtractNode()
+{
+	node_name = "VX Subtraction Node";
+}
+std::vector<Image *> VXSubtractNode::get_used_images()
 {
 	std::vector<Image*> used_images;
 	auto a = diff_node.get_used_images();
@@ -742,21 +787,21 @@ std::vector<Image *> SubtractNode::get_used_images()
 	}
 	return used_images;
 }
-std::string SubtractNode::generateClassDefinition()
+std::string VXSubtractNode::generateClassDefinition()
 {
 	std::string s = diff_node.generateClassDefinition();
 	if (policy == VX_CONVERT_POLICY_SATURATE)
 		s += "\n" + saturate_node.generateClassDefinition();
 	return s;
 }
-std::string SubtractNode::generateNodeCall()
+std::string VXSubtractNode::generateNodeCall()
 {
 	std::string s = diff_node.generateNodeCall();
 	if (policy == VX_CONVERT_POLICY_SATURATE)
 		s += "\n" + saturate_node.generateNodeCall();
 	return s;
 }
-void SubtractNode::build()
+void VXSubtractNode::build()
 {
 	diff_node.in_1 = in_1;
 	diff_node.in_2 = in_2;
@@ -778,6 +823,10 @@ void SubtractNode::build()
 		saturate_node.build();
 }
 
+MagnitudeNode::MagnitudeNode()
+{
+	node_name = "VX Magnitude";
+}
 std::vector<Image *> MagnitudeNode::get_used_images()
 {
 	std::vector<Image*> used_images;
@@ -841,6 +890,10 @@ void MagnitudeNode::build()
 	saturate_node.build();
 }
 
+PhaseNode::PhaseNode()
+{
+	node_name = "VX Phase";
+}
 std::vector<Image *> PhaseNode::get_used_images()
 {
 	std::vector<Image*> used_images;
@@ -886,6 +939,10 @@ void PhaseNode::build()
 	mapping_node.build();
 }
 
+VXMultiplyNode::VXMultiplyNode()
+{
+	node_name = "VX Multiplication";
+}
 std::vector<Image *> VXMultiplyNode::get_used_images()
 {
 	std::vector<Image*> used_images;
@@ -945,6 +1002,10 @@ void VXMultiplyNode::build()
 		saturate_node.build();
 }
 
+VXAccumulateNode::VXAccumulateNode()
+{
+	node_name = "VX Accumulation";
+}
 std::vector<Image *> VXAccumulateNode::get_used_images()
 {
 	std::vector<Image*> used_images;
@@ -980,6 +1041,10 @@ void VXAccumulateNode::build()
 	saturate_node.build();
 }
 
+VXAccumulateSquareNode::VXAccumulateSquareNode()
+{
+	node_name = "VX Squared Accumulation";
+}
 std::vector<Image *> VXAccumulateSquareNode::get_used_images()
 {
 	std::vector<Image*> used_images;
@@ -1038,6 +1103,10 @@ void VXAccumulateSquareNode::build()
 	saturate_node.build();
 }
 
+VXAccumulateWeightedNode::VXAccumulateWeightedNode()
+{
+	node_name = "VX Weighted Accumulation";
+}
 std::vector<Image *> VXAccumulateWeightedNode::get_used_images()
 {
 	std::vector<Image*> used_images;
@@ -1086,6 +1155,30 @@ void VXAccumulateWeightedNode::build()
 	add_node.build();
 }
 
+VXChannelExtractNode::VXChannelExtractNode()
+{
+	node_name = "VX Channel Extraction";
+}
+std::vector<Image *> VXChannelExtractNode::get_used_images()
+{
+	std::vector<Image*> used_images;
+	used_images.emplace_back(in);
+	used_images.emplace_back(out);
+	return used_images;
+}
+std::string VXChannelExtractNode::generateClassDefinition()
+{
+	return generator::node_generator(this, generator::Type::Definition);
+}
+std::string VXChannelExtractNode::generateNodeCall()
+{
+	return generator::node_generator(this, generator::Type::Call);
+}
+
+VXConvolveNode::VXConvolveNode()
+{
+	node_name = "VX Convolution";
+}
 std::vector<Image *> VXConvolveNode::get_used_images()
 {
 	std::vector<Image*> used_images;
@@ -1138,6 +1231,10 @@ void VXConvolveNode::build()
 	saturate_node.build();
 }
 
+HipaccNode::HipaccNode()
+{
+	node_name = "Custom Hipacc";
+}
 std::vector<Image *> HipaccNode::get_used_images()
 {
 	std::vector<Image *> images;

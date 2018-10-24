@@ -1949,12 +1949,15 @@ public:
 
 class Node: public Object
 {
+protected:
+	std::string node_name = "nodename not set";
 public:
 	Node()
 	{
 		type = VX_TYPE_NODE;
 	}
 	virtual ~Node() = default;
+	std::string get_name() {return node_name;}
 
 	vx_border_e border_mode = VX_BORDER_UNDEFINED;
 

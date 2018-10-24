@@ -28,6 +28,7 @@ public:
 class WriteImageNode: public Node
 {
 public:
+	WriteImageNode();
 	virtual ~WriteImageNode() override = default;
 	Image *in;
 	std::string out_file;
@@ -39,6 +40,7 @@ public:
 class ConvertDepthNode: public Node
 {
 public:
+	ConvertDepthNode();
 	virtual ~ConvertDepthNode() override = default;
 	Image *in;
 	Image *out;
@@ -54,6 +56,7 @@ public:
 class NotNode: public Node
 {
 public:
+	NotNode();
 	virtual ~NotNode() override = default;
 	Image *in;
 	Image *out;
@@ -67,6 +70,7 @@ public:
 class Dilate: public Node
 {
 public:
+	Dilate();
 	virtual ~Dilate() override = default;
 
 	Image *in;
@@ -79,6 +83,7 @@ public:
 class Erode: public Node
 {
 public:
+	Erode();
 	virtual ~Erode() override = default;
 
 	Image *in;
@@ -93,6 +98,7 @@ public:
 class HipaccNode: public Node
 {
 public:
+	HipaccNode();
 	std::string filename;
 	Image *out;
 	std::vector<vx_reference> parameters;
@@ -133,6 +139,7 @@ public:
 	SimplePointAdd()
 	{
 		operation = "+";
+		node_name = "Point Addition";
 	}
 	virtual ~SimplePointAdd() override = default;
 };
@@ -142,6 +149,7 @@ public:
 	SimplePointSub()
 	{
 		operation = "-";
+		node_name = "Point Subtraction";
 	}
 	virtual ~SimplePointSub() override = default;
 };
@@ -151,6 +159,7 @@ public:
 	SimplePointMul()
 	{
 		operation = "*";
+		node_name = "Point Multiplication";
 	}
 	virtual ~SimplePointMul() override = default;
 };
@@ -160,6 +169,7 @@ public:
 	SimplePointDiv()
 	{
 		operation = "/";
+		node_name = "Point Division";
 	}
 	virtual ~SimplePointDiv() override = default;
 };
@@ -186,6 +196,7 @@ public:
 	SimplePointScalarAdd()
 	{
 		this->operation = "+";
+		this->node_name = "Scalar Addition";
 	}
 	virtual ~SimplePointScalarAdd() override = default;
 };
@@ -196,6 +207,7 @@ public:
 	SimplePointScalarSub()
 	{
 		this->operation = "-";
+		this->node_name = "Scalar Subtraction";
 	}
 	virtual ~SimplePointScalarSub() override = default;
 };
@@ -206,6 +218,7 @@ public:
 	SimplePointScalarMul()
 	{
 		this->operation = "*";
+		this->node_name = "Scalar Multiplication";
 	}
 	virtual ~SimplePointScalarMul() override = default;
 };
@@ -216,6 +229,7 @@ public:
 	SimplePointScalarDiv()
 	{
 		this->operation = "/";
+		this->node_name = "Scalar Division";
 	}
 	virtual ~SimplePointScalarDiv() override = default;
 };
@@ -223,6 +237,7 @@ public:
 class SquareNode: public Node
 {
 public:
+	SquareNode();
 	virtual ~SquareNode() override = default;
 	Image *in;
 	Image *out;
@@ -241,6 +256,7 @@ public:
 	AndNode()
 	{
 		operation = "&";
+		node_name = "And";
 	}
 	virtual ~AndNode() override = default;
 };
@@ -250,6 +266,7 @@ public:
 	XorNode()
 	{
 		operation = "^";
+		node_name = "Xor";
 	}
 	virtual ~XorNode() override = default;
 };
@@ -259,6 +276,7 @@ public:
 	OrNode()
 	{
 		operation = "|";
+		node_name = "or";
 	}
 	virtual ~OrNode() override = default;
 };
@@ -266,6 +284,7 @@ public:
 class SaturateNode: public Node
 {
 public:
+	SaturateNode();
 	virtual ~SaturateNode() override = default;
 	Image *in;
 	Image *out;
@@ -279,6 +298,7 @@ template <typename T>
 class LinearMask: public Node
 {
 public:
+	LinearMask();
 	virtual ~LinearMask() override = default;
 	std::vector<T> mask;
 	int dim[2]; //dim[0] = x, dim[1] = y
@@ -298,6 +318,7 @@ public:
 class Sobel3x3Node: public Node
 {
 public:
+	Sobel3x3Node();
 	virtual ~Sobel3x3Node() override = default;
 
 	LinearMask<int> sobel_x;
@@ -324,6 +345,7 @@ public:
 		this->normalization = 1.0f / 9;
 		this->use_image_datatype_for_sum = false;
 		this->sum_datatype = VX_DF_IMAGE_S16;
+		this->node_name = "Box Filter 3x3";
 	}
 	virtual ~BoxFilter() override = default;
 };
@@ -337,6 +359,7 @@ public:
 		this->normalization = 1.0f / 16;
 		this->use_image_datatype_for_sum = false;
 		this->sum_datatype = VX_DF_IMAGE_S16;
+		this->node_name = "Gaussian Filter 3x3";
 	}
 	virtual ~GaussianFilter() override = default;
 };
@@ -345,6 +368,7 @@ public:
 class Add3_3: public Node
 {
 public:
+	Add3_3();
 	virtual ~Add3_3() override = default;
 
 	LinearMask<int> add;
@@ -382,6 +406,7 @@ public:
 		  Mc(in->w, in->h, VX_TYPE_FLOAT32),
 		  Vc(in->w, in->h, VX_TYPE_FLOAT32)
 	{
+		node_name = "Harris Corner";
 	}
 	virtual ~HarrisCorners() override = default;
 
@@ -467,6 +492,7 @@ public:
 class UnaryFunctionNode: public Node
 {
 public:
+	UnaryFunctionNode();
 	virtual ~UnaryFunctionNode() override = default;
 	Image *in;
 	Image *out;
@@ -481,6 +507,7 @@ public:
 class SqrtNode: public Node
 {
 public:
+	SqrtNode();
 	virtual ~SqrtNode() override = default;
 	Image *in;
 	Image *out;
@@ -495,6 +522,7 @@ public:
 class AbsNode: public Node
 {
 public:
+	AbsNode();
 	virtual ~AbsNode() override = default;
 	Image *in;
 	Image *out;
@@ -509,6 +537,7 @@ public:
 class Atan2Node: public Node
 {
 public:
+	Atan2Node();
 	virtual ~Atan2Node() override = default;
 	Image *in;
 	Image *out;
@@ -525,6 +554,7 @@ public:
 class AbsDiffNode: public Node
 {
 public:
+	AbsDiffNode();
 	virtual ~AbsDiffNode() override = default;
 	Image *in_1;
 	Image *in_2;
@@ -546,10 +576,11 @@ public:
 	virtual void build() override;
 };
 
-class AddNode: public Node
+class VXAddNode: public Node
 {
 public:
-	virtual ~AddNode() override = default;
+	VXAddNode();
+	virtual ~VXAddNode() override = default;
 	Image *in_1;
 	Image *in_2;
 	Image *out;
@@ -566,10 +597,11 @@ public:
 	virtual std::string generateNodeCall() override;
 	virtual void build() override;
 };
-class SubtractNode: public Node
+class VXSubtractNode: public Node
 {
 public:
-	virtual ~SubtractNode() override = default;
+	VXSubtractNode();
+	virtual ~VXSubtractNode() override = default;
 	Image *in_1;
 	Image *in_2;
 	Image *out;
@@ -599,6 +631,7 @@ template <typename T>
 class ConditionalAssignmentNode: public Node
 {
 public:
+	ConditionalAssignmentNode();
 	virtual ~ConditionalAssignmentNode() override = default;
 
 	Image *in;
@@ -620,6 +653,7 @@ public:
 class VXThresholdNode: public Node
 {
 public:
+	VXThresholdNode();
 	virtual ~VXThresholdNode() override = default;
 
 	Image *in;
@@ -640,6 +674,7 @@ public:
 class MagnitudeNode: public Node
 {
 public:
+	MagnitudeNode();
 	virtual ~MagnitudeNode() override = default;
 
 	Image *in_1;
@@ -669,6 +704,7 @@ public:
 class PhaseNode: public Node
 {
 public:
+	PhaseNode();
 	virtual ~PhaseNode() override = default;
 	Image *in_1;
 	Image *in_2;
@@ -691,6 +727,7 @@ public:
 class VXMultiplyNode: public Node
 {
 public:
+	VXMultiplyNode();
 	virtual ~VXMultiplyNode() override = default;
 	Image *in_1;
 	Image *in_2;
@@ -719,6 +756,7 @@ public:
 class VXAccumulateNode: public Node
 {
 public:
+	VXAccumulateNode();
 	virtual ~VXAccumulateNode() override = default;
 	Image *in;
 	Image *in_out;
@@ -737,6 +775,7 @@ public:
 class VXAccumulateSquareNode: public Node
 {
 public:
+	VXAccumulateSquareNode();
 	virtual ~VXAccumulateSquareNode() override = default;
 	Image *in;
 	Image *in_out;
@@ -763,6 +802,7 @@ public:
 class VXAccumulateWeightedNode: public Node
 {
 public:
+	VXAccumulateWeightedNode();
 	virtual ~VXAccumulateWeightedNode() override = default;
 	Image *in;
 	Image *in_out;
@@ -788,6 +828,7 @@ public:
 class VXChannelExtractNode: public Node
 {
 public:
+	VXChannelExtractNode();
 	virtual ~VXChannelExtractNode() override = default;
 	Image *in;
 	vx_channel_e channel;
@@ -801,6 +842,7 @@ public:
 class VXConvolveNode: public Node
 {
 public:
+	VXConvolveNode();
 	virtual ~VXConvolveNode() override = default;
 	Image *in;
 	Image *out;
@@ -870,6 +912,11 @@ std::string node_generator(HipaVX::HipaccNode *n, Type t);
 namespace HipaVX
 {
 template <typename T>
+LinearMask<T>::LinearMask()
+{
+	node_name = "Linear Mask";
+}
+template <typename T>
 std::vector<Image *> LinearMask<T>::get_used_images()
 {
 	std::vector<Image*> used_images;
@@ -908,7 +955,11 @@ std::string SimplePointScalar<T>::generateNodeCall()
 	return generator::node_generator(this, generator::Type::Call);
 }
 
-
+template <typename T>
+ConditionalAssignmentNode<T>::ConditionalAssignmentNode()
+{
+	node_name = "Conditional Assignment";
+}
 template <typename T>
 std::vector<Image *> ConditionalAssignmentNode<T>::get_used_images()
 {

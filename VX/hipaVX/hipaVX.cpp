@@ -158,7 +158,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxAddNode(vx_graph graph, vx_image in1, vx_imag
 	if (out->col != VX_DF_IMAGE_U8 && out->col != VX_DF_IMAGE_S16)
 		return nullptr;
 
-	auto node = new HipaVX::AddNode();
+	auto node = new HipaVX::VXAddNode();
 	node->in_1 = in1;
 	node->in_2 = in2;
 	node->policy = policy;
@@ -180,7 +180,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxSubtractNode(vx_graph graph, vx_image in1, vx
 	if (out->col != VX_DF_IMAGE_U8 && out->col != VX_DF_IMAGE_S16)
 		return nullptr;
 
-	auto node = new HipaVX::SubtractNode();
+	auto node = new HipaVX::VXSubtractNode();
 	node->in_1 = in1;
 	node->in_2 = in2;
 	node->policy = policy;
