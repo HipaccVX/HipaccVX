@@ -1536,9 +1536,9 @@ void vxDrawDotGraph(vx_graph graph, std::string filename, vx_uint32 node_depth)
 
 	std::string node_definitions;
 	for(auto node: nodes)
-		node_definitions += "\tID_" + std::to_string(node->my_id) + " [label=\"" + node->get_name() + "\"];\n";
+		node_definitions += "\tID_" + std::to_string(node->my_id) + " [label=\"" + node->get_name() + "\", color=green];\n";
 	for(auto object: objects)
-		node_definitions += "\tID_" + std::to_string(object->my_id) + " [label=\"" + get_object_name(object) + "\", shape=box];\n";
+		node_definitions += "\tID_" + std::to_string(object->my_id) + " [label=\"" + get_object_name(object) + "\", shape=box, color=blue];\n";
 
 	content += node_definitions;
 	content += edges;
