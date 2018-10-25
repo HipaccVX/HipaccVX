@@ -414,7 +414,7 @@ VX_API_ENTRY vx_threshold VX_API_CALL vxCreateThresholdForImage (vx_context cont
 {
 	HipaVX::Threshold *t = new HipaVX::Threshold;
 
-	t->type = (vx_threshold_type_e) thresh_type;
+	t->threshold_type = (vx_threshold_type_e) thresh_type;
 	t->input_format = input_format;
 	t->output_format = output_format;
 

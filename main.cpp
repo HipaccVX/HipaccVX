@@ -181,6 +181,8 @@ int main()
                 status = vxProcessGraph(graph);
             }
 
+			vxDrawDotGraph(graph, "graph.dot", 0);
+
 			/*for (i = 0; i < 8; i++)
             {
                 vxReleaseNode(&nodes[i]);

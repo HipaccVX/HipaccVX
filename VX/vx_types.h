@@ -1994,7 +1994,11 @@ public:
 class Threshold: public Object
 {
 public:
-	vx_threshold_type_e type;
+	Threshold()
+	{
+		type = VX_TYPE_THRESHOLD;
+	}
+	vx_threshold_type_e threshold_type;
 
 	vx_int32 value;
 	vx_int32 lower;
@@ -2018,6 +2022,10 @@ public:
 class Convolution: public Object
 {
 public:
+	Convolution()
+	{
+		type = VX_TYPE_CONVOLUTION;
+	}
 	std::vector<vx_int16> coefficients;
 	vx_size  rows;
 	vx_size  columns;

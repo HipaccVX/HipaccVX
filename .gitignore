@@ -17,7 +17,8 @@ phony.c
 
 CMakeLists.txt.user
 
-
+#generated .dot graph files
+**/*.dot
 
 #HipaVX outputfiles
 main
