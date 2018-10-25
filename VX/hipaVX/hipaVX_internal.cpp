@@ -47,17 +47,10 @@ FileinputImage::FileinputImage(vx_uint32 width, vx_uint32 height, vx_df_image co
 
 void Graph::build()
 {
-	used_images.clear();
-
 	for (auto& node: graph)
 	{
 		node->build();
-		auto used_images_node = node->get_used_images();
-		used_images.insert(used_images.end(), used_images_node.cbegin(), used_images_node.cend());
 	}
-
-	std::sort(used_images.begin(), used_images.end());
-	used_images.erase(std::unique(used_images.begin(), used_images.end()), used_images.end());
 
 	built = true;
 }
@@ -66,11 +59,16 @@ WriteImageNode::WriteImageNode()
 {
 	node_name = "Image Writer";
 }
-std::vector<Image *> WriteImageNode::get_used_images()
+std::vector<Object *> WriteImageNode::get_inputs()
 {
-	std::vector<Image*> used_images;
-	used_images.emplace_back(in);
-	return used_images;
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in);
+	return used_objects;
+}
+std::vector<Object *> WriteImageNode::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	return used_objects;
 }
 std::string WriteImageNode::generateClassDefinition()
 {
@@ -85,12 +83,18 @@ ConvertDepthNode::ConvertDepthNode()
 {
 	node_name = "Depth Converter";
 }
-std::vector<Image *> ConvertDepthNode::get_used_images()
+std::vector<Object *> ConvertDepthNode::get_inputs()
 {
-	std::vector<Image*> used_images;
-	used_images.emplace_back(in);
-	used_images.emplace_back(out);
-	return used_images;
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in);
+	used_objects.emplace_back(shift);
+	return used_objects;
+}
+std::vector<Object *> ConvertDepthNode::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(out);
+	return used_objects;
 }
 std::string ConvertDepthNode::generateClassDefinition()
 {
@@ -105,12 +109,17 @@ NotNode::NotNode()
 {
 	node_name = "Not";
 }
-std::vector<Image *> NotNode::get_used_images()
+std::vector<Object *> NotNode::get_inputs()
 {
-	std::vector<Image*> used_images;
-	used_images.emplace_back(in);
-	used_images.emplace_back(out);
-	return used_images;
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in);
+	return used_objects;
+}
+std::vector<Object *> NotNode::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(out);
+	return used_objects;
 }
 std::string NotNode::generateClassDefinition()
 {
@@ -125,12 +134,17 @@ Dilate::Dilate()
 {
 	node_name = "Dilate";
 }
-std::vector<Image *> Dilate::get_used_images()
+std::vector<Object *> Dilate::get_inputs()
 {
-	std::vector<Image*> used_images;
-	used_images.emplace_back(in);
-	used_images.emplace_back(out);
-	return used_images;
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in);
+	return used_objects;
+}
+std::vector<Object *> Dilate::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(out);
+	return used_objects;
 }
 std::string Dilate::generateClassDefinition()
 {
@@ -145,12 +159,17 @@ Erode::Erode()
 {
 	node_name = "Erode";
 }
-std::vector<Image *> Erode::get_used_images()
+std::vector<Object *> Erode::get_inputs()
 {
-	std::vector<Image*> used_images;
-	used_images.emplace_back(in);
-	used_images.emplace_back(out);
-	return used_images;
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in);
+	return used_objects;
+}
+std::vector<Object *> Erode::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(out);
+	return used_objects;
 }
 std::string Erode::generateClassDefinition()
 {
@@ -166,12 +185,24 @@ VXThresholdNode::VXThresholdNode()
 {
 	node_name = "VX Threshold";
 }
-std::vector<Image *> VXThresholdNode::get_used_images()
+std::vector<Object *> VXThresholdNode::get_inputs()
 {
-	std::vector<Image*> used_images;
-	auto x = comparision_node.get_used_images();
-	std::copy(x.begin(), x.end(), std::back_inserter(used_images));
-	return used_images;
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in);
+	used_objects.emplace_back(threshold);
+	return used_objects;
+}
+std::vector<Object *> VXThresholdNode::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(out);
+	return used_objects;
+}
+std::vector<Node*> VXThresholdNode::get_subnodes()
+{
+	std::vector<Node*> subnodes;
+	subnodes.push_back(&comparision_node);
+	return subnodes;
 }
 std::string VXThresholdNode::generateClassDefinition()
 {
@@ -228,14 +259,25 @@ Sobel3x3Node::Sobel3x3Node()
 {
 	node_name = "Sobel 3x3";
 }
-std::vector<Image *> Sobel3x3Node::get_used_images()
+std::vector<Object *> Sobel3x3Node::get_inputs()
 {
-	std::vector<Image*> used_images;
-	auto x = sobel_x.get_used_images();
-	auto y = sobel_y.get_used_images();
-	std::copy(x.begin(), x.end(), std::back_inserter(used_images));
-	std::copy(y.begin(), y.end(), std::back_inserter(used_images));
-	return used_images;
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in);
+	return used_objects;
+}
+std::vector<Object *> Sobel3x3Node::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(out_x);
+	used_objects.emplace_back(out_y);
+	return used_objects;
+}
+std::vector<Node*> Sobel3x3Node::get_subnodes()
+{
+	std::vector<Node*> subnodes;
+	subnodes.push_back(&sobel_x);
+	subnodes.push_back(&sobel_y);
+	return subnodes;
 }
 std::string Sobel3x3Node::generateClassDefinition()
 {
@@ -251,17 +293,22 @@ std::string Sobel3x3Node::generateNodeCall()
 }
 void Sobel3x3Node::build()
 {
-	sobel_x.dim[0] = sobel_x.dim[1] = sobel_y.dim[0] = sobel_y.dim[1] = 3;
+	sobel_x.matrix.dim[0] = sobel_x.matrix.dim[1] = 3;
+	sobel_y.matrix.dim[0] = sobel_y.matrix.dim[1] = 3;
 
-	sobel_x.mask = {-1,  0,  1,
+	sobel_x.matrix.mask = {-1,  0,  1,
 					-2,  0,  2,
 					-1,  0,  1};
 
-	sobel_y.mask = {-1, -2, -1,
+	sobel_y.matrix.mask = {-1, -2, -1,
 					 0,  0,  0,
 					 1,  2,  1};
 
-	sobel_x.normalization = sobel_y.normalization = 1;
+	uint32_t one = 1;
+	Scalar* x_normalization = new Scalar(VX_TYPE_INT32, &one);
+	Scalar* y_normalization = new Scalar(VX_TYPE_INT32, &one);
+	sobel_x.normalization.reset(x_normalization);
+	sobel_y.normalization.reset(y_normalization);
 
 	sobel_x.in = in;
 	sobel_x.out = out_x;
@@ -276,12 +323,23 @@ Add3_3::Add3_3()
 {
 	node_name = "Add 3x3";
 }
-std::vector<Image *> Add3_3::get_used_images()
+std::vector<Object *> Add3_3::get_inputs()
 {
-	std::vector<Image*> used_images;
-	auto a = add.get_used_images();
-	std::copy(a.begin(), a.end(), std::back_inserter(used_images));
-	return used_images;
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in);
+	return used_objects;
+}
+std::vector<Object *> Add3_3::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(out);
+	return used_objects;
+}
+std::vector<Node*> Add3_3::get_subnodes()
+{
+	std::vector<Node*> subnodes;
+	subnodes.push_back(&add);
+	return subnodes;
 }
 std::string Add3_3::generateClassDefinition()
 {
@@ -295,13 +353,15 @@ std::string Add3_3::generateNodeCall()
 }
 void Add3_3::build()
 {
-	add.dim[0] = add.dim[1] = 3;
+	add.matrix.dim[0] = add.matrix.dim[1] = 3;
 
-	add.mask = {1, 1, 1,
+	add.matrix.mask = {1, 1, 1,
 				1, 1, 1,
 				1, 1, 1};
 
-	add.normalization = 1;
+	uint32_t one = 1;
+	Scalar* normalization = new Scalar(VX_TYPE_INT32, &one);
+	add.normalization.reset(normalization);
 
 	add.in = in;
 	add.out = out;
@@ -312,43 +372,40 @@ void Add3_3::build()
 
 
 
-std::vector<Image *> HarrisCorners::get_used_images()
+std::vector<Object *> HarrisCorners::get_inputs()
 {
-	std::vector<Image*> used_images;
-	auto a = sobel.get_used_images();
-	auto b = sobel_x_norm.get_used_images();
-	auto c = sobel_y_norm.get_used_images();
-	auto d = sobel_x_square.get_used_images();
-	auto e = sobel_y_square.get_used_images();
-	auto f = sobel_x_y.get_used_images();
-	auto g = gx_square_A.get_used_images();
-	auto h = gy_square_A.get_used_images();
-	auto i = gx_gy_A.get_used_images();
-	auto j = trace_add.get_used_images();
-	auto k = gx_A_gy_A.get_used_images();
-	auto l = gx_gy_A_square.get_used_images();
-	auto m = det_kernel.get_used_images();
-	auto n = trace_A_square_kernel.get_used_images();
-	auto o = trace_A_square_k_kernel.get_used_images();
-	auto p = Mc_kernel.get_used_images();
-	std::copy(a.begin(), a.end(), std::back_inserter(used_images));
-	std::copy(b.begin(), b.end(), std::back_inserter(used_images));
-	std::copy(c.begin(), c.end(), std::back_inserter(used_images));
-	std::copy(d.begin(), d.end(), std::back_inserter(used_images));
-	std::copy(e.begin(), e.end(), std::back_inserter(used_images));
-	std::copy(f.begin(), f.end(), std::back_inserter(used_images));
-	std::copy(g.begin(), g.end(), std::back_inserter(used_images));
-	std::copy(h.begin(), h.end(), std::back_inserter(used_images));
-	std::copy(i.begin(), i.end(), std::back_inserter(used_images));
-	std::copy(j.begin(), j.end(), std::back_inserter(used_images));
-	std::copy(k.begin(), k.end(), std::back_inserter(used_images));
-	std::copy(l.begin(), l.end(), std::back_inserter(used_images));
-	std::copy(m.begin(), m.end(), std::back_inserter(used_images));
-	std::copy(n.begin(), n.end(), std::back_inserter(used_images));
-	std::copy(o.begin(), o.end(), std::back_inserter(used_images));
-	std::copy(p.begin(), p.end(), std::back_inserter(used_images));
-	used_images.push_back(&Vc);
-	return used_images;
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in);
+	return used_objects;
+}
+std::vector<Object *> HarrisCorners::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(&Vc);
+	used_objects.emplace_back(corners);
+	return used_objects;
+}
+std::vector<Node*> HarrisCorners::get_subnodes()
+{
+	std::vector<Node*> subnodes;
+	subnodes.push_back(&sobel);
+	subnodes.push_back(&sobel_x_norm);
+	subnodes.push_back(&sobel_y_norm);
+	subnodes.push_back(&sobel_x_square);
+	subnodes.push_back(&sobel_y_square);
+	subnodes.push_back(&sobel_x_y);
+	subnodes.push_back(&gx_square_A);
+	subnodes.push_back(&gy_square_A);
+	subnodes.push_back(&gx_gy_A);
+
+	subnodes.push_back(&trace_add);
+	subnodes.push_back(&gx_A_gy_A);
+	subnodes.push_back(&gx_gy_A_square);
+	subnodes.push_back(&det_kernel);
+	subnodes.push_back(&trace_A_square_kernel);
+	subnodes.push_back(&trace_A_square_k_kernel);
+	subnodes.push_back(&Mc_kernel);
+	return subnodes;
 }
 std::string HarrisCorners::generateClassDefinition()
 {
@@ -477,12 +534,23 @@ SquareNode::SquareNode()
 {
 	node_name = "Square";
 }
-std::vector<Image *> SquareNode::get_used_images()
+std::vector<Object *> SquareNode::get_inputs()
 {
-	std::vector<Image*> used_images;
-	auto a = mul_node.get_used_images();
-	std::copy(a.begin(), a.end(), std::back_inserter(used_images));
-	return used_images;
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in);
+	return used_objects;
+}
+std::vector<Object *> SquareNode::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(out);
+	return used_objects;
+}
+std::vector<Node*> SquareNode::get_subnodes()
+{
+	std::vector<Node*> subnodes;
+	subnodes.push_back(&mul_node);
+	return subnodes;
 }
 std::string SquareNode::generateClassDefinition()
 {
@@ -504,13 +572,18 @@ void SquareNode::build()
 }
 
 
-std::vector<Image *> SimplePoint::get_used_images()
+std::vector<Object *> SimplePoint::get_inputs()
 {
-	std::vector<Image*> used_images;
-	used_images.emplace_back(in_1);
-	used_images.emplace_back(in_2);
-	used_images.emplace_back(out);
-	return used_images;
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in_1);
+	used_objects.emplace_back(in_2);
+	return used_objects;
+}
+std::vector<Object *> SimplePoint::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(out);
+	return used_objects;
 }
 std::string SimplePoint::generateClassDefinition()
 {
@@ -525,12 +598,17 @@ SaturateNode::SaturateNode()
 {
 	node_name = "Saturate";
 }
-std::vector<Image *> SaturateNode::get_used_images()
+std::vector<Object *> SaturateNode::get_inputs()
 {
-	std::vector<Image*> used_images;
-	used_images.emplace_back(in);
-	used_images.emplace_back(out);
-	return used_images;
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in);
+	return used_objects;
+}
+std::vector<Object *> SaturateNode::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(out);
+	return used_objects;
 }
 std::string SaturateNode::generateClassDefinition()
 {
@@ -545,12 +623,17 @@ UnaryFunctionNode::UnaryFunctionNode()
 {
 	node_name = "General unary Function";
 }
-std::vector<Image *> UnaryFunctionNode::get_used_images()
+std::vector<Object *> UnaryFunctionNode::get_inputs()
 {
-	std::vector<Image*> used_images;
-	used_images.emplace_back(in);
-	used_images.emplace_back(out);
-	return used_images;
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in);
+	return used_objects;
+}
+std::vector<Object *> UnaryFunctionNode::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(out);
+	return used_objects;
 }
 std::string UnaryFunctionNode::generateClassDefinition()
 {
@@ -565,12 +648,23 @@ SqrtNode::SqrtNode()
 {
 	node_name = "Sqrt";
 }
-std::vector<Image *> SqrtNode::get_used_images()
+std::vector<Object *> SqrtNode::get_inputs()
 {
-	std::vector<Image*> used_images;
-	auto a = function_node.get_used_images();
-	std::copy(a.begin(), a.end(), std::back_inserter(used_images));
-	return used_images;
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in);
+	return used_objects;
+}
+std::vector<Object *> SqrtNode::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(out);
+	return used_objects;
+}
+std::vector<Node*> SqrtNode::get_subnodes()
+{
+	std::vector<Node*> subnodes;
+	subnodes.push_back(&function_node);
+	return subnodes;
 }
 std::string SqrtNode::generateClassDefinition()
 {
@@ -595,12 +689,23 @@ AbsNode::AbsNode()
 {
 	node_name = "Abs";
 }
-std::vector<Image *> AbsNode::get_used_images()
+std::vector<Object *> AbsNode::get_inputs()
 {
-	std::vector<Image*> used_images;
-	auto a = function_node.get_used_images();
-	std::copy(a.begin(), a.end(), std::back_inserter(used_images));
-	return used_images;
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in);
+	return used_objects;
+}
+std::vector<Object *> AbsNode::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(out);
+	return used_objects;
+}
+std::vector<Node*> AbsNode::get_subnodes()
+{
+	std::vector<Node*> subnodes;
+	subnodes.push_back(&function_node);
+	return subnodes;
 }
 std::string AbsNode::generateClassDefinition()
 {
@@ -625,12 +730,23 @@ Atan2Node::Atan2Node()
 {
 	node_name = "Atan2";
 }
-std::vector<Image *> Atan2Node::get_used_images()
+std::vector<Object *> Atan2Node::get_inputs()
 {
-	std::vector<Image*> used_images;
-	auto a = function_node.get_used_images();
-	std::copy(a.begin(), a.end(), std::back_inserter(used_images));
-	return used_images;
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in);
+	return used_objects;
+}
+std::vector<Object *> Atan2Node::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(out);
+	return used_objects;
+}
+std::vector<Node*> Atan2Node::get_subnodes()
+{
+	std::vector<Node*> subnodes;
+	subnodes.push_back(&function_node);
+	return subnodes;
 }
 std::string Atan2Node::generateClassDefinition()
 {
@@ -656,20 +772,27 @@ AbsDiffNode::AbsDiffNode()
 {
 	node_name = "Absolute Difference";
 }
-std::vector<Image *> AbsDiffNode::get_used_images()
+std::vector<Object *> AbsDiffNode::get_inputs()
 {
-	std::vector<Image*> used_images;
-	auto a = diff_node.get_used_images();
-	auto b = abs_node.get_used_images();
-	std::copy(a.begin(), a.end(), std::back_inserter(used_images));
-	std::copy(b.begin(), b.end(), std::back_inserter(used_images));
-
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in_1);
+	used_objects.emplace_back(in_2);
+	return used_objects;
+}
+std::vector<Object *> AbsDiffNode::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(out);
+	return used_objects;
+}
+std::vector<Node*> AbsDiffNode::get_subnodes()
+{
+	std::vector<Node*> subnodes;
+	subnodes.push_back(&diff_node);
+	subnodes.push_back(&abs_node);
 	if (saturate)
-	{
-		auto c = saturate_node.get_used_images();
-		std::copy(c.begin(), c.end(), std::back_inserter(used_images));
-	}
-	return used_images;
+		subnodes.push_back(&saturate_node);
+	return subnodes;
 }
 std::string AbsDiffNode::generateClassDefinition()
 {
@@ -721,18 +844,26 @@ VXAddNode::VXAddNode()
 {
 	node_name = "VX Addition Node";
 }
-std::vector<Image *> VXAddNode::get_used_images()
+std::vector<Object *> VXAddNode::get_inputs()
 {
-	std::vector<Image*> used_images;
-	auto a = add_node.get_used_images();
-	std::copy(a.begin(), a.end(), std::back_inserter(used_images));
-
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in_1);
+	used_objects.emplace_back(in_2);
+	return used_objects;
+}
+std::vector<Object *> VXAddNode::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(out);
+	return used_objects;
+}
+std::vector<Node*> VXAddNode::get_subnodes()
+{
+	std::vector<Node*> subnodes;
+	subnodes.push_back(&add_node);
 	if (policy == VX_CONVERT_POLICY_SATURATE)
-	{
-		auto c = saturate_node.get_used_images();
-		std::copy(c.begin(), c.end(), std::back_inserter(used_images));
-	}
-	return used_images;
+		subnodes.push_back(&saturate_node);
+	return subnodes;
 }
 std::string VXAddNode::generateClassDefinition()
 {
@@ -774,18 +905,26 @@ VXSubtractNode::VXSubtractNode()
 {
 	node_name = "VX Subtraction Node";
 }
-std::vector<Image *> VXSubtractNode::get_used_images()
+std::vector<Object *> VXSubtractNode::get_inputs()
 {
-	std::vector<Image*> used_images;
-	auto a = diff_node.get_used_images();
-	std::copy(a.begin(), a.end(), std::back_inserter(used_images));
-
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in_1);
+	used_objects.emplace_back(in_2);
+	return used_objects;
+}
+std::vector<Object *> VXSubtractNode::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(out);
+	return used_objects;
+}
+std::vector<Node*> VXSubtractNode::get_subnodes()
+{
+	std::vector<Node*> subnodes;
+	subnodes.push_back(&diff_node);
 	if (policy == VX_CONVERT_POLICY_SATURATE)
-	{
-		auto c = saturate_node.get_used_images();
-		std::copy(c.begin(), c.end(), std::back_inserter(used_images));
-	}
-	return used_images;
+		subnodes.push_back(&saturate_node);
+	return subnodes;
 }
 std::string VXSubtractNode::generateClassDefinition()
 {
@@ -827,20 +966,28 @@ MagnitudeNode::MagnitudeNode()
 {
 	node_name = "VX Magnitude";
 }
-std::vector<Image *> MagnitudeNode::get_used_images()
+std::vector<Object *> MagnitudeNode::get_inputs()
 {
-	std::vector<Image*> used_images;
-	auto a = grad_x_square_node.get_used_images();
-	auto b = grad_y_square_node.get_used_images();
-	auto c = add_node.get_used_images();
-	auto d = sqrt_node.get_used_images();
-	auto e = saturate_node.get_used_images();
-	std::copy(a.begin(), a.end(), std::back_inserter(used_images));
-	std::copy(b.begin(), b.end(), std::back_inserter(used_images));
-	std::copy(c.begin(), c.end(), std::back_inserter(used_images));
-	std::copy(d.begin(), d.end(), std::back_inserter(used_images));
-	std::copy(e.begin(), e.end(), std::back_inserter(used_images));
-	return used_images;
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in_1);
+	used_objects.emplace_back(in_2);
+	return used_objects;
+}
+std::vector<Object *> MagnitudeNode::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(out);
+	return used_objects;
+}
+std::vector<Node*> MagnitudeNode::get_subnodes()
+{
+	std::vector<Node*> subnodes;
+	subnodes.push_back(&grad_x_square_node);
+	subnodes.push_back(&grad_y_square_node);
+	subnodes.push_back(&add_node);
+	subnodes.push_back(&sqrt_node);
+	subnodes.push_back(&saturate_node);
+	return subnodes;
 }
 std::string MagnitudeNode::generateClassDefinition()
 {
@@ -894,16 +1041,26 @@ PhaseNode::PhaseNode()
 {
 	node_name = "VX Phase";
 }
-std::vector<Image *> PhaseNode::get_used_images()
+std::vector<Object *> PhaseNode::get_inputs()
 {
-	std::vector<Image*> used_images;
-	auto a = div_node.get_used_images();
-	auto b = atan2_node.get_used_images();
-	auto c = mapping_node.get_used_images();
-	std::copy(a.begin(), a.end(), std::back_inserter(used_images));
-	std::copy(b.begin(), b.end(), std::back_inserter(used_images));
-	std::copy(c.begin(), c.end(), std::back_inserter(used_images));
-	return used_images;
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in_1);
+	used_objects.emplace_back(in_2);
+	return used_objects;
+}
+std::vector<Object *> PhaseNode::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(out);
+	return used_objects;
+}
+std::vector<Node*> PhaseNode::get_subnodes()
+{
+	std::vector<Node*> subnodes;
+	subnodes.push_back(&div_node);
+	subnodes.push_back(&atan2_node);
+	subnodes.push_back(&mapping_node);
+	return subnodes;
 }
 std::string PhaseNode::generateClassDefinition()
 {
@@ -943,20 +1100,28 @@ VXMultiplyNode::VXMultiplyNode()
 {
 	node_name = "VX Multiplication";
 }
-std::vector<Image *> VXMultiplyNode::get_used_images()
+std::vector<Object *> VXMultiplyNode::get_inputs()
 {
-	std::vector<Image*> used_images;
-	auto a = mul_node.get_used_images();
-	std::copy(a.begin(), a.end(), std::back_inserter(used_images));
-	auto b = mul_scalar_node.get_used_images();
-	std::copy(b.begin(), b.end(), std::back_inserter(used_images));
-
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in_1);
+	used_objects.emplace_back(in_2);
+	used_objects.emplace_back(scalar);
+	return used_objects;
+}
+std::vector<Object *> VXMultiplyNode::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(out);
+	return used_objects;
+}
+std::vector<Node*> VXMultiplyNode::get_subnodes()
+{
+	std::vector<Node*> subnodes;
+	subnodes.push_back(&mul_node);
+	subnodes.push_back(&mul_scalar_node);
 	if (overflow_policy == VX_CONVERT_POLICY_SATURATE)
-	{
-		auto c = saturate_node.get_used_images();
-		std::copy(c.begin(), c.end(), std::back_inserter(used_images));
-	}
-	return used_images;
+		subnodes.push_back(&saturate_node);
+	return subnodes;
 }
 std::string VXMultiplyNode::generateClassDefinition()
 {
@@ -1006,14 +1171,25 @@ VXAccumulateNode::VXAccumulateNode()
 {
 	node_name = "VX Accumulation";
 }
-std::vector<Image *> VXAccumulateNode::get_used_images()
+std::vector<Object *> VXAccumulateNode::get_inputs()
 {
-	std::vector<Image*> used_images;
-	auto a = add_node.get_used_images();
-	auto c = saturate_node.get_used_images();
-	std::copy(a.begin(), a.end(), std::back_inserter(used_images));
-	std::copy(c.begin(), c.end(), std::back_inserter(used_images));
-	return used_images;
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in);
+	used_objects.emplace_back(in_out);
+	return used_objects;
+}
+std::vector<Object *> VXAccumulateNode::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in_out);
+	return used_objects;
+}
+std::vector<Node*> VXAccumulateNode::get_subnodes()
+{
+	std::vector<Node*> subnodes;
+	subnodes.push_back(&add_node);
+	subnodes.push_back(&saturate_node);
+	return subnodes;
 }
 std::string VXAccumulateNode::generateClassDefinition()
 {
@@ -1045,18 +1221,28 @@ VXAccumulateSquareNode::VXAccumulateSquareNode()
 {
 	node_name = "VX Squared Accumulation";
 }
-std::vector<Image *> VXAccumulateSquareNode::get_used_images()
+std::vector<Object *> VXAccumulateSquareNode::get_inputs()
 {
-	std::vector<Image*> used_images;
-	auto a = square_node.get_used_images();
-	auto b = depth_node.get_used_images();
-	auto c = add_node.get_used_images();
-	auto d = saturate_node.get_used_images();
-	std::copy(a.begin(), a.end(), std::back_inserter(used_images));
-	std::copy(b.begin(), b.end(), std::back_inserter(used_images));
-	std::copy(c.begin(), c.end(), std::back_inserter(used_images));
-	std::copy(d.begin(), d.end(), std::back_inserter(used_images));
-	return used_images;
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in);
+	used_objects.emplace_back(in_out);
+	used_objects.emplace_back(shift);
+	return used_objects;
+}
+std::vector<Object *> VXAccumulateSquareNode::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in_out);
+	return used_objects;
+}
+std::vector<Node*> VXAccumulateSquareNode::get_subnodes()
+{
+	std::vector<Node*> subnodes;
+	subnodes.push_back(&square_node);
+	subnodes.push_back(&depth_node);
+	subnodes.push_back(&add_node);
+	subnodes.push_back(&saturate_node);
+	return subnodes;
 }
 std::string VXAccumulateSquareNode::generateClassDefinition()
 {
@@ -1107,16 +1293,27 @@ VXAccumulateWeightedNode::VXAccumulateWeightedNode()
 {
 	node_name = "VX Weighted Accumulation";
 }
-std::vector<Image *> VXAccumulateWeightedNode::get_used_images()
+std::vector<Object *> VXAccumulateWeightedNode::get_inputs()
 {
-	std::vector<Image*> used_images;
-	auto a = mul_scalar_left_node.get_used_images();
-	auto b = mul_scalar_right_node.get_used_images();
-	auto c = add_node.get_used_images();
-	std::copy(a.begin(), a.end(), std::back_inserter(used_images));
-	std::copy(b.begin(), b.end(), std::back_inserter(used_images));
-	std::copy(c.begin(), c.end(), std::back_inserter(used_images));
-	return used_images;
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in);
+	used_objects.emplace_back(in_out);
+	used_objects.emplace_back(alpha);
+	return used_objects;
+}
+std::vector<Object *> VXAccumulateWeightedNode::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in_out);
+	return used_objects;
+}
+std::vector<Node*> VXAccumulateWeightedNode::get_subnodes()
+{
+	std::vector<Node*> subnodes;
+	subnodes.push_back(&mul_scalar_left_node);
+	subnodes.push_back(&mul_scalar_right_node);
+	subnodes.push_back(&add_node);
+	return subnodes;
 }
 std::string VXAccumulateWeightedNode::generateClassDefinition()
 {
@@ -1159,12 +1356,17 @@ VXChannelExtractNode::VXChannelExtractNode()
 {
 	node_name = "VX Channel Extraction";
 }
-std::vector<Image *> VXChannelExtractNode::get_used_images()
+std::vector<Object *> VXChannelExtractNode::get_inputs()
 {
-	std::vector<Image*> used_images;
-	used_images.emplace_back(in);
-	used_images.emplace_back(out);
-	return used_images;
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in);
+	return used_objects;
+}
+std::vector<Object *> VXChannelExtractNode::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(out);
+	return used_objects;
 }
 std::string VXChannelExtractNode::generateClassDefinition()
 {
@@ -1179,17 +1381,26 @@ VXConvolveNode::VXConvolveNode()
 {
 	node_name = "VX Convolution";
 }
-std::vector<Image *> VXConvolveNode::get_used_images()
+std::vector<Object *> VXConvolveNode::get_inputs()
 {
-	std::vector<Image*> used_images;
-	auto a = lin_mask_node.get_used_images();
-	std::copy(a.begin(), a.end(), std::back_inserter(used_images));
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in);
+	used_objects.emplace_back(convolution);
+	return used_objects;
+}
+std::vector<Object *> VXConvolveNode::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(out);
+	return used_objects;
+}
+std::vector<Node*> VXConvolveNode::get_subnodes()
+{
+	std::vector<Node*> subnodes;
+	subnodes.push_back(&lin_mask_node);
 	if (out->col == VX_DF_IMAGE_U8)
-	{
-		auto c = saturate_node.get_used_images();
-		std::copy(c.begin(), c.end(), std::back_inserter(used_images));
-	}
-	return used_images;
+		subnodes.push_back(&saturate_node);
+	return subnodes;
 }
 std::string VXConvolveNode::generateClassDefinition()
 {
@@ -1208,12 +1419,15 @@ std::string VXConvolveNode::generateNodeCall()
 void VXConvolveNode::build()
 {
 	lin_mask_node.in = in;
-	lin_mask_node.dim[0] = convolution->rows;
-	lin_mask_node.dim[1] = convolution->columns;
-	lin_mask_node.mask.reserve(lin_mask_node.dim[0] * lin_mask_node.dim[1]);
-	for (unsigned int i = 0; i < lin_mask_node.dim[0] * lin_mask_node.dim[1]; i++)
-		lin_mask_node.mask[i] = convolution->coefficients[i];
-	lin_mask_node.normalization = 1.f / convolution->scale;
+	lin_mask_node.matrix.dim[0] = convolution->rows;
+	lin_mask_node.matrix.dim[1] = convolution->columns;
+	lin_mask_node.matrix.mask.reserve(lin_mask_node.matrix.dim[0] * lin_mask_node.matrix.dim[1]);
+	for (unsigned int i = 0; i < lin_mask_node.matrix.dim[0] * lin_mask_node.matrix.dim[1]; i++)
+		lin_mask_node.matrix.mask[i] = convolution->coefficients[i];
+
+	float one = 1.f / convolution->scale;
+	Scalar* normalization = new Scalar(VX_TYPE_FLOAT32, &one);
+	lin_mask_node.normalization.reset(normalization);
 
 	if (out->col != VX_DF_IMAGE_U8)
 	{
@@ -1235,18 +1449,17 @@ HipaccNode::HipaccNode()
 {
 	node_name = "Custom Hipacc";
 }
-std::vector<Image *> HipaccNode::get_used_images()
+std::vector<Object *> HipaccNode::get_inputs()
 {
-	std::vector<Image *> images;
-	for (auto param: parameters)
-	{
-		if (param->type == VX_TYPE_IMAGE)
-		{
-			Image *img = (Image*) param;
-			images.push_back(img);
-		}
-	}
-	return images;
+	std::vector<Object*> used_objects;
+	used_objects.insert(used_objects.end(), parameters.begin(), parameters.end());
+	return used_objects;
+}
+std::vector<Object *> HipaccNode::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(out);
+	return used_objects;
 }
 std::string HipaccNode::generateClassDefinition()
 {

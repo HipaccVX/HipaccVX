@@ -32,7 +32,8 @@ public:
 	virtual ~WriteImageNode() override = default;
 	Image *in;
 	std::string out_file;
-	virtual std::vector<Image*> get_used_images() override;
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
 };
@@ -46,9 +47,10 @@ public:
 	Image *out;
 
 	vx_enum policy;
-	vx_scalar shift;
+	Scalar *shift;
 
-	virtual std::vector<Image*> get_used_images() override;
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
 };
@@ -61,7 +63,8 @@ public:
 	Image *in;
 	Image *out;
 
-	virtual std::vector<Image*> get_used_images() override;
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
 };
@@ -76,7 +79,8 @@ public:
 	Image *in;
 	Image *out;
 
-	virtual std::vector<Image*> get_used_images() override;
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
 };
@@ -89,7 +93,8 @@ public:
 	Image *in;
 	Image *out;
 
-	virtual std::vector<Image*> get_used_images() override;
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
 };
@@ -105,19 +110,16 @@ public:
 
 
 
-	virtual ~HipaccNode() = default;
+	virtual ~HipaccNode() override = default;
 
 	std::string kernel_name;
 
-	virtual std::vector<Image*> get_used_images() override;
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
 };
 
-
-
-
-// Experimental new stuff
 
 class SimplePoint: public Node
 {
@@ -129,7 +131,8 @@ public:
 	Image *out;
 	std::string operation;
 
-	virtual std::vector<Image*> get_used_images() override;
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
 };
@@ -173,6 +176,37 @@ public:
 	}
 	virtual ~SimplePointDiv() override = default;
 };
+class AndNode: public SimplePoint
+{
+public:
+	AndNode()
+	{
+		operation = "&";
+		node_name = "And";
+	}
+	virtual ~AndNode() override = default;
+};
+class XorNode: public SimplePoint
+{
+public:
+	XorNode()
+	{
+		operation = "^";
+		node_name = "Xor";
+	}
+	virtual ~XorNode() override = default;
+};
+class OrNode: public SimplePoint
+{
+public:
+	OrNode()
+	{
+		operation = "|";
+		node_name = "or";
+	}
+	virtual ~OrNode() override = default;
+};
+
 
 template <typename T>
 class SimplePointScalar: public Node
@@ -185,7 +219,8 @@ public:
 	Image *out;
 	std::string operation;
 
-	virtual std::vector<Image*> get_used_images() override;
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
 };
@@ -244,41 +279,12 @@ public:
 
 	SimplePointMul mul_node;
 
-	virtual std::vector<Image*> get_used_images() override;
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
+	virtual std::vector<Node*> get_subnodes() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
 	virtual void build() override;
-};
-
-class AndNode: public SimplePoint
-{
-public:
-	AndNode()
-	{
-		operation = "&";
-		node_name = "And";
-	}
-	virtual ~AndNode() override = default;
-};
-class XorNode: public SimplePoint
-{
-public:
-	XorNode()
-	{
-		operation = "^";
-		node_name = "Xor";
-	}
-	virtual ~XorNode() override = default;
-};
-class OrNode: public SimplePoint
-{
-public:
-	OrNode()
-	{
-		operation = "|";
-		node_name = "or";
-	}
-	virtual ~OrNode() override = default;
 };
 
 class SaturateNode: public Node
@@ -289,9 +295,25 @@ public:
 	Image *in;
 	Image *out;
 
-	virtual std::vector<Image*> get_used_images() override;
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
+};
+
+template<typename T>
+class Matrix: public Object
+{
+public:
+	Matrix()
+	{
+		type = VX_TYPE_HIPAVX_MATRIX;
+	}
+
+	std::vector<T> mask;
+	int dim[2]; //dim[0] = x, dim[1] = y
+
+	void from_VX_Matrix(VX_Matrix *m);
 };
 
 template <typename T>
@@ -300,9 +322,8 @@ class LinearMask: public Node
 public:
 	LinearMask();
 	virtual ~LinearMask() override = default;
-	std::vector<T> mask;
-	int dim[2]; //dim[0] = x, dim[1] = y
-	float normalization;
+	Matrix<T> matrix;
+	std::unique_ptr<Scalar> normalization;
 
 	Image *in;
 	Image *out;
@@ -310,7 +331,8 @@ public:
 	bool use_image_datatype_for_sum = true;
 	vx_df_image sum_datatype;
 
-	virtual std::vector<Image*> get_used_images() override;
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
 };
@@ -329,7 +351,9 @@ public:
 	Image *out_x;
 	Image *out_y;
 
-	virtual std::vector<Image*> get_used_images() override;
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
+	virtual std::vector<Node*> get_subnodes() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
 	virtual void build() override;
@@ -340,9 +364,11 @@ class BoxFilter: public LinearMask<int>
 public:
 	BoxFilter()
 	{
-		this->mask = {1, 1, 1, 1, 1, 1, 1, 1, 1};
-		this->dim[0] = this->dim[1] = 3;
-		this->normalization = 1.0f / 9;
+		this->matrix.mask = {1, 1, 1, 1, 1, 1, 1, 1, 1};
+		this->matrix.dim[0] = this->matrix.dim[1] = 3;
+		float norm = 1.0f / 9;
+		Scalar* norm_scalar = new Scalar(VX_TYPE_FLOAT32, &norm);
+		this->normalization.reset(norm_scalar);
 		this->use_image_datatype_for_sum = false;
 		this->sum_datatype = VX_DF_IMAGE_S16;
 		this->node_name = "Box Filter 3x3";
@@ -354,9 +380,11 @@ class GaussianFilter: public LinearMask<int>
 public:
 	GaussianFilter()
 	{
-		this->mask = {1, 2, 1, 2, 4, 2, 1, 2, 1};
-		this->dim[0] = this->dim[1] = 3;
-		this->normalization = 1.0f / 16;
+		this->matrix.mask = {1, 2, 1, 2, 4, 2, 1, 2, 1};
+		this->matrix.dim[0] = this->matrix.dim[1] = 3;
+		float norm = 1.0f / 16;
+		Scalar* norm_scalar = new Scalar(VX_TYPE_FLOAT32, &norm);
+		this->normalization.reset(norm_scalar);
 		this->use_image_datatype_for_sum = false;
 		this->sum_datatype = VX_DF_IMAGE_S16;
 		this->node_name = "Gaussian Filter 3x3";
@@ -376,7 +404,9 @@ public:
 	Image *in;
 	Image *out;
 
-	virtual std::vector<Image*> get_used_images() override;
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
+	virtual std::vector<Node*> get_subnodes() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
 	virtual void build() override;
@@ -483,7 +513,9 @@ public:
 	Image Vc;
 
 
-	virtual std::vector<Image*> get_used_images() override;
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
+	virtual std::vector<Node*> get_subnodes() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
 	virtual void build() override;
@@ -499,7 +531,8 @@ public:
 
 	std::string function;
 
-	virtual std::vector<Image*> get_used_images() override;
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
 };
@@ -514,7 +547,9 @@ public:
 
 	UnaryFunctionNode function_node;
 
-	virtual std::vector<Image*> get_used_images() override;
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
+	virtual std::vector<Node*> get_subnodes() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
 	virtual void build() override;
@@ -529,7 +564,9 @@ public:
 
 	UnaryFunctionNode function_node;
 
-	virtual std::vector<Image*> get_used_images() override;
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
+	virtual std::vector<Node*> get_subnodes() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
 	virtual void build() override;
@@ -544,7 +581,9 @@ public:
 
 	UnaryFunctionNode function_node;
 
-	virtual std::vector<Image*> get_used_images() override;
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
+	virtual std::vector<Node*> get_subnodes() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
 	virtual void build() override;
@@ -570,7 +609,9 @@ public:
 
 	bool saturate;
 
-	virtual std::vector<Image*> get_used_images() override;
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
+	virtual std::vector<Node*> get_subnodes() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
 	virtual void build() override;
@@ -592,7 +633,9 @@ public:
 
 	vx_enum policy;
 
-	virtual std::vector<Image*> get_used_images() override;
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
+	virtual std::vector<Node*> get_subnodes() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
 	virtual void build() override;
@@ -613,7 +656,9 @@ public:
 
 	vx_enum policy;
 
-	virtual std::vector<Image*> get_used_images() override;
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
+	virtual std::vector<Node*> get_subnodes() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
 	virtual void build() override;
@@ -645,7 +690,8 @@ public:
 	bool use_image_datatype_for_sum = true;
 	vx_df_image sum_datatype;
 
-	virtual std::vector<Image*> get_used_images() override;
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
 };
@@ -660,12 +706,12 @@ public:
 	Image *out;
 	Threshold *threshold;
 
-
 	ConditionalAssignmentNode<int> comparision_node;
-	ConditionalAssignmentNode<int> less_node;
 
 
-	virtual std::vector<Image*> get_used_images() override;
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
+	virtual std::vector<Node*> get_subnodes() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
 	virtual void build() override;
@@ -695,7 +741,10 @@ public:
 
 	SaturateNode saturate_node;
 
-	virtual std::vector<Image*> get_used_images() override;
+
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
+	virtual std::vector<Node*> get_subnodes() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
 	virtual void build() override;
@@ -718,7 +767,10 @@ public:
 
 	SimplePointScalarMul<float> mapping_node;
 
-	virtual std::vector<Image*> get_used_images() override;
+
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
+	virtual std::vector<Node*> get_subnodes() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
 	virtual void build() override;
@@ -747,7 +799,9 @@ public:
 	SaturateNode saturate_node;
 
 
-	virtual std::vector<Image*> get_used_images() override;
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
+	virtual std::vector<Node*> get_subnodes() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
 	virtual void build() override;
@@ -766,7 +820,10 @@ public:
 
 	SaturateNode saturate_node;
 
-	virtual std::vector<Image*> get_used_images() override;
+
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
+	virtual std::vector<Node*> get_subnodes() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
 	virtual void build() override;
@@ -793,7 +850,10 @@ public:
 
 	SaturateNode saturate_node;
 
-	virtual std::vector<Image*> get_used_images() override;
+
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
+	virtual std::vector<Node*> get_subnodes() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
 	virtual void build() override;
@@ -819,7 +879,9 @@ public:
 	std::unique_ptr<Image> add_image;
 
 
-	virtual std::vector<Image*> get_used_images() override;
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
+	virtual std::vector<Node*> get_subnodes() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
 	virtual void build() override;
@@ -834,7 +896,9 @@ public:
 	vx_channel_e channel;
 	Image *out;
 
-	virtual std::vector<Image*> get_used_images() override;
+
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
 };
@@ -854,7 +918,9 @@ public:
 	SaturateNode saturate_node;
 
 
-	virtual std::vector<Image*> get_used_images() override;
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
+	virtual std::vector<Node*> get_subnodes() override;
 	virtual std::string generateClassDefinition() override;
 	virtual std::string generateNodeCall() override;
 	virtual void build() override;
@@ -911,18 +977,42 @@ std::string node_generator(HipaVX::HipaccNode *n, Type t);
 
 namespace HipaVX
 {
+template<typename T>
+void Matrix<T>::from_VX_Matrix(VX_Matrix *m)
+{
+	dim[0] = m->rows;
+	dim[1] = m->columns;
+
+	T* data = (T*) m->mat.data();
+
+	mask.clear();
+	for(unsigned int i = 0; i < dim[0] * dim[1]; i++)
+	{
+		mask.push_back(data[i]);
+	}
+}
+
+
+
+
 template <typename T>
 LinearMask<T>::LinearMask()
 {
 	node_name = "Linear Mask";
 }
 template <typename T>
-std::vector<Image *> LinearMask<T>::get_used_images()
+std::vector<Object *> LinearMask<T>::get_inputs()
 {
-	std::vector<Image*> used_images;
-	used_images.emplace_back(in);
-	used_images.emplace_back(out);
-	return used_images;
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in);
+	return used_objects;
+}
+template <typename T>
+std::vector<Object *> LinearMask<T>::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(out);
+	return used_objects;
 }
 template <typename T>
 std::string LinearMask<T>::generateClassDefinition()
@@ -937,12 +1027,18 @@ std::string LinearMask<T>::generateNodeCall()
 
 
 template <typename T>
-std::vector<Image *> SimplePointScalar<T>::get_used_images()
+std::vector<Object *> SimplePointScalar<T>::get_inputs()
 {
-	std::vector<Image*> used_images;
-	used_images.emplace_back(in);
-	used_images.emplace_back(out);
-	return used_images;
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in);
+	return used_objects;
+}
+template <typename T>
+std::vector<Object *> SimplePointScalar<T>::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(out);
+	return used_objects;
 }
 template <typename T>
 std::string SimplePointScalar<T>::generateClassDefinition()
@@ -961,12 +1057,18 @@ ConditionalAssignmentNode<T>::ConditionalAssignmentNode()
 	node_name = "Conditional Assignment";
 }
 template <typename T>
-std::vector<Image *> ConditionalAssignmentNode<T>::get_used_images()
+std::vector<Object *> ConditionalAssignmentNode<T>::get_inputs()
 {
-	std::vector<Image*> used_images;
-	used_images.emplace_back(in);
-	used_images.emplace_back(out);
-	return used_images;
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in);
+	return used_objects;
+}
+template <typename T>
+std::vector<Object *> ConditionalAssignmentNode<T>::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(out);
+	return used_objects;
 }
 template <typename T>
 std::string ConditionalAssignmentNode<T>::generateClassDefinition()
@@ -978,7 +1080,6 @@ std::string ConditionalAssignmentNode<T>::generateNodeCall()
 {
 	return generator::node_generator(this, generator::Type::Call);
 }
-
 
 
 

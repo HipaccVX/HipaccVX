@@ -265,9 +265,9 @@ typedef struct _vx_distribution *vx_distribution;
  */
 namespace HipaVX
 {
-class Matrix;
+class VX_Matrix;
 }
-typedef HipaVX::Matrix *vx_matrix;
+typedef HipaVX::VX_Matrix *vx_matrix;
 
 /*! \brief The Image Pyramid object. A set of scaled images.
  * \extends vx_reference
@@ -441,6 +441,7 @@ enum vx_type_e {
     VX_TYPE_TENSOR          = 0x815,/*!< \brief A <tt>\ref vx_tensor</tt>. */
     /* \todo add new object types here */
 
+	VX_TYPE_HIPAVX_MATRIX	= 0x4242,
 };
 
 /*! \brief The enumeration of all status codes.
@@ -1927,7 +1928,6 @@ public:
 
 };
 
-
 class Image: public Object
 {
 public:
@@ -1946,7 +1946,6 @@ public:
 	vx_size capacity;
 };
 
-
 class Node: public Object
 {
 protected:
@@ -1961,7 +1960,9 @@ public:
 
 	vx_border_e border_mode = VX_BORDER_UNDEFINED;
 
-	virtual std::vector<Image*> get_used_images() = 0;
+	virtual std::vector<Object*> get_inputs() = 0;
+	virtual std::vector<Object*> get_outputs() = 0;
+	virtual std::vector<Node*> get_subnodes(){return {};};
 	virtual std::string generateClassDefinition() = 0;
 	virtual std::string generateNodeCall() = 0;
 	virtual void build(){}
@@ -1973,14 +1974,13 @@ public:
 	std::vector<Node*> graph;
 	bool built = false;
 
-	std::vector<Image*> used_images;
 	void build();
 };
 
-class Matrix: public Object
+class VX_Matrix: public Object
 {
 public:
-	Matrix()
+	VX_Matrix()
 	{
 		type = VX_TYPE_MATRIX;
 	}

@@ -79,6 +79,37 @@ static string generate_image_name(vx_image image)
 	return string("Image_") + std::to_string(image->my_id);
 }
 
+std::vector<HipaVX::Image*> get_all_images(HipaVX::Graph *g)
+{
+	std::vector<HipaVX::Image*> images;
+	std::vector<HipaVX::Node*> nodes = g->graph;
+
+	while(!nodes.empty())
+	{
+		auto node = nodes[nodes.size() - 1];
+		nodes.pop_back();
+
+		for(auto ref: node->get_inputs())
+		{
+			if (ref->type == VX_TYPE_IMAGE)
+				images.push_back((HipaVX::Image*) ref);
+		}
+		for(auto ref: node->get_outputs())
+		{
+			if (ref->type == VX_TYPE_IMAGE)
+				images.push_back((HipaVX::Image*) ref);
+		}
+
+		auto subnodes = node->get_subnodes();
+		nodes.insert(nodes.end(), subnodes.begin(), subnodes.end());
+	}
+
+	std::sort(images.begin(), images.end());
+	images.erase(std::unique(images.begin(), images.end()), images.end());
+
+	return images;
+}
+
 void process_graph(vx_graph graph)
 {
 	string main = read_file(hipaVX_folder + "/hipacc_main.template");
@@ -86,7 +117,8 @@ void process_graph(vx_graph graph)
 	string images;
 	const string image_decl_template = "\tImage<@@@DATATYPE@@@> @@@IMAGE_NAME@@@(@@@IMAGE_WIDTH@@@, @@@IMAGE_HEIGHT@@@);\n";
 
-	for(const auto image: graph->used_images)
+	auto used_images = get_all_images(graph);
+	for(const auto image: used_images)
 	{
 		string image_name = generate_image_name(image);
 
@@ -461,7 +493,20 @@ std::string node_generator(HipaVX::LinearMask<T>* n, Type t)
 		s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
 
 		s = use_template(s, "ELEMENT_OPERATION", "");
-		s = use_template(s, "SUM_OPERATION", " * " + std::to_string(n->normalization));
+		switch(n->normalization->data_type)
+		{
+		case VX_TYPE_UINT8:
+			s = use_template(s, "SUM_OPERATION", " * " + std::to_string(n->normalization->ui8));
+			break;
+		case VX_TYPE_INT32:
+			s = use_template(s, "SUM_OPERATION", " * " + std::to_string(n->normalization->i32));
+			break;
+		case VX_TYPE_FLOAT32:
+			s = use_template(s, "SUM_OPERATION", " * " + std::to_string(n->normalization->f32));
+			break;
+		default:
+			throw std::runtime_error("std::string node_generator(HipaVX::LinearMask<T>* n, Type t):\n\tNot supported Scalar type");
+		}
 		/*if (std::is_same<T, int>::value)
 			s = use_template(s, "SUM_DATATYPE", "int");
 		else if (std::is_same<T, float>::value)
@@ -486,11 +531,11 @@ std::string node_generator(HipaVX::LinearMask<T>* n, Type t)
 			return kcv->get_real_name() == "mask";
 		});
 		Kernelcall_Mask *kcm = dynamic_cast<Kernelcall_Mask*>(*mask_it);
-		kcm->len_dims[0] = n->dim[0];
-		kcm->len_dims[1] = n->dim[1];
+		kcm->len_dims[0] = n->matrix.dim[0];
+		kcm->len_dims[1] = n->matrix.dim[1];
 		kcm->flat_mask.clear();
 		for (int i = 0; i < kcm->len_dims[0]*kcm->len_dims[1]; i++)
-			kcm->flat_mask.push_back(std::to_string(n->mask[i]));
+			kcm->flat_mask.push_back(std::to_string(n->matrix.mask[i]));
 
 		string s = kernelcall_builder(cs.kcv);
 
@@ -826,7 +871,7 @@ std::tuple<std::vector<Kernelcall_Variable*>, std::vector<Kernelcall_Variable*>>
 
 	return {to_return_call_parameters,to_return};
 }
-std::tuple<std::vector<Kernelcall_Variable*>, std::vector<Kernelcall_Variable*>> generate_accessor(HipaVX::Image *image, HipaVX::Matrix *mat)
+std::tuple<std::vector<Kernelcall_Variable*>, std::vector<Kernelcall_Variable*>> generate_accessor(HipaVX::Image *image, HipaVX::VX_Matrix *mat)
 {
 	std::vector<Kernelcall_Variable*> to_return_call_parameters;
 	std::vector<Kernelcall_Variable*> to_return;
@@ -967,7 +1012,7 @@ string node_generator(HipaVX::HipaccNode* n, Type t)
 			case VX_TYPE_IMAGE:
 				if (i+1 < n->parameters.size() && n->parameters[i+1]->type == VX_TYPE_MATRIX)
 				{
-					tuple = generate_accessor((HipaVX::Image*) n->parameters[i], (HipaVX::Matrix*) n->parameters[i+1]);
+					tuple = generate_accessor((HipaVX::Image*) n->parameters[i], (HipaVX::VX_Matrix*) n->parameters[i+1]);
 					i++;
 				}
 				break;

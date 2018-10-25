@@ -509,7 +509,7 @@ VX_API_ENTRY vx_matrix VX_API_CALL vxCreateMatrix (vx_context c, vx_enum data_ty
 		return nullptr;
 
 
-	HipaVX::Matrix *mat = new HipaVX::Matrix();
+	HipaVX::VX_Matrix *mat = new HipaVX::VX_Matrix();
 
 	mat->data_type = data_type;
 	mat->columns = columns;
