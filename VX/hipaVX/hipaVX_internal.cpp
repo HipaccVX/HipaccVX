@@ -1090,7 +1090,7 @@ void PhaseNode::build()
 	atan2_node.out = atan2_image.get();
 
 	mapping_node.in = atan2_image.get();
-	mapping_node.scalar = 255.f / (M_2_PIf32);
+	mapping_node.scalar = 255.f / (M_2_PI);
 	mapping_node.out = out;
 
 	div_node.build();
