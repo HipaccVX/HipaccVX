@@ -31,7 +31,7 @@ In- and Outputimages are in the hipacc_compile_pass folder
 - [x] Bitwise NOT
 - [x] Box Filter
 - [ ] Canny Edge Detector
-- [ ] Channel Combine
+- [x] Channel Combine
 - [x] Channel Extract
 - [ ] Color Convert
 - [x] Convert Bit depth

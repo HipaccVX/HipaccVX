@@ -903,6 +903,25 @@ public:
 	virtual std::string generateNodeCall() override;
 };
 
+class VXChannelCombineNode: public Node
+{
+public:
+	VXChannelCombineNode();
+	virtual ~VXChannelCombineNode() override = default;
+	Image *in_1;
+	Image *in_2;
+	Image *in_3;
+	Image *in_4;
+
+	Image *out;
+
+
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+};
+
 class VXConvolveNode: public Node
 {
 public:
@@ -926,6 +945,20 @@ public:
 	virtual void build() override;
 };
 
+class VXScaleNode: public Node
+{
+public:
+	VXScaleNode();
+	virtual ~VXScaleNode() override = default;
+
+	Image *in;
+	Image *out;
+
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+};
 
 
 }
@@ -949,6 +982,7 @@ std::string node_generator(HipaVX::Erode* n, Type t);
 
 
 std::string node_generator(HipaVX::VXChannelExtractNode* n, Type t);
+std::string node_generator(HipaVX::VXChannelCombineNode* n, Type t);
 
 
 template <typename T>
@@ -964,6 +998,7 @@ template <typename T>
 std::string node_generator(HipaVX::ConditionalAssignmentNode<T>* n, Type t);
 
 std::string node_generator(HipaVX::HipaccNode *n, Type t);
+std::string node_generator(HipaVX::VXScaleNode *n, Type t);
 
 
 

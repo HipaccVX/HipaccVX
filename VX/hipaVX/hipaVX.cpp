@@ -265,6 +265,19 @@ VX_API_ENTRY vx_node VX_API_CALL vxHarrisCornersNode (vx_graph graph, vx_image i
 	return harris;
 }
 
+VX_API_ENTRY vx_node VX_API_CALL vxScaleImageNode (vx_graph graph, vx_image src, vx_image dst, vx_enum type)
+{
+	if (src->col != VX_DF_IMAGE_U8 || dst->col != VX_DF_IMAGE_U8)
+		return nullptr;
+
+	HipaVX::VXScaleNode *dilate = new HipaVX::VXScaleNode();
+	dilate->in = src;
+	dilate->out = dst;
+	graph->graph.emplace_back(dilate);
+	graph->built = false;
+	return dilate;
+}
+
 VX_API_ENTRY vx_node VX_API_CALL vxPhaseNode (vx_graph graph, vx_image grad_x, vx_image grad_y, vx_image orientation)
 {
 	if (grad_x->col != VX_DF_IMAGE_S16 || grad_y->col != VX_DF_IMAGE_S16 || orientation->col != VX_DF_IMAGE_U8)
@@ -380,6 +393,24 @@ VX_API_ENTRY vx_node VX_API_CALL vxChannelExtractNode (vx_graph graph, vx_image 
 	graph->graph.emplace_back(channel_extract);
 	graph->built = false;
 	return channel_extract;
+}
+
+VX_API_ENTRY vx_node VX_API_CALL vxChannelCombineNode (vx_graph graph, vx_image plane0, vx_image plane1, vx_image plane2, vx_image plane3, vx_image output)
+{
+	if (plane2 == nullptr || plane3 == nullptr)
+		throw std::runtime_error("vxChannelCombineNode: 4 planes are needed for this implementation");
+	if (output->col != VX_DF_IMAGE_RGBX || plane0->col != VX_DF_IMAGE_U8 || plane1->col != VX_DF_IMAGE_U8 || plane2->col != VX_DF_IMAGE_U8 || plane3->col != VX_DF_IMAGE_U8)
+		return nullptr;
+
+	HipaVX::VXChannelCombineNode *channel_combine = new HipaVX::VXChannelCombineNode();
+	channel_combine->in_1 = plane0;
+	channel_combine->in_2 = plane1;
+	channel_combine->in_3 = plane2;
+	channel_combine->in_4 = plane3;
+	channel_combine->out = output;
+	graph->graph.emplace_back(channel_combine);
+	graph->built = false;
+	return channel_combine;
 }
 
 VX_API_ENTRY vx_node VX_API_CALL vxConvolveNode (vx_graph graph, vx_image input, vx_convolution conv, vx_image output)

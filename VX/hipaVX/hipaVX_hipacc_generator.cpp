@@ -255,7 +255,7 @@ string node_generator(HipaVX::WriteImageNode* n, Type t)
 	else if (t == Type::Call)
 	{
 		string s = "\t@@@IMAGE_DATATYPE@@@ *data_@@@IMAGE@@@_@@@ID@@@ = @@@IMAGE@@@.data();\n";
-		s       += "\tsave_data(@@@IMAGE_WIDTH@@@, @@@IMAGE_HEIGHT@@@, @@@IMAGE_CHANNELS@@@, data_@@@IMAGE@@@_@@@ID@@@, \"@@@FILENAME@@@\");\n";
+		s       += "\tsave_data(@@@IMAGE_WIDTH@@@, @@@IMAGE_HEIGHT@@@, @@@IMAGE_CHANNELS@@@, @@@CONVERSION@@@ data_@@@IMAGE@@@_@@@ID@@@, \"@@@FILENAME@@@\");\n";
 		s       += "\n";
 
 
@@ -265,7 +265,16 @@ string node_generator(HipaVX::WriteImageNode* n, Type t)
 
 		s = use_template(s, "IMAGE_WIDTH", n->in->w);
 		s = use_template(s, "IMAGE_HEIGHT", n->in->h);
-		s = use_template(s, "IMAGE_CHANNELS", 1); //TODO
+		if (n->in->col == VX_DF_IMAGE_RGBX)
+		{
+			s = use_template(s, "IMAGE_CHANNELS", 4);
+			s = use_template(s, "CONVERSION", "(uchar*)");
+		}
+		else
+		{
+			s = use_template(s, "IMAGE_CHANNELS", 1); //TODO
+			s = use_template(s, "CONVERSION", "");
+		}
 		s = use_template(s, "FILENAME", n->out_file);
 
 		return s;
@@ -464,6 +473,43 @@ string node_generator(HipaVX::VXChannelExtractNode* n, Type t)
 		s = use_template(s, "IMAGE_IN_HEIGHT", n->in->h);
 
 		s = use_template(s, "INPUT_IMAGE", generate_image_name(n->in));
+		s = use_template(s, "OUTPUT_IMAGE", generate_image_name(n->out));
+
+		s = use_template(s, "BOUNDARY_CONDITION", "Boundary::UNDEFINED"); // TODO
+
+		return s;
+	}
+	return "SOMETHING IS WRONG";
+}
+string node_generator(HipaVX::VXChannelCombineNode* n, Type t)
+{
+	if (t == Type::Definition)
+	{
+		auto cs = read_config_def(hipaVX_folder + "/kernels/point/channel_combine.def");
+
+		string s = kernel_builder(cs.kv, cs.k, cs.name);
+
+		s = use_template(s, "ID", n->my_id);
+		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in_1->col]);
+		s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
+
+		return s;
+	}
+	else if (t == Type::Call)
+	{
+		auto cs = read_config_call(hipaVX_folder + "/kernels/point/channel_combine.call");
+		string s = kernelcall_builder(cs.kcv);
+
+		s = use_template(s, "ID", n->my_id);
+		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in_1->col]);
+		s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
+		s = use_template(s, "IMAGE_IN_WIDTH", n->in_1->w);
+		s = use_template(s, "IMAGE_IN_HEIGHT", n->in_1->h);
+
+		s = use_template(s, "INPUT_IMAGE_1", generate_image_name(n->in_1));
+		s = use_template(s, "INPUT_IMAGE_2", generate_image_name(n->in_2));
+		s = use_template(s, "INPUT_IMAGE_3", generate_image_name(n->in_3));
+		s = use_template(s, "INPUT_IMAGE_4", generate_image_name(n->in_4));
 		s = use_template(s, "OUTPUT_IMAGE", generate_image_name(n->out));
 
 		s = use_template(s, "BOUNDARY_CONDITION", "Boundary::UNDEFINED"); // TODO
@@ -1035,6 +1081,40 @@ string node_generator(HipaVX::HipaccNode* n, Type t)
 	return "SOMETHING IS WRONG";
 }
 
+string node_generator(HipaVX::VXScaleNode* n, Type t)
+{
+	if (t == Type::Definition)
+	{
+		auto cs = read_config_def(hipaVX_folder + "/kernels/point/scale.def");
+
+		string s = kernel_builder(cs.kv, cs.k, cs.name);
+
+		s = use_template(s, "ID", n->my_id);
+		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in->col]);
+		s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
+
+		return s;
+	}
+	else if (t == Type::Call)
+	{
+		auto cs = read_config_call(hipaVX_folder + "/kernels/point/scale.call");
+		string s = kernelcall_builder(cs.kcv);
+
+		s = use_template(s, "ID", n->my_id);
+		s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in->col]);
+		s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
+		s = use_template(s, "IMAGE_IN_WIDTH", n->in->w);
+		s = use_template(s, "IMAGE_IN_HEIGHT", n->in->h);
+
+		s = use_template(s, "INPUT_IMAGE", generate_image_name(n->in));
+		s = use_template(s, "OUTPUT_IMAGE", generate_image_name(n->out));
+
+		s = use_template(s, "BOUNDARY_CONDITION", "Boundary::UNDEFINED"); // TODO
+
+		return s;
+	}
+	return "SOMETHING IS WRONG";
+}
 
 
 

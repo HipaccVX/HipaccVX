@@ -197,7 +197,7 @@ T* load_data(const unsigned int width, const unsigned int height,
 #ifdef USE_OPENCV
   if (!filename.empty())
   {
-    cv::Mat image = cv::imread(filename.c_str(), 1);
+    cv::Mat image = cv::imread(filename.c_str(), -1);
 
     if (!image.data) {
       std::cerr << "No image data" << std::endl;

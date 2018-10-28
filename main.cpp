@@ -57,6 +57,12 @@ int main()
 			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),                 /*23: custom convolve scharr_x */
 
 			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),                 /*24: custom hipacc kernel bilateral */
+
+			vxCreateImage(context, WIDTH/4, HEIGHT/3, VX_DF_IMAGE_U8),             /*25: scale */
+			vxCreateImage(context, WIDTH*4, HEIGHT*3, VX_DF_IMAGE_U8),             /*26: scale */
+
+			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_RGBX),               /*27: RGBA reconstructed */
+			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_RGBX),               /*28: GBRA reconstructed */
 		};
 
 		int32_t two = 2;
@@ -171,6 +177,16 @@ int main()
 
 				vxHipaccNode(graph, "external_kernels/BilateralFilter.cpp", bilateral_parameters.data(), bilateral_parameters.size(), images[24]),
 				vxFWriteImageNode(graph, images[24], "akif-200x300_bw_customhipacc_bilateral.png"),
+
+				//vxScaleImageNode(graph, images[0], images[25], VX_INTERPOLATION_NEAREST_NEIGHBOR),
+				//vxFWriteImageNode(graph, images[25], "akif-200x300_bw_scaled_down.png"),
+				//vxScaleImageNode(graph, images[0], images[26], VX_INTERPOLATION_NEAREST_NEIGHBOR),
+				//vxFWriteImageNode(graph, images[26], "akif-200x300_bw_scaled_up.png"),
+
+				vxChannelCombineNode(graph, images[21], images[20], images[19], images[22], images[27]),
+				vxFWriteImageNode(graph, images[27], "akif-200x300_rgba_rgba.png"),
+				vxChannelCombineNode(graph, images[20], images[19], images[21], images[22], images[28]),
+				vxFWriteImageNode(graph, images[28], "akif-200x300_rgba_gbra.png"),
 			};
 
             //Step4.Verify Graph

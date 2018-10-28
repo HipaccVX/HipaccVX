@@ -1472,6 +1472,59 @@ std::string HipaccNode::generateNodeCall()
 	return generator::node_generator(this, generator::Type::Call);
 }
 
+VXScaleNode::VXScaleNode()
+{
+	node_name = "Scaling";
+}
+std::vector<Object *> VXScaleNode::get_inputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in);
+	return used_objects;
+}
+std::vector<Object *> VXScaleNode::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(out);
+	return used_objects;
+}
+std::string VXScaleNode::generateClassDefinition()
+{
+	return generator::node_generator(this, generator::Type::Definition);
+}
+std::string VXScaleNode::generateNodeCall()
+{
+	return generator::node_generator(this, generator::Type::Call);
+}
+
+VXChannelCombineNode::VXChannelCombineNode()
+{
+	node_name = "VX Channel Combination";
+}
+std::vector<Object *> VXChannelCombineNode::get_inputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in_1);
+	used_objects.emplace_back(in_2);
+	used_objects.emplace_back(in_3);
+	used_objects.emplace_back(in_4);
+	return used_objects;
+}
+std::vector<Object *> VXChannelCombineNode::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(out);
+	return used_objects;
+}
+std::string VXChannelCombineNode::generateClassDefinition()
+{
+	return generator::node_generator(this, generator::Type::Definition);
+}
+std::string VXChannelCombineNode::generateNodeCall()
+{
+	return generator::node_generator(this, generator::Type::Call);
+}
+
 }
 
 static std::string get_object_name(HipaVX::Object *object)

@@ -1,0 +1,12 @@
+[NAME]
+Channel_Combine
+
+[KERNEL_VARIABLES]
+Accessor input1
+Accessor input2
+Accessor input3
+Accessor input4
+
+[KERNEL]
+output() = make_uchar4(input1(), input2(), input3(), input4());
+[KERNEL_END]

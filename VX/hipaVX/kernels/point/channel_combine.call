@@ -1,0 +1,14 @@
+[KERNELCALL_VARIABLES]
+BoundaryCondition TYPE_IN bound_1 @@@INPUT_IMAGE_1@@@ @@@IMAGE_IN_WIDTH@@@ @@@IMAGE_IN_HEIGHT@@@ BOUNDARY_CONDITION
+BoundaryCondition TYPE_IN bound_2 @@@INPUT_IMAGE_2@@@ @@@IMAGE_IN_WIDTH@@@ @@@IMAGE_IN_HEIGHT@@@ BOUNDARY_CONDITION
+BoundaryCondition TYPE_IN bound_3 @@@INPUT_IMAGE_3@@@ @@@IMAGE_IN_WIDTH@@@ @@@IMAGE_IN_HEIGHT@@@ BOUNDARY_CONDITION
+BoundaryCondition TYPE_IN bound_4 @@@INPUT_IMAGE_4@@@ @@@IMAGE_IN_WIDTH@@@ @@@IMAGE_IN_HEIGHT@@@ BOUNDARY_CONDITION
+
+Accessor TYPE_IN acc_1 bound_1
+Accessor TYPE_IN acc_2 bound_2
+Accessor TYPE_IN acc_3 bound_3
+Accessor TYPE_IN acc_4 bound_4
+
+IterationSpace TYPE_OUT iter IMAGE_OUT
+
+Kernel Channel_Combine channel_combine iter acc_1 acc_2 acc_3 acc_4
