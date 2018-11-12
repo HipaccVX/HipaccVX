@@ -3,6 +3,73 @@
 #include <fstream>
 #include <string>
 
+namespace secret
+{
+std::string SimpleBinaryNode::generate_source()
+{
+	return generate(this);
+}
+std::string SimpleUnaryFunctionNode::generate_source()
+{
+	return generate(this);
+}
+std::string Variable::generate_source()
+{
+	return generate(this);
+}
+std::string VariableDefinition::generate_source()
+{
+	return generate(this);
+}
+std::string Assignment::generate_source()
+{
+	return generate(this);
+}
+std::string TargetPixel::generate_source()
+{
+	return generate(this);
+}
+std::string Image::generate_source()
+{
+	return generate(this);
+}
+std::string ForEveryPixel::generate_source()
+{
+	return generate(this);
+}
+std::string IterateAroundPixel::generate_source()
+{
+	return generate(this);
+}
+std::string ReductionAroundPixel::generate_source()
+{
+	return generate(this);
+}
+std::string PixelvalueAtCurrentStencilPos::generate_source()
+{
+	return generate(this);
+}
+std::string StencilvalueAtCurrentStencilPos::generate_source()
+{
+	return generate(this);
+}
+std::string Statements::generate_source()
+{
+	return generate(this);
+}
+std::string CurrentPixelvalue::generate_source()
+{
+	return generate(this);
+}
+std::string Stencil::generate_source()
+{
+	return generate(this);
+}
+
+}
+
+
+
 namespace HipaVX
 {
 
@@ -1525,6 +1592,431 @@ std::string VXChannelCombineNode::generateNodeCall()
 	return generator::node_generator(this, generator::Type::Call);
 }
 
+VXBilateralFilterNode::VXBilateralFilterNode()
+{
+	node_name = "Bilateral Filter";
+
+	/*auto g_1 = new secret::Variable();
+	g_1->name = "g_1";
+	auto y = new secret::Variable();
+	y->name = "y";
+
+	auto g_2 = new secret::Variable();
+	g_2->name = "g_2";
+	auto t = new secret::Variable();
+	t->name = "t";
+
+
+
+
+	{
+		auto zero = new secret::Constant<float>();
+		zero->value = 0.f;
+		auto one = new secret::Constant<float>();
+		one->value = 1.f;
+		auto two = new secret::Constant<float>();
+		two->value = 2.f;
+		auto one_half = new secret::Div();
+		one_half->subnodes[0] = one;
+		one_half->subnodes[1] = two;
+		auto neg_one_half = new secret::Sub();
+		neg_one_half->subnodes[0] = zero;
+		neg_one_half->subnodes[1] = one_half;
+
+		auto sigma_y = new secret::Variable();
+		sigma_y->name = "sigma_y";
+		auto y_square = new secret::Square();
+		y_square->subnodes[0] = y;
+		auto sigma_y_square = new secret::Square();
+		sigma_y_square->subnodes[0] = sigma_y;
+		auto some_div = new secret::Div();
+		some_div->subnodes[0] = y_square;
+		some_div->subnodes[1] = sigma_y_square;
+
+		auto some_mul = new secret::Mul();
+		some_mul->subnodes[0] = neg_one_half;
+		some_mul->subnodes[1] = some_div;
+
+		auto exp = new secret::Exp();
+		exp->subnodes[0] = some_mul;
+
+		auto pi = new secret::Constant<float>();
+		pi->value = 3.14159f;
+
+		auto some_mul_2 = new secret::Mul();
+		some_mul_2->subnodes[0] = two;
+		some_mul_2->subnodes[1] = pi;
+
+		auto some_mul_3 = new secret::Mul();
+		some_mul_3->subnodes[0] = some_mul_2;
+		some_mul_3->subnodes[1] = sigma_y;
+
+		auto sqrt = new secret::Sqrt();
+		sqrt->subnodes[0] = some_mul_3;
+
+		auto some_div_2 = new secret::Div();
+		some_div_2->subnodes[0] = one;
+		some_div_2->subnodes[1] = some_mul_3;
+
+		auto last_mul = new secret::Mul();
+		last_mul->subnodes[0] = some_div_2;
+		last_mul->subnodes[1] = exp;
+
+
+		auto assignment = new secret::Assignment();
+		assignment->subnodes[0] = g_1;
+		assignment->subnodes[1] = last_mul;
+
+		auto g_1_def = new secret::VariableDefinition();
+		g_1_def->subnodes[0] = g_1;
+		g_1_def->datatype = secret::Datatype::FLOAT;
+
+		kernel.function.statements.emplace_back(g_1_def);
+		kernel.function.statements.emplace_back(assignment);
+	}
+
+	{
+		auto zero = new secret::Constant<float>();
+		zero->value = 0.f;
+		auto one = new secret::Constant<float>();
+		one->value = 1.f;
+		auto two = new secret::Constant<float>();
+		two->value = 2.f;
+		auto one_half = new secret::Div();
+		one_half->subnodes[0] = one;
+		one_half->subnodes[1] = two;
+		auto neg_one_half = new secret::Sub();
+		neg_one_half->subnodes[0] = zero;
+		neg_one_half->subnodes[1] = one_half;
+
+		auto sigma_t = new secret::Variable();
+		sigma_t->name = "sigma_t";
+		auto y_square = new secret::Square();
+		y_square->subnodes[0] = t;
+		auto sigma_y_square = new secret::Square();
+		sigma_y_square->subnodes[0] = sigma_t;
+		auto some_div = new secret::Div();
+		some_div->subnodes[0] = y_square;
+		some_div->subnodes[1] = sigma_y_square;
+
+		auto some_mul = new secret::Mul();
+		some_mul->subnodes[0] = neg_one_half;
+		some_mul->subnodes[1] = some_div;
+
+		auto exp = new secret::Exp();
+		exp->subnodes[0] = some_mul;
+
+		auto pi = new secret::Constant<float>();
+		pi->value = 3.14159f;
+
+		auto some_mul_2 = new secret::Mul();
+		some_mul_2->subnodes[0] = two;
+		some_mul_2->subnodes[1] = pi;
+
+		auto some_mul_3 = new secret::Mul();
+		some_mul_3->subnodes[0] = some_mul_2;
+		some_mul_3->subnodes[1] = sigma_t;
+
+		auto sqrt = new secret::Sqrt();
+		sqrt->subnodes[0] = some_mul_3;
+
+		auto some_div_2 = new secret::Div();
+		some_div_2->subnodes[0] = one;
+		some_div_2->subnodes[1] = some_mul_3;
+
+		auto last_mul = new secret::Mul();
+		last_mul->subnodes[0] = some_div_2;
+		last_mul->subnodes[1] = exp;
+
+
+		auto assignment = new secret::Assignment();
+		assignment->subnodes[0] = g_2;
+		assignment->subnodes[1] = last_mul;
+
+		auto g_2_def = new secret::VariableDefinition();
+		g_2_def->subnodes[0] = g_2;
+		g_2_def->datatype = secret::Datatype::FLOAT;
+
+		kernel.function.statements.emplace_back(g_2_def);
+		kernel.function.statements.emplace_back(assignment);
+	}*/
+
+}
+std::vector<Object *> VXBilateralFilterNode::get_inputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in);
+	return used_objects;
+}
+std::vector<Object *> VXBilateralFilterNode::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(out);
+	return used_objects;
+}
+std::string VXBilateralFilterNode::generateClassDefinition()
+{
+	return "";
+}
+std::string VXBilateralFilterNode::generateNodeCall()
+{
+	return "";
+}
+
+AnotherBilateralFilterNode::AnotherBilateralFilterNode()
+{
+	node_name = "Another Bilateral Filter";
+}
+std::vector<Object *> AnotherBilateralFilterNode::get_inputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(in);
+	return used_objects;
+}
+std::vector<Object *> AnotherBilateralFilterNode::get_outputs()
+{
+	std::vector<Object*> used_objects;
+	used_objects.emplace_back(out);
+	return used_objects;
+}
+std::string AnotherBilateralFilterNode::generateClassDefinition()
+{
+	return secret::generate(&this->kernel);
+}
+std::string AnotherBilateralFilterNode::generateNodeCall()
+{
+	return secret::generate_call(&this->kernel);
+}
+void AnotherBilateralFilterNode::build()
+{
+	stencil.dim[0] = stencil.dim[1] = 5;
+	stencil.mask = secret::Stencil::from_t<float>({
+		0.018316f, 0.082085f, 0.135335f, 0.082085f, 0.018316f ,
+		0.082085f, 0.367879f, 0.606531f, 0.367879f, 0.082085f ,
+		0.135335f, 0.606531f, 1.000000f, 0.606531f, 0.135335f ,
+		0.082085f, 0.367879f, 0.606531f, 0.367879f, 0.082085f ,
+		0.018316f, 0.082085f, 0.135335f, 0.082085f, 0.018316f
+	});
+	stencil.name = "stencil";
+	stencil.datatype = secret::Datatype::FLOAT;
+
+	auto in_node = new secret::Image();
+	in_node->image = in;
+	kernel.inputs.push_back(in_node);
+	kernel.inputs.push_back(&stencil);
+	auto out_node = new secret::Image();
+	out_node->image = out;
+	kernel.output = out_node;
+
+
+	auto zero = new secret::Constant<float>();
+	zero->value = 0.f;
+	auto one_half = new secret::Constant<float>();
+	one_half->value = 0.5f;
+
+	auto sigma_r = new secret::Constant<int>();
+	sigma_r->value = this->sigma_r;
+
+	auto c_r = new secret::Variable();
+	c_r->datatype = secret::Datatype::FLOAT;
+	c_r->name = "c_r";
+
+	auto d = new secret::Variable();
+	d->datatype = secret::Datatype::FLOAT;
+	d->name = "d";
+
+	auto p = new secret::Variable();
+	p->datatype = secret::Datatype::FLOAT;
+	p->name = "p";
+
+	auto center = new secret::Variable();
+	center->datatype = secret::Datatype::FLOAT;
+	center->name = "center";
+
+
+	{
+		auto c_r_def = new secret::VariableDefinition();
+		c_r_def->subnodes[0] = c_r;
+		kernel.function.statements.push_back(c_r_def);
+
+		auto square = new secret::Square();
+		square->subnodes[0] = sigma_r;
+
+		auto div = new secret::Div();
+		div->subnodes[0] = one_half;
+		div->subnodes[1] = square;
+
+		auto assignment = new secret::Assignment();
+		assignment->subnodes[0] = c_r;
+		assignment->subnodes[1] = div;
+
+		kernel.function.statements.push_back(assignment);
+	}
+
+	{
+		auto d_def = new secret::VariableDefinition();
+		d_def->subnodes[0] = d;
+		kernel.function.statements.push_back(d_def);
+
+		auto assignment = new secret::Assignment();
+		assignment->subnodes[0] = d;
+		assignment->subnodes[1] = zero;
+
+		kernel.function.statements.push_back(assignment);
+	}
+
+	{
+		auto p_def = new secret::VariableDefinition();
+		p_def->subnodes[0] = p;
+		kernel.function.statements.push_back(p_def);
+
+		auto assignment = new secret::Assignment();
+		assignment->subnodes[0] = p;
+		assignment->subnodes[1] = zero;
+
+		kernel.function.statements.push_back(assignment);
+	}
+
+	{
+		auto center_def = new secret::VariableDefinition();
+		center_def->subnodes[0] = center;
+		kernel.function.statements.push_back(center_def);
+
+		auto current_pixelvalue = new secret::CurrentPixelvalue();
+		current_pixelvalue->subnodes[0] = in_node;
+
+		auto assignment = new secret::Assignment();
+		assignment->subnodes[0] = center;
+		assignment->subnodes[1] = current_pixelvalue;
+
+		kernel.function.statements.push_back(assignment);
+	}
+
+	auto iterate = new secret::IterateAroundPixel();
+
+	auto iterate_body = new secret::Statements;
+	{
+		auto diff = new secret::Variable();
+		diff->datatype = secret::Datatype::FLOAT;
+		diff->name = "diff";
+
+		auto s = new secret::Variable();
+		s->datatype = secret::Datatype::FLOAT;
+		s->name = "s";
+
+
+		auto diff_def = new secret::VariableDefinition();
+		diff_def->subnodes[0] = diff;
+		auto s_def = new secret::VariableDefinition();
+		s_def->subnodes[0] = s;
+
+		auto current_pixelvalue = new secret::PixelvalueAtCurrentStencilPos();
+		current_pixelvalue->subnodes[0] = iterate;
+
+		auto current_stencilvalue = new secret::StencilvalueAtCurrentStencilPos();
+		current_stencilvalue->subnodes[0] = iterate;
+
+		iterate_body->statements.push_back(diff_def);
+		iterate_body->statements.push_back(s_def);
+		{
+			auto sub = new secret::Sub();
+			sub->subnodes[0] = current_pixelvalue;
+			sub->subnodes[1] = center;
+
+			auto assignment = new secret::Assignment();
+			assignment->subnodes[0] = diff;
+			assignment->subnodes[1] = sub;
+
+			iterate_body->statements.push_back(assignment);
+		}
+		{
+			auto square = new secret::Square();
+			square->subnodes[0] = diff;
+
+			auto mul_1 = new secret::Mul();
+			mul_1->subnodes[0] = c_r;
+			mul_1->subnodes[1] = square;
+
+			auto sub = new secret::Sub();
+			sub->subnodes[0] = zero;
+			sub->subnodes[1] = mul_1;
+
+			auto exp = new secret::Exp();
+			exp->subnodes[0] = sub;
+
+			auto mul_2 = new secret::Mul();
+			mul_2->subnodes[0] = exp;
+			mul_2->subnodes[1] = current_stencilvalue;
+
+			auto assignment = new secret::Assignment();
+			assignment->subnodes[0] = s;
+			assignment->subnodes[1] = mul_2;
+
+			iterate_body->statements.push_back(assignment);
+		}
+		{
+			auto add = new secret::Add();
+			add->subnodes[0] = d;
+			add->subnodes[1] = s;
+
+			auto assignment = new secret::Assignment();
+			assignment->subnodes[0] = d;
+			assignment->subnodes[1] = add;
+
+			iterate_body->statements.push_back(assignment);
+		}
+		{
+			auto mul = new secret::Mul();
+			mul->subnodes[0] = s;
+			mul->subnodes[1] = current_pixelvalue;
+
+			auto add = new secret::Add();
+			add->subnodes[0] = p;
+			add->subnodes[1] = mul;
+
+			auto assignment = new secret::Assignment();
+			assignment->subnodes[0] = p;
+			assignment->subnodes[1] = add;
+
+			iterate_body->statements.push_back(assignment);
+		}
+
+	}
+
+	{
+		iterate->subnodes[0] = in_node;
+		iterate->subnodes[1] = &stencil;
+		iterate->subnodes[2] = iterate_body; //The body
+		kernel.function.statements.push_back(iterate);
+	}
+
+	{
+		auto div = new secret::Div();
+		div->subnodes[0] = p;
+		div->subnodes[1] = d;
+
+		auto add = new secret::Add();
+		add->subnodes[0] = div;
+		add->subnodes[1] = one_half;
+
+		auto conversion = new secret::Conversion();
+		conversion->subnodes[0] = add;
+		conversion->to = secret::Datatype::UINT8;
+
+		auto target_pixel = new secret::TargetPixel();
+		target_pixel->subnodes[0] = out_node;
+
+		auto assignment = new secret::Assignment();
+		assignment->subnodes[0] = target_pixel;
+		assignment->subnodes[1] = conversion;
+
+		kernel.function.statements.push_back(assignment);
+	}
+
+}
+
+
+
 }
 
 static std::string get_object_name(HipaVX::Object *object)
@@ -1598,3 +2090,14 @@ void vxDrawDotGraph(vx_graph graph, std::string filename, vx_uint32 node_depth)
 	std::ofstream dot_writer(filename);
 	dot_writer << "digraph graphname {\n" << content << "}";
 }
+
+
+
+
+
+
+
+
+
+
+

@@ -413,6 +413,21 @@ VX_API_ENTRY vx_node VX_API_CALL vxChannelCombineNode (vx_graph graph, vx_image 
 	return channel_combine;
 }
 
+VX_API_ENTRY vx_node VX_API_CALL vxAnotherBilateralFilterNode(vx_graph graph, vx_image input, vx_int32 sigma_r, vx_image output)
+{
+	if (input->col != VX_DF_IMAGE_U8 || output->col != VX_DF_IMAGE_U8)
+		return nullptr;
+
+	HipaVX::AnotherBilateralFilterNode *bilateral_filter = new HipaVX::AnotherBilateralFilterNode();
+	bilateral_filter->in = input;
+	bilateral_filter->out = output;
+	bilateral_filter->sigma_r = sigma_r;
+	graph->graph.emplace_back(bilateral_filter);
+	graph->built = false;
+	return bilateral_filter;
+}
+
+
 VX_API_ENTRY vx_node VX_API_CALL vxConvolveNode (vx_graph graph, vx_image input, vx_convolution conv, vx_image output)
 {
 	if (input->col != VX_DF_IMAGE_U8)

@@ -10,6 +10,85 @@
 #define WIDTH  200
 #define HEIGHT 300
 
+/*
+#include "VX/hipaVX/hipaVX_internal.hpp"
+using namespace secret;
+//Secret
+int main()
+{
+	auto zero = new Constant<float>();
+	zero->value = 0.f;
+	auto one = new Constant<float>();
+	one->value = 1.f;
+	auto two = new Constant<float>();
+	two->value = 2.f;
+	auto one_half = new Div();
+	one_half->subnodes[0] = one;
+	one_half->subnodes[1] = two;
+	auto neg_one_half = new Sub();
+	neg_one_half->subnodes[0] = zero;
+	neg_one_half->subnodes[1] = one_half;
+
+	auto y = new Variable();
+	y->name = "y";
+	auto sigma_y = new Variable();
+	sigma_y->name = "sigma_y";
+	auto y_square = new Square();
+	y_square->subnodes[0] = y;
+	auto sigma_y_square = new Square();
+	sigma_y_square->subnodes[0] = sigma_y;
+	auto some_div = new Div();
+	some_div->subnodes[0] = y_square;
+	some_div->subnodes[1] = sigma_y_square;
+
+	auto some_mul = new Mul();
+	some_mul->subnodes[0] = neg_one_half;
+	some_mul->subnodes[1] = some_div;
+
+	auto exp = new Exp();
+	exp->subnodes[0] = some_mul;
+
+	auto pi = new Constant<float>();
+	pi->value = 3.14159f;
+
+	auto some_mul_2 = new Mul();
+	some_mul_2->subnodes[0] = two;
+	some_mul_2->subnodes[1] = pi;
+
+	auto some_mul_3 = new Mul();
+	some_mul_3->subnodes[0] = some_mul_2;
+	some_mul_3->subnodes[1] = sigma_y;
+
+	auto sqrt = new Sqrt();
+	sqrt->subnodes[0] = some_mul_3;
+
+	auto some_div_2 = new Div();
+	some_div_2->subnodes[0] = one;
+	some_div_2->subnodes[1] = some_mul_3;
+
+	auto last_mul = new Mul();
+	last_mul->subnodes[0] = some_div_2;
+	last_mul->subnodes[1] = exp;
+
+	auto g_1 = new Variable();
+	g_1->name = "g_1";
+
+	auto assignment = new Assignment();
+	assignment->subnodes[0] = g_1;
+	assignment->subnodes[1] = last_mul;
+
+	auto g_1_def = new VariableDefinition();
+	g_1_def->subnodes[0] = g_1;
+	g_1_def->datatype = Datatype::FLOAT;
+
+	auto statements = new Statements();
+	statements->statements.emplace_back(g_1_def);
+	statements->statements.emplace_back(assignment);
+
+	std::cout << generate(statements);
+
+	return -1;
+}*/
 
 int main()
 {
@@ -63,6 +142,8 @@ int main()
 
 			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_RGBX),               /*27: RGBA reconstructed */
 			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_RGBX),               /*28: GBRA reconstructed */
+
+			vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),				   /*29: another bilateralfilter */
 		};
 
 		int32_t two = 2;
@@ -178,15 +259,18 @@ int main()
 				vxHipaccNode(graph, "external_kernels/BilateralFilter.cpp", bilateral_parameters.data(), bilateral_parameters.size(), images[24]),
 				vxFWriteImageNode(graph, images[24], "akif-200x300_bw_customhipacc_bilateral.png"),
 
-				//vxScaleImageNode(graph, images[0], images[25], VX_INTERPOLATION_NEAREST_NEIGHBOR),
-				//vxFWriteImageNode(graph, images[25], "akif-200x300_bw_scaled_down.png"),
-				//vxScaleImageNode(graph, images[0], images[26], VX_INTERPOLATION_NEAREST_NEIGHBOR),
-				//vxFWriteImageNode(graph, images[26], "akif-200x300_bw_scaled_up.png"),
+				/*vxScaleImageNode(graph, images[0], images[25], VX_INTERPOLATION_NEAREST_NEIGHBOR),
+				vxFWriteImageNode(graph, images[25], "akif-200x300_bw_scaled_down.png"),
+				vxScaleImageNode(graph, images[0], images[26], VX_INTERPOLATION_NEAREST_NEIGHBOR),
+				vxFWriteImageNode(graph, images[26], "akif-200x300_bw_scaled_up.png"),*/
 
 				vxChannelCombineNode(graph, images[21], images[20], images[19], images[22], images[27]),
 				vxFWriteImageNode(graph, images[27], "akif-200x300_rgba_rgba.png"),
 				vxChannelCombineNode(graph, images[20], images[19], images[21], images[22], images[28]),
 				vxFWriteImageNode(graph, images[28], "akif-200x300_rgba_gbra.png"),
+
+				vxAnotherBilateralFilterNode(graph, images[0], 16, images[29]),
+				vxFWriteImageNode(graph, images[29], "akif-200x300_bw_another_bilateral.png"),
 			};
 
             //Step4.Verify Graph

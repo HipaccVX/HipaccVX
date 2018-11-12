@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __HIPAVX_INTERNAL__
+#define __HIPAVX_INTERNAL__
 
 #include "../vx.h"
 
@@ -13,6 +14,400 @@
 #include <string>
 #include <algorithm>
 
+
+namespace secret
+{
+enum class NodeType
+{
+	None,
+	Add,
+	Sub,
+	Mul,
+	Div,
+
+	Sqrt,
+	Square,
+	Exp,
+	Conversion,
+
+	Constant,
+	Variable,
+	VariableDefinition,
+	Assignment,
+	TargetPixel,
+
+	Image,
+	ForEveryPixel,
+	CurrentPixelvalue,
+
+
+
+	Stencil,
+	ReductionAroundPixel,
+	IterateAroundPixel,
+	PixelvalueAtCurrentStencilPos,
+	StencilvalueAtCurrentStencilPos,
+
+
+	Statements,
+
+
+};
+enum class Datatype
+{
+	INT32,
+	UINT32,
+	FLOAT,
+	UINT8,
+	UINT16,
+	INT16
+};
+enum class ReductionType
+{
+	SUM,
+	MIN,
+	MAX
+};
+
+class Node
+{
+public:
+	int id;
+	Node()
+	{
+		static int next_id = 0;
+		id = next_id++;
+	}
+	NodeType type = NodeType::None;
+	std::vector<Node*> subnodes;
+	Node*& operator[](unsigned int index)
+	{
+		return subnodes[index];
+	}
+	Node* operator[](unsigned int index) const
+	{
+		return subnodes[index];
+	}
+
+	virtual ~Node() = default;
+	virtual std::string generate_source() = 0;
+};
+
+class SimpleBinaryNode: public Node
+{
+public:
+	virtual ~SimpleBinaryNode() = default;
+	virtual std::string generate_source() override;
+};
+class SimpleUnaryFunctionNode: public Node
+{
+public:
+	virtual ~SimpleUnaryFunctionNode() = default;
+	virtual std::string generate_source() override;
+};
+
+class Add: public SimpleBinaryNode
+{
+public:
+	Add()
+	{
+		type = NodeType::Add;
+		subnodes.resize(2);
+	}
+
+	virtual ~Add() = default;
+};
+class Sub: public SimpleBinaryNode
+{
+public:
+	Sub()
+	{
+		type = NodeType::Sub;
+		subnodes.resize(2);
+	}
+
+	virtual ~Sub() = default;
+};
+class Mul: public SimpleBinaryNode
+{
+public:
+	Mul()
+	{
+		type = NodeType::Mul;
+		subnodes.resize(2);
+	}
+
+	virtual ~Mul() = default;
+};
+class Div: public SimpleBinaryNode
+{
+public:
+	Div()
+	{
+		type = NodeType::Div;
+		subnodes.resize(2);
+	}
+
+	virtual ~Div() = default;
+};
+
+class Sqrt: public SimpleUnaryFunctionNode
+{
+public:
+	Sqrt()
+	{
+		type = NodeType::Sqrt;
+		subnodes.resize(1);
+	}
+	virtual ~Sqrt() = default;
+};
+class Square: public SimpleUnaryFunctionNode
+{
+public:
+	Square()
+	{
+		type = NodeType::Square;
+		subnodes.resize(1);
+	}
+	virtual ~Square() = default;
+};
+class Exp: public SimpleUnaryFunctionNode
+{
+public:
+	Exp()
+	{
+		type = NodeType::Exp;
+		subnodes.resize(1);
+	}
+	virtual ~Exp() = default;
+};
+class Conversion: public SimpleUnaryFunctionNode
+{
+public:
+	Conversion()
+	{
+		type = NodeType::Conversion;
+		subnodes.resize(1);
+	}
+	Datatype to;
+	virtual ~Conversion() = default;
+};
+
+class ReductionAroundPixel: public Node
+{
+public:
+	ReductionAroundPixel()
+	{
+		type = NodeType::ReductionAroundPixel;
+	}
+	ReductionType reductionType;
+	virtual std::string generate_source() override;
+};
+
+class IterateAroundPixel: public Node
+{
+public:
+	IterateAroundPixel()
+	{
+		type = NodeType::IterateAroundPixel;
+		subnodes.resize(3);
+	}
+	virtual std::string generate_source() override;
+};
+
+/*class Domain: public Node
+{
+
+};
+*/
+template<typename T>
+class Constant: public Node
+{
+public:
+	Constant()
+	{
+		type = NodeType::Constant;
+	}
+	T value;
+	virtual std::string generate_source() override;
+};
+class Variable: public Node
+{
+public:
+	Variable()
+	{
+		type = NodeType::Variable;
+	}
+	Datatype datatype;
+	std::string name;
+	virtual std::string generate_source() override;
+};
+class VariableDefinition: public Node
+{
+public:
+	VariableDefinition()
+	{
+		type = NodeType::VariableDefinition;
+		subnodes.resize(1);
+	}
+	virtual std::string generate_source() override;
+};
+class Assignment: public Node
+{
+public:
+	Assignment()
+	{
+		type = NodeType::Assignment;
+		subnodes.resize(2);
+	}
+	virtual std::string generate_source() override;
+};
+class TargetPixel: public Node
+{
+public:
+	TargetPixel()
+	{
+		type = NodeType::TargetPixel;
+		subnodes.resize(1);
+	}
+	virtual std::string generate_source() override;
+};
+class Image: public Node
+{
+public:
+	Image()
+	{
+		type = NodeType::Image;
+	}
+	HipaVX::Image *image;
+	virtual std::string generate_source() override;
+};
+
+class Statements: public Node
+{
+public:
+	Statements()
+	{
+		type = NodeType::Statements;
+	}
+	std::vector<Node*> statements;
+	virtual ~Statements() override = default;
+	virtual std::string generate_source() override;
+};
+
+class CurrentPixelvalue: public Node
+{
+public:
+	CurrentPixelvalue()
+	{
+		type = NodeType::CurrentPixelvalue;
+		subnodes.resize(1);
+	}
+	virtual std::string generate_source() override;
+};
+
+class ForEveryPixel: public Node
+{
+public:
+	ForEveryPixel()
+	{
+		type = NodeType::ForEveryPixel;
+	}
+	std::vector<Node*> inputs;
+	Node* output;
+	Statements function;
+	virtual std::string generate_source() override;
+};
+
+class Stencil: public Node
+{
+public:
+	Stencil()
+	{
+		type = NodeType::Stencil;
+	}
+	std::string name;
+	std::vector<std::string> mask;
+	int dim[2]; //dim[0] = x, dim[1] = y
+	Datatype datatype;
+	virtual std::string generate_source() override;
+
+	template<typename T>
+	static std::vector<std::string> from_t(std::vector<T> v)
+	{
+		std::vector<std::string> to_return;
+		to_return.reserve(v.size());
+		for(auto e: v)
+			to_return.emplace_back(std::to_string(e));
+		return to_return;
+	}
+};
+
+class PixelvalueAtCurrentStencilPos: public Node
+{
+public:
+	PixelvalueAtCurrentStencilPos()
+	{
+		type = NodeType::PixelvalueAtCurrentStencilPos;
+		subnodes.resize(1);
+	}
+	virtual std::string generate_source() override;
+};
+class StencilvalueAtCurrentStencilPos: public Node
+{
+public:
+	StencilvalueAtCurrentStencilPos()
+	{
+		type = NodeType::StencilvalueAtCurrentStencilPos;
+		subnodes.resize(1);
+	}
+	virtual std::string generate_source() override;
+};
+
+
+
+
+
+
+std::string generate(SimpleBinaryNode *s);
+std::string generate(SimpleUnaryFunctionNode *s);
+std::string generate(Variable *s);
+std::string generate(VariableDefinition *s);
+std::string generate(Assignment *s);
+std::string generate(TargetPixel *s);
+std::string generate(Image *s);
+std::string generate(ForEveryPixel *s);
+std::string generate(ReductionAroundPixel *s);
+std::string generate(IterateAroundPixel *s);
+std::string generate(PixelvalueAtCurrentStencilPos *s);
+std::string generate(StencilvalueAtCurrentStencilPos *s);
+std::string generate(CurrentPixelvalue *s);
+std::string generate(Stencil *s);
+
+std::string generate(Statements *s);
+
+std::string generate_call(ForEveryPixel *s);
+
+template<typename T>
+std::string generate(Constant<T> *s)
+{
+	return std::to_string(s->value);
+}
+
+
+
+//Templated Node method definitions
+
+template<typename T>
+std::string Constant<T>::generate_source()
+{
+	return generate(this);
+}
+
+
+
+
+}
 
 namespace HipaVX
 {
@@ -960,6 +1355,46 @@ public:
 	virtual std::string generateNodeCall() override;
 };
 
+class VXBilateralFilterNode: public Node
+{
+public:
+	VXBilateralFilterNode();
+	virtual ~VXBilateralFilterNode() override = default;
+
+	Image *in;
+	Image *out;
+	vx_int32 diameter;
+	vx_float32 sigmaSpace;
+	vx_float32 sigmaValues;
+
+	secret::ForEveryPixel kernel;
+
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+};
+
+class AnotherBilateralFilterNode: public Node
+{
+public:
+	AnotherBilateralFilterNode();
+	virtual ~AnotherBilateralFilterNode() override = default;
+
+	Image *in;
+	Image *out;
+
+	vx_int32 sigma_r;
+
+	secret::Stencil stencil;
+	secret::ForEveryPixel kernel;
+
+	virtual std::vector<Object*> get_inputs() override;
+	virtual std::vector<Object*> get_outputs() override;
+	virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+	virtual void build() override;
+};
 
 }
 
@@ -1124,4 +1559,4 @@ std::string ConditionalAssignmentNode<T>::generateNodeCall()
 
 
 
-
+#endif
