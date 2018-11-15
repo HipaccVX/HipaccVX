@@ -1127,7 +1127,7 @@ string node_generator(HipaVX::VXScaleNode* n, Type t)
 
 
 
-namespace secret
+namespace function_ast
 {
 
 std::string to_string(Datatype d)
@@ -1363,7 +1363,7 @@ std::string generate(StencilvalueAtCurrentStencilPos *s)
 
 
 
-std::tuple<std::vector<Kernelcall_Variable*>, std::vector<Kernelcall_Variable*>> generate_accessor(HipaVX::Image *image, secret::Stencil *stencil)
+std::tuple<std::vector<Kernelcall_Variable*>, std::vector<Kernelcall_Variable*>> generate_accessor(HipaVX::Image *image, function_ast::Stencil *stencil)
 {
 	std::vector<Kernelcall_Variable*> to_return_call_parameters;
 	std::vector<Kernelcall_Variable*> to_return;
@@ -1430,11 +1430,11 @@ std::string generate_call(ForEveryPixel *fep)
 		/*case secret::NodeType::Variable:
 			tuple = generator::generate_scalar((HipaVX::Scalar*) n->parameters[i]);
 			break;*/
-		case secret::NodeType::Image:
+		case function_ast::NodeType::Image:
 		{
 			auto image = dynamic_cast<Image*>(node);
 			HipaVX::Image *HVX_image = image->image;
-			if (i+1 < fep->inputs.size() && fep->inputs[i+1]->type == secret::NodeType::Stencil)
+			if (i+1 < fep->inputs.size() && fep->inputs[i+1]->type == function_ast::NodeType::Stencil)
 			{
 				auto stencil = dynamic_cast<Stencil*>(fep->inputs[i+1]);
 				tuple = generate_accessor(HVX_image, stencil);

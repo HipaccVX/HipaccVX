@@ -3,7 +3,7 @@
 #include <fstream>
 #include <string>
 
-namespace secret
+namespace function_ast
 {
 std::string SimpleBinaryNode::generate_source()
 {
@@ -1781,16 +1781,16 @@ std::vector<Object *> AnotherBilateralFilterNode::get_outputs()
 }
 std::string AnotherBilateralFilterNode::generateClassDefinition()
 {
-	return secret::generate(&this->kernel);
+	return function_ast::generate(&this->kernel);
 }
 std::string AnotherBilateralFilterNode::generateNodeCall()
 {
-	return secret::generate_call(&this->kernel);
+	return function_ast::generate_call(&this->kernel);
 }
 void AnotherBilateralFilterNode::build()
 {
 	stencil.dim[0] = stencil.dim[1] = 5;
-	stencil.mask = secret::Stencil::from_t<float>({
+	stencil.mask = function_ast::Stencil::from_t<float>({
 		0.018316f, 0.082085f, 0.135335f, 0.082085f, 0.018316f ,
 		0.082085f, 0.367879f, 0.606531f, 0.367879f, 0.082085f ,
 		0.135335f, 0.606531f, 1.000000f, 0.606531f, 0.135335f ,
@@ -1798,189 +1798,86 @@ void AnotherBilateralFilterNode::build()
 		0.018316f, 0.082085f, 0.135335f, 0.082085f, 0.018316f
 	});
 	stencil.name = "stencil";
-	stencil.datatype = secret::Datatype::FLOAT;
+	stencil.datatype = function_ast::Datatype::FLOAT;
 
-	auto in_node = new secret::Image();
-	in_node->image = in;
+	auto in_node = new function_ast::Image(in);
 	kernel.inputs.push_back(in_node);
 	kernel.inputs.push_back(&stencil);
-	auto out_node = new secret::Image();
-	out_node->image = out;
+	auto out_node = new function_ast::Image(out);
 	kernel.output = out_node;
 
 
-	auto zero = new secret::Constant<float>();
-	zero->value = 0.f;
-	auto one_half = new secret::Constant<float>();
-	one_half->value = 0.5f;
+	auto zero = new function_ast::Constant<float>(0.f);
+	auto one_half = new function_ast::Constant<float>(0.5f);
+	auto sigma_r = new function_ast::Constant<int>(this->sigma_r);
 
-	auto sigma_r = new secret::Constant<int>();
-	sigma_r->value = this->sigma_r;
-
-	auto c_r = new secret::Variable();
-	c_r->datatype = secret::Datatype::FLOAT;
-	c_r->name = "c_r";
-
-	auto d = new secret::Variable();
-	d->datatype = secret::Datatype::FLOAT;
-	d->name = "d";
-
-	auto p = new secret::Variable();
-	p->datatype = secret::Datatype::FLOAT;
-	p->name = "p";
-
-	auto center = new secret::Variable();
-	center->datatype = secret::Datatype::FLOAT;
-	center->name = "center";
+	auto c_r = new function_ast::Variable("c_r", function_ast::Datatype::FLOAT);
+	auto d = new function_ast::Variable("d", function_ast::Datatype::FLOAT);
+	auto p = new function_ast::Variable("p", function_ast::Datatype::FLOAT);
+	auto center = new function_ast::Variable("center", function_ast::Datatype::FLOAT);
 
 
 	{
-		auto c_r_def = new secret::VariableDefinition();
-		c_r_def->subnodes[0] = c_r;
-		kernel.function.statements.push_back(c_r_def);
+		auto square = new function_ast::Square(sigma_r);
+		auto div = new function_ast::Div(one_half, square);
 
-		auto square = new secret::Square();
-		square->subnodes[0] = sigma_r;
+		kernel.function.statements.push_back(new function_ast::VariableDefinition(c_r));
+		kernel.function.statements.push_back(new function_ast::Assignment(c_r, div));
 
-		auto div = new secret::Div();
-		div->subnodes[0] = one_half;
-		div->subnodes[1] = square;
+		kernel.function.statements.push_back(new function_ast::VariableDefinition(d));
+		kernel.function.statements.push_back(new function_ast::Assignment(d, zero));
 
-		auto assignment = new secret::Assignment();
-		assignment->subnodes[0] = c_r;
-		assignment->subnodes[1] = div;
-
-		kernel.function.statements.push_back(assignment);
+		kernel.function.statements.push_back(new function_ast::VariableDefinition(p));
+		kernel.function.statements.push_back(new function_ast::Assignment(p, zero));
 	}
 
 	{
-		auto d_def = new secret::VariableDefinition();
-		d_def->subnodes[0] = d;
-		kernel.function.statements.push_back(d_def);
+		auto current_pixelvalue = new function_ast::CurrentPixelvalue(in_node);
+		auto assignment = new function_ast::Assignment(center, current_pixelvalue);
 
-		auto assignment = new secret::Assignment();
-		assignment->subnodes[0] = d;
-		assignment->subnodes[1] = zero;
-
+		kernel.function.statements.push_back(new function_ast::VariableDefinition(center));
 		kernel.function.statements.push_back(assignment);
 	}
 
+	auto iterate = new function_ast::IterateAroundPixel();
+	auto current_pixelvalue = &iterate->pixel_value;
+	auto current_stencilvalue = &iterate->stencil_value;
+
+	auto iterate_body = new function_ast::Statements;
 	{
-		auto p_def = new secret::VariableDefinition();
-		p_def->subnodes[0] = p;
-		kernel.function.statements.push_back(p_def);
+		auto diff = new function_ast::Variable("diff", function_ast::Datatype::FLOAT);
+		auto s = new function_ast::Variable("s", function_ast::Datatype::FLOAT);
 
-		auto assignment = new secret::Assignment();
-		assignment->subnodes[0] = p;
-		assignment->subnodes[1] = zero;
-
-		kernel.function.statements.push_back(assignment);
-	}
-
-	{
-		auto center_def = new secret::VariableDefinition();
-		center_def->subnodes[0] = center;
-		kernel.function.statements.push_back(center_def);
-
-		auto current_pixelvalue = new secret::CurrentPixelvalue();
-		current_pixelvalue->subnodes[0] = in_node;
-
-		auto assignment = new secret::Assignment();
-		assignment->subnodes[0] = center;
-		assignment->subnodes[1] = current_pixelvalue;
-
-		kernel.function.statements.push_back(assignment);
-	}
-
-	auto iterate = new secret::IterateAroundPixel();
-
-	auto iterate_body = new secret::Statements;
-	{
-		auto diff = new secret::Variable();
-		diff->datatype = secret::Datatype::FLOAT;
-		diff->name = "diff";
-
-		auto s = new secret::Variable();
-		s->datatype = secret::Datatype::FLOAT;
-		s->name = "s";
-
-
-		auto diff_def = new secret::VariableDefinition();
-		diff_def->subnodes[0] = diff;
-		auto s_def = new secret::VariableDefinition();
-		s_def->subnodes[0] = s;
-
-		auto current_pixelvalue = new secret::PixelvalueAtCurrentStencilPos();
-		current_pixelvalue->subnodes[0] = iterate;
-
-		auto current_stencilvalue = new secret::StencilvalueAtCurrentStencilPos();
-		current_stencilvalue->subnodes[0] = iterate;
-
-		iterate_body->statements.push_back(diff_def);
-		iterate_body->statements.push_back(s_def);
+		iterate_body->statements.push_back(new function_ast::VariableDefinition(diff));
+		iterate_body->statements.push_back(new function_ast::VariableDefinition(s));
 		{
-			auto sub = new secret::Sub();
-			sub->subnodes[0] = current_pixelvalue;
-			sub->subnodes[1] = center;
+			auto sub = new function_ast::Sub(current_pixelvalue, center);
 
-			auto assignment = new secret::Assignment();
-			assignment->subnodes[0] = diff;
-			assignment->subnodes[1] = sub;
+			auto assignment = new function_ast::Assignment(diff, sub);
 
 			iterate_body->statements.push_back(assignment);
 		}
 		{
-			auto square = new secret::Square();
-			square->subnodes[0] = diff;
-
-			auto mul_1 = new secret::Mul();
-			mul_1->subnodes[0] = c_r;
-			mul_1->subnodes[1] = square;
-
-			auto sub = new secret::Sub();
-			sub->subnodes[0] = zero;
-			sub->subnodes[1] = mul_1;
-
-			auto exp = new secret::Exp();
-			exp->subnodes[0] = sub;
-
-			auto mul_2 = new secret::Mul();
-			mul_2->subnodes[0] = exp;
-			mul_2->subnodes[1] = current_stencilvalue;
-
-			auto assignment = new secret::Assignment();
-			assignment->subnodes[0] = s;
-			assignment->subnodes[1] = mul_2;
+			auto square = new function_ast::Square(diff);
+			auto mul_1 = new function_ast::Mul(c_r, square);
+			auto sub = new function_ast::Sub(zero, mul_1);
+			auto exp = new function_ast::Exp(sub);
+			auto mul_2 = new function_ast::Mul(exp, current_stencilvalue);
+			auto assignment = new function_ast::Assignment(s, mul_2);
 
 			iterate_body->statements.push_back(assignment);
 		}
 		{
-			auto add = new secret::Add();
-			add->subnodes[0] = d;
-			add->subnodes[1] = s;
+			auto add = new function_ast::Add(d, s);
 
-			auto assignment = new secret::Assignment();
-			assignment->subnodes[0] = d;
-			assignment->subnodes[1] = add;
-
-			iterate_body->statements.push_back(assignment);
+			iterate_body->statements.push_back(new function_ast::Assignment(d, add));
 		}
 		{
-			auto mul = new secret::Mul();
-			mul->subnodes[0] = s;
-			mul->subnodes[1] = current_pixelvalue;
+			auto mul = new function_ast::Mul(s, current_pixelvalue);
+			auto add = new function_ast::Add(p, mul);
 
-			auto add = new secret::Add();
-			add->subnodes[0] = p;
-			add->subnodes[1] = mul;
-
-			auto assignment = new secret::Assignment();
-			assignment->subnodes[0] = p;
-			assignment->subnodes[1] = add;
-
-			iterate_body->statements.push_back(assignment);
+			iterate_body->statements.push_back(new function_ast::Assignment(p, add));
 		}
-
 	}
 
 	{
@@ -1991,28 +1888,15 @@ void AnotherBilateralFilterNode::build()
 	}
 
 	{
-		auto div = new secret::Div();
-		div->subnodes[0] = p;
-		div->subnodes[1] = d;
-
-		auto add = new secret::Add();
-		add->subnodes[0] = div;
-		add->subnodes[1] = one_half;
-
-		auto conversion = new secret::Conversion();
-		conversion->subnodes[0] = add;
-		conversion->to = secret::Datatype::UINT8;
-
-		auto target_pixel = new secret::TargetPixel();
-		target_pixel->subnodes[0] = out_node;
-
-		auto assignment = new secret::Assignment();
-		assignment->subnodes[0] = target_pixel;
-		assignment->subnodes[1] = conversion;
+		auto div = new function_ast::Div(p, d);
+		auto add = new function_ast::Add(div, one_half);
+		auto conversion = new function_ast::Conversion(add);
+		conversion->to = function_ast::Datatype::UINT8;
+		auto target_pixel = new function_ast::TargetPixel(out_node);
+		auto assignment = new function_ast::Assignment(target_pixel, conversion);
 
 		kernel.function.statements.push_back(assignment);
 	}
-
 }
 
 

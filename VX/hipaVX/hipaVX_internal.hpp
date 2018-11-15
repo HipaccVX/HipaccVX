@@ -15,7 +15,7 @@
 #include <algorithm>
 
 
-namespace secret
+namespace function_ast
 {
 enum class NodeType
 {
@@ -114,6 +114,11 @@ public:
 		type = NodeType::Add;
 		subnodes.resize(2);
 	}
+	Add(Node *n1, Node *n2)
+	{
+		type = NodeType::Add;
+		subnodes = {n1, n2};
+	}
 
 	virtual ~Add() = default;
 };
@@ -124,6 +129,11 @@ public:
 	{
 		type = NodeType::Sub;
 		subnodes.resize(2);
+	}
+	Sub(Node *n1, Node *n2)
+	{
+		type = NodeType::Sub;
+		subnodes = {n1, n2};
 	}
 
 	virtual ~Sub() = default;
@@ -136,6 +146,11 @@ public:
 		type = NodeType::Mul;
 		subnodes.resize(2);
 	}
+	Mul(Node *n1, Node *n2)
+	{
+		type = NodeType::Mul;
+		subnodes = {n1, n2};
+	}
 
 	virtual ~Mul() = default;
 };
@@ -146,6 +161,11 @@ public:
 	{
 		type = NodeType::Div;
 		subnodes.resize(2);
+	}
+	Div(Node *n1, Node *n2)
+	{
+		type = NodeType::Div;
+		subnodes = {n1, n2};
 	}
 
 	virtual ~Div() = default;
@@ -159,6 +179,11 @@ public:
 		type = NodeType::Sqrt;
 		subnodes.resize(1);
 	}
+	Sqrt(Node *n1)
+	{
+		type = NodeType::Sqrt;
+		subnodes = {n1};
+	}
 	virtual ~Sqrt() = default;
 };
 class Square: public SimpleUnaryFunctionNode
@@ -168,6 +193,11 @@ public:
 	{
 		type = NodeType::Square;
 		subnodes.resize(1);
+	}
+	Square(Node *n1)
+	{
+		type = NodeType::Square;
+		subnodes = {n1};
 	}
 	virtual ~Square() = default;
 };
@@ -179,6 +209,11 @@ public:
 		type = NodeType::Exp;
 		subnodes.resize(1);
 	}
+	Exp(Node *n1)
+	{
+		type = NodeType::Exp;
+		subnodes = {n1};
+	}
 	virtual ~Exp() = default;
 };
 class Conversion: public SimpleUnaryFunctionNode
@@ -188,6 +223,11 @@ public:
 	{
 		type = NodeType::Conversion;
 		subnodes.resize(1);
+	}
+	Conversion(Node *n1)
+	{
+		type = NodeType::Conversion;
+		subnodes = {n1};
 	}
 	Datatype to;
 	virtual ~Conversion() = default;
@@ -204,22 +244,58 @@ public:
 	virtual std::string generate_source() override;
 };
 
-class IterateAroundPixel: public Node
+class PixelvalueAtCurrentStencilPos: public Node
 {
 public:
-	IterateAroundPixel()
+	PixelvalueAtCurrentStencilPos()
 	{
-		type = NodeType::IterateAroundPixel;
-		subnodes.resize(3);
+		type = NodeType::PixelvalueAtCurrentStencilPos;
+		subnodes.resize(1);
+	}
+	PixelvalueAtCurrentStencilPos(Node *n1)
+	{
+		type = NodeType::PixelvalueAtCurrentStencilPos;
+		subnodes = {n1};
+	}
+	virtual std::string generate_source() override;
+};
+class StencilvalueAtCurrentStencilPos: public Node
+{
+public:
+	StencilvalueAtCurrentStencilPos()
+	{
+		type = NodeType::StencilvalueAtCurrentStencilPos;
+		subnodes.resize(1);
+	}
+	StencilvalueAtCurrentStencilPos(Node *n1)
+	{
+		type = NodeType::StencilvalueAtCurrentStencilPos;
+		subnodes = {n1};
 	}
 	virtual std::string generate_source() override;
 };
 
-/*class Domain: public Node
+class IterateAroundPixel: public Node
 {
+public:
+	IterateAroundPixel()
+		:pixel_value(this), stencil_value(this)
+	{
+		type = NodeType::IterateAroundPixel;
+		subnodes.resize(3);
+	}
+	IterateAroundPixel(Node *n1, Node *n2, Node *n3)
+		:pixel_value(this), stencil_value(this)
+	{
+		type = NodeType::IterateAroundPixel;
+		subnodes = {n1, n2, n3};
+	}
+	PixelvalueAtCurrentStencilPos pixel_value;
+	StencilvalueAtCurrentStencilPos stencil_value;
 
+	virtual std::string generate_source() override;
 };
-*/
+
 template<typename T>
 class Constant: public Node
 {
@@ -227,6 +303,11 @@ public:
 	Constant()
 	{
 		type = NodeType::Constant;
+	}
+	Constant(T value)
+	{
+		type = NodeType::Constant;
+		this->value = value;
 	}
 	T value;
 	virtual std::string generate_source() override;
@@ -237,6 +318,12 @@ public:
 	Variable()
 	{
 		type = NodeType::Variable;
+	}
+	Variable(std::string name, Datatype datatype)
+	{
+		type = NodeType::Variable;
+		this->name = name;
+		this->datatype = datatype;
 	}
 	Datatype datatype;
 	std::string name;
@@ -250,6 +337,11 @@ public:
 		type = NodeType::VariableDefinition;
 		subnodes.resize(1);
 	}
+	VariableDefinition(Node *n1)
+	{
+		type = NodeType::VariableDefinition;
+		subnodes = {n1};
+	}
 	virtual std::string generate_source() override;
 };
 class Assignment: public Node
@@ -259,6 +351,11 @@ public:
 	{
 		type = NodeType::Assignment;
 		subnodes.resize(2);
+	}
+	Assignment(Node *n1, Node *n2)
+	{
+		type = NodeType::Assignment;
+		subnodes = {n1, n2};
 	}
 	virtual std::string generate_source() override;
 };
@@ -270,6 +367,11 @@ public:
 		type = NodeType::TargetPixel;
 		subnodes.resize(1);
 	}
+	TargetPixel(Node *n1)
+	{
+		type = NodeType::TargetPixel;
+		subnodes = {n1};
+	}
 	virtual std::string generate_source() override;
 };
 class Image: public Node
@@ -278,6 +380,11 @@ public:
 	Image()
 	{
 		type = NodeType::Image;
+	}
+	Image(HipaVX::Image *image)
+	{
+		type = NodeType::Image;
+		this->image = image;
 	}
 	HipaVX::Image *image;
 	virtual std::string generate_source() override;
@@ -303,6 +410,11 @@ public:
 		type = NodeType::CurrentPixelvalue;
 		subnodes.resize(1);
 	}
+	CurrentPixelvalue(Node *n1)
+	{
+		type = NodeType::CurrentPixelvalue;
+		subnodes = {n1};
+	}
 	virtual std::string generate_source() override;
 };
 
@@ -318,6 +430,7 @@ public:
 	Statements function;
 	virtual std::string generate_source() override;
 };
+
 
 class Stencil: public Node
 {
@@ -343,26 +456,6 @@ public:
 	}
 };
 
-class PixelvalueAtCurrentStencilPos: public Node
-{
-public:
-	PixelvalueAtCurrentStencilPos()
-	{
-		type = NodeType::PixelvalueAtCurrentStencilPos;
-		subnodes.resize(1);
-	}
-	virtual std::string generate_source() override;
-};
-class StencilvalueAtCurrentStencilPos: public Node
-{
-public:
-	StencilvalueAtCurrentStencilPos()
-	{
-		type = NodeType::StencilvalueAtCurrentStencilPos;
-		subnodes.resize(1);
-	}
-	virtual std::string generate_source() override;
-};
 
 
 
@@ -1367,7 +1460,7 @@ public:
 	vx_float32 sigmaSpace;
 	vx_float32 sigmaValues;
 
-	secret::ForEveryPixel kernel;
+	function_ast::ForEveryPixel kernel;
 
 	virtual std::vector<Object*> get_inputs() override;
 	virtual std::vector<Object*> get_outputs() override;
@@ -1386,8 +1479,8 @@ public:
 
 	vx_int32 sigma_r;
 
-	secret::Stencil stencil;
-	secret::ForEveryPixel kernel;
+	function_ast::Stencil stencil;
+	function_ast::ForEveryPixel kernel;
 
 	virtual std::vector<Object*> get_inputs() override;
 	virtual std::vector<Object*> get_outputs() override;
