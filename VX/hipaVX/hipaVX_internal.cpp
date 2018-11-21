@@ -70,6 +70,8 @@ std::string Stencil::generate_source()
 	return generate(this);
 }
 
+}
+
 std::shared_ptr<function_ast::Node> operator+(std::shared_ptr<function_ast::Node> a,
                               std::shared_ptr<function_ast::Node> b)
 {
@@ -118,10 +120,10 @@ std::shared_ptr<function_ast::Node> convert(std::shared_ptr<function_ast::Node> 
 {
     return std::make_shared<function_ast::Conversion>(a, type);
 }
-
-
+std::shared_ptr<function_ast::Node> define(std::shared_ptr<function_ast::Node> n)
+{
+    return std::make_shared<function_ast::VariableDefinition>(n);
 }
-
 
 
 namespace HipaVX
@@ -1884,57 +1886,34 @@ void AnotherBilateralFilterNode::build()
     auto out_node = std::make_shared<function_ast::Image>(out);
     kernel->output = out_node;
 
-
-    auto zero = std::make_shared<function_ast::Constant<float>>(0.f);
-    auto one_half = std::make_shared<function_ast::Constant<float>>(0.5f);
-    auto sigma_r = std::make_shared<function_ast::Constant<int>>(this->sigma_r);
-
     auto c_r = std::make_shared<function_ast::Variable>("c_r", function_ast::Datatype::FLOAT);
     auto d = std::make_shared<function_ast::Variable>("d", function_ast::Datatype::FLOAT);
     auto p = std::make_shared<function_ast::Variable>("p", function_ast::Datatype::FLOAT);
     auto center = std::make_shared<function_ast::Variable>("center", function_ast::Datatype::FLOAT);
 
-
-    kernel->function << std::make_shared<function_ast::VariableDefinition>(c_r)
-                     << assign(c_r, one_half / square(sigma_r))
-                     << std::make_shared<function_ast::VariableDefinition>(d)
-                     << assign(d, zero)
-                     << std::make_shared<function_ast::VariableDefinition>(p)
-                     << (assign(p, zero));
-
-	{
-        auto current_pixelvalue = std::make_shared<function_ast::CurrentPixelvalue>(in_node);
-
-        kernel->function << std::make_shared<function_ast::VariableDefinition>(center)
-                         << assign(center, current_pixelvalue);
-	}
+    kernel->function << define(c_r)    << assign(c_r, constant(0.5f) / square(constant(sigma_r)))
+                     << define(d)      << assign(d, constant(0.f))
+                     << define(p)      << assign(p, constant(0.f))
+                     << define(center) << assign(center, current_pixel(in_node));
 
     auto iterate = std::make_shared<function_ast::IterateAroundPixel>();
-    auto current_pixelvalue = iterate->pixel_value;
-    auto current_stencilvalue = iterate->stencil_value;
-
     auto iterate_body = std::make_shared<function_ast::Statements>();
 	{
         auto diff = std::make_shared<function_ast::Variable>("diff", function_ast::Datatype::FLOAT);
         auto s = std::make_shared<function_ast::Variable>("s", function_ast::Datatype::FLOAT);
 
-        iterate_body->statements.push_back(std::make_shared<function_ast::VariableDefinition>(diff));
-        iterate_body->statements.push_back(std::make_shared<function_ast::VariableDefinition>(s));
-        {
-            *iterate_body << assign(diff, current_pixelvalue - center)
-                          << assign(s, exp(zero - c_r * square(diff)) * current_stencilvalue)
-                          << assign(d, d+s)
-                          << assign(p, p + s * current_pixelvalue);
-		}
+        *iterate_body << define(diff) << assign(diff, iterate->pixel_value - center)
+                      << define(s)    << assign(s, exp(constant(0.f) - c_r * square(diff)) * iterate->stencil_value)
+                      << assign(d, d+s)
+                      << assign(p, p + s * iterate->pixel_value);
 	}
 
     iterate->subnodes[0] = in_node;
     iterate->subnodes[1] = stencil;
     iterate->subnodes[2] = iterate_body; //The body
-    kernel->function.statements.push_back(iterate);
+    kernel->function << iterate;
 
-    kernel->function << assign(target_pixel(out_node), convert(p / d + one_half, function_ast::Datatype::UINT8));
-
+    kernel->function << assign(target_pixel(out_node), convert(p / d + constant(0.5f), function_ast::Datatype::UINT8));
 }
 
 
