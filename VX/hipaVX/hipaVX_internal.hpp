@@ -13,6 +13,7 @@
 #include <memory>
 #include <string>
 #include <algorithm>
+#include <memory>
 
 
 namespace function_ast
@@ -42,9 +43,10 @@ enum class NodeType
 
 
 
-	Stencil,
-	ReductionAroundPixel,
+    Stencil,
 	IterateAroundPixel,
+    ReductionOutput,
+    ReduceAroundPixel,
 	PixelvalueAtCurrentStencilPos,
 	StencilvalueAtCurrentStencilPos,
 
@@ -79,20 +81,19 @@ public:
 		id = next_id++;
 	}
 	NodeType type = NodeType::None;
-	std::vector<Node*> subnodes;
-	Node*& operator[](unsigned int index)
+    std::vector<std::shared_ptr<Node>> subnodes;
+    std::shared_ptr<Node>& operator[](unsigned int index)
 	{
 		return subnodes[index];
 	}
-	Node* operator[](unsigned int index) const
-	{
+    std::shared_ptr<Node> operator[](unsigned int index) const
+    {
 		return subnodes[index];
 	}
 
 	virtual ~Node() = default;
 	virtual std::string generate_source() = 0;
 };
-
 class SimpleBinaryNode: public Node
 {
 public:
@@ -114,7 +115,7 @@ public:
 		type = NodeType::Add;
 		subnodes.resize(2);
 	}
-	Add(Node *n1, Node *n2)
+    Add(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
 	{
 		type = NodeType::Add;
 		subnodes = {n1, n2};
@@ -130,7 +131,7 @@ public:
 		type = NodeType::Sub;
 		subnodes.resize(2);
 	}
-	Sub(Node *n1, Node *n2)
+    Sub(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
 	{
 		type = NodeType::Sub;
 		subnodes = {n1, n2};
@@ -146,7 +147,7 @@ public:
 		type = NodeType::Mul;
 		subnodes.resize(2);
 	}
-	Mul(Node *n1, Node *n2)
+    Mul(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
 	{
 		type = NodeType::Mul;
 		subnodes = {n1, n2};
@@ -162,7 +163,7 @@ public:
 		type = NodeType::Div;
 		subnodes.resize(2);
 	}
-	Div(Node *n1, Node *n2)
+    Div(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
 	{
 		type = NodeType::Div;
 		subnodes = {n1, n2};
@@ -179,10 +180,10 @@ public:
 		type = NodeType::Sqrt;
 		subnodes.resize(1);
 	}
-	Sqrt(Node *n1)
+    Sqrt(std::shared_ptr<Node> n1)
 	{
 		type = NodeType::Sqrt;
-		subnodes = {n1};
+        subnodes = {n1};
 	}
 	virtual ~Sqrt() = default;
 };
@@ -194,10 +195,10 @@ public:
 		type = NodeType::Square;
 		subnodes.resize(1);
 	}
-	Square(Node *n1)
+    Square(std::shared_ptr<Node> n1)
 	{
-		type = NodeType::Square;
-		subnodes = {n1};
+        type = NodeType::Square;
+        subnodes = {n1};
 	}
 	virtual ~Square() = default;
 };
@@ -209,10 +210,10 @@ public:
 		type = NodeType::Exp;
 		subnodes.resize(1);
 	}
-	Exp(Node *n1)
+    Exp(std::shared_ptr<Node> n1)
 	{
-		type = NodeType::Exp;
-		subnodes = {n1};
+        type = NodeType::Exp;
+        subnodes = {n1};
 	}
 	virtual ~Exp() = default;
 };
@@ -223,25 +224,20 @@ public:
 	{
 		type = NodeType::Conversion;
 		subnodes.resize(1);
-	}
-	Conversion(Node *n1)
-	{
-		type = NodeType::Conversion;
-		subnodes = {n1};
-	}
+    }
+    Conversion(std::shared_ptr<Node> n1)
+    {
+        type = NodeType::Conversion;
+        subnodes = {n1};
+    }
+    Conversion(std::shared_ptr<Node> n1, Datatype d)
+        :to(d)
+    {
+        type = NodeType::Conversion;
+        subnodes = {n1};
+    }
 	Datatype to;
 	virtual ~Conversion() = default;
-};
-
-class ReductionAroundPixel: public Node
-{
-public:
-	ReductionAroundPixel()
-	{
-		type = NodeType::ReductionAroundPixel;
-	}
-	ReductionType reductionType;
-	virtual std::string generate_source() override;
 };
 
 class PixelvalueAtCurrentStencilPos: public Node
@@ -249,14 +245,14 @@ class PixelvalueAtCurrentStencilPos: public Node
 public:
 	PixelvalueAtCurrentStencilPos()
 	{
-		type = NodeType::PixelvalueAtCurrentStencilPos;
-		subnodes.resize(1);
+        type = NodeType::PixelvalueAtCurrentStencilPos;
 	}
-	PixelvalueAtCurrentStencilPos(Node *n1)
+    PixelvalueAtCurrentStencilPos(Node *n1)
 	{
-		type = NodeType::PixelvalueAtCurrentStencilPos;
-		subnodes = {n1};
+        type = NodeType::PixelvalueAtCurrentStencilPos;
+        parent = n1;
 	}
+    Node *parent;
 	virtual std::string generate_source() override;
 };
 class StencilvalueAtCurrentStencilPos: public Node
@@ -267,33 +263,86 @@ public:
 		type = NodeType::StencilvalueAtCurrentStencilPos;
 		subnodes.resize(1);
 	}
-	StencilvalueAtCurrentStencilPos(Node *n1)
+    StencilvalueAtCurrentStencilPos(Node *n1)
 	{
-		type = NodeType::StencilvalueAtCurrentStencilPos;
-		subnodes = {n1};
+        type = NodeType::StencilvalueAtCurrentStencilPos;
+        parent = n1;
 	}
+    Node *parent;
 	virtual std::string generate_source() override;
+};
+class ReductionOutput: public Node
+{
+public:
+    ReductionOutput()
+    {
+        type = NodeType::ReductionOutput;
+        subnodes.resize(1);
+    }
+    ReductionOutput(Node *n1)
+    {
+        type = NodeType::ReductionOutput;
+        parent = n1;
+    }
+    Node *parent;
+    virtual std::string generate_source() override;
 };
 
 class IterateAroundPixel: public Node
 {
 public:
 	IterateAroundPixel()
-		:pixel_value(this), stencil_value(this)
+        :pixel_value(new PixelvalueAtCurrentStencilPos(this)),
+          stencil_value(new StencilvalueAtCurrentStencilPos(this))
 	{
 		type = NodeType::IterateAroundPixel;
 		subnodes.resize(3);
 	}
-	IterateAroundPixel(Node *n1, Node *n2, Node *n3)
-		:pixel_value(this), stencil_value(this)
+    IterateAroundPixel(std::shared_ptr<Node> n1, std::shared_ptr<Node> n2, std::shared_ptr<Node> n3)
+        :pixel_value(new PixelvalueAtCurrentStencilPos(this)),
+          stencil_value(new StencilvalueAtCurrentStencilPos(this))
 	{
-		type = NodeType::IterateAroundPixel;
-		subnodes = {n1, n2, n3};
+        type = NodeType::IterateAroundPixel;
+        subnodes = {n1, n2, n3};
 	}
-	PixelvalueAtCurrentStencilPos pixel_value;
-	StencilvalueAtCurrentStencilPos stencil_value;
+    std::shared_ptr<PixelvalueAtCurrentStencilPos> pixel_value;
+    std::shared_ptr<StencilvalueAtCurrentStencilPos> stencil_value;
 
 	virtual std::string generate_source() override;
+};
+class ReduceAroundPixel: public Node
+{
+public:
+    enum class Type
+    {
+        SUM,
+        MIN,
+        MAX
+    };
+    ReduceAroundPixel()
+        :pixel_value(new PixelvalueAtCurrentStencilPos(this)),
+          stencil_value(new StencilvalueAtCurrentStencilPos(this)),
+          reduction_output(new ReductionOutput())
+    {
+        type = NodeType::ReduceAroundPixel;
+        subnodes.resize(3);
+    }
+    ReduceAroundPixel(std::shared_ptr<Node> n1, std::shared_ptr<Node> n2, std::shared_ptr<Node>n3, Type reduction_type)
+        :pixel_value(new PixelvalueAtCurrentStencilPos(this)),
+          stencil_value(new StencilvalueAtCurrentStencilPos(this)),
+          reduction_output(new ReductionOutput()),
+          reduction_type(reduction_type)
+    {
+        type = NodeType::ReduceAroundPixel;
+        subnodes = {n1, n2, n3};
+    }
+    std::shared_ptr<PixelvalueAtCurrentStencilPos> pixel_value;
+    std::shared_ptr<StencilvalueAtCurrentStencilPos> stencil_value;
+    std::shared_ptr<ReductionOutput> reduction_output;
+    Type reduction_type;
+    Datatype datatype;
+
+    virtual std::string generate_source() override;
 };
 
 template<typename T>
@@ -337,10 +386,10 @@ public:
 		type = NodeType::VariableDefinition;
 		subnodes.resize(1);
 	}
-	VariableDefinition(Node *n1)
+    VariableDefinition(std::shared_ptr<Node> n1)
 	{
-		type = NodeType::VariableDefinition;
-		subnodes = {n1};
+        type = NodeType::VariableDefinition;
+        subnodes = {n1};
 	}
 	virtual std::string generate_source() override;
 };
@@ -352,10 +401,10 @@ public:
 		type = NodeType::Assignment;
 		subnodes.resize(2);
 	}
-	Assignment(Node *n1, Node *n2)
+    Assignment(std::shared_ptr<Node> n1, std::shared_ptr<Node>n2)
 	{
 		type = NodeType::Assignment;
-		subnodes = {n1, n2};
+        subnodes = {n1, n2};
 	}
 	virtual std::string generate_source() override;
 };
@@ -367,10 +416,10 @@ public:
 		type = NodeType::TargetPixel;
 		subnodes.resize(1);
 	}
-	TargetPixel(Node *n1)
+    TargetPixel(std::shared_ptr<Node> n1)
 	{
-		type = NodeType::TargetPixel;
-		subnodes = {n1};
+        type = NodeType::TargetPixel;
+        subnodes = {n1};
 	}
 	virtual std::string generate_source() override;
 };
@@ -397,9 +446,14 @@ public:
 	{
 		type = NodeType::Statements;
 	}
-	std::vector<Node*> statements;
+    std::vector<std::shared_ptr<Node>> statements;
 	virtual ~Statements() override = default;
 	virtual std::string generate_source() override;
+    Statements& operator <<(std::shared_ptr<Node> n)
+    {
+        statements.push_back(n);
+        return *this;
+    }
 };
 
 class CurrentPixelvalue: public Node
@@ -410,13 +464,14 @@ public:
 		type = NodeType::CurrentPixelvalue;
 		subnodes.resize(1);
 	}
-	CurrentPixelvalue(Node *n1)
+    CurrentPixelvalue(std::shared_ptr<Node> n1)
 	{
-		type = NodeType::CurrentPixelvalue;
-		subnodes = {n1};
+        type = NodeType::CurrentPixelvalue;
+        subnodes = {n1};
 	}
 	virtual std::string generate_source() override;
 };
+
 
 class ForEveryPixel: public Node
 {
@@ -425,8 +480,8 @@ public:
 	{
 		type = NodeType::ForEveryPixel;
 	}
-	std::vector<Node*> inputs;
-	Node* output;
+    std::vector<std::shared_ptr<Node>> inputs;
+    std::shared_ptr<Node> output;
 	Statements function;
 	virtual std::string generate_source() override;
 };
@@ -458,8 +513,24 @@ public:
 
 
 
+std::shared_ptr<function_ast::Node> operator+(std::shared_ptr<function_ast::Node> a,
+                              std::shared_ptr<function_ast::Node> b);
+std::shared_ptr<function_ast::Node> operator-(std::shared_ptr<function_ast::Node> a,
+                              std::shared_ptr<function_ast::Node> b);
+std::shared_ptr<function_ast::Node> operator*(std::shared_ptr<function_ast::Node> a,
+                              std::shared_ptr<function_ast::Node> b);
+std::shared_ptr<function_ast::Node> operator/(std::shared_ptr<function_ast::Node> a,
+                              std::shared_ptr<function_ast::Node> b);
 
+std::shared_ptr<function_ast::Node> square(std::shared_ptr<function_ast::Node> a);
+std::shared_ptr<function_ast::Node> exp(std::shared_ptr<function_ast::Node> a);
+std::shared_ptr<function_ast::Node> assign(std::shared_ptr<function_ast::Node> a,
+                                           std::shared_ptr<function_ast::Node> b);
+std::shared_ptr<function_ast::Node> target_pixel(std::shared_ptr<function_ast::Node> a);
 
+std::shared_ptr<function_ast::Node> current_pixel(std::shared_ptr<function_ast::Node> a);
+std::shared_ptr<function_ast::Node> convert(std::shared_ptr<function_ast::Node> a,
+                                            function_ast::Datatype type);
 
 
 std::string generate(SimpleBinaryNode *s);
@@ -470,8 +541,10 @@ std::string generate(Assignment *s);
 std::string generate(TargetPixel *s);
 std::string generate(Image *s);
 std::string generate(ForEveryPixel *s);
-std::string generate(ReductionAroundPixel *s);
+std::string generate(ReductionOutput *s);
+std::string generate(ReductionType *s);
 std::string generate(IterateAroundPixel *s);
+std::string generate(ReduceAroundPixel *s);
 std::string generate(PixelvalueAtCurrentStencilPos *s);
 std::string generate(StencilvalueAtCurrentStencilPos *s);
 std::string generate(CurrentPixelvalue *s);
@@ -831,13 +904,16 @@ public:
 	Sobel3x3Node();
 	virtual ~Sobel3x3Node() override = default;
 
-	LinearMask<int> sobel_x;
-	LinearMask<int> sobel_y;
-
-
 	Image *in;
 	Image *out_x;
 	Image *out_y;
+
+
+    std::shared_ptr<function_ast::Stencil> stencil_x;
+    std::shared_ptr<function_ast::Stencil> stencil_y;
+
+    function_ast::ForEveryPixel kernel_x;
+    function_ast::ForEveryPixel kernel_y;
 
 	virtual std::vector<Object*> get_inputs() override;
 	virtual std::vector<Object*> get_outputs() override;
@@ -1479,8 +1555,8 @@ public:
 
 	vx_int32 sigma_r;
 
-	function_ast::Stencil stencil;
-	function_ast::ForEveryPixel kernel;
+    std::shared_ptr<function_ast::Stencil> stencil;
+    std::shared_ptr<function_ast::ForEveryPixel> kernel;
 
 	virtual std::vector<Object*> get_inputs() override;
 	virtual std::vector<Object*> get_outputs() override;

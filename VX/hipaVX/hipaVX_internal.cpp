@@ -41,10 +41,6 @@ std::string IterateAroundPixel::generate_source()
 {
 	return generate(this);
 }
-std::string ReductionAroundPixel::generate_source()
-{
-	return generate(this);
-}
 std::string PixelvalueAtCurrentStencilPos::generate_source()
 {
 	return generate(this);
@@ -52,6 +48,14 @@ std::string PixelvalueAtCurrentStencilPos::generate_source()
 std::string StencilvalueAtCurrentStencilPos::generate_source()
 {
 	return generate(this);
+}
+std::string ReduceAroundPixel::generate_source()
+{
+    return generate(this);
+}
+std::string ReductionOutput::generate_source()
+{
+    return generate(this);
 }
 std::string Statements::generate_source()
 {
@@ -65,6 +69,56 @@ std::string Stencil::generate_source()
 {
 	return generate(this);
 }
+
+std::shared_ptr<function_ast::Node> operator+(std::shared_ptr<function_ast::Node> a,
+                              std::shared_ptr<function_ast::Node> b)
+{
+    return std::make_shared<function_ast::Add>(a, b);
+}
+std::shared_ptr<function_ast::Node> operator-(std::shared_ptr<function_ast::Node> a,
+                              std::shared_ptr<function_ast::Node> b)
+{
+    return std::make_shared<function_ast::Sub>(a, b);
+}
+std::shared_ptr<function_ast::Node> operator*(std::shared_ptr<function_ast::Node> a,
+                              std::shared_ptr<function_ast::Node> b)
+{
+    return std::make_shared<function_ast::Mul>(a, b);
+}
+std::shared_ptr<function_ast::Node> operator/(std::shared_ptr<function_ast::Node> a,
+                              std::shared_ptr<function_ast::Node> b)
+{
+    return std::make_shared<function_ast::Div>(a, b);
+}
+
+std::shared_ptr<function_ast::Node> square(std::shared_ptr<function_ast::Node> a)
+{
+    return std::make_shared<function_ast::Square>(a);
+}
+std::shared_ptr<function_ast::Node> exp(std::shared_ptr<function_ast::Node> a)
+{
+    return std::make_shared<function_ast::Exp>(a);
+}
+std::shared_ptr<function_ast::Node> assign(std::shared_ptr<function_ast::Node> a,
+                                           std::shared_ptr<function_ast::Node> b)
+{
+    return std::make_shared<function_ast::Assignment>(a, b);
+}
+
+std::shared_ptr<function_ast::Node> target_pixel(std::shared_ptr<function_ast::Node> a)
+{
+    return std::make_shared<function_ast::TargetPixel>(a);
+}
+std::shared_ptr<function_ast::Node> current_pixel(std::shared_ptr<function_ast::Node> a)
+{
+    return std::make_shared<function_ast::CurrentPixelvalue>(a);
+}
+std::shared_ptr<function_ast::Node> convert(std::shared_ptr<function_ast::Node> a,
+                                            function_ast::Datatype type)
+{
+    return std::make_shared<function_ast::Conversion>(a, type);
+}
+
 
 }
 
@@ -343,49 +397,71 @@ std::vector<Object *> Sobel3x3Node::get_outputs()
 }
 std::vector<Node*> Sobel3x3Node::get_subnodes()
 {
-	std::vector<Node*> subnodes;
-	subnodes.push_back(&sobel_x);
-	subnodes.push_back(&sobel_y);
+    std::vector<Node*> subnodes;
 	return subnodes;
 }
 std::string Sobel3x3Node::generateClassDefinition()
 {
-	std::string s = sobel_x.generateClassDefinition();
-	s += "\n" + sobel_y.generateClassDefinition();
-	return s;
+    std::string s = function_ast::generate(&kernel_x);
+    s += "\n" + function_ast::generate(&kernel_y);
+    return s;
+    return "";
 }
 std::string Sobel3x3Node::generateNodeCall()
 {
-	std::string s = sobel_x.generateNodeCall();
-	s += "\n" + sobel_y.generateNodeCall();
-	return s;
+    std::string s = function_ast::generate_call(&kernel_x);
+    s += "\n" + function_ast::generate_call(&kernel_y);
+    return s;
+    return "";
 }
 void Sobel3x3Node::build()
 {
-	sobel_x.matrix.dim[0] = sobel_x.matrix.dim[1] = 3;
-	sobel_y.matrix.dim[0] = sobel_y.matrix.dim[1] = 3;
+    stencil_x = std::make_shared<function_ast::Stencil>();
+    stencil_x->dim[0] = stencil_x->dim[1] = 3;
+    stencil_x->mask = function_ast::Stencil::from_t<int>( {-1,  0,  1,
+                                                          -2,  0,  2,
+                                                          -1,  0,  1});
+    stencil_x->name = "stencil_x";
+    stencil_x->datatype = function_ast::Datatype::INT32;
 
-	sobel_x.matrix.mask = {-1,  0,  1,
-					-2,  0,  2,
-					-1,  0,  1};
+    stencil_y = std::make_shared<function_ast::Stencil>();
+    stencil_y->dim[0] = stencil_y->dim[1] = 3;
+    stencil_y->mask = function_ast::Stencil::from_t<int>( {-1, -2, -1,
+                                                           0,  0,  0,
+                                                           1,  2,  1});
+    stencil_y->name = "stencil_y";
+    stencil_y->datatype = function_ast::Datatype::INT32;
 
-	sobel_y.matrix.mask = {-1, -2, -1,
-					 0,  0,  0,
-					 1,  2,  1};
+    auto in_node = std::make_shared<function_ast::Image>(in);
+    kernel_x.inputs.push_back(in_node);
+    kernel_x.inputs.push_back(stencil_x);
+    auto out_node_x = std::make_shared<function_ast::Image>(out_x);
+    kernel_x.output = out_node_x;
 
-	uint32_t one = 1;
-	Scalar* x_normalization = new Scalar(VX_TYPE_INT32, &one);
-	Scalar* y_normalization = new Scalar(VX_TYPE_INT32, &one);
-	sobel_x.normalization.reset(x_normalization);
-	sobel_y.normalization.reset(y_normalization);
+    kernel_y.inputs.push_back(in_node);
+    kernel_y.inputs.push_back(stencil_y);
+    auto out_node_y = std::make_shared<function_ast::Image>(out_y);
+    kernel_y.output = out_node_y;
 
-	sobel_x.in = in;
-	sobel_x.out = out_x;
-	sobel_y.in = in;
-	sobel_y.out = out_y;
 
-	sobel_x.build();
-	sobel_y.build();
+    auto reduce_x = std::make_shared<function_ast::ReduceAroundPixel>();
+    auto reduce_y = std::make_shared<function_ast::ReduceAroundPixel>();
+
+    auto reduce_body_x = std::make_shared<function_ast::Statements>();
+    *reduce_body_x << assign(reduce_x->reduction_output, reduce_x->stencil_value * reduce_x->pixel_value);
+    auto reduce_body_y = std::make_shared<function_ast::Statements>();
+    *reduce_body_y << assign(reduce_y->reduction_output, reduce_y->stencil_value * reduce_y->pixel_value);
+
+    reduce_x->subnodes[0] = reduce_y->subnodes[0] = in_node;
+    reduce_x->subnodes[1] = stencil_x;
+    reduce_y->subnodes[1] = stencil_y;
+    reduce_x->subnodes[2] = reduce_body_x;
+    reduce_y->subnodes[2] = reduce_body_y;
+    reduce_x->reduction_type = reduce_y->reduction_type = function_ast::ReduceAroundPixel::Type::SUM;
+    reduce_x->datatype = reduce_y->datatype = function_ast::Datatype::INT32;
+
+    kernel_x.function << assign(target_pixel(out_node_x), reduce_x);
+    kernel_y.function << assign(target_pixel(out_node_x), reduce_y);
 }
 
 Add3_3::Add3_3()
@@ -1781,122 +1857,84 @@ std::vector<Object *> AnotherBilateralFilterNode::get_outputs()
 }
 std::string AnotherBilateralFilterNode::generateClassDefinition()
 {
-	return function_ast::generate(&this->kernel);
+    return function_ast::generate(this->kernel.get());
 }
 std::string AnotherBilateralFilterNode::generateNodeCall()
 {
-	return function_ast::generate_call(&this->kernel);
+    return function_ast::generate_call(this->kernel.get());
 }
 void AnotherBilateralFilterNode::build()
 {
-	stencil.dim[0] = stencil.dim[1] = 5;
-	stencil.mask = function_ast::Stencil::from_t<float>({
+    stencil = std::make_shared<function_ast::Stencil>();
+    stencil->dim[0] = stencil->dim[1] = 5;
+    stencil->mask = function_ast::Stencil::from_t<float>({
 		0.018316f, 0.082085f, 0.135335f, 0.082085f, 0.018316f ,
 		0.082085f, 0.367879f, 0.606531f, 0.367879f, 0.082085f ,
 		0.135335f, 0.606531f, 1.000000f, 0.606531f, 0.135335f ,
 		0.082085f, 0.367879f, 0.606531f, 0.367879f, 0.082085f ,
 		0.018316f, 0.082085f, 0.135335f, 0.082085f, 0.018316f
 	});
-	stencil.name = "stencil";
-	stencil.datatype = function_ast::Datatype::FLOAT;
+    stencil->name = "stencil";
+    stencil->datatype = function_ast::Datatype::FLOAT;
 
-	auto in_node = new function_ast::Image(in);
-	kernel.inputs.push_back(in_node);
-	kernel.inputs.push_back(&stencil);
-	auto out_node = new function_ast::Image(out);
-	kernel.output = out_node;
+    kernel = std::make_shared<function_ast::ForEveryPixel>();
+    auto in_node = std::make_shared<function_ast::Image>(in);
+    kernel->inputs.push_back(in_node);
+    kernel->inputs.push_back(stencil);
+    auto out_node = std::make_shared<function_ast::Image>(out);
+    kernel->output = out_node;
 
 
-	auto zero = new function_ast::Constant<float>(0.f);
-	auto one_half = new function_ast::Constant<float>(0.5f);
-	auto sigma_r = new function_ast::Constant<int>(this->sigma_r);
+    auto zero = std::make_shared<function_ast::Constant<float>>(0.f);
+    auto one_half = std::make_shared<function_ast::Constant<float>>(0.5f);
+    auto sigma_r = std::make_shared<function_ast::Constant<int>>(this->sigma_r);
 
-	auto c_r = new function_ast::Variable("c_r", function_ast::Datatype::FLOAT);
-	auto d = new function_ast::Variable("d", function_ast::Datatype::FLOAT);
-	auto p = new function_ast::Variable("p", function_ast::Datatype::FLOAT);
-	auto center = new function_ast::Variable("center", function_ast::Datatype::FLOAT);
+    auto c_r = std::make_shared<function_ast::Variable>("c_r", function_ast::Datatype::FLOAT);
+    auto d = std::make_shared<function_ast::Variable>("d", function_ast::Datatype::FLOAT);
+    auto p = std::make_shared<function_ast::Variable>("p", function_ast::Datatype::FLOAT);
+    auto center = std::make_shared<function_ast::Variable>("center", function_ast::Datatype::FLOAT);
 
+
+    kernel->function << std::make_shared<function_ast::VariableDefinition>(c_r)
+                     << assign(c_r, one_half / square(sigma_r))
+                     << std::make_shared<function_ast::VariableDefinition>(d)
+                     << assign(d, zero)
+                     << std::make_shared<function_ast::VariableDefinition>(p)
+                     << (assign(p, zero));
 
 	{
-		auto square = new function_ast::Square(sigma_r);
-		auto div = new function_ast::Div(one_half, square);
+        auto current_pixelvalue = std::make_shared<function_ast::CurrentPixelvalue>(in_node);
 
-		kernel.function.statements.push_back(new function_ast::VariableDefinition(c_r));
-		kernel.function.statements.push_back(new function_ast::Assignment(c_r, div));
-
-		kernel.function.statements.push_back(new function_ast::VariableDefinition(d));
-		kernel.function.statements.push_back(new function_ast::Assignment(d, zero));
-
-		kernel.function.statements.push_back(new function_ast::VariableDefinition(p));
-		kernel.function.statements.push_back(new function_ast::Assignment(p, zero));
+        kernel->function << std::make_shared<function_ast::VariableDefinition>(center)
+                         << assign(center, current_pixelvalue);
 	}
 
+    auto iterate = std::make_shared<function_ast::IterateAroundPixel>();
+    auto current_pixelvalue = iterate->pixel_value;
+    auto current_stencilvalue = iterate->stencil_value;
+
+    auto iterate_body = std::make_shared<function_ast::Statements>();
 	{
-		auto current_pixelvalue = new function_ast::CurrentPixelvalue(in_node);
-		auto assignment = new function_ast::Assignment(center, current_pixelvalue);
+        auto diff = std::make_shared<function_ast::Variable>("diff", function_ast::Datatype::FLOAT);
+        auto s = std::make_shared<function_ast::Variable>("s", function_ast::Datatype::FLOAT);
 
-		kernel.function.statements.push_back(new function_ast::VariableDefinition(center));
-		kernel.function.statements.push_back(assignment);
-	}
-
-	auto iterate = new function_ast::IterateAroundPixel();
-	auto current_pixelvalue = &iterate->pixel_value;
-	auto current_stencilvalue = &iterate->stencil_value;
-
-	auto iterate_body = new function_ast::Statements;
-	{
-		auto diff = new function_ast::Variable("diff", function_ast::Datatype::FLOAT);
-		auto s = new function_ast::Variable("s", function_ast::Datatype::FLOAT);
-
-		iterate_body->statements.push_back(new function_ast::VariableDefinition(diff));
-		iterate_body->statements.push_back(new function_ast::VariableDefinition(s));
-		{
-			auto sub = new function_ast::Sub(current_pixelvalue, center);
-
-			auto assignment = new function_ast::Assignment(diff, sub);
-
-			iterate_body->statements.push_back(assignment);
-		}
-		{
-			auto square = new function_ast::Square(diff);
-			auto mul_1 = new function_ast::Mul(c_r, square);
-			auto sub = new function_ast::Sub(zero, mul_1);
-			auto exp = new function_ast::Exp(sub);
-			auto mul_2 = new function_ast::Mul(exp, current_stencilvalue);
-			auto assignment = new function_ast::Assignment(s, mul_2);
-
-			iterate_body->statements.push_back(assignment);
-		}
-		{
-			auto add = new function_ast::Add(d, s);
-
-			iterate_body->statements.push_back(new function_ast::Assignment(d, add));
-		}
-		{
-			auto mul = new function_ast::Mul(s, current_pixelvalue);
-			auto add = new function_ast::Add(p, mul);
-
-			iterate_body->statements.push_back(new function_ast::Assignment(p, add));
+        iterate_body->statements.push_back(std::make_shared<function_ast::VariableDefinition>(diff));
+        iterate_body->statements.push_back(std::make_shared<function_ast::VariableDefinition>(s));
+        {
+            *iterate_body << assign(diff, current_pixelvalue - center)
+                          << assign(s, exp(zero - c_r * square(diff)) * current_stencilvalue)
+                          << assign(d, d+s)
+                          << assign(p, p + s * current_pixelvalue);
 		}
 	}
 
-	{
-		iterate->subnodes[0] = in_node;
-		iterate->subnodes[1] = &stencil;
-		iterate->subnodes[2] = iterate_body; //The body
-		kernel.function.statements.push_back(iterate);
-	}
+    iterate->subnodes[0] = in_node;
+    iterate->subnodes[1] = stencil;
+    iterate->subnodes[2] = iterate_body; //The body
+    kernel->function.statements.push_back(iterate);
 
-	{
-		auto div = new function_ast::Div(p, d);
-		auto add = new function_ast::Add(div, one_half);
-		auto conversion = new function_ast::Conversion(add);
-		conversion->to = function_ast::Datatype::UINT8;
-		auto target_pixel = new function_ast::TargetPixel(out_node);
-		auto assignment = new function_ast::Assignment(target_pixel, conversion);
+    kernel->function << assign(target_pixel(out_node), convert(p / d + one_half, function_ast::Datatype::UINT8));
 
-		kernel.function.statements.push_back(assignment);
-	}
 }
 
 
