@@ -1293,7 +1293,7 @@ void VXMultiplyNode::build()
 	mul_image.reset(new Image(in_1->w, in_2->h, VX_DF_IMAGE_S32));
 	mul_node.out = mul_image.get();
 
-	mul_scalar_node.out = mul_image.get();
+	mul_scalar_node.in = mul_image.get();
 	mul_scalar_node.scalar = scalar->f32;
 	if (overflow_policy != VX_CONVERT_POLICY_SATURATE)
 	{
