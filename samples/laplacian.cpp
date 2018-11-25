@@ -7,8 +7,8 @@
 #include "VX/vx_compatibility.h"
 #include "VX/hipaVX/hipaVX_extension.hpp"
 
-#define WIDTH  200
-#define HEIGHT 300
+#define WIDTH  4032
+#define HEIGHT 3024
 
 int main()
 {
@@ -31,10 +31,8 @@ int main()
 
 	if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
 	{
-
-		vx_image src = vxCreateImageFromFile(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8, "akif-200x300_bw.png");
+		vx_image src = vxCreateImageFromFile(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8, "beach.jpg");
 		vx_image dst = vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8);
-
 
 		vx_convolution laplacian_convolution = vxCreateConvolution(context, 5, 5);
 		vx_int16 laplacian_coefficients[5][5] = {
@@ -57,17 +55,17 @@ int main()
 
 			vx_node out_node_write = vxFWriteImageNode(graph, dst, "laplacian.png");
 
-            //Step4.Verify Graph
-            status = vxVerifyGraph(graph);
-            if (status == VX_SUCCESS)
-            {
-                //Step5. Process Graph
-                status = vxProcessGraph(graph);
-            }
+			//Step4.Verify Graph
+			status = vxVerifyGraph(graph);
+			if (status == VX_SUCCESS)
+			{
+				//Step5. Process Graph
+				status = vxProcessGraph(graph);
+			}
 
 			vxDrawDotGraph(graph, "graph.dot", 0);
 
-            vxReleaseGraph(&graph);
+			vxReleaseGraph(&graph);
 		}
 
         vxReleaseContext(&context);
