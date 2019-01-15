@@ -13,6 +13,7 @@
 
 #include "hipaVX_hipacc_generator.hpp"
 #include "hipaVX_internal.hpp"
+#include "hipaVX_kernels.hpp"
 
 vx_node vxFWriteImageNode(vx_graph graph, vx_image image, std::string file)
 {
