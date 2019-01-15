@@ -1,7 +1,7 @@
 #ifndef __HIPAVX_INTERNAL__
 #define __HIPAVX_INTERNAL__
 
-#include "../vx.h"
+#include "../VX/vx.h"
 
 #include <iostream>
 #include <vector>

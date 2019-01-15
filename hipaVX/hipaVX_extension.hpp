@@ -1,5 +1,5 @@
 
-#include "../vx.h"
+#include "../VX/vx.h"
 #include <string>
 
 vx_node vxFWriteImageNode(vx_graph graph, vx_image image, std::string file);

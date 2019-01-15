@@ -1,6 +1,6 @@
 #include "hipaVX_hipacc_generator.hpp"
-
 #include "config_reader.hpp"
+
 #include <fstream>
 #include <string>
 #include <sstream>
@@ -8,7 +8,7 @@
 
 using std::string;
 
-static string hipaVX_folder = "VX/hipaVX";
+static string hipaVX_folder = "hipaVX";
 
 static std::map<vx_df_image, string> VX_DF_IMAGE_to_hipacc = {
     {VX_DF_IMAGE_U8, "uchar"},

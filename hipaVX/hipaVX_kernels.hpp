@@ -1,7 +1,8 @@
 #ifndef __HIPAVX_KERNELS__
 #define __HIPAVX_KERNELS__
 
-#include "../vx.h"
+#include "../VX/vx.h"
+#include "hipaVX_internal.hpp"
 
 #include <iostream>
 #include <vector>
@@ -15,7 +16,6 @@
 #include <algorithm>
 #include <memory>
 
-#include "hipaVX_internal.hpp"
 
 namespace HipaVX
 {

@@ -5,7 +5,7 @@
 
 #include "VX/vx.h"
 #include "VX/vx_compatibility.h"
-#include "VX/hipaVX/hipaVX_extension.hpp"
+#include "hipaVX/hipaVX_extension.hpp"
 
 #define WIDTH  200
 #define HEIGHT 300
