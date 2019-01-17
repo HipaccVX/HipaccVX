@@ -5,7 +5,7 @@
 
 #include "VX/vx.h"
 #include "VX/vx_compatibility.h"
-#include "VX/hipaVX/hipaVX_extension.hpp"
+#include "VX/hipaVX/domVX_extensions.hpp"
 
 
 int main(int argc, char *argv[])

@@ -15,16 +15,6 @@
 #include "hipaVX_internal.hpp"
 #include "hipaVX_kernels.hpp"
 
-vx_node vxFWriteImageNode(vx_graph graph, vx_image image, std::string file)
-{
-    HipaVX::WriteImageNode *win = new HipaVX::WriteImageNode();
-    win->in = image;
-    win->out_file = file;
-    graph->graph.emplace_back(win);
-    graph->built = false;
-    return win;
-}
-
 VX_API_ENTRY vx_status VX_API_CALL vxSetNodeAttribute (vx_node node, vx_enum attribute, void *ptr, vx_size size)
 {
     if (attribute == VX_NODE_BORDER)
@@ -115,29 +105,6 @@ VX_API_ENTRY vx_status VX_API_CALL vxSetConvolutionAttribute (vx_convolution con
     conv->scale = *((vx_uint32*) ptr);
 
     return VX_SUCCESS;
-}
-
-vx_image vxCreateImageFromFile(vx_context context, vx_uint32 width, vx_uint32 height, vx_df_image color, std::string filename)
-{
-    HipaVX::FileinputImage *image;
-    image = new HipaVX::FileinputImage(width, height, color, filename);
-    context->images.emplace_back(image);
-    return image;
-}
-
-vx_node vxHipaccNode(vx_graph graph, std::string filename, vx_reference *parameters, vx_size count, vx_image out)
-{
-    HipaVX::HipaccNode *hipaccNode = new HipaVX::HipaccNode();
-
-    hipaccNode->filename = filename;
-    hipaccNode->out = out;
-    for(vx_size i = 0; i < count; i++)
-        hipaccNode->parameters.push_back(parameters[i]);
-
-    graph->graph.emplace_back(hipaccNode);
-    graph->built = false;
-
-    return hipaccNode;
 }
 
 VX_API_ENTRY vx_matrix VX_API_CALL vxCreateMatrix (vx_context c, vx_enum data_type, vx_size columns, vx_size rows)
