@@ -1,5 +1,4 @@
 #include "hipaVX_internal.hpp"
-//#include "domVX_extensions.hpp"
 #include <fstream>
 #include <string>
 

@@ -15,7 +15,6 @@
 #include <algorithm>
 #include <memory>
 
-
 namespace function_ast
 {
 enum class NodeType
@@ -41,8 +40,6 @@ enum class NodeType
     ForEveryPixel,
     CurrentPixelvalue,
 
-
-
     Stencil,
     IterateAroundPixel,
     ReductionOutput,
@@ -50,11 +47,9 @@ enum class NodeType
     PixelvalueAtCurrentStencilPos,
     StencilvalueAtCurrentStencilPos,
 
-
     Statements,
-
-
 };
+
 enum class Datatype
 {
     INT32,

@@ -3,6 +3,7 @@
 
 #include "../VX/vx.h"
 #include "hipaVX_internal.hpp"
+#include "domVX_types.hpp"
 
 #include <iostream>
 #include <vector>
