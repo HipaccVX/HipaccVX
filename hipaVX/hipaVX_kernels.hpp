@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <memory>
 
+// TODO: consider writing individual files for every node type (parallel pattern abstractions)
 
 namespace HipaVX
 {

@@ -17,6 +17,8 @@
 
 namespace function_ast
 {
+
+// TODO: Consider different enum types for abstractions and scalar operations
 enum class NodeType
 {
     None,
@@ -66,6 +68,7 @@ enum class ReductionType
     MAX
 };
 
+// TODO: Rename to AST Node
 class Node
 {
 public:
@@ -530,6 +533,7 @@ std::string generate(Statements *s);
 
 std::string generate_call(ForEveryPixel *s);
 
+// TODO: Better name?
 template<typename T>
 std::string generate(Constant<T> *s)
 {
