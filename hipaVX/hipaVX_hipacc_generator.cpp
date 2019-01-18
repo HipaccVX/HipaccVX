@@ -23,10 +23,11 @@ static std::map<vx_df_image, string> VX_DF_IMAGE_to_hipacc = {
 
 static string read_file(const string &filename)
 {
-    std::ifstream in(filename);
+    std::ifstream ifs(filename);
+    if (!ifs) std::cerr << "The file could not be opened: " << filename << std::endl;
 
     // Fastet way to read a whole file https://stackoverflow.com/a/116220
-    return static_cast<std::stringstream const&>(std::stringstream() << in.rdbuf()).str();
+    return static_cast<std::stringstream const&>(std::stringstream() << ifs.rdbuf()).str();
 }
 
 static string use_template(const string &template_string, const string &template_variable, const string &actual_variable)

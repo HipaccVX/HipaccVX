@@ -256,7 +256,7 @@ int main()
                 vxConvolveNode(graph, images[0], scharr_x, images[23]),
                 vxFWriteImageNode(graph, images[23], "akif-200x300_bw_scharr_x.png"),
 
-                vxHipaccNode(graph, "external_kernels/BilateralFilter.cpp", bilateral_parameters.data(), bilateral_parameters.size(), images[24]),
+                vxHipaccNode(graph, "samples/hipacc_interop/BilateralFilter.cpp", bilateral_parameters.data(), bilateral_parameters.size(), images[24]),
                 vxFWriteImageNode(graph, images[24], "akif-200x300_bw_customhipacc_bilateral.png"),
 
                 /*vxScaleImageNode(graph, images[0], images[25], VX_INTERPOLATION_NEAREST_NEIGHBOR),
