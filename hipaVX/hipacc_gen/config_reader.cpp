@@ -2,8 +2,6 @@
 
 using std::string;
 
-
-
 enum class my_state
 {
     invalid = -1,

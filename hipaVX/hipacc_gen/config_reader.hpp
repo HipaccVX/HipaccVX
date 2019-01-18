@@ -53,10 +53,6 @@ public:
 };
 
 
-
-
-
-
 class Kernelcall_Variable
 {
 protected:

@@ -4,7 +4,7 @@
 
 #define HIPACC_GEN
 #ifdef HIPACC_GEN
-    #include "hipaVX_hipacc_generator.hpp"
+    #include "hipacc_gen/hipacc_gen.hpp"
 #endif
 
 // TODO: Consider individual files for the API set of the following objects:

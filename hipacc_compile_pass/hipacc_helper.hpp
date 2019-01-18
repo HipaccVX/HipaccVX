@@ -15,6 +15,8 @@
 # include <opencv2/opencv.hpp>
 #endif
 
+// TODO: clearly seperate the things from Hipacc with the new functions
+
 
 // get time in milliseconds
 double time_ms () {
