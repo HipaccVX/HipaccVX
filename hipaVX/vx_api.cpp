@@ -7,20 +7,6 @@
     #include "hipaVX_hipacc_generator.hpp"
 #endif
 
-//#include <iostream>
-//#include <vector>
-//#include <chrono>
-//#include <cstring>
-//#include <cstdlib>
-//#include <ctime>
-//#include <cmath>
-//#include <memory>
-//#include <string>
-//
-//#include "hipaVX_hipacc_generator.hpp"
-//#include "hipaVX_internal.hpp"
-//#include "hipaVX_kernels.hpp"
-
 // TODO: Consider individual files for the API set of the following objects:
 //          Object: Reference
 //          Object: Context

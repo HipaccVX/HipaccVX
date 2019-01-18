@@ -2,7 +2,7 @@
 #define __HIPAVX_KERNELS__
 
 #include "../VX/vx.h"
-#include "hipaVX_internal.hpp"
+#include "ast.hpp"
 #include "domVX_types.hpp"
 
 #include <iostream>
