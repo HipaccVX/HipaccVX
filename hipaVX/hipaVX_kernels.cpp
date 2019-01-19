@@ -85,57 +85,6 @@ std::string NotNode::generateNodeCall()
     return generator::node_generator(this, generator::Type::Call);
 }
 
-Dilate::Dilate()
-{
-    node_name = "Dilate";
-}
-std::vector<Object *> Dilate::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in);
-    return used_objects;
-}
-std::vector<Object *> Dilate::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(out);
-    return used_objects;
-}
-std::string Dilate::generateClassDefinition()
-{
-    return generator::node_generator(this, generator::Type::Definition);
-}
-std::string Dilate::generateNodeCall()
-{
-    return generator::node_generator(this, generator::Type::Call);
-}
-
-Erode::Erode()
-{
-    node_name = "Erode";
-}
-std::vector<Object *> Erode::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in);
-    return used_objects;
-}
-std::vector<Object *> Erode::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(out);
-    return used_objects;
-}
-std::string Erode::generateClassDefinition()
-{
-    return generator::node_generator(this, generator::Type::Definition);
-}
-std::string Erode::generateNodeCall()
-{
-    return generator::node_generator(this, generator::Type::Call);
-}
-
-
 VXThresholdNode::VXThresholdNode()
 {
     node_name = "VX Threshold";
@@ -236,15 +185,13 @@ std::string Sobel3x3Node::generateClassDefinition()
 {
     std::string s = function_ast::generate(&kernel_x);
     s += "\n" + function_ast::generate(&kernel_y);
-    return s;
-    return "";
+	return s;
 }
 std::string Sobel3x3Node::generateNodeCall()
 {
     std::string s = function_ast::generate_call(&kernel_x);
     s += "\n" + function_ast::generate_call(&kernel_y);
-    return s;
-    return "";
+	return s;
 }
 void Sobel3x3Node::build()
 {
@@ -320,12 +267,12 @@ std::vector<Node*> Add3_3::get_subnodes()
 }
 std::string Add3_3::generateClassDefinition()
 {
-    std::string s = generator::node_generator(&add, generator::Type::Definition);
+	std::string s = add.generateClassDefinition();
     return s;
 }
 std::string Add3_3::generateNodeCall()
 {
-    std::string s = generator::node_generator(&add, generator::Type::Call);
+	std::string s = add.generateNodeCall();
     return s;
 }
 void Add3_3::build()
@@ -1398,7 +1345,7 @@ void VXConvolveNode::build()
     lin_mask_node.in = in;
     lin_mask_node.matrix.dim[0] = convolution->rows;
     lin_mask_node.matrix.dim[1] = convolution->columns;
-    lin_mask_node.matrix.mask.reserve(lin_mask_node.matrix.dim[0] * lin_mask_node.matrix.dim[1]);
+	lin_mask_node.matrix.mask.resize(lin_mask_node.matrix.dim[0] * lin_mask_node.matrix.dim[1]);
     for (unsigned int i = 0; i < lin_mask_node.matrix.dim[0] * lin_mask_node.matrix.dim[1]; i++)
         lin_mask_node.matrix.mask[i] = convolution->coefficients[i];
 

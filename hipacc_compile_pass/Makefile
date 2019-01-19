@@ -43,6 +43,11 @@ CXX_FLAGS   += $(shell $(PKG_CONFIG) --cflags-only-other opencv) -DUSE_OPENCV
 CXX_INCLUDE += $(shell $(PKG_CONFIG) --cflags-only-I opencv)
 CXX_LIB_DIR += $(shell $(PKG_CONFIG) --libs-only-L opencv)
 CXX_LINK    += $(shell $(PKG_CONFIG) --libs-only-l opencv)
+else ifeq ($(shell if $(PKG_CONFIG) --exists opencv4; then echo true; fi),true)
+CXX_FLAGS   += $(shell $(PKG_CONFIG) --cflags-only-other opencv4) -DUSE_OPENCV -DUSE_OPENCV4
+CXX_INCLUDE += $(shell $(PKG_CONFIG) --cflags-only-I opencv4)
+CXX_LIB_DIR += $(shell $(PKG_CONFIG) --libs-only-L opencv4)
+CXX_LINK    += $(shell $(PKG_CONFIG) --libs-only-l opencv4)
 endif
 endif
 

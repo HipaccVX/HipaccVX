@@ -218,7 +218,11 @@ T* load_data(const unsigned int width, const unsigned int height,
       if (chan == 1) {
         // convert to grayscale
         cv::Mat gray_image;
+#ifdef USE_OPENCV4
+        cv::cvtColor(image, gray_image, cv::COLOR_BGR2GRAY);
+#else
         cv::cvtColor(image, gray_image, CV_BGR2GRAY);
+#endif
         for (unsigned int p = 0; p < width*height; ++p) {
           data[p] = (T)gray_image.data[p];
         }

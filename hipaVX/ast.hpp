@@ -582,4 +582,7 @@ std::shared_ptr<function_ast::Node> constant(T t)
 std::shared_ptr<function_ast::Node> define(std::shared_ptr<function_ast::Node> n);
 
 
+function_ast::Datatype convert_type(vx_df_image type);
+
+
 #endif

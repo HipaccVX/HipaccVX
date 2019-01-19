@@ -75,36 +75,6 @@ public:
 };
 
 
-class Dilate: public Node
-{
-public:
-    Dilate();
-    virtual ~Dilate() override = default;
-
-    Image *in;
-    Image *out;
-
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
-};
-class Erode: public Node
-{
-public:
-    Erode();
-    virtual ~Erode() override = default;
-
-    Image *in;
-    Image *out;
-
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
-};
-
-
 class HipaccNode: public Node
 {
 public:
@@ -122,7 +92,7 @@ public:
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
     virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
+	virtual std::string generateNodeCall() override;
 };
 
 
@@ -336,10 +306,15 @@ public:
     bool use_image_datatype_for_sum = true;
     vx_df_image sum_datatype;
 
+	function_ast::ReduceAroundPixel::Type r_type = function_ast::ReduceAroundPixel::Type::SUM;
+	std::shared_ptr<function_ast::Stencil> stencil;
+	function_ast::ForEveryPixel kernel;
+
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
     virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
+	virtual std::string generateNodeCall() override;
+	virtual void build() override;
 };
 
 class Sobel3x3Node: public Node
@@ -398,6 +373,32 @@ public:
         this->node_name = "Gaussian Filter 3x3";
     }
     virtual ~GaussianFilter() override = default;
+};
+class Dilate: public LinearMask<int>
+{
+public:
+	Dilate()
+	{
+		this->matrix.mask = {1, 1, 1, 1, 1, 1, 1, 1, 1};
+		this->matrix.dim[0] = this->matrix.dim[1] = 3;
+		this->r_type = function_ast::ReduceAroundPixel::Type::MAX;
+		this->use_image_datatype_for_sum = true;
+		this->node_name = "Dilate";
+	}
+	virtual ~Dilate() override = default;
+};
+class Erode: public LinearMask<int>
+{
+public:
+	Erode()
+	{
+		this->matrix.mask = {1, 1, 1, 1, 1, 1, 1, 1, 1};
+		this->matrix.dim[0] = this->matrix.dim[1] = 3;
+		this->r_type = function_ast::ReduceAroundPixel::Type::MIN;
+		this->use_image_datatype_for_sum = true;
+		this->node_name = "Erode";
+	}
+	virtual ~Erode() override = default;
 };
 
 
@@ -1024,14 +1025,9 @@ std::string node_generator(HipaVX::ConvertDepthNode* n, Type t);
 
 std::string node_generator(HipaVX::NotNode* n, Type t);
 
-std::string node_generator(HipaVX::Dilate* n, Type t);
-std::string node_generator(HipaVX::Erode* n, Type t);
-
 std::string node_generator(HipaVX::VXChannelExtractNode* n, Type t);
 std::string node_generator(HipaVX::VXChannelCombineNode* n, Type t);
 
-template <typename T>
-std::string node_generator(HipaVX::LinearMask<T>* n, Type t);
 std::string node_generator(HipaVX::SimplePoint* n, Type t);
 template <typename T>
 std::string node_generator(HipaVX::SimplePointScalar<T>* n, Type t);
@@ -1078,6 +1074,8 @@ std::vector<Object *> LinearMask<T>::get_inputs()
 {
     std::vector<Object*> used_objects;
     used_objects.emplace_back(in);
+	if (normalization != nullptr)
+		used_objects.emplace_back(normalization.get());
     return used_objects;
 }
 template <typename T>
@@ -1090,13 +1088,79 @@ std::vector<Object *> LinearMask<T>::get_outputs()
 template <typename T>
 std::string LinearMask<T>::generateClassDefinition()
 {
-    return generator::node_generator(this, generator::Type::Definition);
+	std::string s = function_ast::generate(&kernel);
+	return s;
 }
 template <typename T>
 std::string LinearMask<T>::generateNodeCall()
 {
-    return generator::node_generator(this, generator::Type::Call);
+	std::string s = function_ast::generate_call(&kernel);
+	return s;
 }
+template <typename T>
+void LinearMask<T>::build()
+{
+	if (my_id == 141)
+	{
+		volatile int a = 4;
+		a += 4;
+	}
+	stencil = std::make_shared<function_ast::Stencil>();
+	stencil->dim[0] = matrix.dim[0];
+	stencil->dim[1] = matrix.dim[1];
+	stencil->mask = function_ast::Stencil::from_t<T>(matrix.mask);
+	stencil->name = "stencil";
+	if (std::is_same<T, int>::value)
+		stencil->datatype = function_ast::Datatype::INT32;
+	else if (std::is_same<T, float>::value)
+		stencil->datatype = function_ast::Datatype::FLOAT;
+	else if (std::is_same<T, uint8_t>::value)
+		stencil->datatype = function_ast::Datatype::UINT8;
+	else if (std::is_same<T, int16_t>::value)
+		stencil->datatype = function_ast::Datatype::INT16;
+	else
+		throw std::runtime_error("void LinearMask<T>::build() error: no datatype for Stencil");
+
+	auto in_node = std::make_shared<function_ast::Image>(in);
+	kernel.inputs.push_back(in_node);
+	kernel.inputs.push_back(stencil);
+	auto out_node = std::make_shared<function_ast::Image>(out);
+	kernel.output = out_node;
+
+	auto reduce = std::make_shared<function_ast::ReduceAroundPixel>();
+
+	auto reduce_body = std::make_shared<function_ast::Statements>();
+	*reduce_body << assign(reduce->reduction_output, reduce->stencil_value * reduce->pixel_value);
+
+	reduce->subnodes[0] = in_node;
+	reduce->subnodes[1] = stencil;
+	reduce->subnodes[2] = reduce_body;
+	reduce->reduction_type = r_type;
+	reduce->datatype = (use_image_datatype_for_sum) ? convert_type(out->col) : convert_type(sum_datatype);
+
+	auto temp_variable = std::make_shared<function_ast::Variable>("temp_variable", reduce->datatype);
+	kernel.function << define(temp_variable) << assign(temp_variable, reduce);
+	if (normalization != nullptr)
+	{
+		switch(normalization->data_type)
+		{
+		case VX_TYPE_UINT8:
+			kernel.function << assign(temp_variable, temp_variable * constant(normalization->ui8));
+			break;
+		case VX_TYPE_INT32:
+			kernel.function << assign(temp_variable, temp_variable * constant(normalization->ui32));
+			break;
+		case VX_TYPE_FLOAT32:
+			kernel.function << assign(temp_variable, temp_variable * constant(normalization->f32));
+			break;
+		default:
+			throw std::runtime_error("void LinearMask<T>::build():\n\tNot supported Scalar type");
+		}
+	}
+
+	kernel.function << assign(target_pixel(out_node), temp_variable);
+ }
+
 
 
 template <typename T>
