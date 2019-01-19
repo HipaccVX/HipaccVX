@@ -143,3 +143,38 @@ std::shared_ptr<function_ast::Node> define(std::shared_ptr<function_ast::Node> n
 {
     return std::make_shared<function_ast::VariableDefinition>(n);
 }
+std::shared_ptr<function_ast::Node> operator&(std::shared_ptr<function_ast::Node> a,
+							  std::shared_ptr<function_ast::Node> b)
+{
+	return std::make_shared<function_ast::BitwiseAnd>(a, b);
+}
+std::shared_ptr<function_ast::Node> operator&&(std::shared_ptr<function_ast::Node> a,
+							  std::shared_ptr<function_ast::Node> b)
+{
+	return std::make_shared<function_ast::And>(a, b);
+}
+std::shared_ptr<function_ast::Node> operator|(std::shared_ptr<function_ast::Node> a,
+							  std::shared_ptr<function_ast::Node> b)
+{
+	return std::make_shared<function_ast::BitwiseOr>(a, b);
+}
+std::shared_ptr<function_ast::Node> operator||(std::shared_ptr<function_ast::Node> a,
+							  std::shared_ptr<function_ast::Node> b)
+{
+	return std::make_shared<function_ast::Or>(a, b);
+}
+std::shared_ptr<function_ast::Node> operator^(std::shared_ptr<function_ast::Node> a,
+							  std::shared_ptr<function_ast::Node> b)
+{
+	return std::make_shared<function_ast::Xor>(a, b);
+}
+std::shared_ptr<function_ast::Node> operator!(std::shared_ptr<function_ast::Node> a)
+{
+	return std::make_shared<function_ast::Not>(a);
+}
+std::shared_ptr<function_ast::Node> operator~(std::shared_ptr<function_ast::Node> a)
+{
+	return std::make_shared<function_ast::BitwiseNot>(a);
+}
+
+

@@ -51,6 +51,23 @@ std::string generate(SimpleBinaryNode *s)
     case NodeType::Div:
         op = "/";
         break;
+	case NodeType::And:
+		op = "&&";
+		break;
+	case NodeType::Or:
+		op = "||";
+		break;
+	case NodeType::Xor:
+		throw std::runtime_error("std::string generate(SimpleBinaryNode *s): No logical XOR available");
+	case NodeType::BitwiseAnd:
+		op = "&";
+		break;
+	case NodeType::BitwiseOr:
+		op = "|";
+		break;
+	case NodeType::BitwiseXor:
+		op = "^";
+		break;
     }
 
     auto left = s->subnodes[0]->generate_source();
@@ -69,7 +86,13 @@ std::string generate(SimpleUnaryFunctionNode *s)
         break;
     case NodeType::Exp:
         func = "exp";
-        break;
+		break;
+	case NodeType::Not:
+		func = "!";
+		break;
+	case NodeType::BitwiseNot:
+		func = "~";
+		break;
     case NodeType::Conversion:
         func = "(" + to_string(dynamic_cast<Conversion*>(s)->to) + ")";
         break;

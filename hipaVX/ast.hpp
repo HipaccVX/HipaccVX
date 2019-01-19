@@ -27,6 +27,16 @@ enum class NodeType
     Mul,
     Div,
 
+	And,
+	Or,
+	Xor,
+	Not,
+
+	BitwiseAnd,
+	BitwiseOr,
+	BitwiseXor,
+	BitwiseNot,
+
     Sqrt,
     Square,
     Exp,
@@ -95,13 +105,13 @@ public:
 class SimpleBinaryNode: public Node
 {
 public:
-    virtual ~SimpleBinaryNode() = default;
+	virtual ~SimpleBinaryNode() override = default;
     virtual std::string generate_source() override;
 };
 class SimpleUnaryFunctionNode: public Node
 {
 public:
-    virtual ~SimpleUnaryFunctionNode() = default;
+	virtual ~SimpleUnaryFunctionNode() override = default;
     virtual std::string generate_source() override;
 };
 
@@ -168,6 +178,137 @@ public:
     }
 
     virtual ~Div() = default;
+};
+class And: public SimpleBinaryNode
+{
+public:
+	And()
+	{
+		type = NodeType::And;
+		subnodes.resize(2);
+	}
+	And(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
+	{
+		type = NodeType::And;
+		subnodes = {n1, n2};
+	}
+
+	virtual ~And() = default;
+};
+
+class Or: public SimpleBinaryNode
+{
+public:
+	Or()
+	{
+		type = NodeType::Or;
+		subnodes.resize(2);
+	}
+	Or(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
+	{
+		type = NodeType::Or;
+		subnodes = {n1, n2};
+	}
+
+	virtual ~Or() = default;
+};
+
+class Xor: public SimpleBinaryNode
+{
+public:
+	Xor()
+	{
+		type = NodeType::Xor;
+		subnodes.resize(2);
+	}
+	Xor(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
+	{
+		type = NodeType::Xor;
+		subnodes = {n1, n2};
+	}
+
+	virtual ~Xor() = default;
+};
+
+class BitwiseAnd: public SimpleBinaryNode
+{
+public:
+	BitwiseAnd()
+	{
+		type = NodeType::BitwiseAnd;
+		subnodes.resize(2);
+	}
+	BitwiseAnd(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
+	{
+		type = NodeType::BitwiseAnd;
+		subnodes = {n1, n2};
+	}
+
+	virtual ~BitwiseAnd() = default;
+};
+
+class BitwiseOr: public SimpleBinaryNode
+{
+public:
+	BitwiseOr()
+	{
+		type = NodeType::BitwiseOr;
+		subnodes.resize(2);
+	}
+	BitwiseOr(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
+	{
+		type = NodeType::BitwiseOr;
+		subnodes = {n1, n2};
+	}
+
+	virtual ~BitwiseOr() = default;
+};
+
+class BitwiseXor: public SimpleBinaryNode
+{
+public:
+	BitwiseXor()
+	{
+		type = NodeType::BitwiseXor;
+		subnodes.resize(2);
+	}
+	BitwiseXor(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
+	{
+		type = NodeType::BitwiseXor;
+		subnodes = {n1, n2};
+	}
+
+	virtual ~BitwiseXor() = default;
+};
+class Not: public SimpleUnaryFunctionNode
+{
+public:
+	Not()
+	{
+		type = NodeType::Not;
+		subnodes.resize(1);
+	}
+	Not(std::shared_ptr<Node> n1)
+	{
+		type = NodeType::Not;
+		subnodes = {n1};
+	}
+	virtual ~Not() = default;
+};
+class BitwiseNot: public SimpleUnaryFunctionNode
+{
+public:
+	BitwiseNot()
+	{
+		type = NodeType::BitwiseNot;
+		subnodes.resize(1);
+	}
+	BitwiseNot(std::shared_ptr<Node> n1)
+	{
+		type = NodeType::BitwiseNot;
+		subnodes = {n1};
+	}
+	virtual ~BitwiseNot() = default;
 };
 
 class Sqrt: public SimpleUnaryFunctionNode
@@ -564,6 +705,18 @@ std::shared_ptr<function_ast::Node> operator*(std::shared_ptr<function_ast::Node
                               std::shared_ptr<function_ast::Node> b);
 std::shared_ptr<function_ast::Node> operator/(std::shared_ptr<function_ast::Node> a,
                               std::shared_ptr<function_ast::Node> b);
+std::shared_ptr<function_ast::Node> operator&(std::shared_ptr<function_ast::Node> a,
+							  std::shared_ptr<function_ast::Node> b);
+std::shared_ptr<function_ast::Node> operator&&(std::shared_ptr<function_ast::Node> a,
+							  std::shared_ptr<function_ast::Node> b);
+std::shared_ptr<function_ast::Node> operator|(std::shared_ptr<function_ast::Node> a,
+							  std::shared_ptr<function_ast::Node> b);
+std::shared_ptr<function_ast::Node> operator||(std::shared_ptr<function_ast::Node> a,
+							  std::shared_ptr<function_ast::Node> b);
+std::shared_ptr<function_ast::Node> operator^(std::shared_ptr<function_ast::Node> a,
+							  std::shared_ptr<function_ast::Node> b);
+std::shared_ptr<function_ast::Node> operator!(std::shared_ptr<function_ast::Node> a);
+std::shared_ptr<function_ast::Node> operator~(std::shared_ptr<function_ast::Node> a);
 
 std::shared_ptr<function_ast::Node> square(std::shared_ptr<function_ast::Node> a);
 std::shared_ptr<function_ast::Node> exp(std::shared_ptr<function_ast::Node> a);
