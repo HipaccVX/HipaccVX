@@ -491,45 +491,6 @@ template std::string node_generator<float>(HipaVX::ConditionalAssignmentNode<flo
 template std::string node_generator<int>(HipaVX::ConditionalAssignmentNode<int>* n, Type t);
 template std::string node_generator<u_char>(HipaVX::ConditionalAssignmentNode<u_char>* n, Type t);
 
-string node_generator(HipaVX::SimplePoint* n, Type t)
-{
-    if (t == Type::Definition)
-    {
-        auto cs = read_config_def(hipaVX_folder + "/kernels/point/simple.def");
-
-        string s = kernel_builder(cs.kv, cs.k, cs.name);
-
-        s = use_template(s, "ID", n->my_id);
-        s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in_1->col]);
-        s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
-
-        s = use_template(s, "CONVERT_DATATYPE", "");
-        s = use_template(s, "OPERATION", n->operation);
-
-        return s;
-    }
-    else if (t == Type::Call)
-    {
-        auto cs = read_config_call(hipaVX_folder + "/kernels/point/simple.call");
-        string s = kernelcall_builder(cs.kcv);
-
-        s = use_template(s, "ID", n->my_id);
-        s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in_1->col]);
-        s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
-
-        s = use_template(s, "IMAGE_IN_1", generate_image_name(n->in_1));
-        s = use_template(s, "IMAGE_IN_2", generate_image_name(n->in_2));
-        s = use_template(s, "IMAGE_IN_WIDTH", n->in_1->w);
-        s = use_template(s, "IMAGE_IN_HEIGHT", n->in_1->h);
-        s = use_template(s, "OUTPUT_IMAGE", generate_image_name(n->out));
-
-        s = use_template(s, "BOUNDARY_CONDITION", "Boundary::UNDEFINED"); // TODO
-
-        return s;
-    }
-    return "SOMETHING IS WRONG";
-}
-
 string node_generator(HipaVX::HarrisCorners* n, Type t)
 {
     //return "";

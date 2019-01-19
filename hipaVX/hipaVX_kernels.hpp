@@ -103,20 +103,23 @@ public:
 
     Image *in_1;
     Image *in_2;
-    Image *out;
-    std::string operation;
+	Image *out;
+
+	function_ast::NodeType operation;
+	function_ast::ForEveryPixel kernel;
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
     virtual std::string generateClassDefinition() override;
     virtual std::string generateNodeCall() override;
+	virtual void build() override;
 };
 class SimplePointAdd: public SimplePoint
 {
 public:
     SimplePointAdd()
     {
-        operation = "+";
+		operation = function_ast::NodeType::Add;
         node_name = "Point Addition";
     }
     virtual ~SimplePointAdd() override = default;
@@ -126,7 +129,7 @@ class SimplePointSub: public SimplePoint
 public:
     SimplePointSub()
     {
-        operation = "-";
+		operation = function_ast::NodeType::Sub;
         node_name = "Point Subtraction";
     }
     virtual ~SimplePointSub() override = default;
@@ -136,7 +139,7 @@ class SimplePointMul: public SimplePoint
 public:
     SimplePointMul()
     {
-        operation = "*";
+		operation = function_ast::NodeType::Mul;
         node_name = "Point Multiplication";
     }
     virtual ~SimplePointMul() override = default;
@@ -146,7 +149,7 @@ class SimplePointDiv: public SimplePoint
 public:
     SimplePointDiv()
     {
-        operation = "/";
+		operation = function_ast::NodeType::Div;
         node_name = "Point Division";
     }
     virtual ~SimplePointDiv() override = default;
@@ -156,7 +159,7 @@ class AndNode: public SimplePoint
 public:
     AndNode()
     {
-        operation = "&";
+		operation = function_ast::NodeType::BitwiseAnd;
         node_name = "And";
     }
     virtual ~AndNode() override = default;
@@ -166,7 +169,7 @@ class XorNode: public SimplePoint
 public:
     XorNode()
     {
-        operation = "^";
+		operation = function_ast::NodeType::BitwiseXor;
         node_name = "Xor";
     }
     virtual ~XorNode() override = default;
@@ -176,7 +179,7 @@ class OrNode: public SimplePoint
 public:
     OrNode()
     {
-        operation = "|";
+		operation = function_ast::NodeType::BitwiseOr;
         node_name = "or";
     }
     virtual ~OrNode() override = default;
@@ -1027,8 +1030,6 @@ std::string node_generator(HipaVX::NotNode* n, Type t);
 
 std::string node_generator(HipaVX::VXChannelExtractNode* n, Type t);
 std::string node_generator(HipaVX::VXChannelCombineNode* n, Type t);
-
-std::string node_generator(HipaVX::SimplePoint* n, Type t);
 template <typename T>
 std::string node_generator(HipaVX::SimplePointScalar<T>* n, Type t);
 std::string node_generator(HipaVX::HarrisCorners* n, Type t);
@@ -1100,11 +1101,6 @@ std::string LinearMask<T>::generateNodeCall()
 template <typename T>
 void LinearMask<T>::build()
 {
-	if (my_id == 141)
-	{
-		volatile int a = 4;
-		a += 4;
-	}
 	stencil = std::make_shared<function_ast::Stencil>();
 	stencil->dim[0] = matrix.dim[0];
 	stencil->dim[1] = matrix.dim[1];

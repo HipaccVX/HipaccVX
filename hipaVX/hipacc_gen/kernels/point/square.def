@@ -1,9 +1,0 @@
-[NAME]
-Square
-
-[KERNEL_VARIABLES]
-Accessor input
-
-[KERNEL]
-output() = input() * input();
-[KERNEL_END]

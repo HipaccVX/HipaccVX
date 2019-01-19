@@ -1,9 +1,0 @@
-[NAME]
-Simple_Point
-
-[KERNEL_VARIABLES]
-Accessor input
-
-[KERNEL]
-output() = @@@OPERATION@@@
-[KERNEL_END]

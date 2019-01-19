@@ -166,7 +166,7 @@ std::shared_ptr<function_ast::Node> operator||(std::shared_ptr<function_ast::Nod
 std::shared_ptr<function_ast::Node> operator^(std::shared_ptr<function_ast::Node> a,
 							  std::shared_ptr<function_ast::Node> b)
 {
-	return std::make_shared<function_ast::Xor>(a, b);
+	return std::make_shared<function_ast::BitwiseXor>(a, b);
 }
 std::shared_ptr<function_ast::Node> operator!(std::shared_ptr<function_ast::Node> a)
 {

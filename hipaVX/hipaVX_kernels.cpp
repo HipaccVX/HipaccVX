@@ -511,11 +511,47 @@ std::vector<Object *> SimplePoint::get_outputs()
 }
 std::string SimplePoint::generateClassDefinition()
 {
-    return generator::node_generator(this, generator::Type::Definition);
+	std::string s = function_ast::generate(&kernel);
+	return s;
 }
 std::string SimplePoint::generateNodeCall()
 {
-    return generator::node_generator(this, generator::Type::Call);
+	std::string s = function_ast::generate_call(&kernel);
+	return s;
+}
+void SimplePoint::build()
+{
+	auto in_node_1 = std::make_shared<function_ast::Image>(in_1);
+	auto in_node_2 = std::make_shared<function_ast::Image>(in_2);
+	kernel.inputs.push_back(in_node_1);
+	kernel.inputs.push_back(in_node_2);
+	auto out_node = std::make_shared<function_ast::Image>(out);
+	kernel.output = out_node;
+
+	switch(operation)
+	{
+	case function_ast::NodeType::Add:
+		kernel.function << assign(target_pixel(out_node), current_pixel(in_node_1) + current_pixel(in_node_2));
+		break;
+	case function_ast::NodeType::Sub:
+		kernel.function << assign(target_pixel(out_node), current_pixel(in_node_1) - current_pixel(in_node_2));
+		break;
+	case function_ast::NodeType::Mul:
+		kernel.function << assign(target_pixel(out_node), current_pixel(in_node_1) * current_pixel(in_node_2));
+		break;
+	case function_ast::NodeType::Div:
+		kernel.function << assign(target_pixel(out_node), current_pixel(in_node_1) / current_pixel(in_node_2));
+		break;
+	case function_ast::NodeType::BitwiseAnd:
+		kernel.function << assign(target_pixel(out_node), current_pixel(in_node_1) & current_pixel(in_node_2));
+		break;
+	case function_ast::NodeType::BitwiseOr:
+		kernel.function << assign(target_pixel(out_node), current_pixel(in_node_1) | current_pixel(in_node_2));
+		break;
+	case function_ast::NodeType::BitwiseXor:
+		kernel.function << assign(target_pixel(out_node), current_pixel(in_node_1) ^ current_pixel(in_node_2));
+		break;
+	}
 }
 
 SaturateNode::SaturateNode()
@@ -1342,7 +1378,7 @@ std::string VXConvolveNode::generateNodeCall()
 }
 void VXConvolveNode::build()
 {
-    lin_mask_node.in = in;
+	lin_mask_node.in = in;
     lin_mask_node.matrix.dim[0] = convolution->rows;
     lin_mask_node.matrix.dim[1] = convolution->columns;
 	lin_mask_node.matrix.mask.resize(lin_mask_node.matrix.dim[0] * lin_mask_node.matrix.dim[1]);

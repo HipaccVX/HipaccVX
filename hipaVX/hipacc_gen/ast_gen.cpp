@@ -12,6 +12,12 @@ using std::string;
 namespace function_ast
 {
 
+std::string generate_image_name(Image *i)
+{
+	std::string hipavx_part = ::generate_image_name(i->image);
+	return hipavx_part + "_" + std::to_string(i->id);
+}
+
 std::string to_string(Datatype d)
 {
     std::string datatype = "Unsupported Datatype";
@@ -150,12 +156,12 @@ std::string generate(Statements *s)
 }
 std::string generate(CurrentPixelvalue *s)
 {
-    return generate_image_name(std::dynamic_pointer_cast<Image>(s->subnodes[0])->image) + "()";
+	return generate_image_name(std::dynamic_pointer_cast<Image>(s->subnodes[0]).get()) + "()";
 }
 
 std::string generate(Image *s)
 {
-    return generate_image_name(s->image);
+	return generate_image_name(s);
 }
 std::string generate(ForEveryPixel *s)
 {
@@ -328,7 +334,7 @@ std::tuple<std::vector<Kernelcall_Variable*>, std::vector<Kernelcall_Variable*>>
     std::vector<Kernelcall_Variable*> to_return;
 
     Kernelcall_Mask *mask = new Kernelcall_Mask;
-    string mask_name = "mask_" + generate_image_name(image);
+	string mask_name = "mask_" + ::generate_image_name(image);
     mask->set_real_name(mask_name);
     mask->datatype = to_string(stencil->datatype);
     mask->len_dims[0] = stencil->dim[0];
@@ -336,20 +342,20 @@ std::tuple<std::vector<Kernelcall_Variable*>, std::vector<Kernelcall_Variable*>>
     mask->flat_mask = stencil->mask;
 
     Kernelcall_Domain *domain = new Kernelcall_Domain();
-    string domain_name = "domain_" + generate_image_name(image);
+	string domain_name = "domain_" + ::generate_image_name(image);
     domain->set_real_name(domain_name);
     domain->argument = mask;
 
     Kernelcall_BoundaryCondition_from_Dom *boundary = new Kernelcall_BoundaryCondition_from_Dom();
-    string boundary_name = "boundary_" + generate_image_name(image);
+	string boundary_name = "boundary_" + ::generate_image_name(image);
     boundary->set_real_name(boundary_name);
     boundary->datatype = VX_DF_IMAGE_to_hipacc[image->col];
-    boundary->image = generate_image_name(image);
+	boundary->image = ::generate_image_name(image);
     boundary->bc = "@@@BOUNDARY_CONDITION@@@";
     boundary->argument = domain;
 
     Kernelcall_Accessor *accessor = new Kernelcall_Accessor();
-    string accessor_name = "accessor_" + generate_image_name(image);
+	string accessor_name = "accessor_" + ::generate_image_name(image);
     accessor->set_real_name(accessor_name);
     accessor->datatype = VX_DF_IMAGE_to_hipacc[image->col];
     accessor->argument = boundary;
@@ -367,6 +373,33 @@ std::tuple<std::vector<Kernelcall_Variable*>, std::vector<Kernelcall_Variable*>>
     return {to_return_call_parameters,to_return};
 }
 
+std::tuple<std::vector<Kernelcall_Variable*>, std::vector<Kernelcall_Variable*>> generate_accessor(Image *image)
+{
+	std::vector<Kernelcall_Variable*> to_return_call_parameters;
+	std::vector<Kernelcall_Variable*> to_return;
+
+	Kernelcall_BoundaryCondition_from_WH *boundary = new Kernelcall_BoundaryCondition_from_WH();
+	string boundary_name = "boundary_" + generate_image_name(image);
+	boundary->set_real_name(boundary_name);
+	boundary->datatype = VX_DF_IMAGE_to_hipacc[image->image->col];
+	boundary->image = ::generate_image_name(image->image);
+	boundary->bc = "@@@BOUNDARY_CONDITION@@@";
+	boundary->width = std::to_string(image->image->w);
+	boundary->height = std::to_string(image->image->h);
+
+	Kernelcall_Accessor *accessor = new Kernelcall_Accessor();
+	string accessor_name = "accessor_" + generate_image_name(image);
+	accessor->set_real_name(accessor_name);
+	accessor->datatype = VX_DF_IMAGE_to_hipacc[image->image->col];
+	accessor->argument = boundary;
+
+	to_return_call_parameters.push_back(accessor);
+
+	to_return.push_back(boundary);
+	to_return.push_back(accessor);
+
+	return {to_return_call_parameters,to_return};
+}
 
 
 std::string generate_call(ForEveryPixel *fep)
@@ -399,6 +432,10 @@ std::string generate_call(ForEveryPixel *fep)
                 tuple = generate_accessor(HVX_image, stencil.get());
                 i++;
             }
+			else
+			{
+				tuple = generate_accessor(image.get());
+			}
             break;
         }
         default:
