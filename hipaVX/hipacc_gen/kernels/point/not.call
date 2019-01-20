@@ -1,8 +1,0 @@
-[KERNELCALL_VARIABLES]
-BoundaryCondition TYPE_IN bound IMAGE_IN @@@IMAGE_IN_WIDTH@@@ @@@IMAGE_IN_HEIGHT@@@ BOUNDARY_CONDITION
-
-Accessor TYPE_IN acc bound
-
-IterationSpace TYPE_OUT iter IMAGE_OUT
-
-Kernel Not not iter acc

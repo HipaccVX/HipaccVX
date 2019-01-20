@@ -257,10 +257,37 @@ public:
     Image *in;
     Image *out;
 
+	function_ast::ForEveryPixel kernel;
+
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
     virtual std::string generateClassDefinition() override;
     virtual std::string generateNodeCall() override;
+    virtual void build() override;
+};
+
+class VXSubtractNode: public Node
+{
+public:
+    VXSubtractNode();
+    virtual ~VXSubtractNode() override = default;
+    Image *in_1;
+    Image *in_2;
+    Image *out;
+
+    SimplePointSub diff_node;
+    std::unique_ptr<Image> diff_image;
+
+    SaturateNode saturate_node;
+
+    vx_enum policy;
+
+    virtual std::vector<Object*> get_inputs() override;
+    virtual std::vector<Object*> get_outputs() override;
+    virtual std::vector<Node*> get_subnodes() override;
+    virtual std::string generateClassDefinition() override;
+    virtual std::string generateNodeCall() override;
+    virtual void build() override;
 };
 
 class VXThresholdNode: public Node

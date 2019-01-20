@@ -76,13 +76,27 @@ std::vector<Object *> NotNode::get_outputs()
     used_objects.emplace_back(out);
     return used_objects;
 }
+
 std::string NotNode::generateClassDefinition()
 {
-    return generator::node_generator(this, generator::Type::Definition);
+	std::string s = function_ast::generate(&kernel);
+	return s;
 }
+
 std::string NotNode::generateNodeCall()
 {
-    return generator::node_generator(this, generator::Type::Call);
+	std::string s = function_ast::generate_call(&kernel);
+	return s;
+}
+
+void NotNode::build()
+{
+	auto in_node = std::make_shared<function_ast::Image>(in);
+	kernel.inputs.push_back(in_node);
+	auto out_node = std::make_shared<function_ast::Image>(out);
+	kernel.output = out_node;
+
+	kernel.function << assign(target_pixel(out_node), ~current_pixel(in_node));
 }
 
 VXThresholdNode::VXThresholdNode()
