@@ -300,7 +300,7 @@ class LinearMask: public Node
 public:
     LinearMask();
     virtual ~LinearMask() override = default;
-    Mask2D<T> matrix;
+    Mask2D<T> mask;
     std::unique_ptr<Scalar> normalization;
 
     Image *in;
@@ -350,8 +350,8 @@ class BoxFilter: public LinearMask<int>
 public:
     BoxFilter()
     {
-        this->matrix.mask = {1, 1, 1, 1, 1, 1, 1, 1, 1};
-        this->matrix.dim[0] = this->matrix.dim[1] = 3;
+        this->mask.mask = {1, 1, 1, 1, 1, 1, 1, 1, 1};
+        this->mask.dim[0] = this->mask.dim[1] = 3;
         float norm = 1.0f / 9;
         Scalar* norm_scalar = new Scalar(VX_TYPE_FLOAT32, &norm);
         this->normalization.reset(norm_scalar);
@@ -366,8 +366,8 @@ class GaussianFilter: public LinearMask<int>
 public:
     GaussianFilter()
     {
-        this->matrix.mask = {1, 2, 1, 2, 4, 2, 1, 2, 1};
-        this->matrix.dim[0] = this->matrix.dim[1] = 3;
+        this->mask.mask = {1, 2, 1, 2, 4, 2, 1, 2, 1};
+        this->mask.dim[0] = this->mask.dim[1] = 3;
         float norm = 1.0f / 16;
         Scalar* norm_scalar = new Scalar(VX_TYPE_FLOAT32, &norm);
         this->normalization.reset(norm_scalar);
@@ -382,8 +382,8 @@ class Dilate: public LinearMask<int>
 public:
 	Dilate()
 	{
-		this->matrix.mask = {1, 1, 1, 1, 1, 1, 1, 1, 1};
-		this->matrix.dim[0] = this->matrix.dim[1] = 3;
+        this->mask.mask = {1, 1, 1, 1, 1, 1, 1, 1, 1};
+        this->mask.dim[0] = this->mask.dim[1] = 3;
 		this->r_type = function_ast::ReduceAroundPixel::Type::MAX;
 		this->use_image_datatype_for_sum = true;
 		this->node_name = "Dilate";
@@ -395,8 +395,8 @@ class Erode: public LinearMask<int>
 public:
 	Erode()
 	{
-		this->matrix.mask = {1, 1, 1, 1, 1, 1, 1, 1, 1};
-		this->matrix.dim[0] = this->matrix.dim[1] = 3;
+        this->mask.mask = {1, 1, 1, 1, 1, 1, 1, 1, 1};
+        this->mask.dim[0] = this->mask.dim[1] = 3;
 		this->r_type = function_ast::ReduceAroundPixel::Type::MIN;
 		this->use_image_datatype_for_sum = true;
 		this->node_name = "Erode";
@@ -1102,9 +1102,9 @@ template <typename T>
 void LinearMask<T>::build()
 {
 	stencil = std::make_shared<function_ast::Stencil>();
-	stencil->dim[0] = matrix.dim[0];
-	stencil->dim[1] = matrix.dim[1];
-	stencil->mask = function_ast::Stencil::from_t<T>(matrix.mask);
+    stencil->dim[0] = mask.dim[0];
+    stencil->dim[1] = mask.dim[1];
+    stencil->mask = function_ast::Stencil::from_t<T>(mask.mask);
 	stencil->name = "stencil";
 	if (std::is_same<T, int>::value)
 		stencil->datatype = function_ast::Datatype::INT32;

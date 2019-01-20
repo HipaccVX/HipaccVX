@@ -277,9 +277,9 @@ std::string Add3_3::generateNodeCall()
 }
 void Add3_3::build()
 {
-    add.matrix.dim[0] = add.matrix.dim[1] = 3;
+    add.mask.dim[0] = add.mask.dim[1] = 3;
 
-    add.matrix.mask = {1, 1, 1,
+    add.mask.mask = {1, 1, 1,
                 1, 1, 1,
                 1, 1, 1};
 
@@ -1379,11 +1379,11 @@ std::string VXConvolveNode::generateNodeCall()
 void VXConvolveNode::build()
 {
 	lin_mask_node.in = in;
-    lin_mask_node.matrix.dim[0] = convolution->rows;
-    lin_mask_node.matrix.dim[1] = convolution->columns;
-	lin_mask_node.matrix.mask.resize(lin_mask_node.matrix.dim[0] * lin_mask_node.matrix.dim[1]);
-    for (unsigned int i = 0; i < lin_mask_node.matrix.dim[0] * lin_mask_node.matrix.dim[1]; i++)
-        lin_mask_node.matrix.mask[i] = convolution->coefficients[i];
+    lin_mask_node.mask.dim[0] = convolution->rows;
+    lin_mask_node.mask.dim[1] = convolution->columns;
+	lin_mask_node.mask.mask.resize(lin_mask_node.mask.dim[0] * lin_mask_node.mask.dim[1]);
+    for (unsigned int i = 0; i < lin_mask_node.mask.dim[0] * lin_mask_node.mask.dim[1]; i++)
+        lin_mask_node.mask.mask[i] = convolution->coefficients[i];
 
     float one = 1.f / convolution->scale;
     Scalar* normalization = new Scalar(VX_TYPE_FLOAT32, &one);
