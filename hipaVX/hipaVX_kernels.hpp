@@ -280,10 +280,10 @@ public:
 };
 
 template<typename T>
-class Matrix: public Object
+class Mask2D: public Object
 {
 public:
-    Matrix()
+    Mask2D()
     {
         type = VX_TYPE_HIPAVX_MATRIX;
     }
@@ -300,7 +300,7 @@ class LinearMask: public Node
 public:
     LinearMask();
     virtual ~LinearMask() override = default;
-    Matrix<T> matrix;
+    Mask2D<T> matrix;
     std::unique_ptr<Scalar> normalization;
 
     Image *in;
@@ -1048,7 +1048,7 @@ std::string node_generator(HipaVX::VXScaleNode *n, Type t);
 namespace HipaVX
 {
 template<typename T>
-void Matrix<T>::from_VX_Matrix(VX_Matrix *m)
+void Mask2D<T>::from_VX_Matrix(VX_Matrix *m)
 {
     dim[0] = m->rows;
     dim[1] = m->columns;
