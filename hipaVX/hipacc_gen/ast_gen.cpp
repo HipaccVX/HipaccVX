@@ -70,10 +70,28 @@ std::string generate(SimpleBinaryNode *s)
 		break;
 	case NodeType::BitwiseOr:
 		op = "|";
-		break;
-	case NodeType::BitwiseXor:
-		op = "^";
-		break;
+        break;
+    case NodeType::BitwiseXor:
+        op = "^";
+        break;
+    case NodeType::Less:
+        op = "<";
+        break;
+    case NodeType::LessEquals:
+        op = "<=";
+        break;
+    case NodeType::Equals:
+        op = "==";
+        break;
+    case NodeType::GreaterEquals:
+        op = ">=";
+        break;
+    case NodeType::Greater:
+        op = "<";
+        break;
+    case NodeType::Unequals:
+        op = "!=";
+        break;
     }
 
     auto left = s->subnodes[0]->generate_source();
@@ -81,6 +99,7 @@ std::string generate(SimpleBinaryNode *s)
 
     return "(" + left + op + right + ")";
 }
+
 std::string generate(SimpleUnaryFunctionNode *s)
 {
     std::string func;
@@ -115,15 +134,18 @@ std::string generate(SimpleUnaryFunctionNode *s)
 
     return func + "(" + argument + ")";
 }
+
 std::string generate(Variable *s)
 {
     return s->name;
 }
+
 std::string generate(VariableDefinition *s)
 {
     std::string datatype = to_string(std::dynamic_pointer_cast<Variable>(s->subnodes[0])->datatype);
     return datatype + " " + s->subnodes[0]->generate_source();
 }
+
 std::string generate(Assignment *s)
 {
     if (s->subnodes[0]->type == NodeType::ReductionOutput)
@@ -139,10 +161,12 @@ std::string generate(Assignment *s)
         return left + "=" + right;
     }
 }
+
 std::string generate(TargetPixel *s)
 {
     return "output()";
 }
+
 std::string generate(Statements *s)
 {
     std::string to_return;
@@ -154,6 +178,31 @@ std::string generate(Statements *s)
 
     return to_return;
 }
+
+std::string generate(If *s)
+{
+    std::string to_return;
+
+    to_return += "if (" + s->condition->generate_source() + ")\n";
+    to_return += "{\n";
+    to_return += s->body.generate_source();
+    to_return += "}\n";
+
+    return to_return;
+}
+
+std::string generate(Else *s)
+{
+    std::string to_return;
+
+    to_return += "else\n";
+    to_return += "{\n";
+    to_return += s->body.generate_source();
+    to_return += "}\n";
+
+    return to_return;
+}
+
 std::string generate(CurrentPixelvalue *s)
 {
 	return generate_image_name(std::dynamic_pointer_cast<Image>(s->subnodes[0]).get()) + "()";
@@ -163,6 +212,7 @@ std::string generate(Image *s)
 {
 	return generate_image_name(s);
 }
+
 std::string generate(ForEveryPixel *s)
 {
     string member_variables;
@@ -232,16 +282,16 @@ std::string generate(ForEveryPixel *s)
 
     return def;
 }
+
 std::string generate(Stencil *s)
 {
     return "Stencil generate todo";
 }
+
 std::string generate(ReductionOutput *s)
 {
     return "ReductionOutput should new generate";
 }
-
-
 
 std::string generate(ReduceAroundPixel *s)
 {
@@ -269,6 +319,7 @@ std::string generate(ReduceAroundPixel *s)
     t = use_template(t, "BODY", s->subnodes[2]->generate_source());
     return t;
 }
+
 std::string generate(IterateAroundPixel *s)
 {
     auto stencil = std::dynamic_pointer_cast<Stencil>(s->subnodes[1]);
@@ -279,6 +330,7 @@ std::string generate(IterateAroundPixel *s)
     t = use_template(t, "BODY", s->subnodes[2]->generate_source());
     return t;
 }
+
 std::string generate(PixelvalueAtCurrentStencilPos *s)
 {
     std::shared_ptr<Stencil>stencil;
@@ -298,6 +350,7 @@ std::string generate(PixelvalueAtCurrentStencilPos *s)
 
     return image->generate_source() + "(" + stencil->name + ")";
 }
+
 std::string generate(StencilvalueAtCurrentStencilPos *s)
 {
     std::shared_ptr<Stencil> stencil;
@@ -314,19 +367,6 @@ std::string generate(StencilvalueAtCurrentStencilPos *s)
 
     return stencil->name + "_mask" + "(" + stencil->name + ")";
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 std::tuple<std::vector<Kernelcall_Variable*>, std::vector<Kernelcall_Variable*>> generate_accessor(HipaVX::Image *image, function_ast::Stencil *stencil)
 {
@@ -400,7 +440,6 @@ std::tuple<std::vector<Kernelcall_Variable*>, std::vector<Kernelcall_Variable*>>
 
 	return {to_return_call_parameters,to_return};
 }
-
 
 std::string generate_call(ForEveryPixel *fep)
 {

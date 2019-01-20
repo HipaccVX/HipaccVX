@@ -80,6 +80,14 @@ std::string Statements::generate_source()
 {
     return generate(this);
 }
+std::string If::generate_source()
+{
+    return generate(this);
+}
+std::string Else::generate_source()
+{
+    return generate(this);
+}
 std::string CurrentPixelvalue::generate_source()
 {
     return generate(this);

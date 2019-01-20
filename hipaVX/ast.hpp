@@ -28,6 +28,13 @@ enum class NodeType
     Mul,
     Div,
 
+    Less,
+    LessEquals,
+    Equals,
+    GreaterEquals,
+    Greater,
+    Unequals,
+
 	And,
 	Or,
 	Xor,
@@ -48,6 +55,9 @@ enum class NodeType
     VariableDefinition,
     Assignment,
     TargetPixel,
+
+    If,
+    Else,
 
     Image,
     ForEveryPixel,
@@ -103,12 +113,14 @@ public:
     virtual ~Node() = default;
     virtual std::string generate_source() = 0;
 };
+
 class SimpleBinaryNode: public Node
 {
 public:
 	virtual ~SimpleBinaryNode() override = default;
     virtual std::string generate_source() override;
 };
+
 class SimpleUnaryFunctionNode: public Node
 {
 public:
@@ -132,6 +144,7 @@ public:
 
     virtual ~Add() = default;
 };
+
 class Sub: public SimpleBinaryNode
 {
 public:
@@ -148,6 +161,7 @@ public:
 
     virtual ~Sub() = default;
 };
+
 class Mul: public SimpleBinaryNode
 {
 public:
@@ -164,6 +178,7 @@ public:
 
     virtual ~Mul() = default;
 };
+
 class Div: public SimpleBinaryNode
 {
 public:
@@ -180,6 +195,7 @@ public:
 
     virtual ~Div() = default;
 };
+
 class And: public SimpleBinaryNode
 {
 public:
@@ -234,18 +250,120 @@ public:
 class BitwiseAnd: public SimpleBinaryNode
 {
 public:
-	BitwiseAnd()
-	{
-		type = NodeType::BitwiseAnd;
-		subnodes.resize(2);
-	}
-	BitwiseAnd(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
-	{
-		type = NodeType::BitwiseAnd;
-		subnodes = {n1, n2};
-	}
+    BitwiseAnd()
+    {
+        type = NodeType::BitwiseAnd;
+        subnodes.resize(2);
+    }
+    BitwiseAnd(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
+    {
+        type = NodeType::BitwiseAnd;
+        subnodes = {n1, n2};
+    }
 
-	virtual ~BitwiseAnd() = default;
+    virtual ~BitwiseAnd() = default;
+};
+
+class Less: public SimpleBinaryNode
+{
+public:
+    Less()
+    {
+        type = NodeType::Less;
+        subnodes.resize(2);
+    }
+    Less(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
+    {
+        type = NodeType::Less;
+        subnodes = {n1, n2};
+    }
+
+    virtual ~Less() = default;
+};
+
+class LessEquals: public SimpleBinaryNode
+{
+public:
+    LessEquals()
+    {
+        type = NodeType::LessEquals;
+        subnodes.resize(2);
+    }
+    LessEquals(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
+    {
+        type = NodeType::LessEquals;
+        subnodes = {n1, n2};
+    }
+
+    virtual ~LessEquals() = default;
+};
+
+class Equals: public SimpleBinaryNode
+{
+public:
+    Equals()
+    {
+        type = NodeType::Equals;
+        subnodes.resize(2);
+    }
+    Equals(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
+    {
+        type = NodeType::Equals;
+        subnodes = {n1, n2};
+    }
+
+    virtual ~Equals() = default;
+};
+
+class GreaterEquals: public SimpleBinaryNode
+{
+public:
+    GreaterEquals()
+    {
+        type = NodeType::GreaterEquals;
+        subnodes.resize(2);
+    }
+    GreaterEquals(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
+    {
+        type = NodeType::GreaterEquals;
+        subnodes = {n1, n2};
+    }
+
+    virtual ~GreaterEquals() = default;
+};
+
+class Greater: public SimpleBinaryNode
+{
+public:
+    Greater()
+    {
+        type = NodeType::Greater;
+        subnodes.resize(2);
+    }
+    Greater(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
+    {
+        type = NodeType::Greater;
+        subnodes = {n1, n2};
+    }
+
+    virtual ~Greater() = default;
+};
+
+class Unequals: public SimpleBinaryNode
+{
+public:
+    Unequals()
+    {
+        type = NodeType::Unequals;
+        subnodes.resize(2);
+    }
+    Unequals(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
+    {
+        type = NodeType::Unequals;
+        subnodes = {n1, n2};
+    }
+
+    virtual ~Unequals() = default;
 };
 
 class BitwiseOr: public SimpleBinaryNode
@@ -281,6 +399,7 @@ public:
 
 	virtual ~BitwiseXor() = default;
 };
+
 class Not: public SimpleUnaryFunctionNode
 {
 public:
@@ -296,6 +415,7 @@ public:
 	}
 	virtual ~Not() = default;
 };
+
 class BitwiseNot: public SimpleUnaryFunctionNode
 {
 public:
@@ -327,6 +447,7 @@ public:
     }
     virtual ~Sqrt() = default;
 };
+
 class Square: public SimpleUnaryFunctionNode
 {
 public:
@@ -342,6 +463,7 @@ public:
     }
     virtual ~Square() = default;
 };
+
 class Exp: public SimpleUnaryFunctionNode
 {
 public:
@@ -357,6 +479,7 @@ public:
     }
     virtual ~Exp() = default;
 };
+
 class Conversion: public SimpleUnaryFunctionNode
 {
 public:
@@ -395,6 +518,7 @@ public:
     Node *parent;
     virtual std::string generate_source() override;
 };
+
 class StencilvalueAtCurrentStencilPos: public Node
 {
 public:
@@ -411,6 +535,7 @@ public:
     Node *parent;
     virtual std::string generate_source() override;
 };
+
 class ReductionOutput: public Node
 {
 public:
@@ -450,6 +575,7 @@ public:
 
     virtual std::string generate_source() override;
 };
+
 class ReduceAroundPixel: public Node
 {
 public:
@@ -501,6 +627,7 @@ public:
     T value;
     virtual std::string generate_source() override;
 };
+
 class Variable: public Node
 {
 public:
@@ -518,6 +645,7 @@ public:
     std::string name;
     virtual std::string generate_source() override;
 };
+
 class VariableDefinition: public Node
 {
 public:
@@ -533,6 +661,7 @@ public:
     }
     virtual std::string generate_source() override;
 };
+
 class Assignment: public Node
 {
 public:
@@ -548,6 +677,7 @@ public:
     }
     virtual std::string generate_source() override;
 };
+
 class TargetPixel: public Node
 {
 public:
@@ -563,6 +693,7 @@ public:
     }
     virtual std::string generate_source() override;
 };
+
 class Image: public Node
 {
 public:
@@ -596,6 +727,30 @@ public:
     }
 };
 
+class If: public Node
+{
+public:
+    If()
+    {
+        type = NodeType::If;
+    }
+    std::shared_ptr<Node> condition;
+    Statements body;
+
+    virtual std::string generate_source() override;
+};
+
+class Else: public Node
+{
+public:
+    Else()
+    {
+        type = NodeType::Else;
+    }
+    Statements body;
+    virtual std::string generate_source() override;
+};
+
 class CurrentPixelvalue: public Node
 {
 public:
@@ -612,7 +767,6 @@ public:
     virtual std::string generate_source() override;
 };
 
-
 class ForEveryPixel: public Node
 {
 public:
@@ -625,7 +779,6 @@ public:
     Statements function;
     virtual std::string generate_source() override;
 };
-
 
 class Stencil: public Node
 {
@@ -669,10 +822,10 @@ std::string generate(ReduceAroundPixel *s);
 std::string generate(PixelvalueAtCurrentStencilPos *s);
 std::string generate(StencilvalueAtCurrentStencilPos *s);
 std::string generate(CurrentPixelvalue *s);
+std::string generate(If *s);
+std::string generate(Else *s);
 std::string generate(Stencil *s);
-
 std::string generate(Statements *s);
-
 std::string generate_call(ForEveryPixel *s);
 
 // TODO: Better name?
