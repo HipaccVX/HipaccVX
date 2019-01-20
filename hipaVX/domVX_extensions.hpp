@@ -1,11 +1,10 @@
+#pragma once
 #include <iostream>
 #include <fstream>
 #include <string>
 
 #include "../VX/vx.h"
-#include "hipaVX_kernels.hpp"
 
-#pragma once
 
 // TODO: vxCreateImageFromFile, vxFWriteImageNode, vxDrawDotGraph are not extensions.
 //       consider moving these to a utils file

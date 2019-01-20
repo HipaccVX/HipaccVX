@@ -34,7 +34,9 @@ VX_API_ENTRY vx_status VX_API_CALL vxGetStatus(vx_reference reference)
 // Object: Context
 VX_API_ENTRY vx_context VX_API_CALL vxCreateContext(void)
 {
-    return new HipaVX::Context();
+	auto vx = new _vx_context();
+	vx->o = new HipaVX::Context();
+	return vx;
 }
 
 VX_API_ENTRY vx_status VX_API_CALL vxReleaseContext(vx_context *context)
@@ -46,13 +48,15 @@ VX_API_ENTRY vx_status VX_API_CALL vxReleaseContext(vx_context *context)
 VX_API_ENTRY vx_graph VX_API_CALL vxCreateGraph(vx_context context)
 {
     auto graph = new HipaVX::Graph();
-    context->graphs.emplace_back(graph);
-    return graph;
+	auto vx = new _vx_graph();
+	vx->o = graph;
+	((HipaVX::Context*)(context->o))->graphs.emplace_back(graph);
+	return vx;
 }
 
 VX_API_ENTRY vx_status VX_API_CALL vxVerifyGraph(vx_graph graph)
 {
-    graph->build();
+	((HipaVX::Graph*)(graph->o))->build();
     return VX_SUCCESS;
 }
 
@@ -62,7 +66,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxProcessGraph(vx_graph graph)
     //First, declare the images
 
     // TODO: Consider having a generator class for every backend
-    process_graph(graph);
+	process_graph(((HipaVX::Graph*)(graph->o)));
     return 0;
 }
 
@@ -76,7 +80,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxSetNodeAttribute (vx_node node, vx_enum att
 {
     if (attribute == VX_NODE_BORDER)
     {
-        node->border_mode = *((vx_border_e*) ptr);
+		((HipaVX::Node*)(node->o))->border_mode = *((vx_border_e*) ptr);
         return VX_SUCCESS;
     }
     return VX_ERROR_NOT_IMPLEMENTED;
@@ -94,18 +98,22 @@ VX_API_ENTRY vx_array VX_API_CALL vxCreateArray(vx_context context, vx_enum item
         throw std::runtime_error("vx_array: Only VX_TYPE_KEYPOINT is currently supported");
 
     HipaVX::Array *arr = new HipaVX::Array(item_type, capacity, 7); // vx_keypoint_t has 7 32bit members
-    context->images.emplace_back(arr);
-    return arr;
+	auto vx = new _vx_array();
+	vx->o = arr;
+	((HipaVX::Context*)(context->o))->images.emplace_back(arr);
+	return vx;
 }
 
 // Object: Convolution
 VX_API_ENTRY vx_convolution VX_API_CALL vxCreateConvolution (vx_context context, vx_size columns, vx_size rows)
 {
     HipaVX::Convolution *conv = new HipaVX::Convolution();
+	auto vx = new _vx_convolution();
+	vx->o = conv;
     conv->columns = columns;
     conv->rows = rows;
     conv->coefficients.resize(conv->columns * conv->rows);
-    return conv;
+	return vx;
 }
 
 VX_API_ENTRY vx_status VX_API_CALL vxCopyConvolutionCoefficients (vx_convolution conv, void *user_ptr, vx_enum usage, vx_enum user_mem_type)
@@ -114,9 +122,9 @@ VX_API_ENTRY vx_status VX_API_CALL vxCopyConvolutionCoefficients (vx_convolution
         return VX_FAILURE;
 
     vx_int16 *int16_ptr = (vx_int16*) user_ptr;
-    for(unsigned int i = 0; i < conv->coefficients.size(); i++)
+	for(unsigned int i = 0; i < ((HipaVX::Convolution*)(conv->o))->coefficients.size(); i++)
     {
-        conv->coefficients[i] = int16_ptr[i];
+		((HipaVX::Convolution*)(conv->o))->coefficients[i] = int16_ptr[i];
     }
 
     return VX_SUCCESS;
@@ -127,7 +135,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxSetConvolutionAttribute (vx_convolution con
     if (attribute != VX_CONVOLUTION_SCALE)
         return VX_FAILURE;
 
-    conv->scale = *((vx_uint32*) ptr);
+	((HipaVX::Convolution*)(conv->o))->scale = *((vx_uint32*) ptr);
 
     return VX_SUCCESS;
 }
@@ -135,10 +143,11 @@ VX_API_ENTRY vx_status VX_API_CALL vxSetConvolutionAttribute (vx_convolution con
 // Object: Image 
 VX_API_ENTRY vx_image VX_API_CALL vxCreateImage(vx_context context, vx_uint32 width, vx_uint32 height, vx_df_image color)
 {
-    HipaVX::Image *image;
-    image = new HipaVX::Image(width, height, color);
-    context->images.emplace_back(image);
-    return image;
+	HipaVX::Image *image = new HipaVX::Image(width, height, color);
+	auto vx = new _vx_image();
+	vx->o = image;
+	((HipaVX::Context*)(context->o))->images.emplace_back(image);
+	return vx;
 }
 
 VX_API_ENTRY vx_status VX_API_CALL vxReleaseImage(vx_image *image)
@@ -154,23 +163,27 @@ VX_API_ENTRY vx_matrix VX_API_CALL vxCreateMatrix (vx_context c, vx_enum data_ty
 
 
     HipaVX::VX_Matrix *mat = new HipaVX::VX_Matrix();
+	auto vx = new _vx_matrix();
+	vx->o = mat;
 
     mat->data_type = data_type;
     mat->columns = columns;
     mat->rows = rows;
     mat->mat.resize(sizeof(int32_t) * columns * rows); //Optimization available: Only resize to what you actually need (e.g. in uint8 case)
 
-    return mat;
+	return vx;
 }
 
-VX_API_ENTRY vx_status VX_API_CALL vxCopyMatrix (vx_matrix matrix, void *user_ptr, vx_enum usage, vx_enum user_mem_type)
+VX_API_ENTRY vx_status VX_API_CALL vxCopyMatrix (vx_matrix mat, void *user_ptr, vx_enum usage, vx_enum user_mem_type)
 {
     if (usage != VX_WRITE_ONLY)
         return VX_FAILURE;
     if (user_mem_type != VX_MEMORY_TYPE_HOST)
         return VX_FAILURE;
 
-    switch(matrix->data_type)
+	HipaVX::VX_Matrix* matrix = ((HipaVX::VX_Matrix*)(mat->o));
+
+	switch(matrix->data_type)
     {
     case VX_TYPE_UINT8:
         std::memcpy(matrix->mat.data(), user_ptr, matrix->columns * matrix->rows);
@@ -189,7 +202,10 @@ VX_API_ENTRY vx_scalar VX_API_CALL vxCreateScalar(vx_context context, vx_enum da
 {
     if (data_type <= VX_TYPE_INVALID || data_type >= VX_TYPE_SCALAR)
         return nullptr;
-    return new HipaVX::Scalar((vx_type_e) data_type, ptr);
+	auto scalar = new HipaVX::Scalar((vx_type_e) data_type, ptr);
+	auto vx = new _vx_scalar();
+	vx->o = scalar;
+	return vx;
 }
 
 VX_API_ENTRY vx_status VX_API_CALL vxReleaseScalar(vx_scalar *scalar)
@@ -201,17 +217,21 @@ VX_API_ENTRY vx_status VX_API_CALL vxReleaseScalar(vx_scalar *scalar)
 VX_API_ENTRY vx_threshold VX_API_CALL vxCreateThresholdForImage (vx_context context,vx_enum thresh_type, vx_df_image input_format, vx_df_image output_format)
 {
     HipaVX::Threshold *t = new HipaVX::Threshold;
+	auto vx = new _vx_threshold();
+	vx->o = t;
 
     t->threshold_type = (vx_threshold_type_e) thresh_type;
     t->input_format = input_format;
     t->output_format = output_format;
 
-    return t;
+	return vx;
 }
 
-VX_API_ENTRY vx_status VX_API_CALL vxSetThresholdAttribute (vx_threshold thresh, vx_enum attribute, const void *ptr, vx_size size)
+VX_API_ENTRY vx_status VX_API_CALL vxSetThresholdAttribute (vx_threshold th, vx_enum attribute, const void *ptr, vx_size size)
 {
     vx_int32 *int32_ptr = (vx_int32 *)ptr;
+
+	auto thresh = (HipaVX::Threshold*)th->o;
     switch (attribute)
     {
     case VX_THRESHOLD_THRESHOLD_VALUE:

@@ -45,7 +45,7 @@ std::vector<HipaVX::Image*> get_all_images(HipaVX::Graph *g)
     return images;
 }
 
-void process_graph(vx_graph graph)
+void process_graph(HipaVX::Graph *graph)
 {
     string main = read_file(hipaVX_folder + "/hipacc_main.template");
 

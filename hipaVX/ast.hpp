@@ -2,6 +2,7 @@
 #define __HIPAVX_INTERNAL__
 
 #include "../VX/vx.h"
+#include "domVX_types.hpp"
 
 #include <iostream>
 #include <vector>

@@ -1,9 +1,14 @@
+#pragma once
+
 #include "../VX/vx_types.h"
 
 #include <vector>
 #include <string>
 
-#pragma once
+
+
+
+
 
 namespace HipaVX
 {
@@ -148,3 +153,57 @@ public:
 	vx_uint32 scale;
 };
 }
+
+
+
+
+struct _vx_reference
+{
+	HipaVX::Object *o;
+};
+struct _vx_scalar
+{
+	HipaVX::Object *o;
+};
+struct _vx_kernel
+{
+	HipaVX::Object *o;
+};
+struct _vx_node
+{
+	HipaVX::Object *o;
+};
+struct _vx_graph
+{
+	HipaVX::Object *o;
+};
+struct _vx_context
+{
+	HipaVX::Object *o;
+};
+struct _vx_matrix
+{
+	HipaVX::Object *o;
+};
+struct _vx_threshold
+{
+	HipaVX::Object *o;
+};
+struct _vx_convolution
+{
+	HipaVX::Object *o;
+};
+struct _vx_array
+{
+	HipaVX::Object *o;
+};
+struct _vx_image
+{
+	HipaVX::Object *o;
+};
+
+
+
+
+
+

@@ -1,36 +1,43 @@
 #include "domVX_extensions.hpp"
 
+#include "hipaVX_kernels.hpp"
+
 vx_node vxHipaccNode(vx_graph graph, std::string filename, vx_reference *parameters, vx_size count, vx_image out)
 {
     HipaVX::HipaccNode *hipaccNode = new HipaVX::HipaccNode();
+	auto vx = new _vx_node();
+	vx->o = hipaccNode;
 
     hipaccNode->filename = filename;
-    hipaccNode->out = out;
+	hipaccNode->out = ((HipaVX::Image*)(out->o));
     for(vx_size i = 0; i < count; i++)
-        hipaccNode->parameters.push_back(parameters[i]);
+		hipaccNode->parameters.push_back(parameters[i]->o);
 
-    graph->graph.emplace_back(hipaccNode);
-    graph->built = false;
+	((HipaVX::Graph*)(graph->o))->graph.emplace_back(hipaccNode);
+	((HipaVX::Graph*)(graph->o))->built = false;
 
-    return hipaccNode;
+	return vx;
 }
 
 vx_image vxCreateImageFromFile(vx_context context, vx_uint32 width, vx_uint32 height, vx_df_image color, std::string filename)
 {
-    HipaVX::FileinputImage *image;
-    image = new HipaVX::FileinputImage(width, height, color, filename);
-    context->images.emplace_back(image);
-    return image;
+	HipaVX::FileinputImage *image = new HipaVX::FileinputImage(width, height, color, filename);
+	auto vx = new _vx_image();
+	vx->o = image;
+	((HipaVX::Context*)(context->o))->images.emplace_back(image);
+	return vx;
 }
 
 vx_node vxFWriteImageNode(vx_graph graph, vx_image image, std::string file)
 {
     HipaVX::WriteImageNode *win = new HipaVX::WriteImageNode();
-    win->in = image;
+	auto vx = new _vx_node();
+	vx->o = win;
+	win->in = ((HipaVX::Image*)(image->o));
     win->out_file = file;
-    graph->graph.emplace_back(win);
-    graph->built = false;
-    return win;
+	((HipaVX::Graph*)(graph->o))->graph.emplace_back(win);
+	((HipaVX::Graph*)(graph->o))->built = false;
+	return vx;
 }
 
 static std::string get_object_name(HipaVX::Object *object)
@@ -66,7 +73,7 @@ void vxDrawDotGraph(vx_graph graph, std::string filename, vx_uint32 node_depth)
 {
     if (node_depth != 0)
         throw std::runtime_error("Currently only node_depth of 0 is supported");
-    std::vector<HipaVX::Node*> nodes = graph->graph;
+	std::vector<HipaVX::Node*> nodes = ((HipaVX::Graph*)(graph->o))->graph;
     std::vector<HipaVX::Object*> objects;
 
     std::string content;

@@ -81,7 +81,7 @@ public:
     HipaccNode();
     std::string filename;
     Image *out;
-    std::vector<vx_reference> parameters;
+	std::vector<Object*> parameters;
 
 
 

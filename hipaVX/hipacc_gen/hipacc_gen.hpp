@@ -19,9 +19,9 @@ static std::map<vx_df_image, string> VX_DF_IMAGE_to_hipacc = {
     {VX_TYPE_INT32, "int"} //Not really a vx_df_image type
 };
 
-static string generate_image_name(vx_image image)
+static string generate_image_name(HipaVX::Image *image)
 {
     return string("Image_") + std::to_string(image->my_id);
 }
 
-void process_graph(vx_graph graph);
+void process_graph(HipaVX::Graph *graph);

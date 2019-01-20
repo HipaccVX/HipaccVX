@@ -139,11 +139,7 @@ typedef double   vx_float64;
  * error may be returned from the API.
  * \ingroup group_reference
  */
-namespace HipaVX
-{
-class Object;
-}
-typedef HipaVX::Object *vx_reference;
+typedef struct _vx_reference *vx_reference;
 
 /*! \brief Sets the standard enumeration type size to be a fixed quantity.
  * \details All enumerable fields must use this type as the container to
@@ -173,22 +169,14 @@ typedef uintptr_t vx_map_id;
  * \ingroup group_scalar
  * \extends vx_reference
  */
-namespace HipaVX
-{
-class Scalar;
-}
-typedef HipaVX::Scalar *vx_scalar;
+typedef struct _vx_scalar *vx_scalar;
 
 /*! \brief An opaque reference to an image.
  * \see vxCreateImage
  * \ingroup group_image
  * \extends vx_reference
  */
-namespace HipaVX
-{
-class Image;
-}
-typedef HipaVX::Image *vx_image;
+typedef struct _vx_image *vx_image;
 
 /*! \brief An opaque reference to the descriptor of a kernel.
  * \see vxGetKernelByName
@@ -210,33 +198,21 @@ typedef struct _vx_parameter *vx_parameter;
  * \ingroup group_node
  * \extends vx_reference
  */
-namespace HipaVX
-{
-class Node;
-}
-typedef HipaVX::Node *vx_node;
+typedef struct _vx_node *vx_node;
 
 /*! \brief An opaque reference to a graph
  * \see vxCreateGraph
  * \ingroup group_graph
  * \extends vx_reference
  */
-namespace HipaVX
-{
-class Graph;
-}
-typedef HipaVX::Graph *vx_graph;
+typedef struct _vx_graph *vx_graph;
 
 /*! \brief An opaque reference to the implementation context.
  * \see vxCreateContext
  * \ingroup group_context
  * \extends vx_reference
  */
-namespace HipaVX
-{
-class Context;
-}
-typedef HipaVX::Context *vx_context;
+typedef struct _vx_context *vx_context;
 
 /*! \brief The delay object. This is like a ring buffer of objects that is
  * maintained by the OpenVX implementation.
@@ -263,11 +239,7 @@ typedef struct _vx_distribution *vx_distribution;
  * \extends vx_reference
  * \ingroup group_matrix
  */
-namespace HipaVX
-{
-class VX_Matrix;
-}
-typedef HipaVX::VX_Matrix *vx_matrix;
+typedef struct _vx_matrix *vx_matrix;
 
 /*! \brief The Image Pyramid object. A set of scaled images.
  * \extends vx_reference
@@ -280,21 +252,13 @@ typedef struct _vx_pyramid *vx_pyramid;
  * \extends vx_reference
  * \ingroup group_threshold
  */
-namespace HipaVX
-{
-class Threshold;
-}
-typedef HipaVX::Threshold *vx_threshold;
+typedef struct _vx_threshold *vx_threshold;
 
 /*! \brief The Convolution Object. A user-defined convolution kernel of MxM elements.
  * \extends vx_reference
  * \ingroup group_convolution
  */
-namespace HipaVX
-{
-class Convolution;
-}
-typedef HipaVX::Convolution *vx_convolution;
+typedef struct _vx_convolution *vx_convolution;
 
 /*! \brief The remap table Object. A remap table contains per-pixel mapping of
  * output pixels to input pixels.
@@ -305,11 +269,7 @@ typedef struct _vx_remap *vx_remap;
 /*! \brief The Array Object. Array is a strongly-typed container for other data structures.
  * \ingroup group_array
  */
-namespace HipaVX
-{
-class Array;
-}
-typedef HipaVX::Array *vx_array;
+typedef struct _vx_array *vx_array;
 
 /*! \brief The ObjectArray Object. ObjectArray is a strongly-typed container of OpenVX data-objects.
  * \ingroup group_object_array
