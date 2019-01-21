@@ -192,13 +192,43 @@ std::shared_ptr<function_ast::Node> operator~(std::shared_ptr<function_ast::Node
 {
 	return std::make_shared<function_ast::BitwiseNot>(a);
 }
-std::shared_ptr<function_ast::Node> IF(std::shared_ptr<function_ast::Node> a)
+std::shared_ptr<function_ast::If> IF(std::shared_ptr<function_ast::Node> a)
 {
 	return std::make_shared<function_ast::If>(a);
 }
-std::shared_ptr<function_ast::Node> ELSE()
+std::shared_ptr<function_ast::Else> ELSE()
 {
 	return std::make_shared<function_ast::Else>();
+}
+std::shared_ptr<function_ast::Node> less(std::shared_ptr<function_ast::Node> a,
+							  std::shared_ptr<function_ast::Node> b)
+{
+	return std::make_shared<function_ast::Less>(a, b);
+}
+std::shared_ptr<function_ast::Node> less_equal(std::shared_ptr<function_ast::Node> a,
+							  std::shared_ptr<function_ast::Node> b)
+{
+	return std::make_shared<function_ast::LessEquals>(a, b);
+}
+std::shared_ptr<function_ast::Node> equal(std::shared_ptr<function_ast::Node> a,
+							  std::shared_ptr<function_ast::Node> b)
+{
+	return std::make_shared<function_ast::Equals>(a, b);
+}
+std::shared_ptr<function_ast::Node> greater_equal(std::shared_ptr<function_ast::Node> a,
+							  std::shared_ptr<function_ast::Node> b)
+{
+	return std::make_shared<function_ast::GreaterEquals>(a, b);
+}
+std::shared_ptr<function_ast::Node> greater(std::shared_ptr<function_ast::Node> a,
+							  std::shared_ptr<function_ast::Node> b)
+{
+	return std::make_shared<function_ast::Greater>(a, b);
+}
+std::shared_ptr<function_ast::Node> unequal(std::shared_ptr<function_ast::Node> a,
+							  std::shared_ptr<function_ast::Node> b)
+{
+	return std::make_shared<function_ast::Unequals>(a, b);
 }
 
 

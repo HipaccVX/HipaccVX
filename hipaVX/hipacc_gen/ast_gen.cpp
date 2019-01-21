@@ -87,7 +87,7 @@ std::string generate(SimpleBinaryNode *s)
         op = ">=";
         break;
     case NodeType::Greater:
-        op = "<";
+		op = ">";
         break;
     case NodeType::Unequals:
         op = "!=";
@@ -173,7 +173,9 @@ std::string generate(Statements *s)
 
     for(auto statement: s->statements)
     {
-        to_return += statement->generate_source() + ";\n";
+		to_return += statement->generate_source();
+		if (statement->type != NodeType::If && statement->type != NodeType::Else)
+			to_return += ";\n";
     }
 
     return to_return;

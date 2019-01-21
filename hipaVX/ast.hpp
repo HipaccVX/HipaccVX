@@ -893,8 +893,20 @@ std::shared_ptr<function_ast::Node> constant(T t)
 }
 
 std::shared_ptr<function_ast::Node> define(std::shared_ptr<function_ast::Node> n);
-std::shared_ptr<function_ast::Node> IF(std::shared_ptr<function_ast::Node> n);
-std::shared_ptr<function_ast::Node> ELSE();
+std::shared_ptr<function_ast::If> IF(std::shared_ptr<function_ast::Node> n);
+std::shared_ptr<function_ast::Else> ELSE();
+std::shared_ptr<function_ast::Node> less(std::shared_ptr<function_ast::Node> a,
+							  std::shared_ptr<function_ast::Node> b);
+std::shared_ptr<function_ast::Node> less_equal(std::shared_ptr<function_ast::Node> a,
+							  std::shared_ptr<function_ast::Node> b);
+std::shared_ptr<function_ast::Node> equal(std::shared_ptr<function_ast::Node> a,
+							  std::shared_ptr<function_ast::Node> b);
+std::shared_ptr<function_ast::Node> greater_equal(std::shared_ptr<function_ast::Node> a,
+							  std::shared_ptr<function_ast::Node> b);
+std::shared_ptr<function_ast::Node> greater(std::shared_ptr<function_ast::Node> a,
+							  std::shared_ptr<function_ast::Node> b);
+std::shared_ptr<function_ast::Node> unequal(std::shared_ptr<function_ast::Node> a,
+							  std::shared_ptr<function_ast::Node> b);
 
 
 function_ast::Datatype convert_type(vx_df_image type);

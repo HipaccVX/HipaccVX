@@ -185,7 +185,6 @@ Kernelcall_Variable* generate_kernelcall(std::string kernel_name, std::vector<Ke
     return call;
 }
 
-
 string node_generator(HipaVX::WriteImageNode* n, Type t)
 {
     if (t == Type::Definition)
@@ -499,43 +498,6 @@ string node_generator(HipaVX::HarrisCorners* n, Type t)
     return "SOMETHING IS WRONG";
 }
 
-string node_generator(HipaVX::SaturateNode* n, Type t)
-{
-    if (t == Type::Definition)
-    {
-        auto cs = read_config_def(hipaVX_folder + "/kernels/point/saturate.def");
-
-        string s = kernel_builder(cs.kv, cs.k, cs.name);
-
-        s = use_template(s, "ID", n->my_id);
-        s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in->col]);
-        s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
-
-        s = use_template(s, "U8", std::to_string(n->out->col == VX_DF_IMAGE_U8));
-        s = use_template(s, "S16", std::to_string(n->out->col == VX_DF_IMAGE_S16));
-
-        return s;
-    }
-    else if (t == Type::Call)
-    {
-        auto cs = read_config_call(hipaVX_folder + "/kernels/point/saturate.call");
-        string s = kernelcall_builder(cs.kcv);
-
-        s = use_template(s, "ID", n->my_id);
-        s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in->col]);
-        s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
-
-        s = use_template(s, "INPUT_IMAGE", generate_image_name(n->in));
-        s = use_template(s, "IMAGE_IN_WIDTH", n->in->w);
-        s = use_template(s, "IMAGE_IN_HEIGHT", n->in->h);
-        s = use_template(s, "OUTPUT_IMAGE", generate_image_name(n->out));
-
-        s = use_template(s, "BOUNDARY_CONDITION", "Boundary::UNDEFINED"); // TODO
-
-        return s;
-    }
-    return "SOMETHING IS WRONG";
-}
 string node_generator(HipaVX::UnaryFunctionNode* n, Type t)
 {
     if (t == Type::Definition)

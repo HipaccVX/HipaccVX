@@ -138,12 +138,49 @@ std::vector<Object *> SaturateNode::get_outputs()
 
 std::string SaturateNode::generateClassDefinition()
 {
-    return generator::node_generator(this, generator::Type::Definition);
+	std::string s = function_ast::generate(&kernel);
+	return s;
 }
 
 std::string SaturateNode::generateNodeCall()
 {
-    return generator::node_generator(this, generator::Type::Call);
+	std::string s = function_ast::generate_call(&kernel);
+	return s;
+}
+void SaturateNode::build()
+{
+	auto in_node = std::make_shared<function_ast::Image>(in);
+	kernel.inputs.push_back(in_node);
+	auto out_node = std::make_shared<function_ast::Image>(out);
+	kernel.output = out_node;
+
+	auto temp = std::make_shared<function_ast::Variable>("temp", function_ast::Datatype::INT32);
+	kernel.function << define(temp) << assign(temp, current_pixel(in_node));
+
+	std::shared_ptr<function_ast::Node> min, max;
+
+	if (out->col == VX_DF_IMAGE_U8)
+	{
+		min = constant<int>(0);
+		max = constant<int>(255);
+	}
+	else
+	{
+		min = constant<int>(-32768);
+		max = constant<int>(32767);
+	}
+
+	auto greater_if = IF(greater(temp, max));
+	greater_if->body << assign(temp, max);
+	auto greater_else = ELSE();
+	auto less_if = IF(less(temp, min));
+	less_if->body << assign(temp, min);
+	greater_else->body << less_if;
+
+	kernel.function << greater_if;
+	kernel.function << greater_else;
+
+	kernel.function << assign(target_pixel(out_node), temp);
 }
 
 ConvertDepthNode::ConvertDepthNode()
