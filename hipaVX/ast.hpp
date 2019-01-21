@@ -843,58 +843,58 @@ std::string generate(Constant<T> *s)
 
 
 //Templated Node method definitions
-
 template<typename T>
 std::string Constant<T>::generate_source()
 {
     return generate(this);
 }
 
-
-
-
 }
 
 
-std::shared_ptr<function_ast::Node> operator+(std::shared_ptr<function_ast::Node> a,
-                              std::shared_ptr<function_ast::Node> b);
-std::shared_ptr<function_ast::Node> operator-(std::shared_ptr<function_ast::Node> a,
-                              std::shared_ptr<function_ast::Node> b);
-std::shared_ptr<function_ast::Node> operator*(std::shared_ptr<function_ast::Node> a,
-                              std::shared_ptr<function_ast::Node> b);
-std::shared_ptr<function_ast::Node> operator/(std::shared_ptr<function_ast::Node> a,
-                              std::shared_ptr<function_ast::Node> b);
-std::shared_ptr<function_ast::Node> operator&(std::shared_ptr<function_ast::Node> a,
-							  std::shared_ptr<function_ast::Node> b);
-std::shared_ptr<function_ast::Node> operator&&(std::shared_ptr<function_ast::Node> a,
-							  std::shared_ptr<function_ast::Node> b);
-std::shared_ptr<function_ast::Node> operator|(std::shared_ptr<function_ast::Node> a,
-							  std::shared_ptr<function_ast::Node> b);
-std::shared_ptr<function_ast::Node> operator||(std::shared_ptr<function_ast::Node> a,
-							  std::shared_ptr<function_ast::Node> b);
-std::shared_ptr<function_ast::Node> operator^(std::shared_ptr<function_ast::Node> a,
-							  std::shared_ptr<function_ast::Node> b);
+std::shared_ptr<function_ast::Node> operator+(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
+
+std::shared_ptr<function_ast::Node> operator-(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
+
+std::shared_ptr<function_ast::Node> operator*(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
+
+std::shared_ptr<function_ast::Node> operator/(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
+
+std::shared_ptr<function_ast::Node> operator&(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
+
+std::shared_ptr<function_ast::Node> operator&&(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
+
+std::shared_ptr<function_ast::Node> operator|(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
+
+std::shared_ptr<function_ast::Node> operator||(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
+
+std::shared_ptr<function_ast::Node> operator^(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
+
 std::shared_ptr<function_ast::Node> operator!(std::shared_ptr<function_ast::Node> a);
+
 std::shared_ptr<function_ast::Node> operator~(std::shared_ptr<function_ast::Node> a);
 
 std::shared_ptr<function_ast::Node> square(std::shared_ptr<function_ast::Node> a);
+
 std::shared_ptr<function_ast::Node> exp(std::shared_ptr<function_ast::Node> a);
-std::shared_ptr<function_ast::Node> assign(std::shared_ptr<function_ast::Node> a,
-                                           std::shared_ptr<function_ast::Node> b);
+
+std::shared_ptr<function_ast::Node> assign(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
+
 std::shared_ptr<function_ast::Node> target_pixel(std::shared_ptr<function_ast::Node> a);
 
 std::shared_ptr<function_ast::Node> current_pixel(std::shared_ptr<function_ast::Node> a);
-std::shared_ptr<function_ast::Node> convert(std::shared_ptr<function_ast::Node> a,
-                                            function_ast::Datatype type);
+
+std::shared_ptr<function_ast::Node> convert(std::shared_ptr<function_ast::Node> a, function_ast::Datatype type);
+
 template <typename T>
 std::shared_ptr<function_ast::Node> constant(T t)
 {
     return std::make_shared<function_ast::Constant<T>>(t);
 }
+
 std::shared_ptr<function_ast::Node> define(std::shared_ptr<function_ast::Node> n);
 std::shared_ptr<function_ast::Node> IF(std::shared_ptr<function_ast::Node> n);
 std::shared_ptr<function_ast::Node> ELSE();
-
 
 
 function_ast::Datatype convert_type(vx_df_image type);
