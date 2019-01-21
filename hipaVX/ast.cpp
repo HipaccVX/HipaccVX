@@ -184,5 +184,13 @@ std::shared_ptr<function_ast::Node> operator~(std::shared_ptr<function_ast::Node
 {
 	return std::make_shared<function_ast::BitwiseNot>(a);
 }
+std::shared_ptr<function_ast::Node> IF(std::shared_ptr<function_ast::Node> a)
+{
+	return std::make_shared<function_ast::If>(a);
+}
+std::shared_ptr<function_ast::Node> ELSE()
+{
+	return std::make_shared<function_ast::Else>();
+}
 
 

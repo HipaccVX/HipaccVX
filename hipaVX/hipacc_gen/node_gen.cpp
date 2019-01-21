@@ -357,49 +357,6 @@ string node_generator(HipaVX::VXChannelCombineNode* n, Type t)
 }
 
 template <typename T>
-std::string node_generator(HipaVX::SimplePointScalar<T>* n, Type t)
-{
-    if (t == Type::Definition)
-    {
-        auto cs = read_config_def(hipaVX_folder + "/kernels/point/simple_scalar.def");
-
-        string s = kernel_builder(cs.kv, cs.k, cs.name);
-
-        s = use_template(s, "ID", n->my_id);
-        s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in->col]);
-        s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
-
-        s = use_template(s, "OPERATION", n->operation);
-        s = use_template(s, "SCALAR", std::to_string(n->scalar));
-
-        return s;
-    }
-    else if (t == Type::Call)
-    {
-        auto cs = read_config_call(hipaVX_folder + "/kernels/point/simple_scalar.call");
-        string s = kernelcall_builder(cs.kcv);
-
-        s = use_template(s, "ID", n->my_id);
-        s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in->col]);
-        s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
-
-        s = use_template(s, "INPUT_IMAGE", generate_image_name(n->in));
-        s = use_template(s, "IMAGE_IN_WIDTH", n->in->w);
-        s = use_template(s, "IMAGE_IN_HEIGHT", n->in->h);
-        s = use_template(s, "OUTPUT_IMAGE", generate_image_name(n->out));
-
-        s = use_template(s, "BOUNDARY_CONDITION", "Boundary::UNDEFINED"); // TODO
-
-        return s;
-    }
-    return "SOMETHING IS WRONG";
-}
-// Explicit instantiation
-template std::string node_generator<float>(HipaVX::SimplePointScalar<float>* n, Type t);
-template std::string node_generator<int>(HipaVX::SimplePointScalar<int>* n, Type t);
-template std::string node_generator<uint>(HipaVX::SimplePointScalar<uint>* n, Type t);
-
-template <typename T>
 std::string node_generator(HipaVX::ConditionalAssignmentNode<T>* n, Type t)
 {
     if (t == Type::Definition)

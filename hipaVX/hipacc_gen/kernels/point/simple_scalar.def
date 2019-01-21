@@ -1,9 +1,0 @@
-[NAME]
-Simple_Point_Scalar
-
-[KERNEL_VARIABLES]
-Accessor input
-
-[KERNEL]
-output() = input() @@@OPERATION@@@ @@@SCALAR@@@;
-[KERNEL_END]

@@ -730,10 +730,15 @@ public:
 class If: public Node
 {
 public:
-    If()
-    {
-        type = NodeType::If;
-    }
+	If()
+	{
+		type = NodeType::If;
+	}
+	If(std::shared_ptr<Node> c)
+	{
+		type = NodeType::If;
+		condition = c;
+	}
     std::shared_ptr<Node> condition;
     Statements body;
 
@@ -887,6 +892,9 @@ std::shared_ptr<function_ast::Node> constant(T t)
     return std::make_shared<function_ast::Constant<T>>(t);
 }
 std::shared_ptr<function_ast::Node> define(std::shared_ptr<function_ast::Node> n);
+std::shared_ptr<function_ast::Node> IF(std::shared_ptr<function_ast::Node> n);
+std::shared_ptr<function_ast::Node> ELSE();
+
 
 
 function_ast::Datatype convert_type(vx_df_image type);

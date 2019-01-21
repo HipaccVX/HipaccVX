@@ -77,13 +77,16 @@ public:
 
     Image *in;
     T scalar;
-    Image *out;
-    std::string operation;
+	Image *out;
+
+	function_ast::NodeType operation;
+	function_ast::ForEveryPixel kernel;
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
     virtual std::string generateClassDefinition() override;
     virtual std::string generateNodeCall() override;
+	virtual void build() override;
 };
 
 class ImageComparision
@@ -158,7 +161,7 @@ public:
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
     virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
+	virtual std::string generateNodeCall() override;
 };
 
 class SimplePointAdd: public SimplePoint
@@ -233,7 +236,7 @@ class SimplePointScalarAdd: public SimplePointScalar<T>
 public:
     SimplePointScalarAdd()
     {
-        this->operation = "+";
+		this->operation = function_ast::NodeType::Add;
         this->node_name = "Scalar Addition";
     }
     virtual ~SimplePointScalarAdd() override = default;
@@ -244,8 +247,8 @@ class SimplePointScalarSub: public SimplePointScalar<T>
 {
 public:
     SimplePointScalarSub()
-    {
-        this->operation = "-";
+	{
+		this->operation = function_ast::NodeType::Sub;
         this->node_name = "Scalar Subtraction";
     }
     virtual ~SimplePointScalarSub() override = default;
@@ -256,8 +259,8 @@ class SimplePointScalarMul: public SimplePointScalar<T>
 {
 public:
     SimplePointScalarMul()
-    {
-        this->operation = "*";
+	{
+		this->operation = function_ast::NodeType::Mul;
         this->node_name = "Scalar Multiplication";
     }
     virtual ~SimplePointScalarMul() override = default;
@@ -268,8 +271,8 @@ class SimplePointScalarDiv: public SimplePointScalar<T>
 {
 public:
     SimplePointScalarDiv()
-    {
-        this->operation = "/";
+	{
+		this->operation = function_ast::NodeType::Div;
         this->node_name = "Scalar Division";
     }
     virtual ~SimplePointScalarDiv() override = default;
@@ -707,8 +710,6 @@ std::string node_generator(HipaVX::ConvertDepthNode* n, Type t);
 
 std::string node_generator(HipaVX::VXChannelExtractNode* n, Type t);
 std::string node_generator(HipaVX::VXChannelCombineNode* n, Type t);
-template <typename T>
-std::string node_generator(HipaVX::SimplePointScalar<T>* n, Type t);
 
 std::string node_generator(HipaVX::SaturateNode* n, Type t);
 std::string node_generator(HipaVX::UnaryFunctionNode* n, Type t);
@@ -738,12 +739,41 @@ std::vector<Object *> SimplePointScalar<T>::get_outputs()
 template <typename T>
 std::string SimplePointScalar<T>::generateClassDefinition()
 {
-    return generator::node_generator(this, generator::Type::Definition);
+	std::string s = function_ast::generate(&kernel);
+	return s;
 }
 template <typename T>
 std::string SimplePointScalar<T>::generateNodeCall()
 {
-    return generator::node_generator(this, generator::Type::Call);
+	std::string s = function_ast::generate_call(&kernel);
+	return s;
+}
+template <typename T>
+void SimplePointScalar<T>::build()
+{
+	auto in_node = std::make_shared<function_ast::Image>(in);
+
+	kernel.inputs.push_back(in_node);
+	auto out_node = std::make_shared<function_ast::Image>(out);
+	kernel.output = out_node;
+
+	auto c = constant<>(scalar);
+
+	switch(operation)
+	{
+	case function_ast::NodeType::Add:
+		kernel.function << assign(target_pixel(out_node), current_pixel(in_node) + c);
+		break;
+	case function_ast::NodeType::Sub:
+		kernel.function << assign(target_pixel(out_node), current_pixel(in_node) - c);
+		break;
+	case function_ast::NodeType::Mul:
+		kernel.function << assign(target_pixel(out_node), current_pixel(in_node) * c);
+		break;
+	case function_ast::NodeType::Div:
+		kernel.function << assign(target_pixel(out_node), current_pixel(in_node) / c);
+		break;
+	}
 }
 
 template <typename T>
