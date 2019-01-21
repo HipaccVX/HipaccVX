@@ -1,8 +1,50 @@
+// TODO: Would be nice to briefly comment on AST build
+
 #include "../VX/vx.h"
 #include "ast.hpp"
 #include "domVX_types.hpp"
 
 #pragma once
+
+// namespace HipaVX
+// {
+// class SimplePoint;
+// template <typename T> class SimplePointScalar;
+// class ImageComparision;
+// template <typename T> class ConditionalAssignmentNode;
+// class SimplePointMul;
+// class SquareNode;
+// class SaturateNode;
+// class SimplePointAdd;
+// class SimplePointSub;
+// class SimplePointDiv;
+// class AndNode;
+// class XorNode;
+// class OrNode;
+// template <typename T> class SimplePointScalarAdd;
+// template <typename T> class SimplePointScalarSub;
+// template <typename T> class SimplePointScalarMul;
+// template <typename T> class SimplePointScalarDiv;
+// class ConvertDepthNode;
+// class NotNode;
+// class VXSubtractNode;
+// class VXThresholdNode;
+// class UnaryFunctionNode;
+// class SqrtNode;
+// class AbsNode;
+// class AbsDiffNode;
+// class VXAddNode;
+// class MagnitudeNode;
+// class Atan2Node;
+// class PhaseNode;
+// class VXMultiplyNode;
+// class VXAccumulateNode;
+// class VXAccumulateSquareNode;
+// class VXAccumulateWeightedNode;
+// class VXChannelExtractNode;
+// class VXChannelCombineNode;
+// class VXScaleNode;
+// }
 
 namespace HipaVX
 {
@@ -12,6 +54,7 @@ class SimplePoint: public Node
 public:
     virtual ~SimplePoint() override = default;
 
+    // 2 inputs, 1 output, 1 operation
     Image *in_1;
     Image *in_2;
 	Image *out;
@@ -345,6 +388,75 @@ public:
     virtual void build() override;
 };
 
+class AbsNode: public Node
+{
+public:
+    AbsNode();
+    virtual ~AbsNode() override = default;
+    Image *in;
+    Image *out;
+
+    UnaryFunctionNode function_node;
+
+    virtual std::vector<Object*> get_inputs() override;
+    virtual std::vector<Object*> get_outputs() override;
+    virtual std::vector<Node*> get_subnodes() override;
+    virtual std::string generateClassDefinition() override;
+    virtual std::string generateNodeCall() override;
+    virtual void build() override;
+};
+
+class AbsDiffNode: public Node
+{
+public:
+    AbsDiffNode();
+    virtual ~AbsDiffNode() override = default;
+    Image *in_1;
+    Image *in_2;
+    Image *out;
+
+    SimplePointSub diff_node;
+    std::unique_ptr<Image> diff_image;
+
+    AbsNode abs_node;
+    std::unique_ptr<Image> abs_image;
+
+    SaturateNode saturate_node;
+
+    bool saturate;
+
+    virtual std::vector<Object*> get_inputs() override;
+    virtual std::vector<Object*> get_outputs() override;
+    virtual std::vector<Node*> get_subnodes() override;
+    virtual std::string generateClassDefinition() override;
+    virtual std::string generateNodeCall() override;
+    virtual void build() override;
+};
+
+class VXAddNode: public Node
+{
+public:
+    VXAddNode();
+    virtual ~VXAddNode() override = default;
+    Image *in_1;
+    Image *in_2;
+    Image *out;
+
+    SimplePointAdd add_node;
+    std::unique_ptr<Image> add_image;
+
+    SaturateNode saturate_node;
+
+    vx_enum policy;
+
+    virtual std::vector<Object*> get_inputs() override;
+    virtual std::vector<Object*> get_outputs() override;
+    virtual std::vector<Node*> get_subnodes() override;
+    virtual std::string generateClassDefinition() override;
+    virtual std::string generateNodeCall() override;
+    virtual void build() override;
+};
+
 class MagnitudeNode: public Node
 {
 public:
@@ -434,7 +546,6 @@ public:
     vx_enum overflow_policy;
     vx_enum rounding_policy;
 
-
     SimplePointMul mul_node;
     std::unique_ptr<Image> mul_image;
 
@@ -442,7 +553,6 @@ public:
     std::unique_ptr<Image> mul_scalar_image;
 
     SaturateNode saturate_node;
-
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
@@ -581,6 +691,93 @@ public:
     virtual std::string generateClassDefinition() override;
     virtual std::string generateNodeCall() override;
 };
+}
 
+
+namespace generator
+{
+enum class Type
+{
+    Definition = 0,
+    Call
+};
+
+// TODO: remove all except HipaccNode, WriteImageNode
+std::string node_generator(HipaVX::ConvertDepthNode* n, Type t);
+
+std::string node_generator(HipaVX::VXChannelExtractNode* n, Type t);
+std::string node_generator(HipaVX::VXChannelCombineNode* n, Type t);
+template <typename T>
+std::string node_generator(HipaVX::SimplePointScalar<T>* n, Type t);
+
+std::string node_generator(HipaVX::SaturateNode* n, Type t);
+std::string node_generator(HipaVX::UnaryFunctionNode* n, Type t);
+template <typename T>
+std::string node_generator(HipaVX::ConditionalAssignmentNode<T>* n, Type t);
+
+std::string node_generator(HipaVX::VXScaleNode *n, Type t);
+
+}
+
+namespace HipaVX
+{
+template <typename T>
+std::vector<Object *> SimplePointScalar<T>::get_inputs()
+{
+    std::vector<Object*> used_objects;
+    used_objects.emplace_back(in);
+    return used_objects;
+}
+template <typename T>
+std::vector<Object *> SimplePointScalar<T>::get_outputs()
+{
+    std::vector<Object*> used_objects;
+    used_objects.emplace_back(out);
+    return used_objects;
+}
+template <typename T>
+std::string SimplePointScalar<T>::generateClassDefinition()
+{
+    return generator::node_generator(this, generator::Type::Definition);
+}
+template <typename T>
+std::string SimplePointScalar<T>::generateNodeCall()
+{
+    return generator::node_generator(this, generator::Type::Call);
+}
+
+template <typename T>
+ConditionalAssignmentNode<T>::ConditionalAssignmentNode()
+{
+    node_name = "Conditional Assignment";
+}
+
+template <typename T>
+std::vector<Object *> ConditionalAssignmentNode<T>::get_inputs()
+{
+    std::vector<Object*> used_objects;
+    used_objects.emplace_back(in);
+    return used_objects;
+}
+
+template <typename T>
+std::vector<Object *> ConditionalAssignmentNode<T>::get_outputs()
+{
+    std::vector<Object*> used_objects;
+    used_objects.emplace_back(out);
+    return used_objects;
+}
+
+template <typename T>
+std::string ConditionalAssignmentNode<T>::generateClassDefinition()
+{
+    return generator::node_generator(this, generator::Type::Definition);
+}
+
+template <typename T>
+std::string ConditionalAssignmentNode<T>::generateNodeCall()
+{
+    return generator::node_generator(this, generator::Type::Call);
+}
 
 }

@@ -1,24 +1,25 @@
-#ifndef __HIPAVX_KERNELS__
-#define __HIPAVX_KERNELS__
-
-#include "../VX/vx.h"
-#include "ast.hpp"
-#include "domVX_types.hpp"
 #include "domVX_kernels_point.hpp"
 
-#include <iostream>
-#include <vector>
-#include <chrono>
-#include <cstring>
-#include <cstdlib>
-#include <ctime>
-#include <cmath>
-#include <memory>
-#include <string>
-#include <algorithm>
-#include <memory>
+#pragma once
 
-// TODO: consider writing individual files for every node type (parallel pattern abstractions)
+// namespace HipaVX
+// {
+// class FileinputImage;
+// class WriteImageNode;
+// class HipaccNode;
+// template<typename T> class Mask2D;
+// template <typename T> class LinearMask;
+// class Sobel3x3Node;
+// class BoxFilter;
+// class GaussianFilter;
+// class Dilate;
+// class Erode;
+// class Add3_3;
+// class HarrisCorners;
+// class VXConvolveNode;
+// class VXBilateralFilterNode;
+// class AnotherBilateralFilterNode;
+// }
 
 namespace HipaVX
 {
@@ -44,7 +45,6 @@ public:
     virtual std::string generateClassDefinition() override;
     virtual std::string generateNodeCall() override;
 };
-
 
 class HipaccNode: public Node
 {
@@ -146,6 +146,7 @@ public:
     }
     virtual ~BoxFilter() override = default;
 };
+
 class GaussianFilter: public LinearMask<int>
 {
 public:
@@ -162,6 +163,7 @@ public:
     }
     virtual ~GaussianFilter() override = default;
 };
+
 class Dilate: public LinearMask<int>
 {
 public:
@@ -175,6 +177,7 @@ public:
 	}
 	virtual ~Dilate() override = default;
 };
+
 class Erode: public LinearMask<int>
 {
 public:
@@ -314,75 +317,6 @@ public:
     virtual void build() override;
 };
 
-class AbsNode: public Node
-{
-public:
-    AbsNode();
-    virtual ~AbsNode() override = default;
-    Image *in;
-    Image *out;
-
-    UnaryFunctionNode function_node;
-
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
-    virtual std::vector<Node*> get_subnodes() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
-    virtual void build() override;
-};
-
-class AbsDiffNode: public Node
-{
-public:
-    AbsDiffNode();
-    virtual ~AbsDiffNode() override = default;
-    Image *in_1;
-    Image *in_2;
-    Image *out;
-
-    SimplePointSub diff_node;
-    std::unique_ptr<Image> diff_image;
-
-    AbsNode abs_node;
-    std::unique_ptr<Image> abs_image;
-
-    SaturateNode saturate_node;
-
-    bool saturate;
-
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
-    virtual std::vector<Node*> get_subnodes() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
-    virtual void build() override;
-};
-
-class VXAddNode: public Node
-{
-public:
-    VXAddNode();
-    virtual ~VXAddNode() override = default;
-    Image *in_1;
-    Image *in_2;
-    Image *out;
-
-    SimplePointAdd add_node;
-    std::unique_ptr<Image> add_image;
-
-    SaturateNode saturate_node;
-
-    vx_enum policy;
-
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
-    virtual std::vector<Node*> get_subnodes() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
-    virtual void build() override;
-};
-
 class VXConvolveNode: public Node
 {
 public:
@@ -451,31 +385,11 @@ public:
 
 namespace generator
 {
-enum class Type
-{
-    Definition = 0,
-    Call
-};
-
-
 // TODO: remove all except HipaccNode, WriteImageNode
 std::string node_generator(HipaVX::WriteImageNode* n, Type t);
-std::string node_generator(HipaVX::ConvertDepthNode* n, Type t);
-
-std::string node_generator(HipaVX::VXChannelExtractNode* n, Type t);
-std::string node_generator(HipaVX::VXChannelCombineNode* n, Type t);
-template <typename T>
-std::string node_generator(HipaVX::SimplePointScalar<T>* n, Type t);
 std::string node_generator(HipaVX::HarrisCorners* n, Type t);
 
-std::string node_generator(HipaVX::SaturateNode* n, Type t);
-std::string node_generator(HipaVX::UnaryFunctionNode* n, Type t);
-template <typename T>
-std::string node_generator(HipaVX::ConditionalAssignmentNode<T>* n, Type t);
-
 std::string node_generator(HipaVX::HipaccNode *n, Type t);
-std::string node_generator(HipaVX::VXScaleNode *n, Type t);
-
 }
 
 
@@ -495,9 +409,6 @@ void Mask2D<T>::from_VX_Matrix(VX_Matrix *m)
         mask.push_back(data[i]);
     }
 }
-
-
-
 
 template <typename T>
 LinearMask<T>::LinearMask()
@@ -591,66 +502,4 @@ void LinearMask<T>::build()
 	kernel.function << assign(target_pixel(out_node), temp_variable);
  }
 
-
-
-template <typename T>
-std::vector<Object *> SimplePointScalar<T>::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in);
-    return used_objects;
 }
-template <typename T>
-std::vector<Object *> SimplePointScalar<T>::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(out);
-    return used_objects;
-}
-template <typename T>
-std::string SimplePointScalar<T>::generateClassDefinition()
-{
-    return generator::node_generator(this, generator::Type::Definition);
-}
-template <typename T>
-std::string SimplePointScalar<T>::generateNodeCall()
-{
-    return generator::node_generator(this, generator::Type::Call);
-}
-
-template <typename T>
-ConditionalAssignmentNode<T>::ConditionalAssignmentNode()
-{
-    node_name = "Conditional Assignment";
-}
-template <typename T>
-std::vector<Object *> ConditionalAssignmentNode<T>::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in);
-    return used_objects;
-}
-template <typename T>
-std::vector<Object *> ConditionalAssignmentNode<T>::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(out);
-    return used_objects;
-}
-template <typename T>
-std::string ConditionalAssignmentNode<T>::generateClassDefinition()
-{
-    return generator::node_generator(this, generator::Type::Definition);
-}
-template <typename T>
-std::string ConditionalAssignmentNode<T>::generateNodeCall()
-{
-    return generator::node_generator(this, generator::Type::Call);
-}
-
-
-
-
-}
-
-#endif
