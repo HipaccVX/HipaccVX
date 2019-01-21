@@ -164,6 +164,7 @@ void SaturateNode::build()
 		min = constant<int>(0);
 		max = constant<int>(255);
 	}
+    // TODO: Add other datatypes
 	else
 	{
 		min = constant<int>(-32768);
