@@ -674,15 +674,18 @@ class VXChannelExtractNode: public Node
 public:
     VXChannelExtractNode();
     virtual ~VXChannelExtractNode() override = default;
-    Image *in;
-    vx_channel_e channel;
-    Image *out;
 
+    Image *in;
+    Image *out;
+    vx_channel_e channel_vx;
+
+	function_ast::ForEveryPixel kernel;
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
     virtual std::string generateClassDefinition() override;
     virtual std::string generateNodeCall() override;
+    virtual void build() override;
 };
 
 class VXScaleNode: public Node
@@ -713,15 +716,12 @@ enum class Type
 // TODO: remove all except HipaccNode, WriteImageNode
 std::string node_generator(HipaVX::ConvertDepthNode* n, Type t);
 
-std::string node_generator(HipaVX::VXChannelExtractNode* n, Type t);
-
 std::string node_generator(HipaVX::UnaryFunctionNode* n, Type t);
 
 template <typename T>
 std::string node_generator(HipaVX::ConditionalAssignmentNode<T>* n, Type t);
 
 std::string node_generator(HipaVX::VXScaleNode *n, Type t);
-
 }
 
 namespace HipaVX

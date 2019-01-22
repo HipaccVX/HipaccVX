@@ -44,6 +44,10 @@ std::string Vect4::generate_source()
 {
     return generate(this);
 }
+std::string Extract4::generate_source()
+{
+    return generate(this);
+}
 std::string Assignment::generate_source()
 {
     return generate(this);
@@ -154,13 +158,15 @@ std::shared_ptr<function_ast::Node> convert(std::shared_ptr<function_ast::Node> 
     return std::make_shared<function_ast::Conversion>(a, type);
 }
 
-std::shared_ptr<function_ast::Node> vect4(std::shared_ptr<function_ast::Node> a,
-                                                std::shared_ptr<function_ast::Node> b,
-                                                std::shared_ptr<function_ast::Node> c,
-                                                std::shared_ptr<function_ast::Node> d,
-                                                function_ast::Datatype type)
+std::shared_ptr<function_ast::Node> vect4(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b,
+                                          std::shared_ptr<function_ast::Node> c, std::shared_ptr<function_ast::Node> d, function_ast::Datatype type)
 {
     return std::make_shared<function_ast::Vect4>(a, b, c, d, type);
+}
+
+std::shared_ptr<function_ast::Node> extract4(std::shared_ptr<function_ast::Node> a, function_ast::Datatype type, function_ast::VectChannelType chn)
+{
+    return std::make_shared<function_ast::Extract4>(a, type, chn);
 }
 
 std::shared_ptr<function_ast::Node> define(std::shared_ptr<function_ast::Node> n)

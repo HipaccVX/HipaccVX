@@ -107,7 +107,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxChannelExtractNode (vx_graph graph, vx_image 
 	auto vx = new _vx_node();
 	vx->o = channel_extract;
 	channel_extract->in = convert(input);
-    channel_extract->channel = (vx_channel_e) channel;
+    channel_extract->channel_vx = (vx_channel_e) channel;
 	channel_extract->out = convert(output);
 	convert(graph)->graph.emplace_back(channel_extract);
 	convert(graph)->built = false;

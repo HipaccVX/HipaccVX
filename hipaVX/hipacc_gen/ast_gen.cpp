@@ -151,7 +151,7 @@ std::string generate(Vect4 *s)
         func = "make_uint4";
         break;
     default:
-        std::cerr << "AST:Vect4 is called with an unsupported datatype: " << std::endl;
+        std::cerr << "AST: Vect4 is called with an unsupported datatype: " << std::endl;
         exit(1);
         break;
     }
@@ -161,6 +161,46 @@ std::string generate(Vect4 *s)
                     s->subnodes[2]->generate_source() + ", "+
                     s->subnodes[3]->generate_source();
     return func + "("+ argument + ")";
+}
+
+std::string generate(Extract4 *s)
+{
+    string channel;
+    switch(s->channel)
+    {
+    case function_ast::VectChannelType::CHANNEL0:
+        channel = "x";
+        break;
+    case function_ast::VectChannelType::CHANNEL1:
+        channel = "y";
+        break;
+    case function_ast::VectChannelType::CHANNEL2:
+        channel = "z";
+        break;
+    case function_ast::VectChannelType::CHANNEL3:
+        channel = "w";
+        break;
+    default:
+        throw std::runtime_error("AST: Vect4 is called with an unsupported datatype");
+    }
+
+    std::string func = "";
+    switch(s->from_dtype)
+    {
+    case Datatype::UCHAR4:
+        func = "convert_uchar4";
+        break;
+    case Datatype::UINT4:
+        func = "convert_uint4";
+        break;
+    default:
+        std::cerr << "AST: Extract4 is called with an unsupported datatype: " << std::endl;
+        exit(1);
+        break;
+    }
+
+    auto argument = s->subnodes[0]->generate_source();
+    return func + "("+ argument + ")." + channel;
 }
 
 std::string generate(Variable *s)

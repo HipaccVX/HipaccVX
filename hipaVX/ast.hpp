@@ -46,6 +46,7 @@ enum class NodeType
 	BitwiseNot,
 
     Vect4,
+    Extract4,
 
     Sqrt,
     Square,
@@ -88,6 +89,16 @@ enum class Datatype
     UCHAR4,
     UINT4,
 };
+
+enum class VectChannelType 
+{
+    CHANNEL0,
+    CHANNEL1,
+    CHANNEL2,
+    CHANNEL3
+};
+
+
 enum class ReductionType
 {
     SUM,
@@ -509,7 +520,6 @@ public:
     virtual ~Conversion() = default;
 };
 
-
 class Vect4: public Node
 {
 public:
@@ -531,6 +541,26 @@ public:
     virtual std::string generate_source() override;
 
 	virtual ~Vect4() = default;
+};
+
+class Extract4: public Node
+{
+public:
+	Extract4()
+	{
+		type = NodeType::Extract4;
+		subnodes.resize(2);
+	}
+	Extract4( std::shared_ptr<function_ast::Node> n1, Datatype dtype, VectChannelType channel) : from_dtype(dtype), channel(channel)
+	{
+		type = NodeType::Extract4;
+		subnodes = {n1};
+	}
+    Datatype from_dtype;
+    VectChannelType channel;
+    virtual std::string generate_source() override;
+
+	virtual ~Extract4() = default;
 };
 
 class PixelvalueAtCurrentStencilPos: public Node
@@ -841,7 +871,7 @@ public:
 
 
 
-
+// TODO: move to ast_gen.hpp
 std::string generate(SimpleBinaryNode *s);
 std::string generate(SimpleUnaryFunctionNode *s);
 std::string generate(Variable *s);
@@ -850,6 +880,7 @@ std::string generate(Assignment *s);
 std::string generate(TargetPixel *s);
 std::string generate(Image *s);
 std::string generate(Vect4 *s);
+std::string generate(Extract4 *s);
 std::string generate(ForEveryPixel *s);
 std::string generate(ReductionOutput *s);
 std::string generate(ReductionType *s);
@@ -941,6 +972,8 @@ std::shared_ptr<function_ast::Node> greater(std::shared_ptr<function_ast::Node> 
 
 std::shared_ptr<function_ast::Node> vect4(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b, 
                                           std::shared_ptr<function_ast::Node> c, std::shared_ptr<function_ast::Node> d, function_ast::Datatype type );
+
+std::shared_ptr<function_ast::Node> extract4(std::shared_ptr<function_ast::Node> a, function_ast::Datatype type, function_ast::VectChannelType e);
 
 std::shared_ptr<function_ast::Node> unequal(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
 

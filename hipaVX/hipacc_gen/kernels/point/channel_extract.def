@@ -1,9 +1,0 @@
-[NAME]
-Channel_Extract
-
-[KERNEL_VARIABLES]
-Accessor input
-
-[KERNEL]
-output() = convert_uchar4(input()).@@@CHANNEL@@@;
-[KERNEL_END]

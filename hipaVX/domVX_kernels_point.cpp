@@ -1162,12 +1162,48 @@ std::vector<Object *> VXChannelExtractNode::get_outputs()
 
 std::string VXChannelExtractNode::generateClassDefinition()
 {
-    return generator::node_generator(this, generator::Type::Definition);
+	std::string s = function_ast::generate(&kernel);
+	return s;
 }
 
 std::string VXChannelExtractNode::generateNodeCall()
 {
-    return generator::node_generator(this, generator::Type::Call);
+	std::string s = function_ast::generate_call(&kernel);
+	return s;
+}
+
+void VXChannelExtractNode::build()
+{
+	auto in_node = std::make_shared<function_ast::Image>(in);
+	kernel.inputs.push_back(in_node);
+
+	auto out_node = std::make_shared<function_ast::Image>(out);
+	kernel.output = out_node;
+
+    function_ast::VectChannelType channel_ast; 
+    switch(channel_vx)
+    {
+    case VX_CHANNEL_B:
+    case VX_CHANNEL_0:
+        channel_ast = function_ast::VectChannelType::CHANNEL0;
+        break;
+    case VX_CHANNEL_G:
+    case VX_CHANNEL_1:
+        channel_ast = function_ast::VectChannelType::CHANNEL1;
+        break;
+    case VX_CHANNEL_R:
+    case VX_CHANNEL_2:
+        channel_ast = function_ast::VectChannelType::CHANNEL2;
+        break;
+    case VX_CHANNEL_A:
+    case VX_CHANNEL_3:
+        channel_ast = function_ast::VectChannelType::CHANNEL3;
+        break;
+    default:
+        throw std::runtime_error("VXChannelExtractNode: Unsupported Chhannel Type");
+    }
+
+	kernel.function << assign(target_pixel(out_node), extract4(current_pixel(in_node), function_ast::Datatype::UCHAR4, channel_ast));
 }
 
 VXChannelCombineNode::VXChannelCombineNode()
@@ -1194,7 +1230,6 @@ std::vector<Object *> VXChannelCombineNode::get_outputs()
 
 std::string VXChannelCombineNode::generateClassDefinition()
 {
-    //return generator::node_generator(this, generator::Type::Definition);
 	std::string s = function_ast::generate(&kernel);
 	return s;
 }
@@ -1215,7 +1250,6 @@ void VXChannelCombineNode::build()
 	kernel.inputs.push_back(in_node_2);
 	kernel.inputs.push_back(in_node_3);
 	kernel.inputs.push_back(in_node_4);
-	//kernel.inputs.push_back(function_ast::Datatype::UCHAR4);
 
 	auto out_node = std::make_shared<function_ast::Image>(out);
 	kernel.output = out_node;
