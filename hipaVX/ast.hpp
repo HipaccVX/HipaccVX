@@ -45,6 +45,8 @@ enum class NodeType
 	BitwiseXor,
 	BitwiseNot,
 
+    Vect4,
+
     Sqrt,
     Square,
     Exp,
@@ -75,12 +77,16 @@ enum class NodeType
 
 enum class Datatype
 {
+    UCHAR,
     INT32,
     UINT32,
     FLOAT,
     UINT8,
     UINT16,
-    INT16
+    INT16,
+
+    UCHAR4,
+    UINT4,
 };
 enum class ReductionType
 {
@@ -503,6 +509,30 @@ public:
     virtual ~Conversion() = default;
 };
 
+
+class Vect4: public Node
+{
+public:
+	Vect4()
+	{
+		type = NodeType::Vect4;
+		subnodes.resize(5);
+	}
+	Vect4(
+        std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2,
+        std::shared_ptr<function_ast::Node> n3, std::shared_ptr<function_ast::Node> n4,
+        Datatype dtype
+        ) : to_dtype(dtype)
+	{
+		type = NodeType::Vect4;
+		subnodes = {n1, n2, n3, n4};
+	}
+    Datatype to_dtype;
+    virtual std::string generate_source() override;
+
+	virtual ~Vect4() = default;
+};
+
 class PixelvalueAtCurrentStencilPos: public Node
 {
 public:
@@ -819,6 +849,7 @@ std::string generate(VariableDefinition *s);
 std::string generate(Assignment *s);
 std::string generate(TargetPixel *s);
 std::string generate(Image *s);
+std::string generate(Vect4 *s);
 std::string generate(ForEveryPixel *s);
 std::string generate(ReductionOutput *s);
 std::string generate(ReductionType *s);
@@ -893,23 +924,26 @@ std::shared_ptr<function_ast::Node> constant(T t)
 }
 
 std::shared_ptr<function_ast::Node> define(std::shared_ptr<function_ast::Node> n);
-std::shared_ptr<function_ast::If> IF(std::shared_ptr<function_ast::Node> n);
-std::shared_ptr<function_ast::Else> ELSE();
-std::shared_ptr<function_ast::Node> less(std::shared_ptr<function_ast::Node> a,
-							  std::shared_ptr<function_ast::Node> b);
-std::shared_ptr<function_ast::Node> less_equal(std::shared_ptr<function_ast::Node> a,
-							  std::shared_ptr<function_ast::Node> b);
-std::shared_ptr<function_ast::Node> equal(std::shared_ptr<function_ast::Node> a,
-							  std::shared_ptr<function_ast::Node> b);
-std::shared_ptr<function_ast::Node> greater_equal(std::shared_ptr<function_ast::Node> a,
-							  std::shared_ptr<function_ast::Node> b);
-std::shared_ptr<function_ast::Node> greater(std::shared_ptr<function_ast::Node> a,
-							  std::shared_ptr<function_ast::Node> b);
-std::shared_ptr<function_ast::Node> unequal(std::shared_ptr<function_ast::Node> a,
-							  std::shared_ptr<function_ast::Node> b);
 
+std::shared_ptr<function_ast::If> IF(std::shared_ptr<function_ast::Node> n);
+
+std::shared_ptr<function_ast::Else> ELSE();
+
+std::shared_ptr<function_ast::Node> less(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
+
+std::shared_ptr<function_ast::Node> less_equal(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
+
+std::shared_ptr<function_ast::Node> equal(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
+
+std::shared_ptr<function_ast::Node> greater_equal(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
+
+std::shared_ptr<function_ast::Node> greater(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
+
+std::shared_ptr<function_ast::Node> vect4(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b, 
+                                          std::shared_ptr<function_ast::Node> c, std::shared_ptr<function_ast::Node> d, function_ast::Datatype type );
+
+std::shared_ptr<function_ast::Node> unequal(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
 
 function_ast::Datatype convert_type(vx_df_image type);
-
 
 #endif

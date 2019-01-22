@@ -2,6 +2,9 @@
 #include "hipacc_gen.hpp"
 #include "node_gen.hpp"
 
+#include <iostream>
+#include <cstdlib>
+
 #include <fstream>
 #include <string>
 #include <sstream>
@@ -133,6 +136,31 @@ std::string generate(SimpleUnaryFunctionNode *s)
     auto argument = s->subnodes[0]->generate_source();
 
     return func + "(" + argument + ")";
+}
+
+std::string generate(Vect4 *s)
+{
+    std::string func = "";
+
+    switch(s->to_dtype)
+    {
+    case Datatype::UCHAR4:
+        func = "make_uchar4";
+        break;
+    case Datatype::UINT4:
+        func = "make_uint4";
+        break;
+    default:
+        std::cerr << "AST:Vect4 is called with an unsupported datatype: " << std::endl;
+        exit(1);
+        break;
+    }
+
+    auto argument = s->subnodes[0]->generate_source() + ", "+
+                    s->subnodes[1]->generate_source() + ", "+
+                    s->subnodes[2]->generate_source() + ", "+
+                    s->subnodes[3]->generate_source();
+    return func + "("+ argument + ")";
 }
 
 std::string generate(Variable *s)

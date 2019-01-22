@@ -40,6 +40,10 @@ std::string VariableDefinition::generate_source()
 {
     return generate(this);
 }
+std::string Vect4::generate_source()
+{
+    return generate(this);
+}
 std::string Assignment::generate_source()
 {
     return generate(this);
@@ -150,25 +154,31 @@ std::shared_ptr<function_ast::Node> convert(std::shared_ptr<function_ast::Node> 
     return std::make_shared<function_ast::Conversion>(a, type);
 }
 
+std::shared_ptr<function_ast::Node> vect4(std::shared_ptr<function_ast::Node> a,
+                                                std::shared_ptr<function_ast::Node> b,
+                                                std::shared_ptr<function_ast::Node> c,
+                                                std::shared_ptr<function_ast::Node> d,
+                                                function_ast::Datatype type)
+{
+    return std::make_shared<function_ast::Vect4>(a, b, c, d, type);
+}
+
 std::shared_ptr<function_ast::Node> define(std::shared_ptr<function_ast::Node> n)
 {
     return std::make_shared<function_ast::VariableDefinition>(n);
 }
 
-std::shared_ptr<function_ast::Node> operator&(std::shared_ptr<function_ast::Node> a,
-							  std::shared_ptr<function_ast::Node> b)
+std::shared_ptr<function_ast::Node> operator&(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b)
 {
 	return std::make_shared<function_ast::BitwiseAnd>(a, b);
 }
 
-std::shared_ptr<function_ast::Node> operator&&(std::shared_ptr<function_ast::Node> a,
-							  std::shared_ptr<function_ast::Node> b)
+std::shared_ptr<function_ast::Node> operator&&(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b)
 {
 	return std::make_shared<function_ast::And>(a, b);
 }
 
-std::shared_ptr<function_ast::Node> operator|(std::shared_ptr<function_ast::Node> a,
-							  std::shared_ptr<function_ast::Node> b)
+std::shared_ptr<function_ast::Node> operator|(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b)
 {
 	return std::make_shared<function_ast::BitwiseOr>(a, b);
 }
@@ -192,41 +202,43 @@ std::shared_ptr<function_ast::Node> operator~(std::shared_ptr<function_ast::Node
 {
 	return std::make_shared<function_ast::BitwiseNot>(a);
 }
+
 std::shared_ptr<function_ast::If> IF(std::shared_ptr<function_ast::Node> a)
 {
 	return std::make_shared<function_ast::If>(a);
 }
+
 std::shared_ptr<function_ast::Else> ELSE()
 {
 	return std::make_shared<function_ast::Else>();
 }
-std::shared_ptr<function_ast::Node> less(std::shared_ptr<function_ast::Node> a,
-							  std::shared_ptr<function_ast::Node> b)
+
+std::shared_ptr<function_ast::Node> less(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b)
 {
 	return std::make_shared<function_ast::Less>(a, b);
 }
-std::shared_ptr<function_ast::Node> less_equal(std::shared_ptr<function_ast::Node> a,
-							  std::shared_ptr<function_ast::Node> b)
+
+std::shared_ptr<function_ast::Node> less_equal(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b)
 {
 	return std::make_shared<function_ast::LessEquals>(a, b);
 }
-std::shared_ptr<function_ast::Node> equal(std::shared_ptr<function_ast::Node> a,
-							  std::shared_ptr<function_ast::Node> b)
+
+std::shared_ptr<function_ast::Node> equal(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b)
 {
 	return std::make_shared<function_ast::Equals>(a, b);
 }
-std::shared_ptr<function_ast::Node> greater_equal(std::shared_ptr<function_ast::Node> a,
-							  std::shared_ptr<function_ast::Node> b)
+
+std::shared_ptr<function_ast::Node> greater_equal(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b)
 {
 	return std::make_shared<function_ast::GreaterEquals>(a, b);
 }
-std::shared_ptr<function_ast::Node> greater(std::shared_ptr<function_ast::Node> a,
-							  std::shared_ptr<function_ast::Node> b)
+
+std::shared_ptr<function_ast::Node> greater(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b)
 {
 	return std::make_shared<function_ast::Greater>(a, b);
 }
-std::shared_ptr<function_ast::Node> unequal(std::shared_ptr<function_ast::Node> a,
-							  std::shared_ptr<function_ast::Node> b)
+
+std::shared_ptr<function_ast::Node> unequal(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b)
 {
 	return std::make_shared<function_ast::Unequals>(a, b);
 }

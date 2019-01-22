@@ -1194,12 +1194,33 @@ std::vector<Object *> VXChannelCombineNode::get_outputs()
 
 std::string VXChannelCombineNode::generateClassDefinition()
 {
-    return generator::node_generator(this, generator::Type::Definition);
+    //return generator::node_generator(this, generator::Type::Definition);
+	std::string s = function_ast::generate(&kernel);
+	return s;
 }
 
 std::string VXChannelCombineNode::generateNodeCall()
 {
-    return generator::node_generator(this, generator::Type::Call);
+	std::string s = function_ast::generate_call(&kernel);
+	return s;
+}
+
+void VXChannelCombineNode::build()
+{
+	auto in_node_1 = std::make_shared<function_ast::Image>(in_1);
+	auto in_node_2 = std::make_shared<function_ast::Image>(in_2);
+	auto in_node_3 = std::make_shared<function_ast::Image>(in_3);
+	auto in_node_4 = std::make_shared<function_ast::Image>(in_4);
+	kernel.inputs.push_back(in_node_1);
+	kernel.inputs.push_back(in_node_2);
+	kernel.inputs.push_back(in_node_3);
+	kernel.inputs.push_back(in_node_4);
+	//kernel.inputs.push_back(function_ast::Datatype::UCHAR4);
+
+	auto out_node = std::make_shared<function_ast::Image>(out);
+	kernel.output = out_node;
+
+	kernel.function << assign(target_pixel(out_node), vect4(current_pixel(in_node_1), current_pixel(in_node_2), current_pixel(in_node_3), current_pixel(in_node_4), function_ast::Datatype::UCHAR4));
 }
 
 VXScaleNode::VXScaleNode()
