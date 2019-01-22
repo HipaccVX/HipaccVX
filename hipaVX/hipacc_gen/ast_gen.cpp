@@ -1,14 +1,4 @@
-#include "../gen_template.hpp"
-#include "hipacc_gen.hpp"
-#include "node_gen.hpp"
-
-#include <iostream>
-#include <cstdlib>
-
-#include <fstream>
-#include <string>
-#include <sstream>
-#include <map>
+#include "ast_gen.hpp"
 
 using std::string;
 
