@@ -1,9 +1,0 @@
-[NAME]
-Abstract_1_Acc
-
-[KERNEL_VARIABLES]
-Accessor input
-
-[KERNEL]
-@@@KERNEL@@@
-[KERNEL_END]

@@ -784,3 +784,4 @@ void SimplePointScalar<T>::build()
 		break;
 	}
 }
+}
