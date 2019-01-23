@@ -281,6 +281,30 @@ public:
     virtual ~SimplePointScalarDiv() override = default;
 };
 
+template <typename T>
+class SimplePointScalarShiftRight: public SimplePointScalar<T>
+{
+public:
+    SimplePointScalarShiftRight()
+	{
+		this->operation = function_ast::NodeType::ShiftRight;
+        this->node_name = "Scalar Shift Right";
+    }
+    virtual ~SimplePointScalarShiftRight() override = default;
+};
+
+template <typename T>
+class SimplePointScalarShiftLeft: public SimplePointScalar<T>
+{
+public:
+    SimplePointScalarShiftLeft()
+	{
+		this->operation = function_ast::NodeType::ShiftLeft;
+        this->node_name = "Scalar Shift Left";
+    }
+    virtual ~SimplePointScalarShiftLeft() override = default;
+};
+
 class ConvertDepthNode: public Node
 {
 public:
@@ -288,14 +312,17 @@ public:
     virtual ~ConvertDepthNode() override = default;
     Image *in;
     Image *out;
-
     vx_enum policy;
     Scalar *shift;
+
+	function_ast::ForEveryPixel kernel;
+    SimplePointScalarShiftRight<unsigned> shift_node; // TODO: ?? how do we know datatype
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
     virtual std::string generateClassDefinition() override;
     virtual std::string generateNodeCall() override;
+    virtual void build() override;
 };
 
 class NotNode: public Node
@@ -714,8 +741,6 @@ enum class Type
 };
 
 // TODO: remove all except HipaccNode, WriteImageNode
-std::string node_generator(HipaVX::ConvertDepthNode* n, Type t);
-
 std::string node_generator(HipaVX::UnaryFunctionNode* n, Type t);
 
 template <typename T>
@@ -776,6 +801,12 @@ void SimplePointScalar<T>::build()
 		break;
 	case function_ast::NodeType::Div:
 		kernel.function << assign(target_pixel(out_node), current_pixel(in_node) / c);
+		break;
+	case function_ast::NodeType::ShiftRight:
+		kernel.function << assign(target_pixel(out_node), current_pixel(in_node) >> c);
+		break;
+	case function_ast::NodeType::ShiftLeft:
+		kernel.function << assign(target_pixel(out_node), current_pixel(in_node) << c);
 		break;
 	}
 }

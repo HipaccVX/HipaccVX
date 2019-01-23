@@ -50,6 +50,12 @@ std::string generate(SimpleBinaryNode *s)
     case NodeType::Div:
         op = "/";
         break;
+    case NodeType::ShiftLeft:
+        op = "<<";
+        break;
+    case NodeType::ShiftRight:
+        op = ">>";
+        break;
 	case NodeType::And:
 		op = "&&";
 		break;
@@ -90,7 +96,7 @@ std::string generate(SimpleBinaryNode *s)
     auto left = s->subnodes[0]->generate_source();
     auto right = s->subnodes[1]->generate_source();
 
-    return "(" + left + op + right + ")";
+    return "(" + left + " " + op + " " + right + ")";
 }
 
 std::string generate(SimpleUnaryFunctionNode *s)

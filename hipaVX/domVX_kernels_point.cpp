@@ -193,7 +193,6 @@ std::vector<Object *> ConvertDepthNode::get_inputs()
 {
     std::vector<Object*> used_objects;
     used_objects.emplace_back(in);
-    used_objects.emplace_back(shift);
     return used_objects;
 }
 
@@ -206,12 +205,45 @@ std::vector<Object *> ConvertDepthNode::get_outputs()
 
 std::string ConvertDepthNode::generateClassDefinition()
 {
-    return generator::node_generator(this, generator::Type::Definition);
+	std::string s = function_ast::generate(&kernel);
+	return s;
 }
 
 std::string ConvertDepthNode::generateNodeCall()
 {
-    return generator::node_generator(this, generator::Type::Call);
+	std::string s = function_ast::generate_call(&kernel);
+	return s;
+}
+
+void ConvertDepthNode::build()
+{
+
+	auto in_node = std::make_shared<function_ast::Image>(in);
+	kernel.inputs.push_back(in_node);
+	auto out_node = std::make_shared<function_ast::Image>(out);
+	kernel.output = out_node;
+
+    // Shift right
+	auto temp = std::make_shared<function_ast::Variable>("value", function_ast::Datatype::INT16); // TODO: datatype
+	auto shift_c = constant<>(shift->i32);
+    kernel.function << define(temp) << assign(temp, current_pixel(in_node) >> shift_c);
+
+	std::shared_ptr<function_ast::Node> min = constant<int>(0);
+	std::shared_ptr<function_ast::Node> max = constant<int>(255);
+
+    // max/min overflow
+	auto greater_if = IF(greater(temp, max));
+	     greater_if->body << assign(temp, max);
+	auto greater_else = ELSE();
+
+	auto less_if = IF(less(temp, min));
+	    less_if->body << assign(temp, min);
+	greater_else->body << less_if;
+
+	kernel.function << greater_if;
+	kernel.function << greater_else;
+
+	kernel.function << assign(target_pixel(out_node), temp);
 }
 
 NotNode::NotNode()

@@ -1,6 +1,10 @@
 #include "../VX/vx.h"
 #include "hipaVX_kernels.hpp"
 
+// High priority
+// TODO: Nodes consisting of graphs should be described in here not in class definitions.
+//       We can extend vxAPI so that composite graph functions can be written with function calls.
+
 /*
  * 63 functions (24, 39)
  *
@@ -69,6 +73,7 @@
 ** VX_API_ENTRY vx_node VX_API_CALL vxCopyNode
 */
 
+// TODO: maybe move convert to domVX_types.hpp ???
 static HipaVX::Node* convert(vx_node n)
 {
 	return (HipaVX::Node*)(n->o);

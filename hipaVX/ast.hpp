@@ -27,6 +27,8 @@ enum class NodeType
     Sub,
     Mul,
     Div,
+    ShiftLeft,
+    ShiftRight,
 
     Less,
     LessEquals,
@@ -211,6 +213,40 @@ public:
     }
 
     virtual ~Div() = default;
+};
+
+class ShiftLeft: public SimpleBinaryNode
+{
+public:
+    ShiftLeft()
+    {
+        type = NodeType::ShiftLeft;
+        subnodes.resize(2);
+    }
+    ShiftLeft(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
+    {
+        type = NodeType::ShiftLeft;
+        subnodes = {n1, n2};
+    }
+
+    virtual ~ShiftLeft() = default;
+};
+
+class ShiftRight: public SimpleBinaryNode
+{
+public:
+    ShiftRight()
+    {
+        type = NodeType::ShiftRight;
+        subnodes.resize(2);
+    }
+    ShiftRight(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
+    {
+        type = NodeType::ShiftRight;
+        subnodes = {n1, n2};
+    }
+
+    virtual ~ShiftRight() = default;
 };
 
 class And: public SimpleBinaryNode
@@ -902,8 +938,6 @@ std::string generate(Constant<T> *s)
     return std::to_string(s->value);
 }
 
-
-
 //Templated Node method definitions
 template<typename T>
 std::string Constant<T>::generate_source()
@@ -935,6 +969,10 @@ std::shared_ptr<function_ast::Node> operator^(std::shared_ptr<function_ast::Node
 std::shared_ptr<function_ast::Node> operator!(std::shared_ptr<function_ast::Node> a);
 
 std::shared_ptr<function_ast::Node> operator~(std::shared_ptr<function_ast::Node> a);
+
+std::shared_ptr<function_ast::Node> operator<<(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> shift);
+
+std::shared_ptr<function_ast::Node> operator>>(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> shift);
 
 std::shared_ptr<function_ast::Node> square(std::shared_ptr<function_ast::Node> a);
 
