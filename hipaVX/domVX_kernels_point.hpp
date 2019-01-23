@@ -6,12 +6,14 @@
 
 #pragma once
 
+
+// TODO: IMPORTANT: Do not have multiple node classes
+
 // namespace HipaVX
 // {
 // class SimplePoint;
 // template <typename T> class SimplePointScalar;
 // class ImageComparision;
-// template <typename T> class ConditionalAssignmentNode;
 // class SimplePointMul;
 // class SquareNode;
 // class SaturateNode;
@@ -95,30 +97,6 @@ public:
     std::string comp_op;
     std::string value;
     bool image_is_first_operand = true;
-};
-
-template <typename T>
-class ConditionalAssignmentNode: public Node
-{
-public:
-    ConditionalAssignmentNode();
-    virtual ~ConditionalAssignmentNode() override = default;
-
-    Image *in;
-    Image *out;
-
-    std::vector<ImageComparision> comparision;
-    std::vector<std::string> chaining_operators;
-    T true_value;
-    T false_value;
-
-    bool use_image_datatype_for_sum = true;
-    vx_df_image sum_datatype;
-
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
 };
 
 class SimplePointMul: public SimplePoint
@@ -397,12 +375,11 @@ public:
     Image *out;
     Threshold *threshold;
 
-    ConditionalAssignmentNode<int> comparision_node;
-
+	function_ast::ForEveryPixel kernel;
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
-    virtual std::vector<Node*> get_subnodes() override;
+    //virtual std::vector<Node*> get_subnodes() override;
     virtual std::string generateClassDefinition() override;
     virtual std::string generateNodeCall() override;
     virtual void build() override;
@@ -743,9 +720,6 @@ enum class Type
 // TODO: remove all except HipaccNode, WriteImageNode
 std::string node_generator(HipaVX::UnaryFunctionNode* n, Type t);
 
-template <typename T>
-std::string node_generator(HipaVX::ConditionalAssignmentNode<T>* n, Type t);
-
 std::string node_generator(HipaVX::VXScaleNode *n, Type t);
 }
 
@@ -809,40 +783,4 @@ void SimplePointScalar<T>::build()
 		kernel.function << assign(target_pixel(out_node), current_pixel(in_node) << c);
 		break;
 	}
-}
-
-template <typename T>
-ConditionalAssignmentNode<T>::ConditionalAssignmentNode()
-{
-    node_name = "Conditional Assignment";
-}
-
-template <typename T>
-std::vector<Object *> ConditionalAssignmentNode<T>::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in);
-    return used_objects;
-}
-
-template <typename T>
-std::vector<Object *> ConditionalAssignmentNode<T>::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(out);
-    return used_objects;
-}
-
-template <typename T>
-std::string ConditionalAssignmentNode<T>::generateClassDefinition()
-{
-    return generator::node_generator(this, generator::Type::Definition);
-}
-
-template <typename T>
-std::string ConditionalAssignmentNode<T>::generateNodeCall()
-{
-    return generator::node_generator(this, generator::Type::Call);
-}
-
 }

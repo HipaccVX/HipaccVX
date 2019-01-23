@@ -215,9 +215,7 @@ std::string ConvertDepthNode::generateNodeCall()
 	return s;
 }
 
-void ConvertDepthNode::build()
-{
-
+void ConvertDepthNode::build() {
 	auto in_node = std::make_shared<function_ast::Image>(in);
 	kernel.inputs.push_back(in_node);
 	auto out_node = std::make_shared<function_ast::Image>(out);
@@ -232,13 +230,13 @@ void ConvertDepthNode::build()
 	std::shared_ptr<function_ast::Node> max = constant<int>(255);
 
     // max/min overflow
+	auto less_if = IF(less(temp, min));
+	     less_if->body << assign(temp, min);
+
 	auto greater_if = IF(greater(temp, max));
 	     greater_if->body << assign(temp, max);
 	auto greater_else = ELSE();
-
-	auto less_if = IF(less(temp, min));
-	    less_if->body << assign(temp, min);
-	greater_else->body << less_if;
+	     greater_else->body << less_if;
 
 	kernel.function << greater_if;
 	kernel.function << greater_else;
@@ -374,61 +372,48 @@ std::vector<Object *> VXThresholdNode::get_outputs()
     return used_objects;
 }
 
-std::vector<Node*> VXThresholdNode::get_subnodes()
-{
-    std::vector<Node*> subnodes;
-    subnodes.push_back(&comparision_node);
-    return subnodes;
-}
-
 std::string VXThresholdNode::generateClassDefinition()
 {
-    std::string s = comparision_node.generateClassDefinition();
-    return s;
+	std::string s = function_ast::generate(&kernel);
+	return s;
 }
 
 std::string VXThresholdNode::generateNodeCall()
 {
-    std::string s = comparision_node.generateNodeCall();
-    return s;
+	std::string s = function_ast::generate_call(&kernel);
+	return s;
 }
 
 void VXThresholdNode::build()
 {
-    comparision_node.in = in;
-    comparision_node.out = out;
+	auto in_node = std::make_shared<function_ast::Image>(in);
+	kernel.inputs.push_back(in_node);
+	auto out_node = std::make_shared<function_ast::Image>(out);
+	kernel.output = out_node;
 
+    // buffer input image
+	// auto in_d = std::make_shared<function_ast::Variable>("in_d", in_node->type); //TODO: how to gen in dtype? function_ast::Datatype::INT16);
+    // kernel.function << define(in_d) << assign(in_d, current_pixel(in_node));
+
+    // TODO: Even move the outer selection to kernels_point.cpp
     if (threshold->threshold_type == VX_THRESHOLD_TYPE_BINARY)
     {
-        ImageComparision ic;
-        ic.comp_op = ">";
-        ic.value = std::to_string(threshold->value);
-
-        comparision_node.comparision.emplace_back(ic);
-
-
-        comparision_node.true_value = threshold->true_value;
-        comparision_node.false_value = threshold->false_value;
+	    auto if_less = IF(less(current_pixel(in_node), constant<>(threshold->value)));
+             if_less->body << assign(target_pixel(out_node), constant<>(threshold->true_value));
+	    auto else_less = ELSE();
+	         else_less->body << assign(target_pixel(out_node), constant<>(threshold->true_value));
+        kernel.function << if_less;
+        kernel.function << else_less;
     }
     else
     {
-        ImageComparision ic;
-        ic.comp_op = ">";
-        ic.value = std::to_string(threshold->upper);
-
-        ImageComparision ic2;
-        ic2.comp_op = "<";
-        ic2.value = std::to_string(threshold->lower);
-
-        comparision_node.comparision.emplace_back(ic);
-        comparision_node.chaining_operators.emplace_back("||");
-        comparision_node.comparision.emplace_back(ic2);
-
-        comparision_node.true_value = threshold->false_value;
-        comparision_node.false_value = threshold->true_value;
+	    auto if_outrange = IF(greater(current_pixel(in_node), constant<>(threshold->upper)) || less(current_pixel(in_node), constant<>(threshold->lower)));
+	         if_outrange->body << assign(target_pixel(out_node), constant<>(threshold->false_value));
+	    auto else_outrange = ELSE();
+	         else_outrange->body << assign(target_pixel(out_node), constant<>(threshold->true_value));
+        kernel.function << if_outrange;
+        kernel.function << else_outrange;
     }
-
-    comparision_node.build();
 }
 
 UnaryFunctionNode::UnaryFunctionNode()
