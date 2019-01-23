@@ -54,6 +54,8 @@ enum class NodeType
     Square,
     Exp,
     Conversion,
+    Abs,
+    Atan2,
 
     Constant,
     Variable,
@@ -500,6 +502,39 @@ public:
     }
     virtual ~Sqrt() = default;
 };
+
+class Abs: public SimpleUnaryFunctionNode
+{
+public:
+    Abs()
+    {
+        type = NodeType::Abs;
+        subnodes.resize(1);
+    }
+    Abs(std::shared_ptr<Node> n1)
+    {
+        type = NodeType::Abs;
+        subnodes = {n1};
+    }
+    virtual ~Abs() = default;
+};
+
+class Atan2: public SimpleUnaryFunctionNode
+{
+public:
+    Atan2()
+    {
+        type = NodeType::Atan2;
+        subnodes.resize(1);
+    }
+    Atan2(std::shared_ptr<Node> n1)
+    {
+        type = NodeType::Atan2;
+        subnodes = {n1};
+    }
+    virtual ~Atan2() = default;
+};
+
 
 class Square: public SimpleUnaryFunctionNode
 {
@@ -977,6 +1012,12 @@ std::shared_ptr<function_ast::Node> operator>>(std::shared_ptr<function_ast::Nod
 std::shared_ptr<function_ast::Node> square(std::shared_ptr<function_ast::Node> a);
 
 std::shared_ptr<function_ast::Node> exp(std::shared_ptr<function_ast::Node> a);
+
+std::shared_ptr<function_ast::Node> sqrt(std::shared_ptr<function_ast::Node> a);
+
+std::shared_ptr<function_ast::Node> atan2(std::shared_ptr<function_ast::Node> a);
+
+std::shared_ptr<function_ast::Node> abs(std::shared_ptr<function_ast::Node> a);
 
 std::shared_ptr<function_ast::Node> assign(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
 

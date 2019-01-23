@@ -416,128 +416,51 @@ void VXThresholdNode::build()
     }
 }
 
-UnaryFunctionNode::UnaryFunctionNode()
-{
-    node_name = "General unary Function";
-}
-
-std::vector<Object *> UnaryFunctionNode::get_inputs()
+std::vector<Object *> UnarySimplePoint::get_inputs()
 {
     std::vector<Object*> used_objects;
     used_objects.emplace_back(in);
     return used_objects;
 }
 
-std::vector<Object *> UnaryFunctionNode::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(out);
-    return used_objects;
-
-}
-
-std::string UnaryFunctionNode::generateClassDefinition()
-{
-    return generator::node_generator(this, generator::Type::Definition);
-}
-
-std::string UnaryFunctionNode::generateNodeCall()
-{
-    return generator::node_generator(this, generator::Type::Call);
-}
-
-SqrtNode::SqrtNode()
-{
-    node_name = "Sqrt";
-}
-
-std::vector<Object *> SqrtNode::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in);
-    return used_objects;
-}
-
-std::vector<Object *> SqrtNode::get_outputs()
+std::vector<Object *> UnarySimplePoint::get_outputs()
 {
     std::vector<Object*> used_objects;
     used_objects.emplace_back(out);
     return used_objects;
 }
 
-std::vector<Node*> SqrtNode::get_subnodes()
+std::string UnarySimplePoint::generateClassDefinition()
 {
-    std::vector<Node*> subnodes;
-    subnodes.push_back(&function_node);
-    return subnodes;
+	std::string s = function_ast::generate(&kernel);
+	return s;
 }
 
-std::string SqrtNode::generateClassDefinition()
+std::string UnarySimplePoint::generateNodeCall()
 {
-    std::string s = function_node.generateClassDefinition();
-    return s;
+	std::string s = function_ast::generate_call(&kernel);
+	return s;
 }
 
-std::string SqrtNode::generateNodeCall()
+void UnarySimplePoint::build()
 {
-    std::string s = function_node.generateNodeCall();
-    return s;
-}
+	auto in_node = std::make_shared<function_ast::Image>(in);
+	kernel.inputs.push_back(in_node);
+	auto out_node = std::make_shared<function_ast::Image>(out);
+	kernel.output = out_node;
 
-void SqrtNode::build()
-{
-    function_node.in = in;
-    function_node.out = out;
-    function_node.function = "sqrt";
-
-    function_node.build();
-}
-
-AbsNode::AbsNode()
-{
-    node_name = "Abs";
-}
-
-std::vector<Object *> AbsNode::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in);
-    return used_objects;
-}
-
-std::vector<Object *> AbsNode::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(out);
-    return used_objects;
-}
-
-std::vector<Node*> AbsNode::get_subnodes()
-{
-    std::vector<Node*> subnodes;
-    subnodes.push_back(&function_node);
-    return subnodes;
-}
-
-std::string AbsNode::generateClassDefinition()
-{
-    std::string s = function_node.generateClassDefinition();
-    return s;
-}
-
-std::string AbsNode::generateNodeCall()
-{
-    std::string s = function_node.generateNodeCall();
-    return s;
-}
-
-void AbsNode::build()
-{
-    function_node.in = in;
-    function_node.out = out;
-    function_node.function = "abs";
-
-    function_node.build();
+	switch(operation)
+	{
+	case function_ast::NodeType::Sqrt:
+		kernel.function << assign(target_pixel(out_node), sqrt(current_pixel(in_node)));
+		break;
+    case function_ast::NodeType::Abs:
+        kernel.function << assign(target_pixel(out_node), abs(current_pixel(in_node)));
+        break;
+	case function_ast::NodeType::Atan2:
+		kernel.function << assign(target_pixel(out_node), atan2(current_pixel(in_node)));
+		break;
+	}
 }
 
 AbsDiffNode::AbsDiffNode()
@@ -758,59 +681,11 @@ void MagnitudeNode::build()
     saturate_node.in = sqrt_image.get();
     saturate_node.out = out;
 
-
     grad_x_square_node.build();
     grad_y_square_node.build();
     add_node.build();
     sqrt_node.build();
     saturate_node.build();
-}
-
-Atan2Node::Atan2Node()
-{
-    node_name = "Atan2";
-}
-
-std::vector<Object *> Atan2Node::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in);
-    return used_objects;
-}
-
-std::vector<Object *> Atan2Node::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(out);
-    return used_objects;
-}
-
-std::vector<Node*> Atan2Node::get_subnodes()
-{
-    std::vector<Node*> subnodes;
-    subnodes.push_back(&function_node);
-    return subnodes;
-}
-
-std::string Atan2Node::generateClassDefinition()
-{
-    std::string s = function_node.generateClassDefinition();
-    return s;
-}
-
-std::string Atan2Node::generateNodeCall()
-{
-    std::string s = function_node.generateNodeCall();
-    return s;
-}
-
-void Atan2Node::build()
-{
-    function_node.in = in;
-    function_node.out = out;
-    function_node.function = "atan2";
-
-    function_node.build();
 }
 
 PhaseNode::PhaseNode()

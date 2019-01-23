@@ -31,7 +31,7 @@
 // class NotNode;
 // class VXSubtractNode;
 // class VXThresholdNode;
-// class UnaryFunctionNode;
+// class UnarySimplePoint;
 // class SqrtNode;
 // class AbsNode;
 // class AbsDiffNode;
@@ -385,56 +385,56 @@ public:
     virtual void build() override;
 };
 
-class UnaryFunctionNode: public Node
+class UnarySimplePoint: public Node
 {
 public:
-    UnaryFunctionNode();
-    virtual ~UnaryFunctionNode() override = default;
-    Image *in;
-    Image *out;
+    virtual ~UnarySimplePoint() override = default;
 
-    std::string function;
+    // 1 input, 1 output, 1 operation
+    Image *in;
+	Image *out;
+
+	function_ast::NodeType operation;
+	function_ast::ForEveryPixel kernel;
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
     virtual std::string generateClassDefinition() override;
     virtual std::string generateNodeCall() override;
+	virtual void build() override;
 };
 
-class SqrtNode: public Node
+class SqrtNode: public UnarySimplePoint 
 {
 public:
-    SqrtNode();
+    SqrtNode()
+    {
+		operation = function_ast::NodeType::Sqrt;
+        node_name = "Sqrt";
+    }
     virtual ~SqrtNode() override = default;
-    Image *in;
-    Image *out;
-
-    UnaryFunctionNode function_node;
-
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
-    virtual std::vector<Node*> get_subnodes() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
-    virtual void build() override;
 };
 
-class AbsNode: public Node
+class Atan2Node: public UnarySimplePoint 
 {
 public:
-    AbsNode();
+    Atan2Node()
+    {
+		operation = function_ast::NodeType::Atan2;
+        node_name = "Atan2";
+    }
+    virtual ~Atan2Node() override = default;
+};
+
+class AbsNode: public UnarySimplePoint 
+{
+public:
+    AbsNode()
+    {
+		operation = function_ast::NodeType::Abs;
+        node_name = "Abs";
+    }
     virtual ~AbsNode() override = default;
-    Image *in;
-    Image *out;
-
-    UnaryFunctionNode function_node;
-
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
-    virtual std::vector<Node*> get_subnodes() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
-    virtual void build() override;
 };
 
 class AbsDiffNode: public Node
@@ -512,24 +512,6 @@ public:
 
     SaturateNode saturate_node;
 
-
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
-    virtual std::vector<Node*> get_subnodes() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
-    virtual void build() override;
-};
-
-class Atan2Node: public Node
-{
-public:
-    Atan2Node();
-    virtual ~Atan2Node() override = default;
-    Image *in;
-    Image *out;
-
-    UnaryFunctionNode function_node;
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
@@ -718,8 +700,6 @@ enum class Type
 };
 
 // TODO: remove all except HipaccNode, WriteImageNode
-std::string node_generator(HipaVX::UnaryFunctionNode* n, Type t);
-
 std::string node_generator(HipaVX::VXScaleNode *n, Type t);
 }
 

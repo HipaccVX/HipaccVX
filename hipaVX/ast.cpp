@@ -147,6 +147,21 @@ std::shared_ptr<function_ast::Node> exp(std::shared_ptr<function_ast::Node> a)
     return std::make_shared<function_ast::Exp>(a);
 }
 
+std::shared_ptr<function_ast::Node> sqrt(std::shared_ptr<function_ast::Node> a)
+{
+    return std::make_shared<function_ast::Sqrt>(a);
+}
+
+std::shared_ptr<function_ast::Node> atan2(std::shared_ptr<function_ast::Node> a)
+{
+    return std::make_shared<function_ast::Atan2>(a);
+}
+
+std::shared_ptr<function_ast::Node> abs(std::shared_ptr<function_ast::Node> a)
+{
+    return std::make_shared<function_ast::Abs>(a);
+}
+
 std::shared_ptr<function_ast::Node> assign(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b)
 {
     return std::make_shared<function_ast::Assignment>(a, b);

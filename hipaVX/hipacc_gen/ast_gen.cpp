@@ -111,6 +111,12 @@ std::string generate(SimpleUnaryFunctionNode *s)
     case NodeType::Exp:
         func = "exp";
 		break;
+    case NodeType::Atan2:
+        func = "atan2";
+		break;
+    case NodeType::Abs:
+        func = "abs";
+		break;
 	case NodeType::Not:
 		func = "!";
 		break;
