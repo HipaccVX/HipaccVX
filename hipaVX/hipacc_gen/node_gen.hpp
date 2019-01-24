@@ -2,7 +2,7 @@
 #include "../gen_template.hpp"
 //#include "../../VX/vx.h"
 //#include "../domVX_types.hpp"
-//#include "../hipaVX_kernels.hpp"
+//#include "../domVX_kernels.hpp"
 #include "hipacc_gen.hpp"
 
 #pragma once

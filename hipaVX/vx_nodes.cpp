@@ -1,5 +1,5 @@
 #include "../VX/vx.h"
-#include "hipaVX_kernels.hpp"
+#include "domVX_kernels.hpp"
 
 // High priority
 // TODO: Nodes consisting of graphs should be described in here not in class definitions.

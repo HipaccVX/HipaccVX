@@ -3,7 +3,7 @@
 //#include <string>
 //#include "domVX_types.hpp"
 //#include "domVX_kernels.hpp"
-#include "hipaVX_kernels.hpp"
+#include "domVX_kernels.hpp"
 
 namespace HipaVX
 {

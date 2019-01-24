@@ -1,5 +1,5 @@
 #include "../ast.hpp"
-#include "../hipaVX_kernels.hpp"
+#include "../domVX_kernels.hpp"
 #include "../gen_template.hpp"
 #include "config_reader.hpp"
 

@@ -1,6 +1,5 @@
 #include "domVX_extensions.hpp"
-
-#include "hipaVX_kernels.hpp"
+#include "domVX_kernels.hpp"
 
 vx_node vxHipaccNode(vx_graph graph, std::string filename, vx_reference *parameters, vx_size count, vx_image out)
 {
