@@ -56,6 +56,9 @@ void SimplePointUnary::build()
 	case function_ast::NodeType::Not:
 	    kernel.function << assign(target_pixel(out_node), ~current_pixel(in_node));
 		break;
+	case function_ast::NodeType::Mul: // Unary node Mul is "square"
+	    kernel.function << assign(target_pixel(out_node), current_pixel(in_node) * current_pixel(in_node));
+		break;
 	}
 }
 
@@ -120,53 +123,6 @@ void SimplePointBinary::build()
 		kernel.function << assign(target_pixel(out_node), current_pixel(in_node_1) ^ current_pixel(in_node_2));
 		break;
 	}
-}
-
-SquareNode::SquareNode()
-{
-    node_name = "Square";
-}
-
-std::vector<Object *> SquareNode::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in);
-    return used_objects;
-}
-
-std::vector<Object *> SquareNode::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(out);
-    return used_objects;
-}
-
-std::vector<Node*> SquareNode::get_subnodes()
-{
-    std::vector<Node*> subnodes;
-    subnodes.push_back(&mul_node);
-    return subnodes;
-}
-
-std::string SquareNode::generateClassDefinition()
-{
-    std::string s = mul_node.generateClassDefinition();
-    return s;
-}
-
-std::string SquareNode::generateNodeCall()
-{
-    std::string s = mul_node.generateNodeCall();
-    return s;
-}
-
-void SquareNode::build()
-{
-    mul_node.in_1 = in;
-    mul_node.in_2 = in;
-    mul_node.out = out;
-
-    mul_node.build();
 }
 
 SaturateNode::SaturateNode()

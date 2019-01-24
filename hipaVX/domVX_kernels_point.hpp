@@ -104,7 +104,7 @@ public:
     virtual ~AbsNode() override = default;
 };
 
-class NotNode: public SimplePointUnary 
+class NotNode: public SimplePointUnary
 {
 public:
     NotNode()
@@ -113,6 +113,17 @@ public:
         node_name = "Not";
     }
     virtual ~NotNode() override = default;
+};
+
+class SquareNode: public SimplePointUnary
+{
+public:
+    SquareNode()
+    {
+		operation = function_ast::NodeType::Mul;
+        node_name = "Square";
+    }
+    virtual ~SquareNode() override = default;
 };
 
 // ----------- Single Operation Binary (2to1) Point Operators ----------------
@@ -309,23 +320,6 @@ public:
 // ------------------------------------------------------------------------
 // TODO: Are these really necessary? Can we find a more orthogonal set?
 //       Multiple node classes should be written as a VX graph at a higher abstraction layer
-class SquareNode: public Node
-{
-public:
-    SquareNode();
-    virtual ~SquareNode() override = default;
-    Image *in;
-    Image *out;
-
-    SimplePointMul mul_node;
-
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
-    virtual std::vector<Node*> get_subnodes() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
-    virtual void build() override;
-};
 
 class SaturateNode: public Node
 {
