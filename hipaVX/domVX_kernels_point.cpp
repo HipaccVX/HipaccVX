@@ -1149,33 +1149,4 @@ void VXChannelCombineNode::build()
 	kernel.function << assign(target_pixel(out_node), vect4(current_pixel(in_node_1), current_pixel(in_node_2), current_pixel(in_node_3), current_pixel(in_node_4), function_ast::Datatype::UCHAR4));
 }
 
-VXScaleNode::VXScaleNode()
-{
-    node_name = "Scaling";
-}
-
-std::vector<Object *> VXScaleNode::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in);
-    return used_objects;
-}
-
-std::vector<Object *> VXScaleNode::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(out);
-    return used_objects;
-}
-
-std::string VXScaleNode::generateClassDefinition()
-{
-    return generator::node_generator(this, generator::Type::Definition);
-}
-
-std::string VXScaleNode::generateNodeCall()
-{
-    return generator::node_generator(this, generator::Type::Call);
-}
-
 }

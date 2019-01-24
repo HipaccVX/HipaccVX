@@ -265,18 +265,10 @@ string node_generator(HipaVX::HarrisCorners* n, Type t)
 
         s += "\n";
 
-
-
-
-
         s += "\t@@@SOBEL_TYPE_IN@@@ *input_image_@@@ID@@@_data = @@@INPUT_IMAGE@@@.data();\n";
         s += "\tstd::vector<uchar> out_data_@@@ID@@@(@@@IMAGE_IN_WIDTH@@@ * @@@IMAGE_IN_HEIGHT@@@);\n";
         s += "\tdraw_cross(@@@IMAGE_IN_WIDTH@@@, @@@IMAGE_IN_HEIGHT@@@, input_image_@@@ID@@@_data, features_@@@ID@@@, out_data_@@@ID@@@.data(), (uchar) 255);\n";
         s += "\tsave_data(@@@IMAGE_IN_WIDTH@@@, @@@IMAGE_IN_HEIGHT@@@, 1, out_data_@@@ID@@@.data(), \"akif-200x300_bw_harris.png\");\n";
-
-
-
-
 
         s = use_template(s, "ID", n->my_id);
         s = use_template(s, "BOUNDARY_CONDITION", "Boundary::UNDEFINED"); // TODO
@@ -301,42 +293,6 @@ string node_generator(HipaVX::HarrisCorners* n, Type t)
         s = use_template(s, "MAX_KEYPOINTS", n->corners->h);
         s = use_template(s, "CORNERS_ARRAY", generate_image_name(n->corners));
 
-
-        return s;
-    }
-    return "SOMETHING IS WRONG";
-}
-
-string node_generator(HipaVX::UnaryFunctionNode* n, Type t)
-{
-    if (t == Type::Definition)
-    {
-        auto cs = read_config_def(hipaVX_folder + "/kernels/point/unary_function.def");
-
-        string s = kernel_builder(cs.kv, cs.k, cs.name);
-
-        s = use_template(s, "ID", n->my_id);
-        s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in->col]);
-        s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
-        s = use_template(s, "FUNCTION", n->function);
-
-        return s;
-    }
-    else if (t == Type::Call)
-    {
-        auto cs = read_config_call(hipaVX_folder + "/kernels/point/unary_function.call");
-        string s = kernelcall_builder(cs.kcv);
-
-        s = use_template(s, "ID", n->my_id);
-        s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in->col]);
-        s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
-
-        s = use_template(s, "INPUT_IMAGE", generate_image_name(n->in));
-        s = use_template(s, "IMAGE_IN_WIDTH", n->in->w);
-        s = use_template(s, "IMAGE_IN_HEIGHT", n->in->h);
-        s = use_template(s, "OUTPUT_IMAGE", generate_image_name(n->out));
-
-        s = use_template(s, "BOUNDARY_CONDITION", "Boundary::UNDEFINED"); // TODO
 
         return s;
     }
@@ -402,41 +358,6 @@ string node_generator(HipaVX::HipaccNode* n, Type t)
         string s = kernelcall_builder(hipacc_call.kcv);
 
         s = use_template(s, "ID", n->my_id);
-        s = use_template(s, "BOUNDARY_CONDITION", "Boundary::UNDEFINED"); // TODO
-
-        return s;
-    }
-    return "SOMETHING IS WRONG";
-}
-
-string node_generator(HipaVX::VXScaleNode* n, Type t)
-{
-    if (t == Type::Definition)
-    {
-        auto cs = read_config_def(hipaVX_folder + "/kernels/point/scale.def");
-
-        string s = kernel_builder(cs.kv, cs.k, cs.name);
-
-        s = use_template(s, "ID", n->my_id);
-        s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in->col]);
-        s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
-
-        return s;
-    }
-    else if (t == Type::Call)
-    {
-        auto cs = read_config_call(hipaVX_folder + "/kernels/point/scale.call");
-        string s = kernelcall_builder(cs.kcv);
-
-        s = use_template(s, "ID", n->my_id);
-        s = use_template(s, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->in->col]);
-        s = use_template(s, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[n->out->col]);
-        s = use_template(s, "IMAGE_IN_WIDTH", n->in->w);
-        s = use_template(s, "IMAGE_IN_HEIGHT", n->in->h);
-
-        s = use_template(s, "INPUT_IMAGE", generate_image_name(n->in));
-        s = use_template(s, "OUTPUT_IMAGE", generate_image_name(n->out));
-
         s = use_template(s, "BOUNDARY_CONDITION", "Boundary::UNDEFINED"); // TODO
 
         return s;

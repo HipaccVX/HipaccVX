@@ -673,21 +673,6 @@ public:
     virtual std::string generateNodeCall() override;
     virtual void build() override;
 };
-
-class VXScaleNode: public Node
-{
-public:
-    VXScaleNode();
-    virtual ~VXScaleNode() override = default;
-
-    Image *in;
-    Image *out;
-
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
-};
 }
 
 
@@ -698,9 +683,6 @@ enum class Type
     Definition = 0,
     Call
 };
-
-// TODO: remove all except HipaccNode, WriteImageNode
-std::string node_generator(HipaVX::VXScaleNode *n, Type t);
 }
 
 namespace HipaVX
