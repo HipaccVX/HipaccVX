@@ -338,18 +338,37 @@ public:
 	virtual void build() override;
 };
 
-class ConvertDepthNode: public Node
+class VXThresholdNode: public Node
 {
 public:
-    ConvertDepthNode();
-    virtual ~ConvertDepthNode() override = default;
+    VXThresholdNode();
+    virtual ~VXThresholdNode() override = default;
+
     Image *in;
     Image *out;
-    vx_enum policy;
-    Scalar *shift;
+    Threshold *threshold;
 
 	function_ast::ForEveryPixel kernel;
-    SimplePointScalarShiftRight<unsigned> shift_node; // TODO: ?? how do we know datatype
+
+    virtual std::vector<Object*> get_inputs() override;
+    virtual std::vector<Object*> get_outputs() override;
+    //virtual std::vector<Node*> get_subnodes() override;
+    virtual std::string generateClassDefinition() override;
+    virtual std::string generateNodeCall() override;
+    virtual void build() override;
+};
+
+class VXChannelExtractNode: public Node
+{
+public:
+    VXChannelExtractNode();
+    virtual ~VXChannelExtractNode() override = default;
+
+    Image *in;
+    Image *out;
+    vx_channel_e channel_vx;
+
+	function_ast::ForEveryPixel kernel;
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
@@ -379,6 +398,27 @@ public:
     virtual void build() override;
 };
 
+// TODO: Multi-Nodes
+class ConvertDepthNode: public Node
+{
+public:
+    ConvertDepthNode();
+    virtual ~ConvertDepthNode() override = default;
+    Image *in;
+    Image *out;
+    vx_enum policy;
+    Scalar *shift;
+
+	function_ast::ForEveryPixel kernel;
+    SimplePointScalarShiftRight<unsigned> shift_node; // TODO: ?? how do we know datatype
+
+    virtual std::vector<Object*> get_inputs() override;
+    virtual std::vector<Object*> get_outputs() override;
+    virtual std::string generateClassDefinition() override;
+    virtual std::string generateNodeCall() override;
+    virtual void build() override;
+};
+
 class VXSubtractNode: public Node
 {
 public:
@@ -398,26 +438,6 @@ public:
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
     virtual std::vector<Node*> get_subnodes() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
-    virtual void build() override;
-};
-
-class VXThresholdNode: public Node
-{
-public:
-    VXThresholdNode();
-    virtual ~VXThresholdNode() override = default;
-
-    Image *in;
-    Image *out;
-    Threshold *threshold;
-
-	function_ast::ForEveryPixel kernel;
-
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
-    //virtual std::vector<Node*> get_subnodes() override;
     virtual std::string generateClassDefinition() override;
     virtual std::string generateNodeCall() override;
     virtual void build() override;
@@ -574,7 +594,6 @@ public:
 
     SaturateNode saturate_node;
 
-
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
     virtual std::vector<Node*> get_subnodes() override;
@@ -622,7 +641,6 @@ public:
     Image *in_out;
     Scalar *alpha;
 
-
     SimplePointScalarMul<float> mul_scalar_left_node;
     std::unique_ptr<Image> mul_scalar_left_image;
 
@@ -632,29 +650,9 @@ public:
     SimplePointAdd add_node;
     std::unique_ptr<Image> add_image;
 
-
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
     virtual std::vector<Node*> get_subnodes() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
-    virtual void build() override;
-};
-
-class VXChannelExtractNode: public Node
-{
-public:
-    VXChannelExtractNode();
-    virtual ~VXChannelExtractNode() override = default;
-
-    Image *in;
-    Image *out;
-    vx_channel_e channel_vx;
-
-	function_ast::ForEveryPixel kernel;
-
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
     virtual std::string generateClassDefinition() override;
     virtual std::string generateNodeCall() override;
     virtual void build() override;

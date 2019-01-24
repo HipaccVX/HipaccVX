@@ -1012,7 +1012,7 @@ void VXChannelExtractNode::build()
         channel_ast = function_ast::VectChannelType::CHANNEL3;
         break;
     default:
-        throw std::runtime_error("VXChannelExtractNode: Unsupported Chhannel Type");
+        throw std::runtime_error("VXChannelExtractNode: Unsupported Channel Type");
     }
 
 	kernel.function << assign(target_pixel(out_node), extract4(current_pixel(in_node), function_ast::Datatype::UCHAR4, channel_ast));
