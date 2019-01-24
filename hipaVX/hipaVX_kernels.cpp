@@ -646,7 +646,7 @@ void AnotherBilateralFilterNode::build()
     auto p = std::make_shared<function_ast::Variable>("p", function_ast::Datatype::FLOAT);
     auto center = std::make_shared<function_ast::Variable>("center", function_ast::Datatype::FLOAT);
 
-    kernel->function << define(c_r)    << assign(c_r, constant(0.5f) / square(constant(sigma_r)))
+    kernel->function << define(c_r)    << assign(c_r, constant(0.5f) / (constant(sigma_r) * constant(sigma_r)))
                      << define(d)      << assign(d, constant(0.f))
                      << define(p)      << assign(p, constant(0.f))
                      << define(center) << assign(center, current_pixel(in_node));
@@ -658,7 +658,7 @@ void AnotherBilateralFilterNode::build()
         auto s = std::make_shared<function_ast::Variable>("s", function_ast::Datatype::FLOAT);
 
         *iterate_body << define(diff) << assign(diff, iterate->pixel_value - center)
-                      << define(s)    << assign(s, exp(constant(0.f) - c_r * square(diff)) * iterate->stencil_value)
+                      << define(s)    << assign(s, exp(constant(0.f) - c_r * (diff * diff)) * iterate->stencil_value)
                       << assign(d, d+s)
                       << assign(p, p + s * iterate->pixel_value);
     }

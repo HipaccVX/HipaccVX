@@ -137,11 +137,6 @@ std::shared_ptr<function_ast::Node> operator>>(std::shared_ptr<function_ast::Nod
     return std::make_shared<function_ast::ShiftRight>(a, shift);
 }
 
-std::shared_ptr<function_ast::Node> square(std::shared_ptr<function_ast::Node> a)
-{
-    return std::make_shared<function_ast::Square>(a);
-}
-
 std::shared_ptr<function_ast::Node> exp(std::shared_ptr<function_ast::Node> a)
 {
     return std::make_shared<function_ast::Exp>(a);

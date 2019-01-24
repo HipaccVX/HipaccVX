@@ -51,7 +51,6 @@ enum class NodeType
     Extract4,
 
     Sqrt,
-    Square,
     Exp,
     Conversion,
     Abs,
@@ -533,23 +532,6 @@ public:
         subnodes = {n1};
     }
     virtual ~Atan2() = default;
-};
-
-
-class Square: public SimpleUnaryFunctionNode
-{
-public:
-    Square()
-    {
-        type = NodeType::Square;
-        subnodes.resize(1);
-    }
-    Square(std::shared_ptr<Node> n1)
-    {
-        type = NodeType::Square;
-        subnodes = {n1};
-    }
-    virtual ~Square() = default;
 };
 
 class Exp: public SimpleUnaryFunctionNode
