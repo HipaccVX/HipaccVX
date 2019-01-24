@@ -8,7 +8,59 @@
 namespace HipaVX
 {
 
-std::vector<Object *> SimplePoint::get_inputs()
+// ----------- Single Operation Unary (1to1) Point Operators ----------------
+std::vector<Object *> SimplePointUnary::get_inputs()
+{
+    std::vector<Object*> used_objects;
+    used_objects.emplace_back(in);
+    return used_objects;
+}
+
+std::vector<Object *> SimplePointUnary::get_outputs()
+{
+    std::vector<Object*> used_objects;
+    used_objects.emplace_back(out);
+    return used_objects;
+}
+
+std::string SimplePointUnary::generateClassDefinition()
+{
+	std::string s = function_ast::generate(&kernel);
+	return s;
+}
+
+std::string SimplePointUnary::generateNodeCall()
+{
+	std::string s = function_ast::generate_call(&kernel);
+	return s;
+}
+
+void SimplePointUnary::build()
+{
+	auto in_node = std::make_shared<function_ast::Image>(in);
+	kernel.inputs.push_back(in_node);
+	auto out_node = std::make_shared<function_ast::Image>(out);
+	kernel.output = out_node;
+
+	switch(operation)
+	{
+	case function_ast::NodeType::Sqrt:
+		kernel.function << assign(target_pixel(out_node), sqrt(current_pixel(in_node)));
+		break;
+    case function_ast::NodeType::Abs:
+        kernel.function << assign(target_pixel(out_node), abs(current_pixel(in_node)));
+        break;
+	case function_ast::NodeType::Atan2:
+		kernel.function << assign(target_pixel(out_node), atan2(current_pixel(in_node)));
+		break;
+	case function_ast::NodeType::Not:
+	    kernel.function << assign(target_pixel(out_node), ~current_pixel(in_node));
+		break;
+	}
+}
+
+// ----------- Single Operation Binary (2to1) Point Operators ----------------
+std::vector<Object *> SimplePointBinary::get_inputs()
 {
     std::vector<Object*> used_objects;
     used_objects.emplace_back(in_1);
@@ -16,26 +68,26 @@ std::vector<Object *> SimplePoint::get_inputs()
     return used_objects;
 }
 
-std::vector<Object *> SimplePoint::get_outputs()
+std::vector<Object *> SimplePointBinary::get_outputs()
 {
     std::vector<Object*> used_objects;
     used_objects.emplace_back(out);
     return used_objects;
 }
 
-std::string SimplePoint::generateClassDefinition()
+std::string SimplePointBinary::generateClassDefinition()
 {
 	std::string s = function_ast::generate(&kernel);
 	return s;
 }
 
-std::string SimplePoint::generateNodeCall()
+std::string SimplePointBinary::generateNodeCall()
 {
 	std::string s = function_ast::generate_call(&kernel);
 	return s;
 }
 
-void SimplePoint::build()
+void SimplePointBinary::build()
 {
 	auto in_node_1 = std::make_shared<function_ast::Image>(in_1);
 	auto in_node_2 = std::make_shared<function_ast::Image>(in_2);
@@ -244,47 +296,6 @@ void ConvertDepthNode::build() {
 	kernel.function << assign(target_pixel(out_node), temp);
 }
 
-NotNode::NotNode()
-{
-    node_name = "Not";
-}
-
-std::vector<Object *> NotNode::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in);
-    return used_objects;
-}
-
-std::vector<Object *> NotNode::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(out);
-    return used_objects;
-}
-
-std::string NotNode::generateClassDefinition()
-{
-	std::string s = function_ast::generate(&kernel);
-	return s;
-}
-
-std::string NotNode::generateNodeCall()
-{
-	std::string s = function_ast::generate_call(&kernel);
-	return s;
-}
-
-void NotNode::build()
-{
-	auto in_node = std::make_shared<function_ast::Image>(in);
-	kernel.inputs.push_back(in_node);
-	auto out_node = std::make_shared<function_ast::Image>(out);
-	kernel.output = out_node;
-
-	kernel.function << assign(target_pixel(out_node), ~current_pixel(in_node));
-}
-
 VXSubtractNode::VXSubtractNode()
 {
     node_name = "VX Subtraction Node";
@@ -414,53 +425,6 @@ void VXThresholdNode::build()
         kernel.function << if_outrange;
         kernel.function << else_outrange;
     }
-}
-
-std::vector<Object *> UnarySimplePoint::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in);
-    return used_objects;
-}
-
-std::vector<Object *> UnarySimplePoint::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(out);
-    return used_objects;
-}
-
-std::string UnarySimplePoint::generateClassDefinition()
-{
-	std::string s = function_ast::generate(&kernel);
-	return s;
-}
-
-std::string UnarySimplePoint::generateNodeCall()
-{
-	std::string s = function_ast::generate_call(&kernel);
-	return s;
-}
-
-void UnarySimplePoint::build()
-{
-	auto in_node = std::make_shared<function_ast::Image>(in);
-	kernel.inputs.push_back(in_node);
-	auto out_node = std::make_shared<function_ast::Image>(out);
-	kernel.output = out_node;
-
-	switch(operation)
-	{
-	case function_ast::NodeType::Sqrt:
-		kernel.function << assign(target_pixel(out_node), sqrt(current_pixel(in_node)));
-		break;
-    case function_ast::NodeType::Abs:
-        kernel.function << assign(target_pixel(out_node), abs(current_pixel(in_node)));
-        break;
-	case function_ast::NodeType::Atan2:
-		kernel.function << assign(target_pixel(out_node), atan2(current_pixel(in_node)));
-		break;
-	}
 }
 
 AbsDiffNode::AbsDiffNode()

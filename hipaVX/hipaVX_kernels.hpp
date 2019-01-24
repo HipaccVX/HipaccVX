@@ -20,6 +20,16 @@
 // class VXBilateralFilterNode;
 // class AnotherBilateralFilterNode;
 // }
+//
+
+namespace generator
+{
+enum class Type
+{
+    Definition = 0,
+    Call
+};
+}
 
 namespace HipaVX
 {

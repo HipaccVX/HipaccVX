@@ -11,7 +11,7 @@
 
 // namespace HipaVX
 // {
-// class SimplePoint;
+// class SimplePointBinary;
 // template <typename T> class SimplePointScalar;
 // class ImageComparision;
 // class SimplePointMul;
@@ -31,7 +31,7 @@
 // class NotNode;
 // class VXSubtractNode;
 // class VXThresholdNode;
-// class UnarySimplePoint;
+// class SimplePointUnary;
 // class SqrtNode;
 // class AbsNode;
 // class AbsDiffNode;
@@ -51,10 +51,75 @@
 namespace HipaVX
 {
 
-class SimplePoint: public Node
+// ----------- Single Operation Unary (1to1) Point Operators ----------------
+class SimplePointUnary: public Node
 {
 public:
-    virtual ~SimplePoint() override = default;
+    virtual ~SimplePointUnary() override = default;
+
+    // 1 input, 1 output, 1 operation
+    Image *in;
+	Image *out;
+
+	function_ast::NodeType operation;
+	function_ast::ForEveryPixel kernel;
+
+    virtual std::vector<Object*> get_inputs() override;
+    virtual std::vector<Object*> get_outputs() override;
+    virtual std::string generateClassDefinition() override;
+    virtual std::string generateNodeCall() override;
+	virtual void build() override;
+};
+
+class SqrtNode: public SimplePointUnary 
+{
+public:
+    SqrtNode()
+    {
+		operation = function_ast::NodeType::Sqrt;
+        node_name = "Sqrt";
+    }
+    virtual ~SqrtNode() override = default;
+};
+
+class Atan2Node: public SimplePointUnary 
+{
+public:
+    Atan2Node()
+    {
+		operation = function_ast::NodeType::Atan2;
+        node_name = "Atan2";
+    }
+    virtual ~Atan2Node() override = default;
+};
+
+class AbsNode: public SimplePointUnary 
+{
+public:
+    AbsNode()
+    {
+		operation = function_ast::NodeType::Abs;
+        node_name = "Abs";
+    }
+    virtual ~AbsNode() override = default;
+};
+
+class NotNode: public SimplePointUnary 
+{
+public:
+    NotNode()
+    {
+		operation = function_ast::NodeType::Not;
+        node_name = "Not";
+    }
+    virtual ~NotNode() override = default;
+};
+
+// ----------- Single Operation Binary (2to1) Point Operators ----------------
+class SimplePointBinary: public Node
+{
+public:
+    virtual ~SimplePointBinary() override = default;
 
     // 2 inputs, 1 output, 1 operation
     Image *in_1;
@@ -71,6 +136,84 @@ public:
 	virtual void build() override;
 };
 
+class SimplePointMul: public SimplePointBinary
+{
+public:
+    SimplePointMul()
+    {
+		operation = function_ast::NodeType::Mul;
+        node_name = "Point Multiplication";
+    }
+    virtual ~SimplePointMul() override = default;
+};
+
+class SimplePointAdd: public SimplePointBinary
+{
+public:
+    SimplePointAdd()
+    {
+		operation = function_ast::NodeType::Add;
+        node_name = "Point Addition";
+    }
+    virtual ~SimplePointAdd() override = default;
+};
+
+class SimplePointSub: public SimplePointBinary
+{
+public:
+    SimplePointSub()
+    {
+		operation = function_ast::NodeType::Sub;
+        node_name = "Point Subtraction";
+    }
+    virtual ~SimplePointSub() override = default;
+};
+
+class SimplePointDiv: public SimplePointBinary
+{
+public:
+    SimplePointDiv()
+    {
+		operation = function_ast::NodeType::Div;
+        node_name = "Point Division";
+    }
+    virtual ~SimplePointDiv() override = default;
+};
+
+class AndNode: public SimplePointBinary
+{
+public:
+    AndNode()
+    {
+		operation = function_ast::NodeType::BitwiseAnd;
+        node_name = "And";
+    }
+    virtual ~AndNode() override = default;
+};
+
+class XorNode: public SimplePointBinary
+{
+public:
+    XorNode()
+    {
+		operation = function_ast::NodeType::BitwiseXor;
+        node_name = "Xor";
+    }
+    virtual ~XorNode() override = default;
+};
+
+class OrNode: public SimplePointBinary
+{
+public:
+    OrNode()
+    {
+		operation = function_ast::NodeType::BitwiseOr;
+        node_name = "or";
+    }
+    virtual ~OrNode() override = default;
+};
+
+// ----------- Binary Point Operators with a constant ( {1,c}to1) ------------
 template <typename T>
 class SimplePointScalar: public Node
 {
@@ -89,126 +232,6 @@ public:
     virtual std::string generateClassDefinition() override;
     virtual std::string generateNodeCall() override;
 	virtual void build() override;
-};
-
-class ImageComparision
-{
-public:
-    std::string comp_op;
-    std::string value;
-    bool image_is_first_operand = true;
-};
-
-class SimplePointMul: public SimplePoint
-{
-public:
-    SimplePointMul()
-    {
-		operation = function_ast::NodeType::Mul;
-        node_name = "Point Multiplication";
-    }
-    virtual ~SimplePointMul() override = default;
-};
-
-class SquareNode: public Node
-{
-public:
-    SquareNode();
-    virtual ~SquareNode() override = default;
-    Image *in;
-    Image *out;
-
-    SimplePointMul mul_node;
-
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
-    virtual std::vector<Node*> get_subnodes() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
-    virtual void build() override;
-};
-
-class SaturateNode: public Node
-{
-public:
-    SaturateNode();
-    virtual ~SaturateNode() override = default;
-    Image *in;
-    Image *out;
-
-	function_ast::ForEveryPixel kernel;
-
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
-    virtual std::string generateClassDefinition() override;
-	virtual std::string generateNodeCall() override;
-	virtual void build() override;
-};
-
-class SimplePointAdd: public SimplePoint
-{
-public:
-    SimplePointAdd()
-    {
-		operation = function_ast::NodeType::Add;
-        node_name = "Point Addition";
-    }
-    virtual ~SimplePointAdd() override = default;
-};
-
-class SimplePointSub: public SimplePoint
-{
-public:
-    SimplePointSub()
-    {
-		operation = function_ast::NodeType::Sub;
-        node_name = "Point Subtraction";
-    }
-    virtual ~SimplePointSub() override = default;
-};
-
-class SimplePointDiv: public SimplePoint
-{
-public:
-    SimplePointDiv()
-    {
-		operation = function_ast::NodeType::Div;
-        node_name = "Point Division";
-    }
-    virtual ~SimplePointDiv() override = default;
-};
-
-class AndNode: public SimplePoint
-{
-public:
-    AndNode()
-    {
-		operation = function_ast::NodeType::BitwiseAnd;
-        node_name = "And";
-    }
-    virtual ~AndNode() override = default;
-};
-
-class XorNode: public SimplePoint
-{
-public:
-    XorNode()
-    {
-		operation = function_ast::NodeType::BitwiseXor;
-        node_name = "Xor";
-    }
-    virtual ~XorNode() override = default;
-};
-
-class OrNode: public SimplePoint
-{
-public:
-    OrNode()
-    {
-		operation = function_ast::NodeType::BitwiseOr;
-        node_name = "or";
-    }
-    virtual ~OrNode() override = default;
 };
 
 template <typename T>
@@ -283,6 +306,44 @@ public:
     virtual ~SimplePointScalarShiftLeft() override = default;
 };
 
+// ------------------------------------------------------------------------
+// TODO: Are these really necessary? Can we find a more orthogonal set?
+//       Multiple node classes should be written as a VX graph at a higher abstraction layer
+class SquareNode: public Node
+{
+public:
+    SquareNode();
+    virtual ~SquareNode() override = default;
+    Image *in;
+    Image *out;
+
+    SimplePointMul mul_node;
+
+    virtual std::vector<Object*> get_inputs() override;
+    virtual std::vector<Object*> get_outputs() override;
+    virtual std::vector<Node*> get_subnodes() override;
+    virtual std::string generateClassDefinition() override;
+    virtual std::string generateNodeCall() override;
+    virtual void build() override;
+};
+
+class SaturateNode: public Node
+{
+public:
+    SaturateNode();
+    virtual ~SaturateNode() override = default;
+    Image *in;
+    Image *out;
+
+	function_ast::ForEveryPixel kernel;
+
+    virtual std::vector<Object*> get_inputs() override;
+    virtual std::vector<Object*> get_outputs() override;
+    virtual std::string generateClassDefinition() override;
+	virtual std::string generateNodeCall() override;
+	virtual void build() override;
+};
+
 class ConvertDepthNode: public Node
 {
 public:
@@ -295,23 +356,6 @@ public:
 
 	function_ast::ForEveryPixel kernel;
     SimplePointScalarShiftRight<unsigned> shift_node; // TODO: ?? how do we know datatype
-
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
-    virtual void build() override;
-};
-
-class NotNode: public Node
-{
-public:
-    NotNode();
-    virtual ~NotNode() override = default;
-    Image *in;
-    Image *out;
-
-	function_ast::ForEveryPixel kernel;
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
@@ -383,58 +427,6 @@ public:
     virtual std::string generateClassDefinition() override;
     virtual std::string generateNodeCall() override;
     virtual void build() override;
-};
-
-class UnarySimplePoint: public Node
-{
-public:
-    virtual ~UnarySimplePoint() override = default;
-
-    // 1 input, 1 output, 1 operation
-    Image *in;
-	Image *out;
-
-	function_ast::NodeType operation;
-	function_ast::ForEveryPixel kernel;
-
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
-	virtual void build() override;
-};
-
-class SqrtNode: public UnarySimplePoint 
-{
-public:
-    SqrtNode()
-    {
-		operation = function_ast::NodeType::Sqrt;
-        node_name = "Sqrt";
-    }
-    virtual ~SqrtNode() override = default;
-};
-
-class Atan2Node: public UnarySimplePoint 
-{
-public:
-    Atan2Node()
-    {
-		operation = function_ast::NodeType::Atan2;
-        node_name = "Atan2";
-    }
-    virtual ~Atan2Node() override = default;
-};
-
-class AbsNode: public UnarySimplePoint 
-{
-public:
-    AbsNode()
-    {
-		operation = function_ast::NodeType::Abs;
-        node_name = "Abs";
-    }
-    virtual ~AbsNode() override = default;
 };
 
 class AbsDiffNode: public Node
@@ -672,16 +664,6 @@ public:
     virtual std::string generateClassDefinition() override;
     virtual std::string generateNodeCall() override;
     virtual void build() override;
-};
-}
-
-
-namespace generator
-{
-enum class Type
-{
-    Definition = 0,
-    Call
 };
 }
 

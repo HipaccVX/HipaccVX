@@ -126,13 +126,6 @@ std::string generate(SimpleUnaryFunctionNode *s)
     case NodeType::Conversion:
         func = "(" + to_string(dynamic_cast<Conversion*>(s)->to) + ")";
         break;
-    case NodeType::Square:
-    {
-        auto mul = new Mul();
-        mul->subnodes[0] = s->subnodes[0];
-        mul->subnodes[1] = s->subnodes[0];
-        return mul->generate_source();
-    }break;
     }
 
     auto argument = s->subnodes[0]->generate_source();
