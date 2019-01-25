@@ -274,9 +274,6 @@ public:
 
     SimplePointSub Mc_kernel;
 
-
-
-
     Image *in;
     Scalar *strength_thresh;
     Scalar *min_distance;
@@ -285,9 +282,6 @@ public:
     vx_int32 block_size;
     Array *corners;
     Scalar *num_corners;
-
-
-
 
     Image sob_x;
     Image sob_y;
@@ -303,7 +297,6 @@ public:
 
     //Mask A
     Image trace_A;
-
 
     Image det_A_minuend;
 

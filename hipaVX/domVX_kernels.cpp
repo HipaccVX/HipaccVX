@@ -171,15 +171,13 @@ void Add3_3::build()
     add.build();
 }
 
-
-
-
 std::vector<Object *> HarrisCorners::get_inputs()
 {
     std::vector<Object*> used_objects;
     used_objects.emplace_back(in);
     return used_objects;
 }
+
 std::vector<Object *> HarrisCorners::get_outputs()
 {
     std::vector<Object*> used_objects;
@@ -187,6 +185,7 @@ std::vector<Object *> HarrisCorners::get_outputs()
     used_objects.emplace_back(corners);
     return used_objects;
 }
+
 std::vector<Node*> HarrisCorners::get_subnodes()
 {
     std::vector<Node*> subnodes;
@@ -209,6 +208,7 @@ std::vector<Node*> HarrisCorners::get_subnodes()
     subnodes.push_back(&Mc_kernel);
     return subnodes;
 }
+
 std::string HarrisCorners::generateClassDefinition()
 {
     std::string s = sobel.generateClassDefinition();
@@ -227,7 +227,6 @@ std::string HarrisCorners::generateClassDefinition()
     s += "\n" + trace_A_square_kernel.generateClassDefinition();
     s += "\n" + trace_A_square_k_kernel.generateClassDefinition();
     s += "\n" + Mc_kernel.generateClassDefinition();
-    s += "\n" + generator::node_generator(this, generator::Type::Definition);
     return s;
 }
 std::string HarrisCorners::generateNodeCall()
@@ -248,7 +247,6 @@ std::string HarrisCorners::generateNodeCall()
     s += "\n" + trace_A_square_kernel.generateNodeCall();
     s += "\n" + trace_A_square_k_kernel.generateNodeCall();
     s += "\n" + Mc_kernel.generateNodeCall();
-    s += "\n" + generator::node_generator(this, generator::Type::Call);
     return s;
 }
 void HarrisCorners::build()
@@ -285,7 +283,6 @@ void HarrisCorners::build()
     trace_add.in_2 = &square_Gy_sum;
     trace_add.out = &trace_A;
 
-
     gx_A_gy_A.in_1 = &square_Gx_sum;
     gx_A_gy_A.in_2 = &square_Gy_sum;
     gx_A_gy_A.out = &det_A_minuend;
@@ -309,8 +306,6 @@ void HarrisCorners::build()
     Mc_kernel.in_1 = &det_A;
     Mc_kernel.in_2 = &trace_A_square_k;
     Mc_kernel.out = &Mc;
-
-
 
     sobel.build();
     sobel_x_norm.build();

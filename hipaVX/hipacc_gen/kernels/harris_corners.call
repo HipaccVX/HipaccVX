@@ -1,6 +1,0 @@
-[KERNELCALL_VARIABLES]
-BoundaryCondition @@@V_C_TYPE_IN@@@ bound_M_c @@@IMAGE_M_C@@@ @@@IMAGE_IN_WIDTH@@@ @@@IMAGE_IN_HEIGHT@@@ BOUNDARY_CONDITION
-Accessor @@@V_C_TYPE_IN@@@ acc_M_c bound_M_c
-IterationSpace @@@V_C_TYPE_OUT@@@ iter_V_c @@@IMAGE_V_C@@@
-Kernel Abstract_1_Acc_V_c v_c iter_V_c acc_M_c
-

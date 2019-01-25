@@ -221,83 +221,83 @@ string node_generator(HipaVX::WriteImageNode* n, Type t)
     return "SOMETHING IS WRONG";
 }
 
-string node_generator(HipaVX::HarrisCorners* n, Type t)
-{
-    //return "";
-
-    if (t == Type::Definition)
-    {
-        auto abstract_1_acc_cs = read_config_def(hipaVX_folder + "/kernels/point/abstract_1_acc.def");
-
-        // V_c Kernel
-        auto v_c = kernel_builder(abstract_1_acc_cs.kv, abstract_1_acc_cs.k, abstract_1_acc_cs.name + "_V_c");
-        v_c = use_template(v_c, "KERNEL", "float out = input();\n"
-                                          "\t\tif (out <= @@@THRESHOLD@@@)\n"
-                                          "\t\t\tout = 0;\n"
-                                          "\t\toutput() = out;");
-        v_c = use_template(v_c, "THRESHOLD", std::to_string(n->strength_thresh->f32));
-        v_c = use_template(v_c, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
-        v_c = use_template(v_c, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
-
-        string s;
-        s += v_c;
-
-        s = use_template(s, "ID", n->my_id);
-
-        return s;
-    }
-    else if (t == Type::Call)
-    {
-        auto cs = read_config_call(hipaVX_folder + "/kernels/harris_corners.call");
-        string s = kernelcall_builder(cs.kcv);
-
-
-        s += "\t@@@V_C_TYPE_OUT@@@ *v_c_@@@ID@@@_data = @@@IMAGE_V_C@@@.data();\n";
-        s += "\tstd::vector<@@@V_C_TYPE_OUT@@@> v_c_suppressed_@@@ID@@@(@@@IMAGE_IN_WIDTH@@@ * @@@IMAGE_IN_HEIGHT@@@);\n";
-        s += "\tnon_max_supression(@@@IMAGE_IN_WIDTH@@@, @@@IMAGE_IN_HEIGHT@@@, v_c_@@@ID@@@_data, v_c_suppressed_@@@ID@@@.data());\n";
-        s += "\tauto features_@@@ID@@@ = euclidian_single_feature(@@@IMAGE_IN_WIDTH@@@, @@@IMAGE_IN_HEIGHT@@@, v_c_suppressed_@@@ID@@@.data(), @@@EUCLIDIAN_DISTANCE@@@);\n";
-        s += "\t@@@NUM_KEYPOINTS@@@ = features_@@@ID@@@.size();\n";
-        s += "\tfeatures_@@@ID@@@.resize(@@@MAX_KEYPOINTS@@@);\n";
-        s += "\tstd::vector<int> cont_features_@@@ID@@@ = create_contiguous_array_from_keypoints(features_@@@ID@@@);\n";
-        //s += "\t@@@CORNERS_ARRAY@@@ = cont_features_@@@ID@@@.data();\n"; //Not working due to a current bug
-
-        s += "\tImage<int> @@@CORNERS_ARRAY@@@(7, @@@MAX_KEYPOINTS@@@, cont_features_@@@ID@@@.data());\n";
-
-        s += "\n";
-
-        s += "\t@@@SOBEL_TYPE_IN@@@ *input_image_@@@ID@@@_data = @@@INPUT_IMAGE@@@.data();\n";
-        s += "\tstd::vector<uchar> out_data_@@@ID@@@(@@@IMAGE_IN_WIDTH@@@ * @@@IMAGE_IN_HEIGHT@@@);\n";
-        s += "\tdraw_cross(@@@IMAGE_IN_WIDTH@@@, @@@IMAGE_IN_HEIGHT@@@, input_image_@@@ID@@@_data, features_@@@ID@@@, out_data_@@@ID@@@.data(), (uchar) 255);\n";
-        s += "\tsave_data(@@@IMAGE_IN_WIDTH@@@, @@@IMAGE_IN_HEIGHT@@@, 1, out_data_@@@ID@@@.data(), \"akif-200x300_bw_harris.png\");\n";
-
-        s = use_template(s, "ID", n->my_id);
-        s = use_template(s, "BOUNDARY_CONDITION", "Boundary::UNDEFINED"); // TODO
-        s = use_template(s, "INPUT_IMAGE", generate_image_name(n->in));
-        s = use_template(s, "EUCLIDIAN_DISTANCE", n->min_distance->f32);
-
-        s = use_template(s, "IMAGE_IN_WIDTH", n->in->w);
-        s = use_template(s, "IMAGE_IN_HEIGHT", n->in->h);
-
-
-        s = use_template(s, "V_C_TYPE_IN", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
-        s = use_template(s, "V_C_TYPE_OUT", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
-        s = use_template(s, "SOBEL_TYPE_IN", VX_DF_IMAGE_to_hipacc[VX_DF_IMAGE_U8]);
-
-
-        s = use_template(s, "IMAGE_M_C", generate_image_name(&n->Mc));
-        s = use_template(s, "IMAGE_V_C", generate_image_name(&n->Vc));
-
-
-        //s = use_template(s, "NUM_KEYPOINTS", n->num_corners); // TODO
-        s = use_template(s, "NUM_KEYPOINTS", "int a");
-        s = use_template(s, "MAX_KEYPOINTS", n->corners->h);
-        s = use_template(s, "CORNERS_ARRAY", generate_image_name(n->corners));
-
-
-        return s;
-    }
-    return "SOMETHING IS WRONG";
-}
+//string node_generator(HipaVX::HarrisCorners* n, Type t)
+//{
+//    //return "";
+//
+//    if (t == Type::Definition)
+//    {
+//        auto abstract_1_acc_cs = read_config_def(hipaVX_folder + "/kernels/point/abstract_1_acc.def");
+//
+//        // V_c Kernel
+//        auto v_c = kernel_builder(abstract_1_acc_cs.kv, abstract_1_acc_cs.k, abstract_1_acc_cs.name + "_V_c");
+//        v_c = use_template(v_c, "KERNEL", "float out = input();\n"
+//                                          "\t\tif (out <= @@@THRESHOLD@@@)\n"
+//                                          "\t\t\tout = 0;\n"
+//                                          "\t\toutput() = out;");
+//        v_c = use_template(v_c, "THRESHOLD", std::to_string(n->strength_thresh->f32));
+//        v_c = use_template(v_c, "INPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
+//        v_c = use_template(v_c, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
+//
+//        string s;
+//        s += v_c;
+//
+//        s = use_template(s, "ID", n->my_id);
+//
+//        return s;
+//    }
+//    else if (t == Type::Call)
+//    {
+//        auto cs = read_config_call(hipaVX_folder + "/kernels/harris_corners.call");
+//        string s = kernelcall_builder(cs.kcv);
+//
+//
+//        s += "\t@@@V_C_TYPE_OUT@@@ *v_c_@@@ID@@@_data = @@@IMAGE_V_C@@@.data();\n";
+//        s += "\tstd::vector<@@@V_C_TYPE_OUT@@@> v_c_suppressed_@@@ID@@@(@@@IMAGE_IN_WIDTH@@@ * @@@IMAGE_IN_HEIGHT@@@);\n";
+//        s += "\tnon_max_supression(@@@IMAGE_IN_WIDTH@@@, @@@IMAGE_IN_HEIGHT@@@, v_c_@@@ID@@@_data, v_c_suppressed_@@@ID@@@.data());\n";
+//        s += "\tauto features_@@@ID@@@ = euclidian_single_feature(@@@IMAGE_IN_WIDTH@@@, @@@IMAGE_IN_HEIGHT@@@, v_c_suppressed_@@@ID@@@.data(), @@@EUCLIDIAN_DISTANCE@@@);\n";
+//        s += "\t@@@NUM_KEYPOINTS@@@ = features_@@@ID@@@.size();\n";
+//        s += "\tfeatures_@@@ID@@@.resize(@@@MAX_KEYPOINTS@@@);\n";
+//        s += "\tstd::vector<int> cont_features_@@@ID@@@ = create_contiguous_array_from_keypoints(features_@@@ID@@@);\n";
+//        //s += "\t@@@CORNERS_ARRAY@@@ = cont_features_@@@ID@@@.data();\n"; //Not working due to a current bug
+//
+//        s += "\tImage<int> @@@CORNERS_ARRAY@@@(7, @@@MAX_KEYPOINTS@@@, cont_features_@@@ID@@@.data());\n";
+//
+//        s += "\n";
+//
+//        s += "\t@@@SOBEL_TYPE_IN@@@ *input_image_@@@ID@@@_data = @@@INPUT_IMAGE@@@.data();\n";
+//        s += "\tstd::vector<uchar> out_data_@@@ID@@@(@@@IMAGE_IN_WIDTH@@@ * @@@IMAGE_IN_HEIGHT@@@);\n";
+//        s += "\tdraw_cross(@@@IMAGE_IN_WIDTH@@@, @@@IMAGE_IN_HEIGHT@@@, input_image_@@@ID@@@_data, features_@@@ID@@@, out_data_@@@ID@@@.data(), (uchar) 255);\n";
+//        s += "\tsave_data(@@@IMAGE_IN_WIDTH@@@, @@@IMAGE_IN_HEIGHT@@@, 1, out_data_@@@ID@@@.data(), \"akif-200x300_bw_harris.png\");\n";
+//
+//        s = use_template(s, "ID", n->my_id);
+//        s = use_template(s, "BOUNDARY_CONDITION", "Boundary::UNDEFINED"); // TODO
+//        s = use_template(s, "INPUT_IMAGE", generate_image_name(n->in));
+//        s = use_template(s, "EUCLIDIAN_DISTANCE", n->min_distance->f32);
+//
+//        s = use_template(s, "IMAGE_IN_WIDTH", n->in->w);
+//        s = use_template(s, "IMAGE_IN_HEIGHT", n->in->h);
+//
+//
+//        s = use_template(s, "V_C_TYPE_IN", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
+//        s = use_template(s, "V_C_TYPE_OUT", VX_DF_IMAGE_to_hipacc[VX_TYPE_FLOAT32]);
+//        s = use_template(s, "SOBEL_TYPE_IN", VX_DF_IMAGE_to_hipacc[VX_DF_IMAGE_U8]);
+//
+//
+//        s = use_template(s, "IMAGE_M_C", generate_image_name(&n->Mc));
+//        s = use_template(s, "IMAGE_V_C", generate_image_name(&n->Vc));
+//
+//
+//        //s = use_template(s, "NUM_KEYPOINTS", n->num_corners); // TODO
+//        s = use_template(s, "NUM_KEYPOINTS", "int a");
+//        s = use_template(s, "MAX_KEYPOINTS", n->corners->h);
+//        s = use_template(s, "CORNERS_ARRAY", generate_image_name(n->corners));
+//
+//
+//        return s;
+//    }
+//    return "SOMETHING IS WRONG";
+//}
 
 string node_generator(HipaVX::HipaccNode* n, Type t)
 {
