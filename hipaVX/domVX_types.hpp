@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../VX/vx_types.h"
+#include "ast.hpp"
 
 #include <vector>
 #include <string>
@@ -80,10 +81,11 @@ public:
 	std::string get_name() {return node_name;}
 
 	vx_border_e border_mode = VX_BORDER_UNDEFINED;
+    function_ast::ForEveryPixel kernel;
 
 	virtual std::vector<Object*> get_inputs() = 0;
 	virtual std::vector<Object*> get_outputs() = 0;
-	virtual std::vector<Node*> get_subnodes(){return {};};
+    virtual std::vector<Node*> get_subnodes(){return {};}
 	virtual std::string generateClassDefinition() = 0;
 	virtual std::string generateNodeCall() = 0;
 	virtual void build(){}

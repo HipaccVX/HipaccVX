@@ -61,8 +61,7 @@ public:
     Image *in;
 	Image *out;
 
-	function_ast::NodeType operation;
-	function_ast::ForEveryPixel kernel;
+    function_ast::NodeType operation;
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
@@ -137,8 +136,7 @@ public:
     Image *in_2;
 	Image *out;
 
-	function_ast::NodeType operation;
-	function_ast::ForEveryPixel kernel;
+    function_ast::NodeType operation;
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
@@ -235,8 +233,7 @@ public:
     T scalar;
 	Image *out;
 
-	function_ast::NodeType operation;
-	function_ast::ForEveryPixel kernel;
+    function_ast::NodeType operation;
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
@@ -329,8 +326,6 @@ public:
     Image *in;
     Image *out;
 
-	function_ast::ForEveryPixel kernel;
-
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
     virtual std::string generateClassDefinition() override;
@@ -347,8 +342,6 @@ public:
     Image *in;
     Image *out;
     Threshold *threshold;
-
-	function_ast::ForEveryPixel kernel;
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
@@ -368,8 +361,6 @@ public:
     Image *out;
     vx_channel_e channel_vx;
 
-	function_ast::ForEveryPixel kernel;
-
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
     virtual std::string generateClassDefinition() override;
@@ -388,8 +379,6 @@ public:
     Image *in_4;
 
     Image *out;
-	
-	function_ast::ForEveryPixel kernel;
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
@@ -409,7 +398,6 @@ public:
     vx_enum policy;
     Scalar *shift;
 
-	function_ast::ForEveryPixel kernel;
     SimplePointScalarShiftRight<unsigned> shift_node; // TODO: ?? how do we know datatype
 
     virtual std::vector<Object*> get_inputs() override;

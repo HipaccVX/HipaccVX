@@ -105,8 +105,7 @@ public:
     vx_df_image sum_datatype;
 
 	function_ast::ReduceAroundPixel::Type r_type = function_ast::ReduceAroundPixel::Type::SUM;
-	std::shared_ptr<function_ast::Stencil> stencil;
-	function_ast::ForEveryPixel kernel;
+    std::shared_ptr<function_ast::Stencil> stencil;
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
@@ -351,8 +350,6 @@ public:
     vx_float32 sigmaSpace;
     vx_float32 sigmaValues;
 
-    function_ast::ForEveryPixel kernel;
-
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
     virtual std::string generateClassDefinition() override;
@@ -371,7 +368,6 @@ public:
     vx_int32 sigma_r;
 
     std::shared_ptr<function_ast::Stencil> stencil;
-    std::shared_ptr<function_ast::ForEveryPixel> kernel;
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;

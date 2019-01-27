@@ -2,7 +2,6 @@
 #define __HIPAVX_INTERNAL__
 
 #include "../VX/vx.h"
-#include "domVX_types.hpp"
 
 #include <iostream>
 #include <vector>
@@ -15,6 +14,11 @@
 #include <string>
 #include <algorithm>
 #include <memory>
+
+namespace HipaVX
+{
+class Image;
+}
 
 namespace function_ast
 {
