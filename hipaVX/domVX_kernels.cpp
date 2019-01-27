@@ -57,68 +57,48 @@ std::vector<Object *> Sobel3x3Node::get_outputs()
 std::vector<Node*> Sobel3x3Node::get_subnodes()
 {
     std::vector<Node*> subnodes;
+    subnodes.push_back(&sobel_x);
+    subnodes.push_back(&sobel_y);
     return subnodes;
 }
 std::string Sobel3x3Node::generateClassDefinition()
 {
-    std::string s = function_ast::generate(&kernel_x);
-    s += "\n" + function_ast::generate(&kernel_y);
-	return s;
+    std::string s = sobel_x.generateClassDefinition();
+    s += "\n" + sobel_y.generateClassDefinition();
+    return s;
 }
 std::string Sobel3x3Node::generateNodeCall()
 {
-    std::string s = function_ast::generate_call(&kernel_x);
-    s += "\n" + function_ast::generate_call(&kernel_y);
-	return s;
+    std::string s = sobel_x.generateNodeCall();
+    s += "\n" + sobel_y.generateNodeCall();
+    return s;
 }
 void Sobel3x3Node::build()
 {
-    stencil_x = std::make_shared<function_ast::Stencil>();
-    stencil_x->dim[0] = stencil_x->dim[1] = 3;
-    stencil_x->mask = function_ast::Stencil::from_t<int>( {-1,  0,  1,
-                                                          -2,  0,  2,
-                                                          -1,  0,  1});
-    stencil_x->name = "stencil_x";
-    stencil_x->datatype = function_ast::Datatype::INT32;
+    sobel_x.mask.dim[0] = sobel_x.mask.dim[1] = 3;
+    sobel_y.mask.dim[0] = sobel_y.mask.dim[1] = 3;
 
-    stencil_y = std::make_shared<function_ast::Stencil>();
-    stencil_y->dim[0] = stencil_y->dim[1] = 3;
-    stencil_y->mask = function_ast::Stencil::from_t<int>( {-1, -2, -1,
-                                                           0,  0,  0,
-                                                           1,  2,  1});
-    stencil_y->name = "stencil_y";
-    stencil_y->datatype = function_ast::Datatype::INT32;
+    sobel_x.mask.mask = {-1,  0,  1,
+                    -2,  0,  2,
+                    -1,  0,  1};
 
-    auto in_node = std::make_shared<function_ast::Image>(in);
-    kernel_x.inputs.push_back(in_node);
-    kernel_x.inputs.push_back(stencil_x);
-    auto out_node_x = std::make_shared<function_ast::Image>(out_x);
-    kernel_x.output = out_node_x;
+    sobel_y.mask.mask = {-1, -2, -1,
+                     0,  0,  0,
+                     1,  2,  1};
 
-    kernel_y.inputs.push_back(in_node);
-    kernel_y.inputs.push_back(stencil_y);
-    auto out_node_y = std::make_shared<function_ast::Image>(out_y);
-    kernel_y.output = out_node_y;
+    uint32_t one = 1;
+    Scalar* x_normalization = new Scalar(VX_TYPE_INT32, &one);
+    Scalar* y_normalization = new Scalar(VX_TYPE_INT32, &one);
+    sobel_x.normalization.reset(x_normalization);
+    sobel_y.normalization.reset(y_normalization);
 
+    sobel_x.in = in;
+    sobel_x.out = out_x;
+    sobel_y.in = in;
+    sobel_y.out = out_y;
 
-    auto reduce_x = std::make_shared<function_ast::ReduceAroundPixel>();
-    auto reduce_y = std::make_shared<function_ast::ReduceAroundPixel>();
-
-    auto reduce_body_x = std::make_shared<function_ast::Statements>();
-    *reduce_body_x << assign(reduce_x->reduction_output, reduce_x->stencil_value * reduce_x->pixel_value);
-    auto reduce_body_y = std::make_shared<function_ast::Statements>();
-    *reduce_body_y << assign(reduce_y->reduction_output, reduce_y->stencil_value * reduce_y->pixel_value);
-
-    reduce_x->subnodes[0] = reduce_y->subnodes[0] = in_node;
-    reduce_x->subnodes[1] = stencil_x;
-    reduce_y->subnodes[1] = stencil_y;
-    reduce_x->subnodes[2] = reduce_body_x;
-    reduce_y->subnodes[2] = reduce_body_y;
-    reduce_x->reduction_type = reduce_y->reduction_type = function_ast::ReduceAroundPixel::Type::SUM;
-    reduce_x->datatype = reduce_y->datatype = function_ast::Datatype::INT32;
-
-    kernel_x.function << assign(target_pixel(out_node_x), reduce_x);
-    kernel_y.function << assign(target_pixel(out_node_x), reduce_y);
+    sobel_x.build();
+    sobel_y.build();
 }
 
 Add3_3::Add3_3()

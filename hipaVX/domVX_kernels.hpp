@@ -121,16 +121,12 @@ public:
     Sobel3x3Node();
     virtual ~Sobel3x3Node() override = default;
 
+    LinearMask<int> sobel_x;
+    LinearMask<int> sobel_y;
+
     Image *in;
     Image *out_x;
     Image *out_y;
-
-
-    std::shared_ptr<function_ast::Stencil> stencil_x;
-    std::shared_ptr<function_ast::Stencil> stencil_y;
-
-    function_ast::ForEveryPixel kernel_x;
-    function_ast::ForEveryPixel kernel_y;
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
