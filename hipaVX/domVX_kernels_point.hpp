@@ -46,6 +46,7 @@
 // class VXChannelExtractNode;
 // class VXChannelCombineNode;
 // class VXScaleNode;
+// class VXCopy
 // }
 
 namespace HipaVX
@@ -641,6 +642,23 @@ public:
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
     virtual std::vector<Node*> get_subnodes() override;
+    virtual std::string generateClassDefinition() override;
+    virtual std::string generateNodeCall() override;
+    virtual void build() override;
+};
+
+class VXCopy: public Node
+{
+public:
+    VXCopy();
+    virtual ~VXCopy() override = default;
+
+    // 2 inputs, 1 output, 1 operation
+    Image *in;
+    Image *out;
+
+    virtual std::vector<Object*> get_inputs() override;
+    virtual std::vector<Object*> get_outputs() override;
     virtual std::string generateClassDefinition() override;
     virtual std::string generateNodeCall() override;
     virtual void build() override;

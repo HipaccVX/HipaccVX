@@ -1069,4 +1069,47 @@ void VXChannelCombineNode::build()
 	kernel.function << assign(target_pixel(out_node), vect4(current_pixel(in_node_1), current_pixel(in_node_2), current_pixel(in_node_3), current_pixel(in_node_4), function_ast::Datatype::UCHAR4));
 }
 
+
+
+VXCopy::VXCopy()
+{
+    node_name = "VX copy";
+}
+
+std::vector<Object *> VXCopy::get_inputs()
+{
+    std::vector<Object*> used_objects;
+    used_objects.emplace_back(in);
+    return used_objects;
+}
+
+std::vector<Object *> VXCopy::get_outputs()
+{
+    std::vector<Object*> used_objects;
+    used_objects.emplace_back(out);
+    return used_objects;
+}
+
+std::string VXCopy::generateClassDefinition()
+{
+    std::string s = function_ast::generate(&kernel);
+    return s;
+}
+
+std::string VXCopy::generateNodeCall()
+{
+    std::string s = function_ast::generate_call(&kernel);
+    return s;
+}
+
+void VXCopy::build()
+{
+    auto in_node = std::make_shared<function_ast::Image>(in);
+    kernel.inputs.push_back(in_node);
+    auto out_node = std::make_shared<function_ast::Image>(out);
+    kernel.output = out_node;
+
+    kernel.function << assign(target_pixel(out_node), current_pixel(in_node));
+}
+
 }

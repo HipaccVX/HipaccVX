@@ -6,7 +6,7 @@
 //       We can extend vxAPI so that composite graph functions can be written with function calls.
 
 /*
- * 63 functions (24, 39)
+ * 63 functions (25, 38)
  *
 ** VX_API_ENTRY vx_node VX_API_CALL vxColorConvertNode
  * VX_API_ENTRY vx_node VX_API_CALL vxChannelExtractNode
@@ -70,7 +70,7 @@
 ** VX_API_ENTRY vx_node VX_API_CALL vxTensorTransposeNode
 ** VX_API_ENTRY vx_node VX_API_CALL vxTensorConvertDepthNode
 ** VX_API_ENTRY vx_node VX_API_CALL vxTensorMatrixMultiplyNode
-** VX_API_ENTRY vx_node VX_API_CALL vxCopyNode
+ * VX_API_ENTRY vx_node VX_API_CALL vxCopyNode
 */
 
 // TODO: maybe move convert to domVX_types.hpp ???
@@ -153,6 +153,28 @@ VX_API_ENTRY vx_node VX_API_CALL vxPhaseNode (vx_graph graph, vx_image grad_x, v
 	convert(graph)->graph.emplace_back(phase);
 	convert(graph)->built = false;
 	return vx;
+}
+
+VX_API_ENTRY vx_node VX_API_CALL vxCopyNode (vx_graph graph, vx_reference input, vx_reference output)
+{
+    if (input->o->type != VX_TYPE_IMAGE || output->o->type != VX_TYPE_IMAGE)
+        throw std::runtime_error("Currently only supports Image");
+
+    if (convert((vx_image)input)->col != convert((vx_image)output)->col)
+        return nullptr;
+    if (convert((vx_image)input)->h != convert((vx_image)output)->h)
+        return nullptr;
+    if (convert((vx_image)input)->w != convert((vx_image)output)->w)
+        return nullptr;
+
+    HipaVX::VXCopy *copy = new HipaVX::VXCopy();
+    auto vx = new _vx_node();
+    vx->o = copy;
+    copy->in = convert((vx_image)input);
+    copy->out = convert((vx_image)output);
+    convert(graph)->graph.emplace_back(copy);
+    convert(graph)->built = false;
+    return vx;
 }
 
 VX_API_ENTRY vx_node VX_API_CALL vxSobel3x3Node(vx_graph graph, vx_image input, vx_image output_x, vx_image output_y)
