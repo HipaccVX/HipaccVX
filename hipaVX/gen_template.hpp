@@ -5,9 +5,6 @@
 
 #pragma once
 
-
-// TODO: these functions were static before ???
-
 using std::string;
 
 string use_template(const string &template_string, const string &template_variable, const string &actual_variable);
@@ -19,3 +16,5 @@ string use_template(const string &template_string, const string &template_variab
 string use_template(const string &template_string, const string &template_variable, const double actual_variable);
 
 string read_file(const string &filename);
+
+void _write_to_file(const string &filename, const string &content);

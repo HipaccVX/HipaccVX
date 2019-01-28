@@ -48,3 +48,9 @@ string read_file(const string &filename)
     // Fastet way to read a whole file https://stackoverflow.com/a/116220
     return static_cast<std::stringstream const&>(std::stringstream() << ifs.rdbuf()).str();
 }
+
+void _write_to_file(const string &filename, const string &content)
+{
+    std::ofstream out(filename);
+    out << content;
+}

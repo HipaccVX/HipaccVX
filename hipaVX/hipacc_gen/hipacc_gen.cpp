@@ -8,12 +8,6 @@
 using std::string;
 
 // move this to domVX_main.cpp
-static void write_file(const string &filename, const string &content)
-{
-    std::ofstream out(filename);
-    out << content;
-}
-
 std::vector<HipaVX::Image*> get_all_images(HipaVX::Graph *g)
 {
     std::vector<HipaVX::Image*> images;
@@ -47,7 +41,7 @@ std::vector<HipaVX::Image*> get_all_images(HipaVX::Graph *g)
 
 void process_graph(HipaVX::Graph *graph)
 {
-    string main = read_file(hipaVX_folder + "/hipacc_main.template");
+    string main = read_file(hipaVX_folder + "templates/hipacc_main");
 
     string images;
     const string image_decl_template = "\tImage<@@@DATATYPE@@@> @@@IMAGE_NAME@@@(@@@IMAGE_WIDTH@@@, @@@IMAGE_HEIGHT@@@);\n";
@@ -112,7 +106,5 @@ void process_graph(HipaVX::Graph *graph)
 
     main = use_template(main, "KERNEL_CALLS", node_calls);
 
-
-
-    write_file("main.hipaVX.cpp", main);
+    _write_to_file("main.hipaVX.cpp", main);
 }

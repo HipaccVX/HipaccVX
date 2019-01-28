@@ -40,7 +40,7 @@ string kernel_builder(const std::vector<Kernel_Variable*>& variables, const std:
         kernel += tabs + '\t' + line + '\n';
     }
 
-    string s = read_file(hipaVX_folder + "/templates/general_kernel_definition");
+    string s = read_file(hipaVX_folder + "/templates/hipacc_kernel.temp");
     s = use_template(s, "KERNEL_NAME", kernel_name);
     s = use_template(s, "VARIABLES", member_variables);
     s = use_template(s, "VARIABLES_CONSTRUCTOR_PARAMS", constructor_parameters);
