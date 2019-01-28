@@ -1,8 +1,8 @@
 // TODO: Would be nice to briefly comment on AST build
 
-#include "../VX/vx.h"
-#include "ast.hpp"
-#include "domVX_types.hpp"
+#include "../../VX/vx.h"
+#include "../ast.hpp"
+#include "../domVX_types.hpp"
 
 #pragma once
 

@@ -7,10 +7,6 @@
 #include <string>
 
 
-
-
-
-
 namespace HipaVX
 {
 class Object
