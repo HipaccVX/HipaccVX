@@ -334,7 +334,7 @@ std::string generate(ForEveryPixel *s)
 
     string kernel = generate(&s->function);
 
-    string def = read_file(hipaVX_folder + "/templates/general_kernel_definition");
+    string def = read_file(hipaVX_folder + "/templates/hipacc_kernel.templ");
     def = use_template(def, "KERNEL_NAME", "Kernel");
     def = use_template(def, "VARIABLES", member_variables);
     def = use_template(def, "VARIABLES_CONSTRUCTOR_PARAMS", constructor_parameters);

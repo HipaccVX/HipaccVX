@@ -41,7 +41,7 @@ std::vector<HipaVX::Image*> get_all_images(HipaVX::Graph *g)
 
 void process_graph(HipaVX::Graph *graph)
 {
-    string main = read_file(hipaVX_folder + "templates/hipacc_main");
+    string main = read_file(hipaVX_folder + "/templates/hipacc_main.templ");
 
     string images;
     const string image_decl_template = "\tImage<@@@DATATYPE@@@> @@@IMAGE_NAME@@@(@@@IMAGE_WIDTH@@@, @@@IMAGE_HEIGHT@@@);\n";
@@ -101,7 +101,8 @@ void process_graph(HipaVX::Graph *graph)
     string node_calls;
     for(const auto node: graph->graph)
     {
-        node_calls += node->generateNodeCall();
+        //node_calls += node->generateNodeCall();
+        node_calls += function_ast::generate_call(&node->kernel);
     }
 
     main = use_template(main, "KERNEL_CALLS", node_calls);
