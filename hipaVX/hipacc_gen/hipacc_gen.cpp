@@ -101,8 +101,8 @@ void process_graph(HipaVX::Graph *graph)
     string node_calls;
     for(const auto node: graph->graph)
     {
-        //node_calls += node->generateNodeCall();
-        node_calls += function_ast::generate_call(&node->kernel);
+        node_calls += node->generateNodeCall();
+        //node_calls += function_ast::generate_call(&node->kernel);
     }
 
     main = use_template(main, "KERNEL_CALLS", node_calls);

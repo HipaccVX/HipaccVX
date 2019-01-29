@@ -198,12 +198,44 @@ VX_API_ENTRY vx_node VX_API_CALL vxSobel3x3Node(vx_graph graph, vx_image input, 
 
 VX_API_ENTRY vx_node VX_API_CALL vxMagnitudeNode(vx_graph graph, vx_image grad_x, vx_image grad_y, vx_image mag)
 {
-    auto node = new HipaVX::MagnitudeNode();
-	auto vx = new _vx_node();
+    auto node = new HipaVX::SubgraphNode();
+    HipaVX::Image *x_im   = node->in_1 = convert(grad_x);
+    HipaVX::Image *y_im   = node->in_2 = convert(grad_y);
+    HipaVX::Image *mag_im = node->out  = convert(mag);
+
+    auto *xx_n = new HipaVX::SquareNode();
+    auto *yy_n = new HipaVX::SquareNode();
+    auto *add_n = new HipaVX::SimplePointAdd();
+    auto *sqrt_n = new HipaVX::SqrtNode();
+    auto *sat_n = new HipaVX::SaturateNode();
+
+    std::unique_ptr<HipaVX::Image> xx_im, yy_im, add_im, sqrt_im;
+    xx_im.reset(new HipaVX::Image(x_im->w, x_im->h, VX_DF_IMAGE_S32));
+    yy_im.reset(new HipaVX::Image(y_im->w, y_im->h, VX_DF_IMAGE_S32));
+    add_im.reset(new HipaVX::Image(y_im->w, y_im->h, VX_DF_IMAGE_S32));
+    sqrt_im.reset(new HipaVX::Image(y_im->w, y_im->h, VX_DF_IMAGE_S32));
+
+    xx_n->in = x_im;
+    yy_n->in = y_im;
+    xx_n->out = xx_im.get();
+    yy_n->out = yy_im.get();
+    add_n->in_1 = xx_im.get();
+    add_n->in_2 = yy_im.get();
+    add_n->out = add_im.get();
+    sqrt_n->in = add_im.get();
+    sqrt_n->out = sqrt_im.get();
+    sat_n->in = sqrt_im.get();
+    sat_n->out = mag_im;
+
+  	node->subgraph.push_back(xx_n);
+  	node->subgraph.push_back(yy_n);
+  	node->subgraph.push_back(add_n);
+  	node->subgraph.push_back(sqrt_n);
+  	node->subgraph.push_back(sat_n);
+
+    // return an OpenVX node
+    auto vx = new _vx_node();
 	vx->o = node;
-	node->in_1 = convert(grad_x);
-	node->in_2 = convert(grad_y);
-	node->out = convert(mag);
 	convert(graph)->graph.emplace_back(node);
 	convert(graph)->built = false;
 	return vx;
