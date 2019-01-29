@@ -20,14 +20,12 @@ int main(int argc, char *argv[]) {
     
         vx_image img[] = {
           vxCreateImageFromFile(context, width, height, VX_DF_IMAGE_U8, "akif-200x300_bw.png"),
-          vxCreateImage(context, width, height, VX_DF_IMAGE_S16),
-          vxCreateImage(context, width, height, VX_DF_IMAGE_S16),
           vxCreateImage(context, width, height, VX_DF_IMAGE_U8)
         };
     
         if (graph) {
             vx_node nodes[] = {
-                vxMagnitudeNode(graph, img[2], img[1], img[0]),
+                vxGaussian3x3Node(graph, img[1], img[0]),
             };
         }
           
@@ -35,8 +33,7 @@ int main(int argc, char *argv[]) {
           
         if (status == VX_SUCCESS) {
             status = vxProcessGraph(graph);
-            vxFWriteImageNode(graph, img[1], "grad_x.png");
-            vxFWriteImageNode(graph, img[2], "grad_y.png");
+            vxFWriteImageNode(graph, img[1], "res_gauss.png");
         } else {
             printf("VERIFICATION ERROR: %d\n", status);
         }
