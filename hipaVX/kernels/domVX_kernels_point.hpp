@@ -393,7 +393,7 @@ public:
 class CompositeNode: public Node
 {
 public:
-    CompositeNode() { node_name = "SubgraphNode"; }
+    CompositeNode(std::string name) { node_name = name; }
     virtual ~CompositeNode() override = default;
 
     std::vector<Node*> subgraph;
@@ -406,11 +406,10 @@ public:
         outp_list.emplace_back(parameter);
     }
 
-    std::vector<Object*> get_inputs()  { return inp_list; }
-    std::vector<Object*> get_outputs() { return outp_list; }
-    std::vector<Node*> get_subnodes() { return subgraph; }
-
-    std::string generateClassDefinition() {
+    std::vector<Object*> get_inputs()  override { return inp_list; }
+    std::vector<Object*> get_outputs() override { return outp_list; }
+    std::vector<Node*> get_subnodes()  override { return subgraph; }
+    std::string generateClassDefinition() override {
         std::string s;
         for(auto it : subgraph) {
             s += "\n" + it->generateClassDefinition();
@@ -418,7 +417,7 @@ public:
         return s;
     }
 
-    std::string generateNodeCall() {
+    std::string generateNodeCall() override {
         std::string s;
         for(auto it : subgraph) {
             s += "\n" + it->generateNodeCall();
@@ -426,7 +425,7 @@ public:
         return s;
     }
 
-    void build() {
+    void build() override {
         for(auto it : subgraph) {
             it->build();
         }

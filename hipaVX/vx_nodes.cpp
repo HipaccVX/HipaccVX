@@ -198,7 +198,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxSobel3x3Node(vx_graph graph, vx_image input, 
 
 VX_API_ENTRY vx_node VX_API_CALL vxMagnitudeNode(vx_graph graph, vx_image grad_x, vx_image grad_y, vx_image mag)
 {
-    auto node = new HipaVX::CompositeNode();
+    auto node = new HipaVX::CompositeNode("vxMagnitude");
     HipaVX::Image *x_im   = convert(grad_x);
     HipaVX::Image *y_im   = convert(grad_y);
     HipaVX::Image *mag_im = convert(mag);
@@ -237,6 +237,64 @@ VX_API_ENTRY vx_node VX_API_CALL vxMagnitudeNode(vx_graph graph, vx_image grad_x
   	node->subgraph.push_back(sat_n);
 
     // return an OpenVX node
+    auto vx = new _vx_node();
+	vx->o = node;
+	convert(graph)->graph.emplace_back(node);
+	convert(graph)->built = false;
+	return vx;
+}
+
+VX_API_ENTRY vx_node VX_API_CALL vxMultiplyNode (vx_graph graph, vx_image in1, vx_image in2, vx_scalar scale, vx_enum overflow_policy, vx_enum rounding_policy, vx_image out)
+{
+	if (convert(out)->col == VX_DF_IMAGE_U8 && (convert(in1)->col != VX_DF_IMAGE_U8 ||
+												convert(in2)->col != VX_DF_IMAGE_U8))
+        return nullptr;
+
+	if (convert(in1)->col != VX_DF_IMAGE_U8 && convert(in1)->col != VX_DF_IMAGE_S16)
+        return nullptr;
+	if (convert(in2)->col != VX_DF_IMAGE_U8 && convert(in2)->col != VX_DF_IMAGE_S16)
+        return nullptr;
+	if (convert(out)->col != VX_DF_IMAGE_U8 && convert(out)->col != VX_DF_IMAGE_S16)
+        return nullptr;
+
+    if (rounding_policy == VX_ROUND_POLICY_TO_NEAREST_EVEN)
+        return nullptr; //Only truncation is currently supported
+
+    auto node = new HipaVX::CompositeNode("vxMultiply");
+    HipaVX::Image *in1_im   = convert(in1);
+    HipaVX::Image *in2_im   = convert(in2);
+    HipaVX::Scalar *scale_s = convert(scale);
+    HipaVX::Image *out_im = convert(out);
+    node->inp(in1_im);
+    node->inp(in2_im);
+    node->inp(scale_s);
+    node->outp(out_im);
+
+    auto *mul_n = new HipaVX::SimplePointMul();
+    auto *muls_n =  new HipaVX::SimplePointScalarMul<float>();
+    auto *sat_n = new HipaVX::SaturateNode();
+  	node->subgraph.push_back(mul_n);
+  	node->subgraph.push_back(muls_n);
+
+    std::unique_ptr<HipaVX::Image> muls_im, mul_im;
+    mul_im.reset(new HipaVX::Image(in1_im->w, in2_im->h, VX_DF_IMAGE_S32));
+
+    mul_n->in_1 = in1_im;
+    mul_n->in_2 = in2_im;
+    mul_n->out  = mul_im.get();
+    muls_n->in  = mul_im.get(); 
+    muls_n->scalar = scale_s->f32; 
+    if (overflow_policy != VX_CONVERT_POLICY_SATURATE) {
+        muls_n->out = out_im;
+    }
+    else {
+        muls_im.reset(new HipaVX::Image(in1_im->w, in2_im->h, VX_DF_IMAGE_S32));
+  	    node->subgraph.push_back(sat_n);
+        muls_n->out = muls_im.get();
+        sat_n->in = muls_im.get();
+        sat_n->out = out_im;
+    }
+
     auto vx = new _vx_node();
 	vx->o = node;
 	convert(graph)->graph.emplace_back(node);
@@ -463,36 +521,6 @@ VX_API_ENTRY vx_node VX_API_CALL vxNotNode(vx_graph graph, vx_image input, vx_im
 	node->in = convert(input);
 	node->out = convert(output);
 	convert(graph)->graph.emplace_back(node);
-	convert(graph)->built = false;
-	return vx;
-}
-
-VX_API_ENTRY vx_node VX_API_CALL vxMultiplyNode (vx_graph graph, vx_image in1, vx_image in2, vx_scalar scale, vx_enum overflow_policy, vx_enum rounding_policy, vx_image out)
-{
-	if (convert(out)->col == VX_DF_IMAGE_U8 && (convert(in1)->col != VX_DF_IMAGE_U8 ||
-												convert(in2)->col != VX_DF_IMAGE_U8))
-        return nullptr;
-
-	if (convert(in1)->col != VX_DF_IMAGE_U8 && convert(in1)->col != VX_DF_IMAGE_S16)
-        return nullptr;
-	if (convert(in2)->col != VX_DF_IMAGE_U8 && convert(in2)->col != VX_DF_IMAGE_S16)
-        return nullptr;
-	if (convert(out)->col != VX_DF_IMAGE_U8 && convert(out)->col != VX_DF_IMAGE_S16)
-        return nullptr;
-
-    if (rounding_policy == VX_ROUND_POLICY_TO_NEAREST_EVEN)
-        return nullptr; //Only truncation is currently supported
-
-    HipaVX::VXMultiplyNode *multiply = new HipaVX::VXMultiplyNode();
-	auto vx = new _vx_node();
-	vx->o = multiply;
-	multiply->in_1 = convert(in1);
-	multiply->in_2 = convert(in2);
-	multiply->out = convert(out);
-	multiply->scalar = convert(scale);
-    multiply->overflow_policy = overflow_policy;
-    multiply->rounding_policy = rounding_policy;
-	convert(graph)->graph.emplace_back(multiply);
 	convert(graph)->built = false;
 	return vx;
 }
