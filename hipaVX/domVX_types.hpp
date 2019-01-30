@@ -87,55 +87,6 @@ public:
 	virtual void build(){}
 };
 
-// temporary
-class SubgraphNode: public Node
-{
-public:
-    SubgraphNode() { node_name = "SubgraphNode"; }
-    virtual ~SubgraphNode() override = default;
-    std::vector<Node*> subgraph;
-
-    //std::vector<Object*> get_inputs() { subgraph.front()->get_inputs(); }
-    //std::vector<Object*> get_outputs() { subgraph.back()->get_outputs(); }
-    std::vector<Object*> get_inputs() { 
-        std::vector<Object*> used_objects;
-        used_objects.emplace_back(in_1);
-        used_objects.emplace_back(in_2);
-        return used_objects;
-    }
-    std::vector<Object*> get_outputs() { 
-        std::vector<Object*> used_objects;
-        used_objects.emplace_back(out);
-        return used_objects;
-    }
-    std::vector<Node*> get_subnodes() { return subgraph; }
-    Image *in_1;
-    Image *in_2;
-	Image *out;
-
-    std::string generateClassDefinition() {
-        std::string s;
-        for(auto it : subgraph) {
-            s += "\n" + it->generateClassDefinition();
-        }
-        return s;
-    }
-
-    std::string generateNodeCall() {
-        std::string s;
-        for(auto it : subgraph) {
-            s += "\n" + it->generateNodeCall();
-        }
-        return s;
-    }
-
-    void build() {
-        for(auto it : subgraph) {
-            it->build();
-        }
-    }
-};
-
 class Graph: public Object
 {
 public:
