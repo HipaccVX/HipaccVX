@@ -198,10 +198,13 @@ VX_API_ENTRY vx_node VX_API_CALL vxSobel3x3Node(vx_graph graph, vx_image input, 
 
 VX_API_ENTRY vx_node VX_API_CALL vxMagnitudeNode(vx_graph graph, vx_image grad_x, vx_image grad_y, vx_image mag)
 {
-    auto node = new HipaVX::SubgraphNode();
-    HipaVX::Image *x_im   = node->in_1 = convert(grad_x);
-    HipaVX::Image *y_im   = node->in_2 = convert(grad_y);
-    HipaVX::Image *mag_im = node->out  = convert(mag);
+    auto node = new HipaVX::CompositeNode();
+    HipaVX::Image *x_im   = convert(grad_x);
+    HipaVX::Image *y_im   = convert(grad_y);
+    HipaVX::Image *mag_im = convert(mag);
+    node->inp(x_im);
+    node->inp(y_im);
+    node->outp(mag_im);
 
     auto *xx_n = new HipaVX::SquareNode();
     auto *yy_n = new HipaVX::SquareNode();

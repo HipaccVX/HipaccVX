@@ -390,30 +390,25 @@ public:
 
 // TODO: Multi-Nodes
 // temporary
-class SubgraphNode: public Node
+class CompositeNode: public Node
 {
 public:
-    SubgraphNode() { node_name = "SubgraphNode"; }
-    virtual ~SubgraphNode() override = default;
-    std::vector<Node*> subgraph;
+    CompositeNode() { node_name = "SubgraphNode"; }
+    virtual ~CompositeNode() override = default;
 
-    //std::vector<Object*> get_inputs() { subgraph.front()->get_inputs(); }
-    //std::vector<Object*> get_outputs() { subgraph.back()->get_outputs(); }
-    std::vector<Object*> get_inputs() { 
-        std::vector<Object*> used_objects;
-        used_objects.emplace_back(in_1);
-        used_objects.emplace_back(in_2);
-        return used_objects;
+    std::vector<Node*> subgraph;
+    std::vector<HipaVX::Object*> inp_list, outp_list;
+
+    void inp(HipaVX::Object* parameter){
+        inp_list.emplace_back(parameter);
     }
-    std::vector<Object*> get_outputs() { 
-        std::vector<Object*> used_objects;
-        used_objects.emplace_back(out);
-        return used_objects;
+    void outp(HipaVX::Object* parameter){
+        outp_list.emplace_back(parameter);
     }
+
+    std::vector<Object*> get_inputs()  { return inp_list; }
+    std::vector<Object*> get_outputs() { return outp_list; }
     std::vector<Node*> get_subnodes() { return subgraph; }
-    Image *in_1;
-    Image *in_2;
-	Image *out;
 
     std::string generateClassDefinition() {
         std::string s;
@@ -523,39 +518,6 @@ public:
     SaturateNode saturate_node;
 
     vx_enum policy;
-
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
-    virtual std::vector<Node*> get_subnodes() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
-    virtual void build() override;
-};
-
-class MagnitudeNode: public Node
-{
-public:
-    MagnitudeNode();
-    virtual ~MagnitudeNode() override = default;
-
-    Image *in_1;
-    Image *in_2;
-
-    Image *out;
-
-    SquareNode grad_x_square_node;
-    std::unique_ptr<Image> grad_x_square_image;
-    SquareNode grad_y_square_node;
-    std::unique_ptr<Image> grad_y_square_image;
-
-    SimplePointAdd add_node;
-    std::unique_ptr<Image> add_image;
-
-    SqrtNode sqrt_node;
-    std::unique_ptr<Image> sqrt_image;
-
-    SaturateNode saturate_node;
-
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
