@@ -1,5 +1,5 @@
-#include "node_gen.hpp"
-#include "hipacc_gen.hpp"
+//#include "node_gen.hpp"
+//#include "hipacc_gen.hpp"
 #include "../gen_template.hpp"
 #include "../ast.hpp"
 
@@ -54,3 +54,9 @@
 //  }
 //  
 //  }
+//
+namespace function_ast
+{
+    std::string to_string(Datatype d);
+    std::string generate_image_name(Image *i);
+}

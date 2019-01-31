@@ -1,17 +1,16 @@
 #include "node_gen.hpp"
 
-#include <string>
-#include <map>
-#include <type_traits>
-
 using std::string;
 
 
 // TODO: Why do we need an explicit node generator for all the functions??
+string generate_image_name(HipaVX::Image *image)
+{
+    return string("Image_") + std::to_string(image->my_id);
+}
 
 namespace generator
 {
-
 string kernel_builder(const std::vector<Kernel_Variable*>& variables, const std::vector<string>& kernel_code, const string& kernel_name)
 {
     string member_variables;
@@ -365,4 +364,204 @@ string node_generator(HipaVX::HipaccNode* n, Type t)
     return "SOMETHING IS WRONG";
 }
 
+}
+
+namespace function_ast
+{
+
+std::string generate(ForEveryPixel *s)
+{
+    string member_variables;
+    string constructor_parameters;
+    string constructor_init_list;
+    string add_accessor;
+
+    string tabs = "\t";
+
+    std::vector<Variable*> variables;
+
+    for(auto node: s->inputs)
+    {
+        string name;
+        string type;
+        if (node->type == NodeType::Variable)
+        {
+            name = std::dynamic_pointer_cast<Variable>(node)->generate_source();
+            type = to_string(std::dynamic_pointer_cast<Variable>(node)->datatype);
+        }
+        if (node->type == NodeType::Image)
+        {
+            auto i = std::dynamic_pointer_cast<Image>(node);
+            name = i->generate_source();
+            type = "Accessor<" + VX_DF_IMAGE_to_hipacc[i->image->col] + ">&";
+        }
+        if (node->type == NodeType::Stencil)
+        {
+            auto s = std::dynamic_pointer_cast<Stencil>(node);
+            name = s->name;
+            type = "Domain&";
+
+            member_variables += tabs + type + " " + name + ";\n";
+            constructor_parameters += ", " + type + " " + name;
+            constructor_init_list += ", " + name + "(" + name + ")";
+
+            name = name + "_mask";
+            type = "Mask<" + to_string(s->datatype) + ">&";
+        }
+
+        member_variables += tabs + type + " " + name + ";\n";
+        constructor_parameters += ", " + type + " " + name;
+        constructor_init_list += ", " + name + "(" + name + ")";
+
+
+        if (node->type == NodeType::Image)
+        {
+            add_accessor += tabs + '\t' + "add_accessor(&" + name + ");\n";
+        }
+    }
+
+    if (s->output->type != NodeType::Image)
+        throw std::runtime_error("std::string generate(ForEveryPixel *s)");
+
+    string kernel = generate(&s->function);
+
+    string def = read_file(hipaVX_folder + "/templates/hipacc_kernel.templ");
+    def = use_template(def, "KERNEL_NAME", "Kernel");
+    def = use_template(def, "VARIABLES", member_variables);
+    def = use_template(def, "VARIABLES_CONSTRUCTOR_PARAMS", constructor_parameters);
+    def = use_template(def, "VARIABLES_CONSTRUCTOR_INIT_LIST", constructor_init_list);
+    def = use_template(def, "ADD_ACCESSOR", add_accessor);
+    def = use_template(def, "MISC_CONSTRUCTOR", "");
+    def = use_template(def, "KERNEL", kernel);
+    def = use_template(def, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[std::dynamic_pointer_cast<Image>(s->output)->image->col]);
+    def = use_template(def, "ID", std::to_string(s->id));
+
+    return def;
+}
+
+std::tuple<std::vector<Kernelcall_Variable*>, std::vector<Kernelcall_Variable*>> generate_accessor(HipaVX::Image *image, function_ast::Stencil *stencil)
+{
+    std::vector<Kernelcall_Variable*> to_return_call_parameters;
+    std::vector<Kernelcall_Variable*> to_return;
+
+    Kernelcall_Mask *mask = new Kernelcall_Mask;
+	string mask_name = "mask_" + ::generate_image_name(image);
+    mask->set_real_name(mask_name);
+    mask->datatype = to_string(stencil->datatype);
+    mask->len_dims[0] = stencil->dim[0];
+    mask->len_dims[1] = stencil->dim[1];
+    mask->flat_mask = stencil->mask;
+
+    Kernelcall_Domain *domain = new Kernelcall_Domain();
+	string domain_name = "domain_" + ::generate_image_name(image);
+    domain->set_real_name(domain_name);
+    domain->argument = mask;
+
+    Kernelcall_BoundaryCondition_from_Dom *boundary = new Kernelcall_BoundaryCondition_from_Dom();
+	string boundary_name = "boundary_" + ::generate_image_name(image);
+    boundary->set_real_name(boundary_name);
+    boundary->datatype = VX_DF_IMAGE_to_hipacc[image->col];
+	boundary->image = ::generate_image_name(image);
+    boundary->bc = "@@@BOUNDARY_CONDITION@@@";
+    boundary->argument = domain;
+
+    Kernelcall_Accessor *accessor = new Kernelcall_Accessor();
+	string accessor_name = "accessor_" + ::generate_image_name(image);
+    accessor->set_real_name(accessor_name);
+    accessor->datatype = VX_DF_IMAGE_to_hipacc[image->col];
+    accessor->argument = boundary;
+
+
+    to_return_call_parameters.push_back(accessor);
+    to_return_call_parameters.push_back(domain);
+    to_return_call_parameters.push_back(mask);
+
+    to_return.push_back(mask);
+    to_return.push_back(domain);
+    to_return.push_back(boundary);
+    to_return.push_back(accessor);
+
+    return {to_return_call_parameters,to_return};
+}
+
+std::tuple<std::vector<Kernelcall_Variable*>, std::vector<Kernelcall_Variable*>> generate_accessor(Image *image)
+{
+	std::vector<Kernelcall_Variable*> to_return_call_parameters;
+	std::vector<Kernelcall_Variable*> to_return;
+
+	Kernelcall_BoundaryCondition_from_WH *boundary = new Kernelcall_BoundaryCondition_from_WH();
+	string boundary_name = "boundary_" + generate_image_name(image);
+	boundary->set_real_name(boundary_name);
+	boundary->datatype = VX_DF_IMAGE_to_hipacc[image->image->col];
+	boundary->image = ::generate_image_name(image->image);
+	boundary->bc = "@@@BOUNDARY_CONDITION@@@";
+	boundary->width = std::to_string(image->image->w);
+	boundary->height = std::to_string(image->image->h);
+
+	Kernelcall_Accessor *accessor = new Kernelcall_Accessor();
+	string accessor_name = "accessor_" + generate_image_name(image);
+	accessor->set_real_name(accessor_name);
+	accessor->datatype = VX_DF_IMAGE_to_hipacc[image->image->col];
+	accessor->argument = boundary;
+
+	to_return_call_parameters.push_back(accessor);
+
+	to_return.push_back(boundary);
+	to_return.push_back(accessor);
+
+	return {to_return_call_parameters,to_return};
+}
+
+std::string generate_call(ForEveryPixel *fep)
+{
+    config_struct_call___ hipacc_call;
+    std::vector<Kernelcall_Variable*> kernel_parameters;
+
+    std::tuple<std::vector<Kernelcall_Variable*>, std::vector<Kernelcall_Variable*>> tuple;
+
+    HipaVX::Image *image = std::dynamic_pointer_cast<Image>(fep->output)->image;
+    tuple = generator::generate_iterationspace(image);
+    kernel_parameters.insert(kernel_parameters.end(), std::get<0>(tuple).begin(), std::get<0>(tuple).end());
+    hipacc_call.kcv.insert(hipacc_call.kcv.end(), std::get<1>(tuple).begin(), std::get<1>(tuple).end());
+
+    for(unsigned int i = 0; i < fep->inputs.size(); i++)
+    {
+        auto node = fep->inputs[i];
+        switch(node->type)
+        {
+        /*case secret::NodeType::Variable:
+            tuple = generator::generate_scalar((HipaVX::Scalar*) n->parameters[i]);
+            break;*/
+        case function_ast::NodeType::Image:
+        {
+            auto image = std::dynamic_pointer_cast<Image>(node);
+            HipaVX::Image *HVX_image = image->image;
+            if (i+1 < fep->inputs.size() && fep->inputs[i+1]->type == function_ast::NodeType::Stencil)
+            {
+                auto stencil = std::dynamic_pointer_cast<Stencil>(fep->inputs[i+1]);
+                tuple = generate_accessor(HVX_image, stencil.get());
+                i++;
+            }
+			else
+			{
+				tuple = generate_accessor(image.get());
+			}
+            break;
+        }
+        default:
+            throw std::runtime_error("std::string generate_call(ForEveryPixel *fep):\n\tdefault in switchcase");
+        }
+
+        kernel_parameters.insert(kernel_parameters.end(), std::get<0>(tuple).begin(), std::get<0>(tuple).end());
+        hipacc_call.kcv.insert(hipacc_call.kcv.end(), std::get<1>(tuple).begin(), std::get<1>(tuple).end());
+    }
+
+    hipacc_call.kcv.push_back(generator::generate_kernelcall("Kernel", kernel_parameters));
+    string s = generator::kernelcall_builder(hipacc_call.kcv);
+
+    s = use_template(s, "ID", fep->id);
+    s = use_template(s, "BOUNDARY_CONDITION", "Boundary::UNDEFINED"); // TODO
+
+    return s;
+}
 }
