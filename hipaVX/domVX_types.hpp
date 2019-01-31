@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 
+function_ast::Datatype convert_type(vx_df_image type);
 
 namespace HipaVX
 {

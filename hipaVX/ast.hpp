@@ -1,8 +1,6 @@
 #ifndef __HIPAVX_INTERNAL__
 #define __HIPAVX_INTERNAL__
 
-#include "../VX/vx.h"
-
 #include <iostream>
 #include <vector>
 #include <chrono>
@@ -1041,7 +1039,5 @@ std::shared_ptr<function_ast::Node> vect4(std::shared_ptr<function_ast::Node> a,
 std::shared_ptr<function_ast::Node> extract4(std::shared_ptr<function_ast::Node> a, function_ast::Datatype type, function_ast::VectChannelType e);
 
 std::shared_ptr<function_ast::Node> unequal(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
-
-function_ast::Datatype convert_type(vx_df_image type);
 
 #endif
