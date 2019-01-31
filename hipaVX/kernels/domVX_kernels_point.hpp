@@ -3,6 +3,7 @@
 #include "../../VX/vx.h"
 #include "../ast.hpp"
 #include "../domVX_types.hpp"
+#include "../hipacc_gen/ast_gen.hpp" //TODO: only for now
 
 #pragma once
 

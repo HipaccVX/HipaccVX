@@ -2,11 +2,98 @@
 
 using std::string;
 
+namespace function_ast
+{
+std::string SimpleBinaryNode::generate_source()
+{
+    return generate(this);
+}
+std::string SimpleUnaryFunctionNode::generate_source()
+{
+    return generate(this);
+}
+std::string Variable::generate_source()
+{
+    return generate(this);
+}
+std::string VariableDefinition::generate_source()
+{
+    return generate(this);
+}
+std::string Vect4::generate_source()
+{
+    return generate(this);
+}
+std::string Extract4::generate_source()
+{
+    return generate(this);
+}
+std::string Assignment::generate_source()
+{
+    return generate(this);
+}
+std::string TargetPixel::generate_source()
+{
+    return generate(this);
+}
+std::string Image::generate_source()
+{
+    return generate(this);
+}
+std::string ForEveryPixel::generate_source()
+{
+    return generate(this);
+}
+std::string IterateAroundPixel::generate_source()
+{
+    return generate(this);
+}
+std::string PixelvalueAtCurrentStencilPos::generate_source()
+{
+    return generate(this);
+}
+std::string StencilvalueAtCurrentStencilPos::generate_source()
+{
+    return generate(this);
+}
+std::string ReduceAroundPixel::generate_source()
+{
+    return generate(this);
+}
+std::string ReductionOutput::generate_source()
+{
+    return generate(this);
+}
+std::string Statements::generate_source()
+{
+    return generate(this);
+}
+std::string If::generate_source()
+{
+    return generate(this);
+}
+std::string Else::generate_source()
+{
+    return generate(this);
+}
+std::string CurrentPixelvalue::generate_source()
+{
+    return generate(this);
+}
+std::string Stencil::generate_source()
+{
+    return generate(this);
+}
+
+}
+
+
 string generate_image_name(HipaVX::Image *image);
 
 namespace function_ast
 {
 
+// !!! get rid of this use tuples
 std::string generate_image_name(Image *i)
 {
 	//std::string hipavx_part = string("Image_") + std::to_string(i->my_id); // same with hipacc_gen.hpp
