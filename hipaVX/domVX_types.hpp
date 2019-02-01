@@ -83,9 +83,7 @@ public:
 	virtual std::vector<Object*> get_inputs() = 0;
 	virtual std::vector<Object*> get_outputs() = 0;
     virtual std::vector<Node*> get_subnodes(){return {};}
-	virtual std::string generateClassDefinition() = 0;
-	virtual std::string generateNodeCall() = 0;
-	virtual void build(){}
+    virtual void build(){}
 };
 
 class Graph: public Object

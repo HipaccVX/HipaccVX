@@ -52,8 +52,6 @@ public:
     std::string out_file;
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
 };
 
 class HipaccNode: public Node
@@ -70,8 +68,6 @@ public:
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
-    virtual std::string generateClassDefinition() override;
-	virtual std::string generateNodeCall() override;
 };
 
 template<typename T>
@@ -109,8 +105,6 @@ public:
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
-    virtual std::string generateClassDefinition() override;
-	virtual std::string generateNodeCall() override;
 	virtual void build() override;
 };
 
@@ -130,8 +124,6 @@ public:
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
     virtual std::vector<Node*> get_subnodes() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
     virtual void build() override;
 };
 
@@ -212,8 +204,6 @@ public:
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
     virtual std::vector<Node*> get_subnodes() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
     virtual void build() override;
 };
 
@@ -310,8 +300,6 @@ public:
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
     virtual std::vector<Node*> get_subnodes() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
     virtual void build() override;
 };
 
@@ -333,8 +321,6 @@ public:
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
     virtual std::vector<Node*> get_subnodes() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
     virtual void build() override;
 };
 
@@ -352,8 +338,6 @@ public:
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
 };
 
 class AnotherBilateralFilterNode: public Node
@@ -371,8 +355,6 @@ public:
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
     virtual void build() override;
 };
 
@@ -425,18 +407,6 @@ std::vector<Object *> LinearMask<T>::get_outputs()
     std::vector<Object*> used_objects;
     used_objects.emplace_back(out);
     return used_objects;
-}
-template <typename T>
-std::string LinearMask<T>::generateClassDefinition()
-{
-	std::string s = function_ast::generate(&kernel);
-	return s;
-}
-template <typename T>
-std::string LinearMask<T>::generateNodeCall()
-{
-	std::string s = function_ast::generate_call(&kernel);
-	return s;
 }
 template <typename T>
 void LinearMask<T>::build()

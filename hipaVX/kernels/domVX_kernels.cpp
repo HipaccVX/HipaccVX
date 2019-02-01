@@ -28,14 +28,6 @@ std::vector<Object *> WriteImageNode::get_outputs()
     std::vector<Object*> used_objects;
     return used_objects;
 }
-std::string WriteImageNode::generateClassDefinition()
-{
-    return generator::node_generator(this, generator::Type::Definition);
-}
-std::string WriteImageNode::generateNodeCall()
-{
-    return generator::node_generator(this, generator::Type::Call);
-}
 
 Sobel3x3Node::Sobel3x3Node()
 {
@@ -60,18 +52,6 @@ std::vector<Node*> Sobel3x3Node::get_subnodes()
     subnodes.push_back(&sobel_x);
     subnodes.push_back(&sobel_y);
     return subnodes;
-}
-std::string Sobel3x3Node::generateClassDefinition()
-{
-    std::string s = sobel_x.generateClassDefinition();
-    s += "\n" + sobel_y.generateClassDefinition();
-    return s;
-}
-std::string Sobel3x3Node::generateNodeCall()
-{
-    std::string s = sobel_x.generateNodeCall();
-    s += "\n" + sobel_y.generateNodeCall();
-    return s;
 }
 void Sobel3x3Node::build()
 {
@@ -122,16 +102,6 @@ std::vector<Node*> Add3_3::get_subnodes()
     std::vector<Node*> subnodes;
     subnodes.push_back(&add);
     return subnodes;
-}
-std::string Add3_3::generateClassDefinition()
-{
-	std::string s = add.generateClassDefinition();
-    return s;
-}
-std::string Add3_3::generateNodeCall()
-{
-	std::string s = add.generateNodeCall();
-    return s;
 }
 void Add3_3::build()
 {
@@ -187,47 +157,6 @@ std::vector<Node*> HarrisCorners::get_subnodes()
     subnodes.push_back(&trace_A_square_k_kernel);
     subnodes.push_back(&Mc_kernel);
     return subnodes;
-}
-
-std::string HarrisCorners::generateClassDefinition()
-{
-    std::string s = sobel.generateClassDefinition();
-    s += "\n" + sobel_x_norm.generateClassDefinition();
-    s += "\n" + sobel_y_norm.generateClassDefinition();
-    s += "\n" + sobel_x_square.generateClassDefinition();
-    s += "\n" + sobel_y_square.generateClassDefinition();
-    s += "\n" + sobel_x_y.generateClassDefinition();
-    s += "\n" + gx_square_A.generateClassDefinition();
-    s += "\n" + gy_square_A.generateClassDefinition();
-    s += "\n" + gx_gy_A.generateClassDefinition();
-    s += "\n" + trace_add.generateClassDefinition();
-    s += "\n" + gx_A_gy_A.generateClassDefinition();
-    s += "\n" + gx_gy_A_square.generateClassDefinition();
-    s += "\n" + det_kernel.generateClassDefinition();
-    s += "\n" + trace_A_square_kernel.generateClassDefinition();
-    s += "\n" + trace_A_square_k_kernel.generateClassDefinition();
-    s += "\n" + Mc_kernel.generateClassDefinition();
-    return s;
-}
-std::string HarrisCorners::generateNodeCall()
-{
-    std::string s = sobel.generateNodeCall();
-    s += "\n" + sobel_x_norm.generateNodeCall();
-    s += "\n" + sobel_y_norm.generateNodeCall();
-    s += "\n" + sobel_x_square.generateNodeCall();
-    s += "\n" + sobel_y_square.generateNodeCall();
-    s += "\n" + sobel_x_y.generateNodeCall();
-    s += "\n" + gx_square_A.generateNodeCall();
-    s += "\n" + gy_square_A.generateNodeCall();
-    s += "\n" + gx_gy_A.generateNodeCall();
-    s += "\n" + trace_add.generateNodeCall();
-    s += "\n" + gx_A_gy_A.generateNodeCall();
-    s += "\n" + gx_gy_A_square.generateNodeCall();
-    s += "\n" + det_kernel.generateNodeCall();
-    s += "\n" + trace_A_square_kernel.generateNodeCall();
-    s += "\n" + trace_A_square_k_kernel.generateNodeCall();
-    s += "\n" + Mc_kernel.generateNodeCall();
-    return s;
 }
 void HarrisCorners::build()
 {
@@ -330,20 +259,6 @@ std::vector<Node*> VXConvolveNode::get_subnodes()
         subnodes.push_back(&saturate_node);
     return subnodes;
 }
-std::string VXConvolveNode::generateClassDefinition()
-{
-    std::string s = lin_mask_node.generateClassDefinition();
-    if (out->col == VX_DF_IMAGE_U8)
-        s += "\n" + saturate_node.generateClassDefinition();
-    return s;
-}
-std::string VXConvolveNode::generateNodeCall()
-{
-    std::string s = lin_mask_node.generateNodeCall();
-    if (out->col == VX_DF_IMAGE_U8)
-        s += "\n" + saturate_node.generateNodeCall();
-    return s;
-}
 void VXConvolveNode::build()
 {
 	lin_mask_node.in = in;
@@ -388,14 +303,6 @@ std::vector<Object *> HipaccNode::get_outputs()
     std::vector<Object*> used_objects;
     used_objects.emplace_back(out);
     return used_objects;
-}
-std::string HipaccNode::generateClassDefinition()
-{
-    return generator::node_generator(this, generator::Type::Definition);
-}
-std::string HipaccNode::generateNodeCall()
-{
-    return generator::node_generator(this, generator::Type::Call);
 }
 
 VXBilateralFilterNode::VXBilateralFilterNode()
@@ -560,14 +467,6 @@ std::vector<Object *> VXBilateralFilterNode::get_outputs()
     used_objects.emplace_back(out);
     return used_objects;
 }
-std::string VXBilateralFilterNode::generateClassDefinition()
-{
-    return "";
-}
-std::string VXBilateralFilterNode::generateNodeCall()
-{
-    return "";
-}
 
 AnotherBilateralFilterNode::AnotherBilateralFilterNode()
 {
@@ -584,14 +483,6 @@ std::vector<Object *> AnotherBilateralFilterNode::get_outputs()
     std::vector<Object*> used_objects;
     used_objects.emplace_back(out);
     return used_objects;
-}
-std::string AnotherBilateralFilterNode::generateClassDefinition()
-{
-    return function_ast::generate(&this->kernel);
-}
-std::string AnotherBilateralFilterNode::generateNodeCall()
-{
-    return function_ast::generate_call(&this->kernel);
 }
 void AnotherBilateralFilterNode::build()
 {

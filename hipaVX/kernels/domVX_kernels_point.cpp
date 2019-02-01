@@ -23,18 +23,6 @@ std::vector<Object *> SimplePointUnary::get_outputs()
     return used_objects;
 }
 
-std::string SimplePointUnary::generateClassDefinition()
-{
-	std::string s = function_ast::generate(&kernel);
-	return s;
-}
-
-std::string SimplePointUnary::generateNodeCall()
-{
-	std::string s = function_ast::generate_call(&kernel);
-	return s;
-}
-
 void SimplePointUnary::build()
 {
 	auto in_node = std::make_shared<function_ast::Image>(in);
@@ -76,18 +64,6 @@ std::vector<Object *> SimplePointBinary::get_outputs()
     std::vector<Object*> used_objects;
     used_objects.emplace_back(out);
     return used_objects;
-}
-
-std::string SimplePointBinary::generateClassDefinition()
-{
-	std::string s = function_ast::generate(&kernel);
-	return s;
-}
-
-std::string SimplePointBinary::generateNodeCall()
-{
-	std::string s = function_ast::generate_call(&kernel);
-	return s;
 }
 
 void SimplePointBinary::build()
@@ -144,17 +120,6 @@ std::vector<Object *> SaturateNode::get_outputs()
     return used_objects;
 }
 
-std::string SaturateNode::generateClassDefinition()
-{
-	std::string s = function_ast::generate(&kernel);
-	return s;
-}
-
-std::string SaturateNode::generateNodeCall()
-{
-	std::string s = function_ast::generate_call(&kernel);
-	return s;
-}
 void SaturateNode::build()
 {
 	auto in_node = std::make_shared<function_ast::Image>(in);
@@ -209,18 +174,6 @@ std::vector<Object *> ConvertDepthNode::get_outputs()
     std::vector<Object*> used_objects;
     used_objects.emplace_back(out);
     return used_objects;
-}
-
-std::string ConvertDepthNode::generateClassDefinition()
-{
-	std::string s = function_ast::generate(&kernel);
-	return s;
-}
-
-std::string ConvertDepthNode::generateNodeCall()
-{
-	std::string s = function_ast::generate_call(&kernel);
-	return s;
 }
 
 void ConvertDepthNode::build() {
@@ -281,22 +234,6 @@ std::vector<Node*> VXSubtractNode::get_subnodes()
     return subnodes;
 }
 
-std::string VXSubtractNode::generateClassDefinition()
-{
-    std::string s = diff_node.generateClassDefinition();
-    if (policy == VX_CONVERT_POLICY_SATURATE)
-        s += "\n" + saturate_node.generateClassDefinition();
-    return s;
-}
-
-std::string VXSubtractNode::generateNodeCall()
-{
-    std::string s = diff_node.generateNodeCall();
-    if (policy == VX_CONVERT_POLICY_SATURATE)
-        s += "\n" + saturate_node.generateNodeCall();
-    return s;
-}
-
 void VXSubtractNode::build()
 {
     diff_node.in_1 = in_1;
@@ -337,18 +274,6 @@ std::vector<Object *> VXThresholdNode::get_outputs()
     std::vector<Object*> used_objects;
     used_objects.emplace_back(out);
     return used_objects;
-}
-
-std::string VXThresholdNode::generateClassDefinition()
-{
-	std::string s = function_ast::generate(&kernel);
-	return s;
-}
-
-std::string VXThresholdNode::generateNodeCall()
-{
-	std::string s = function_ast::generate_call(&kernel);
-	return s;
 }
 
 void VXThresholdNode::build()
@@ -413,24 +338,6 @@ std::vector<Node*> AbsDiffNode::get_subnodes()
     return subnodes;
 }
 
-std::string AbsDiffNode::generateClassDefinition()
-{
-    std::string s = diff_node.generateClassDefinition();
-    s += "\n" + abs_node.generateClassDefinition();
-    if (saturate)
-        s += "\n" + saturate_node.generateClassDefinition();
-    return s;
-}
-
-std::string AbsDiffNode::generateNodeCall()
-{
-    std::string s = diff_node.generateNodeCall();
-    s += "\n" + abs_node.generateNodeCall();
-    if (saturate)
-        s += "\n" + saturate_node.generateNodeCall();
-    return s;
-}
-
 void AbsDiffNode::build()
 {
     //saturate_node is only used when input is S16
@@ -490,22 +397,6 @@ std::vector<Node*> VXAddNode::get_subnodes()
     return subnodes;
 }
 
-std::string VXAddNode::generateClassDefinition()
-{
-    std::string s = add_node.generateClassDefinition();
-    if (policy == VX_CONVERT_POLICY_SATURATE)
-        s += "\n" + saturate_node.generateClassDefinition();
-    return s;
-}
-
-std::string VXAddNode::generateNodeCall()
-{
-    std::string s = add_node.generateNodeCall();
-    if (policy == VX_CONVERT_POLICY_SATURATE)
-        s += "\n" + saturate_node.generateNodeCall();
-    return s;
-}
-
 void VXAddNode::build()
 {
     add_node.in_1 = in_1;
@@ -557,22 +448,6 @@ std::vector<Node*> PhaseNode::get_subnodes()
     return subnodes;
 }
 
-std::string PhaseNode::generateClassDefinition()
-{
-    std::string s = div_node.generateClassDefinition();
-    s += "\n" + atan2_node.generateClassDefinition();
-    s += "\n" + mapping_node.generateClassDefinition();
-    return s;
-}
-
-std::string PhaseNode::generateNodeCall()
-{
-    std::string s = div_node.generateNodeCall();
-    s += "\n" + atan2_node.generateNodeCall();
-    s += "\n" + mapping_node.generateNodeCall();
-    return s;
-}
-
 void PhaseNode::build()
 {
     div_node.in_1 = in_1;
@@ -622,24 +497,6 @@ std::vector<Node*> VXMultiplyNode::get_subnodes()
     if (overflow_policy == VX_CONVERT_POLICY_SATURATE)
         subnodes.push_back(&saturate_node);
     return subnodes;
-}
-
-std::string VXMultiplyNode::generateClassDefinition()
-{
-    std::string s = mul_node.generateClassDefinition();
-    s += "\n" + mul_scalar_node.generateClassDefinition();
-    if (overflow_policy == VX_CONVERT_POLICY_SATURATE)
-        s += "\n" + saturate_node.generateClassDefinition();
-    return s;
-}
-
-std::string VXMultiplyNode::generateNodeCall()
-{
-    std::string s = mul_node.generateNodeCall();
-    s += "\n" + mul_scalar_node.generateNodeCall();
-    if (overflow_policy == VX_CONVERT_POLICY_SATURATE)
-        s += "\n" + saturate_node.generateNodeCall();
-    return s;
 }
 
 void VXMultiplyNode::build()
@@ -698,20 +555,6 @@ std::vector<Node*> VXAccumulateNode::get_subnodes()
     return subnodes;
 }
 
-std::string VXAccumulateNode::generateClassDefinition()
-{
-    std::string s = add_node.generateClassDefinition();
-    s += "\n" + saturate_node.generateClassDefinition();
-    return s;
-}
-
-std::string VXAccumulateNode::generateNodeCall()
-{
-    std::string s = add_node.generateNodeCall();
-    s += "\n" + saturate_node.generateNodeCall();
-    return s;
-}
-
 void VXAccumulateNode::build()
 {
     add_node.in_1 = in;
@@ -755,24 +598,6 @@ std::vector<Node*> VXAccumulateSquareNode::get_subnodes()
     subnodes.push_back(&add_node);
     subnodes.push_back(&saturate_node);
     return subnodes;
-}
-
-std::string VXAccumulateSquareNode::generateClassDefinition()
-{
-    std::string s = square_node.generateClassDefinition();
-    s += "\n" + depth_node.generateClassDefinition();
-    s += "\n" + add_node.generateClassDefinition();
-    s += "\n" + saturate_node.generateClassDefinition();
-    return s;
-}
-
-std::string VXAccumulateSquareNode::generateNodeCall()
-{
-    std::string s = add_node.generateNodeCall();
-    s += "\n" + depth_node.generateNodeCall();
-    s += "\n" + add_node.generateNodeCall();
-    s += "\n" + saturate_node.generateNodeCall();
-    return s;
 }
 
 void VXAccumulateSquareNode::build()
@@ -834,22 +659,6 @@ std::vector<Node*> VXAccumulateWeightedNode::get_subnodes()
     return subnodes;
 }
 
-std::string VXAccumulateWeightedNode::generateClassDefinition()
-{
-    std::string s = mul_scalar_left_node.generateClassDefinition();
-    s += "\n" + mul_scalar_right_node.generateClassDefinition();
-    s += "\n" + add_node.generateClassDefinition();
-    return s;
-}
-
-std::string VXAccumulateWeightedNode::generateNodeCall()
-{
-    std::string s = mul_scalar_left_node.generateNodeCall();
-    s += "\n" + mul_scalar_right_node.generateNodeCall();
-    s += "\n" + add_node.generateNodeCall();
-    return s;
-}
-
 void VXAccumulateWeightedNode::build()
 {
     mul_scalar_left_node.in = in;
@@ -890,18 +699,6 @@ std::vector<Object *> VXChannelExtractNode::get_outputs()
     std::vector<Object*> used_objects;
     used_objects.emplace_back(out);
     return used_objects;
-}
-
-std::string VXChannelExtractNode::generateClassDefinition()
-{
-	std::string s = function_ast::generate(&kernel);
-	return s;
-}
-
-std::string VXChannelExtractNode::generateNodeCall()
-{
-	std::string s = function_ast::generate_call(&kernel);
-	return s;
 }
 
 void VXChannelExtractNode::build()
@@ -960,18 +757,6 @@ std::vector<Object *> VXChannelCombineNode::get_outputs()
     return used_objects;
 }
 
-std::string VXChannelCombineNode::generateClassDefinition()
-{
-	std::string s = function_ast::generate(&kernel);
-	return s;
-}
-
-std::string VXChannelCombineNode::generateNodeCall()
-{
-	std::string s = function_ast::generate_call(&kernel);
-	return s;
-}
-
 void VXChannelCombineNode::build()
 {
 	auto in_node_1 = std::make_shared<function_ast::Image>(in_1);
@@ -1008,18 +793,6 @@ std::vector<Object *> VXCopy::get_outputs()
     std::vector<Object*> used_objects;
     used_objects.emplace_back(out);
     return used_objects;
-}
-
-std::string VXCopy::generateClassDefinition()
-{
-    std::string s = function_ast::generate(&kernel);
-    return s;
-}
-
-std::string VXCopy::generateNodeCall()
-{
-    std::string s = function_ast::generate_call(&kernel);
-    return s;
 }
 
 void VXCopy::build()

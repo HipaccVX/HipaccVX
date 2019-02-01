@@ -67,8 +67,6 @@ public:
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
 	virtual void build() override;
 };
 
@@ -142,8 +140,6 @@ public:
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
 	virtual void build() override;
 };
 
@@ -239,8 +235,6 @@ public:
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
 	virtual void build() override;
 };
 
@@ -330,8 +324,6 @@ public:
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
-    virtual std::string generateClassDefinition() override;
-	virtual std::string generateNodeCall() override;
 	virtual void build() override;
 };
 
@@ -348,8 +340,6 @@ public:
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
     //virtual std::vector<Node*> get_subnodes() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
     virtual void build() override;
 };
 
@@ -365,8 +355,6 @@ public:
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
     virtual void build() override;
 };
 
@@ -384,8 +372,6 @@ public:
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
     virtual void build() override;
 };
 
@@ -410,21 +396,6 @@ public:
     std::vector<Object*> get_inputs()  override { return inp_list; }
     std::vector<Object*> get_outputs() override { return outp_list; }
     std::vector<Node*> get_subnodes()  override { return subgraph; }
-    std::string generateClassDefinition() override {
-        std::string s;
-        for(auto it : subgraph) {
-            s += "\n" + it->generateClassDefinition();
-        }
-        return s;
-    }
-
-    std::string generateNodeCall() override {
-        std::string s;
-        for(auto it : subgraph) {
-            s += "\n" + it->generateNodeCall();
-        }
-        return s;
-    }
 
     void build() override {
         for(auto it : subgraph) {
@@ -447,8 +418,6 @@ public:
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
     virtual void build() override;
 };
 
@@ -471,8 +440,6 @@ public:
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
     virtual std::vector<Node*> get_subnodes() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
     virtual void build() override;
 };
 
@@ -498,8 +465,6 @@ public:
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
     virtual std::vector<Node*> get_subnodes() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
     virtual void build() override;
 };
 
@@ -522,8 +487,6 @@ public:
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
     virtual std::vector<Node*> get_subnodes() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
     virtual void build() override;
 };
 
@@ -547,8 +510,6 @@ public:
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
     virtual std::vector<Node*> get_subnodes() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
     virtual void build() override;
 };
 
@@ -576,8 +537,6 @@ public:
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
     virtual std::vector<Node*> get_subnodes() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
     virtual void build() override;
 };
 
@@ -597,8 +556,6 @@ public:
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
     virtual std::vector<Node*> get_subnodes() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
     virtual void build() override;
 };
 
@@ -627,8 +584,6 @@ public:
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
     virtual std::vector<Node*> get_subnodes() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
     virtual void build() override;
 };
 
@@ -653,8 +608,6 @@ public:
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
     virtual std::vector<Node*> get_subnodes() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
     virtual void build() override;
 };
 
@@ -670,8 +623,6 @@ public:
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
-    virtual std::string generateClassDefinition() override;
-    virtual std::string generateNodeCall() override;
     virtual void build() override;
 };
 }
@@ -691,18 +642,6 @@ std::vector<Object *> SimplePointScalar<T>::get_outputs()
     std::vector<Object*> used_objects;
     used_objects.emplace_back(out);
     return used_objects;
-}
-template <typename T>
-std::string SimplePointScalar<T>::generateClassDefinition()
-{
-	std::string s = function_ast::generate(&kernel);
-	return s;
-}
-template <typename T>
-std::string SimplePointScalar<T>::generateNodeCall()
-{
-	std::string s = function_ast::generate_call(&kernel);
-	return s;
 }
 template <typename T>
 void SimplePointScalar<T>::build()

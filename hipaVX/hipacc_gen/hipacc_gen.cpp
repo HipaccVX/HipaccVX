@@ -595,6 +595,38 @@ std::vector<HipaVX::Image*> get_all_images(HipaVX::Graph *g)
     return images;
 }
 
+std::string generate_source_recursive(std::vector<HipaVX::Node*> nodes, const generator::Type t)
+{
+    string sources = "";
+    for (auto node: nodes)
+    {
+        if (dynamic_cast<HipaVX::WriteImageNode*>(node) != nullptr)
+        {
+            if (t == generator::Type::Call)
+                sources += generator::node_generator(dynamic_cast<HipaVX::WriteImageNode*>(node), t);
+            continue;
+        }
+        auto subnodes = node->get_subnodes();
+        if (subnodes.empty()) //we are at a fundamental node
+        {
+            switch (t)
+            {
+            case generator::Type::Definition:
+                sources += function_ast::generate(&node->kernel) + '\n';
+                break;
+            case generator::Type::Call:
+                sources += function_ast::generate_call(&node->kernel) + '\n';
+                break;
+            }
+        }
+        else
+        {
+            sources += generate_source_recursive(subnodes, t) + '\n';
+        }
+    }
+    return sources;
+}
+
 void process_graph(HipaVX::Graph *graph)
 {
     string main = read_file(hipaVX_folder + "/templates/hipacc_main.templ");
@@ -646,20 +678,11 @@ void process_graph(HipaVX::Graph *graph)
 
     main = use_template(main, "IMAGE_DEFINITIONS", images);
 
-    string node_definitions;
-    for(const auto node: graph->graph)
-    {
-        node_definitions += node->generateClassDefinition();
-    }
+    string node_definitions = generate_source_recursive(graph->graph, generator::Type::Definition);
 
     main = use_template(main, "KERNEL_DEFINITIONS", node_definitions);
 
-    string node_calls;
-    for(const auto node: graph->graph)
-    {
-        node_calls += node->generateNodeCall();
-        //node_calls += function_ast::generate_call(&node->kernel);
-    }
+    string node_calls = generate_source_recursive(graph->graph, generator::Type::Call);
 
     main = use_template(main, "KERNEL_CALLS", node_calls);
 
