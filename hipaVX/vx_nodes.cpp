@@ -212,22 +212,25 @@ VX_API_ENTRY vx_node VX_API_CALL vxMagnitudeNode(vx_graph graph, vx_image grad_x
     auto *sqrt_n = new HipaVX::SqrtNode();
     auto *sat_n = new HipaVX::SaturateNode();
 
-    std::unique_ptr<HipaVX::Image> xx_im, yy_im, add_im, sqrt_im;
-    xx_im.reset(new HipaVX::Image(x_im->w, x_im->h, VX_DF_IMAGE_S32));
-    yy_im.reset(new HipaVX::Image(y_im->w, y_im->h, VX_DF_IMAGE_S32));
-    add_im.reset(new HipaVX::Image(y_im->w, y_im->h, VX_DF_IMAGE_S32));
-    sqrt_im.reset(new HipaVX::Image(y_im->w, y_im->h, VX_DF_IMAGE_S32));
+    node->img_list.emplace_back(new HipaVX::Image(x_im->w, x_im->h, VX_DF_IMAGE_S32));
+    node->img_list.emplace_back(new HipaVX::Image(y_im->w, y_im->h, VX_DF_IMAGE_S32));
+    node->img_list.emplace_back(new HipaVX::Image(y_im->w, y_im->h, VX_DF_IMAGE_S32));
+    node->img_list.emplace_back(new HipaVX::Image(y_im->w, y_im->h, VX_DF_IMAGE_S32));
+    auto   xx_im = node->img_list[0].get();
+    auto   yy_im = node->img_list[1].get();
+    auto  add_im = node->img_list[2].get();
+    auto sqrt_im = node->img_list[3].get();
 
     xx_n->in = x_im;
     yy_n->in = y_im;
-    xx_n->out = xx_im.get();
-    yy_n->out = yy_im.get();
-    add_n->in_1 = xx_im.get();
-    add_n->in_2 = yy_im.get();
-    add_n->out = add_im.get();
-    sqrt_n->in = add_im.get();
-    sqrt_n->out = sqrt_im.get();
-    sat_n->in = sqrt_im.get();
+    xx_n->out = xx_im;
+    yy_n->out = yy_im;
+    add_n->in_1 = xx_im;
+    add_n->in_2 = yy_im;
+    add_n->out = add_im;
+    sqrt_n->in = add_im;
+    sqrt_n->out = sqrt_im;
+    sat_n->in = sqrt_im;
     sat_n->out = mag_im;
 
   	node->subgraph.push_back(xx_n);

@@ -385,6 +385,7 @@ public:
 
     std::vector<Node*> subgraph;
     std::vector<HipaVX::Object*> inp_list, outp_list;
+    std::vector<std::unique_ptr<HipaVX::Image>> img_list; // temp
 
     void inp(HipaVX::Object* parameter){
         inp_list.emplace_back(parameter);

@@ -19,15 +19,14 @@ int main(int argc, char *argv[]) {
         vx_graph graph = vxCreateGraph(context);
     
         vx_image img[] = {
-          vxCreateImageFromFile(context, width, height, VX_DF_IMAGE_U8, "akif-200x300_bw.png"),
+          vxCreateImageFromFile(context, width, height, VX_DF_IMAGE_S16, "akif-200x300_bw.png"),
+          vxCreateImageFromFile(context, width, height, VX_DF_IMAGE_S16, "akif-200x300_bw.png"),
           vxCreateImage(context, width, height, VX_DF_IMAGE_S16),
-          vxCreateImage(context, width, height, VX_DF_IMAGE_S16),
-          vxCreateImage(context, width, height, VX_DF_IMAGE_U8)
         };
     
         if (graph) {
             vx_node nodes[] = {
-                vxMagnitudeNode(graph, img[2], img[1], img[0]),
+                vxMagnitudeNode(graph, img[1], img[0], img[2]),
             };
         }
           
