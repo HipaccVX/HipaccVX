@@ -13,6 +13,8 @@
 
 #pragma once
 
+// TODO: have nothing from HipaVX namespace
+
 namespace function_ast
 {
     std::string to_string(Datatype d);
@@ -30,21 +32,20 @@ namespace function_ast
     std::string generate(Assignment *s);
 
     // ??
+    std::string generate(Image *s); // TODO: get rid of image member
     std::string generate(TargetPixel *s);
     std::string generate(CurrentPixelvalue *s);
-    std::string generate_call(ForEveryPixel *s);
+    std::string generate(Statements *s);
 
     // ???
-    std::string generate(Image *s);
     std::string generate(ForEveryPixel *s);
-    std::string generate(ReductionOutput *s);
-    std::string generate(ReductionType *s);
     std::string generate(IterateAroundPixel *s);
     std::string generate(ReduceAroundPixel *s);
     std::string generate(PixelvalueAtCurrentStencilPos *s);
     std::string generate(StencilvalueAtCurrentStencilPos *s);
+    // Not even implemented
     std::string generate(Stencil *s);
-    std::string generate(Statements *s);
+    std::string generate(ReductionOutput *s);
 
     // TODO: Better name?
     template<typename T>
