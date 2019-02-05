@@ -339,7 +339,6 @@ public:
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
-    //virtual std::vector<Node*> get_subnodes() override;
     virtual void build() override;
 };
 
@@ -383,7 +382,6 @@ public:
     CompositeNode(std::string name) { node_name = name; }
     virtual ~CompositeNode() override = default;
 
-    std::vector<Node*> subgraph;
     std::vector<HipaVX::Object*> inp_list, outp_list;
     std::vector<std::unique_ptr<HipaVX::Image>> img_list; // temp
 
@@ -396,10 +394,9 @@ public:
 
     std::vector<Object*> get_inputs()  override { return inp_list; }
     std::vector<Object*> get_outputs() override { return outp_list; }
-    std::vector<Node*> get_subnodes()  override { return subgraph; }
 
     void build() override {
-        for(auto it : subgraph) {
+        for(auto it : subnodes) {
             it->build();
         }
     }
@@ -440,7 +437,6 @@ public:
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
-    virtual std::vector<Node*> get_subnodes() override;
     virtual void build() override;
 };
 
@@ -465,7 +461,6 @@ public:
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
-    virtual std::vector<Node*> get_subnodes() override;
     virtual void build() override;
 };
 
@@ -487,7 +482,6 @@ public:
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
-    virtual std::vector<Node*> get_subnodes() override;
     virtual void build() override;
 };
 
@@ -510,7 +504,6 @@ public:
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
-    virtual std::vector<Node*> get_subnodes() override;
     virtual void build() override;
 };
 
@@ -537,7 +530,6 @@ public:
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
-    virtual std::vector<Node*> get_subnodes() override;
     virtual void build() override;
 };
 
@@ -556,7 +548,6 @@ public:
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
-    virtual std::vector<Node*> get_subnodes() override;
     virtual void build() override;
 };
 
@@ -584,7 +575,6 @@ public:
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
-    virtual std::vector<Node*> get_subnodes() override;
     virtual void build() override;
 };
 
@@ -608,7 +598,6 @@ public:
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
-    virtual std::vector<Node*> get_subnodes() override;
     virtual void build() override;
 };
 

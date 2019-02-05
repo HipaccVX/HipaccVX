@@ -585,7 +585,7 @@ std::vector<HipaVX::Image*> get_all_images(HipaVX::Graph *g)
                 images.push_back((HipaVX::Image*) ref);
         }
 
-        auto subnodes = node->get_subnodes();
+        auto subnodes = node->subnodes;
         nodes.insert(nodes.end(), subnodes.begin(), subnodes.end());
     }
 
@@ -606,7 +606,7 @@ std::string generate_source_recursive(std::vector<HipaVX::Node*> nodes, const ge
                 sources += generator::node_generator(dynamic_cast<HipaVX::WriteImageNode*>(node), t);
             continue;
         }
-        auto subnodes = node->get_subnodes();
+        auto subnodes = node->subnodes;
         if (subnodes.empty()) //we are at a fundamental node
         {
             switch (t)

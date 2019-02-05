@@ -225,15 +225,6 @@ std::vector<Object *> VXSubtractNode::get_outputs()
     return used_objects;
 }
 
-std::vector<Node*> VXSubtractNode::get_subnodes()
-{
-    std::vector<Node*> subnodes;
-    subnodes.push_back(&diff_node);
-    if (policy == VX_CONVERT_POLICY_SATURATE)
-        subnodes.push_back(&saturate_node);
-    return subnodes;
-}
-
 void VXSubtractNode::build()
 {
     diff_node.in_1 = in_1;
@@ -254,6 +245,10 @@ void VXSubtractNode::build()
     diff_node.build();
     if (policy == VX_CONVERT_POLICY_SATURATE)
         saturate_node.build();
+
+    subnodes.push_back(&diff_node);
+    if (policy == VX_CONVERT_POLICY_SATURATE)
+        subnodes.push_back(&saturate_node);
 }
 
 VXThresholdNode::VXThresholdNode()
@@ -328,16 +323,6 @@ std::vector<Object *> AbsDiffNode::get_outputs()
     return used_objects;
 }
 
-std::vector<Node*> AbsDiffNode::get_subnodes()
-{
-    std::vector<Node*> subnodes;
-    subnodes.push_back(&diff_node);
-    subnodes.push_back(&abs_node);
-    if (saturate)
-        subnodes.push_back(&saturate_node);
-    return subnodes;
-}
-
 void AbsDiffNode::build()
 {
     //saturate_node is only used when input is S16
@@ -366,6 +351,11 @@ void AbsDiffNode::build()
     abs_node.build();
     if (saturate)
         saturate_node.build();
+
+    subnodes.push_back(&diff_node);
+    subnodes.push_back(&abs_node);
+    if (saturate)
+        subnodes.push_back(&saturate_node);
 }
 
 VXAddNode::VXAddNode()
@@ -388,15 +378,6 @@ std::vector<Object *> VXAddNode::get_outputs()
     return used_objects;
 }
 
-std::vector<Node*> VXAddNode::get_subnodes()
-{
-    std::vector<Node*> subnodes;
-    subnodes.push_back(&add_node);
-    if (policy == VX_CONVERT_POLICY_SATURATE)
-        subnodes.push_back(&saturate_node);
-    return subnodes;
-}
-
 void VXAddNode::build()
 {
     add_node.in_1 = in_1;
@@ -417,6 +398,10 @@ void VXAddNode::build()
     add_node.build();
     if (policy == VX_CONVERT_POLICY_SATURATE)
         saturate_node.build();
+
+    subnodes.push_back(&add_node);
+    if (policy == VX_CONVERT_POLICY_SATURATE)
+        subnodes.push_back(&saturate_node);
 }
 
 PhaseNode::PhaseNode()
@@ -439,15 +424,6 @@ std::vector<Object *> PhaseNode::get_outputs()
     return used_objects;
 }
 
-std::vector<Node*> PhaseNode::get_subnodes()
-{
-    std::vector<Node*> subnodes;
-    subnodes.push_back(&div_node);
-    subnodes.push_back(&atan2_node);
-    subnodes.push_back(&mapping_node);
-    return subnodes;
-}
-
 void PhaseNode::build()
 {
     div_node.in_1 = in_1;
@@ -466,6 +442,10 @@ void PhaseNode::build()
     div_node.build();
     atan2_node.build();
     mapping_node.build();
+
+    subnodes.push_back(&div_node);
+    subnodes.push_back(&atan2_node);
+    subnodes.push_back(&mapping_node);
 }
 
 VXMultiplyNode::VXMultiplyNode()
@@ -487,16 +467,6 @@ std::vector<Object *> VXMultiplyNode::get_outputs()
     std::vector<Object*> used_objects;
     used_objects.emplace_back(out);
     return used_objects;
-}
-
-std::vector<Node*> VXMultiplyNode::get_subnodes()
-{
-    std::vector<Node*> subnodes;
-    subnodes.push_back(&mul_node);
-    subnodes.push_back(&mul_scalar_node);
-    if (overflow_policy == VX_CONVERT_POLICY_SATURATE)
-        subnodes.push_back(&saturate_node);
-    return subnodes;
 }
 
 void VXMultiplyNode::build()
@@ -525,6 +495,11 @@ void VXMultiplyNode::build()
     mul_scalar_node.build();
     if (overflow_policy == VX_CONVERT_POLICY_SATURATE)
         saturate_node.build();
+
+    subnodes.push_back(&mul_node);
+    subnodes.push_back(&mul_scalar_node);
+    if (overflow_policy == VX_CONVERT_POLICY_SATURATE)
+        subnodes.push_back(&saturate_node);
 }
 
 VXAccumulateNode::VXAccumulateNode()
@@ -547,14 +522,6 @@ std::vector<Object *> VXAccumulateNode::get_outputs()
     return used_objects;
 }
 
-std::vector<Node*> VXAccumulateNode::get_subnodes()
-{
-    std::vector<Node*> subnodes;
-    subnodes.push_back(&add_node);
-    subnodes.push_back(&saturate_node);
-    return subnodes;
-}
-
 void VXAccumulateNode::build()
 {
     add_node.in_1 = in;
@@ -567,6 +534,9 @@ void VXAccumulateNode::build()
 
     add_node.build();
     saturate_node.build();
+
+    subnodes.push_back(&add_node);
+    subnodes.push_back(&saturate_node);
 }
 
 VXAccumulateSquareNode::VXAccumulateSquareNode()
@@ -588,16 +558,6 @@ std::vector<Object *> VXAccumulateSquareNode::get_outputs()
     std::vector<Object*> used_objects;
     used_objects.emplace_back(in_out);
     return used_objects;
-}
-
-std::vector<Node*> VXAccumulateSquareNode::get_subnodes()
-{
-    std::vector<Node*> subnodes;
-    subnodes.push_back(&square_node);
-    subnodes.push_back(&depth_node);
-    subnodes.push_back(&add_node);
-    subnodes.push_back(&saturate_node);
-    return subnodes;
 }
 
 void VXAccumulateSquareNode::build()
@@ -627,6 +587,11 @@ void VXAccumulateSquareNode::build()
     depth_node.build();
     add_node.build();
     saturate_node.build();
+
+    subnodes.push_back(&square_node);
+    subnodes.push_back(&depth_node);
+    subnodes.push_back(&add_node);
+    subnodes.push_back(&saturate_node);
 }
 
 VXAccumulateWeightedNode::VXAccumulateWeightedNode()
@@ -650,15 +615,6 @@ std::vector<Object *> VXAccumulateWeightedNode::get_outputs()
     return used_objects;
 }
 
-std::vector<Node*> VXAccumulateWeightedNode::get_subnodes()
-{
-    std::vector<Node*> subnodes;
-    subnodes.push_back(&mul_scalar_left_node);
-    subnodes.push_back(&mul_scalar_right_node);
-    subnodes.push_back(&add_node);
-    return subnodes;
-}
-
 void VXAccumulateWeightedNode::build()
 {
     mul_scalar_left_node.in = in;
@@ -680,6 +636,10 @@ void VXAccumulateWeightedNode::build()
     mul_scalar_left_node.build();
     mul_scalar_right_node.build();
     add_node.build();
+
+    subnodes.push_back(&mul_scalar_left_node);
+    subnodes.push_back(&mul_scalar_right_node);
+    subnodes.push_back(&add_node);
 }
 
 VXChannelExtractNode::VXChannelExtractNode()

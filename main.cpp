@@ -1,1 +1,1 @@
-tests/magnitude.cpp
+samples/test_all.cpp

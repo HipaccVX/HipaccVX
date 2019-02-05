@@ -46,13 +46,6 @@ std::vector<Object *> Sobel3x3Node::get_outputs()
     used_objects.emplace_back(out_y);
     return used_objects;
 }
-std::vector<Node*> Sobel3x3Node::get_subnodes()
-{
-    std::vector<Node*> subnodes;
-    subnodes.push_back(&sobel_x);
-    subnodes.push_back(&sobel_y);
-    return subnodes;
-}
 void Sobel3x3Node::build()
 {
     sobel_x.mask.dim[0] = sobel_x.mask.dim[1] = 3;
@@ -79,6 +72,9 @@ void Sobel3x3Node::build()
 
     sobel_x.build();
     sobel_y.build();
+
+    subnodes.push_back(&sobel_x);
+    subnodes.push_back(&sobel_y);
 }
 
 Add3_3::Add3_3()
@@ -97,12 +93,6 @@ std::vector<Object *> Add3_3::get_outputs()
     used_objects.emplace_back(out);
     return used_objects;
 }
-std::vector<Node*> Add3_3::get_subnodes()
-{
-    std::vector<Node*> subnodes;
-    subnodes.push_back(&add);
-    return subnodes;
-}
 void Add3_3::build()
 {
     add.mask.dim[0] = add.mask.dim[1] = 3;
@@ -119,44 +109,45 @@ void Add3_3::build()
     add.out = out;
 
     add.build();
+
+    subnodes.push_back(&add);
 }
 
+HarrisCorners::HarrisCorners(Image *in)
+    :in(in),
+      sob_x(in->w, in->h, VX_TYPE_FLOAT32),
+      sob_y(in->w, in->h, VX_TYPE_FLOAT32),
+      Gx(in->w, in->h, VX_TYPE_FLOAT32),
+      Gy(in->w, in->h, VX_TYPE_FLOAT32),
+      square_Gx(in->w, in->h, VX_TYPE_FLOAT32),
+      square_Gy(in->w, in->h, VX_TYPE_FLOAT32),
+      square_Gx_sum(in->w, in->h, VX_TYPE_FLOAT32),
+      square_Gy_sum(in->w, in->h, VX_TYPE_FLOAT32),
+      trace_A(in->w, in->h, VX_TYPE_FLOAT32),
+      det_A_minuend(in->w, in->h, VX_TYPE_FLOAT32),
+      det_A_mul_Gx_Gy(in->w, in->h, VX_TYPE_FLOAT32),
+      det_A_mul_Gx_Gy_sum(in->w, in->h, VX_TYPE_FLOAT32),
+      det_A_subtrahend(in->w, in->h, VX_TYPE_FLOAT32),
+      det_A(in->w, in->h, VX_TYPE_FLOAT32),
+      trace_A_square(in->w, in->h, VX_TYPE_FLOAT32),
+      trace_A_square_k(in->w, in->h, VX_TYPE_FLOAT32),
+      Mc(in->w, in->h, VX_TYPE_FLOAT32),
+      Vc(in->w, in->h, VX_TYPE_FLOAT32)
+{
+    node_name = "Harris Corner";
+}
 std::vector<Object *> HarrisCorners::get_inputs()
 {
     std::vector<Object*> used_objects;
     used_objects.emplace_back(in);
     return used_objects;
 }
-
 std::vector<Object *> HarrisCorners::get_outputs()
 {
     std::vector<Object*> used_objects;
     used_objects.emplace_back(&Vc);
     used_objects.emplace_back(corners);
     return used_objects;
-}
-
-std::vector<Node*> HarrisCorners::get_subnodes()
-{
-    std::vector<Node*> subnodes;
-    subnodes.push_back(&sobel);
-    subnodes.push_back(&sobel_x_norm);
-    subnodes.push_back(&sobel_y_norm);
-    subnodes.push_back(&sobel_x_square);
-    subnodes.push_back(&sobel_y_square);
-    subnodes.push_back(&sobel_x_y);
-    subnodes.push_back(&gx_square_A);
-    subnodes.push_back(&gy_square_A);
-    subnodes.push_back(&gx_gy_A);
-
-    subnodes.push_back(&trace_add);
-    subnodes.push_back(&gx_A_gy_A);
-    subnodes.push_back(&gx_gy_A_square);
-    subnodes.push_back(&det_kernel);
-    subnodes.push_back(&trace_A_square_kernel);
-    subnodes.push_back(&trace_A_square_k_kernel);
-    subnodes.push_back(&Mc_kernel);
-    return subnodes;
 }
 void HarrisCorners::build()
 {
@@ -232,6 +223,26 @@ void HarrisCorners::build()
     trace_A_square_kernel.build();
     trace_A_square_k_kernel.build();
     Mc_kernel.build();
+
+
+
+    subnodes.push_back(&sobel);
+    subnodes.push_back(&sobel_x_norm);
+    subnodes.push_back(&sobel_y_norm);
+    subnodes.push_back(&sobel_x_square);
+    subnodes.push_back(&sobel_y_square);
+    subnodes.push_back(&sobel_x_y);
+    subnodes.push_back(&gx_square_A);
+    subnodes.push_back(&gy_square_A);
+    subnodes.push_back(&gx_gy_A);
+
+    subnodes.push_back(&trace_add);
+    subnodes.push_back(&gx_A_gy_A);
+    subnodes.push_back(&gx_gy_A_square);
+    subnodes.push_back(&det_kernel);
+    subnodes.push_back(&trace_A_square_kernel);
+    subnodes.push_back(&trace_A_square_k_kernel);
+    subnodes.push_back(&Mc_kernel);
 }
 
 VXConvolveNode::VXConvolveNode()
@@ -250,14 +261,6 @@ std::vector<Object *> VXConvolveNode::get_outputs()
     std::vector<Object*> used_objects;
     used_objects.emplace_back(out);
     return used_objects;
-}
-std::vector<Node*> VXConvolveNode::get_subnodes()
-{
-    std::vector<Node*> subnodes;
-    subnodes.push_back(&lin_mask_node);
-    if (out->col == VX_DF_IMAGE_U8)
-        subnodes.push_back(&saturate_node);
-    return subnodes;
 }
 void VXConvolveNode::build()
 {
@@ -286,6 +289,11 @@ void VXConvolveNode::build()
     }
     lin_mask_node.build();
     saturate_node.build();
+
+
+    subnodes.push_back(&lin_mask_node);
+    if (out->col == VX_DF_IMAGE_U8)
+        subnodes.push_back(&saturate_node);
 }
 
 HipaccNode::HipaccNode()

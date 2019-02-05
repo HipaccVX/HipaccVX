@@ -123,7 +123,6 @@ public:
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
-    virtual std::vector<Node*> get_subnodes() override;
     virtual void build() override;
 };
 
@@ -203,36 +202,13 @@ public:
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
-    virtual std::vector<Node*> get_subnodes() override;
     virtual void build() override;
 };
 
 class HarrisCorners: public Node
 {
 public:
-    HarrisCorners(Image *in)
-        :in(in),
-          sob_x(in->w, in->h, VX_TYPE_FLOAT32),
-          sob_y(in->w, in->h, VX_TYPE_FLOAT32),
-          Gx(in->w, in->h, VX_TYPE_FLOAT32),
-          Gy(in->w, in->h, VX_TYPE_FLOAT32),
-          square_Gx(in->w, in->h, VX_TYPE_FLOAT32),
-          square_Gy(in->w, in->h, VX_TYPE_FLOAT32),
-          square_Gx_sum(in->w, in->h, VX_TYPE_FLOAT32),
-          square_Gy_sum(in->w, in->h, VX_TYPE_FLOAT32),
-          trace_A(in->w, in->h, VX_TYPE_FLOAT32),
-          det_A_minuend(in->w, in->h, VX_TYPE_FLOAT32),
-          det_A_mul_Gx_Gy(in->w, in->h, VX_TYPE_FLOAT32),
-          det_A_mul_Gx_Gy_sum(in->w, in->h, VX_TYPE_FLOAT32),
-          det_A_subtrahend(in->w, in->h, VX_TYPE_FLOAT32),
-          det_A(in->w, in->h, VX_TYPE_FLOAT32),
-          trace_A_square(in->w, in->h, VX_TYPE_FLOAT32),
-          trace_A_square_k(in->w, in->h, VX_TYPE_FLOAT32),
-          Mc(in->w, in->h, VX_TYPE_FLOAT32),
-          Vc(in->w, in->h, VX_TYPE_FLOAT32)
-    {
-        node_name = "Harris Corner";
-    }
+    HarrisCorners(Image *in);
     virtual ~HarrisCorners() override = default;
 
     Sobel3x3Node sobel;
@@ -299,7 +275,6 @@ public:
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
-    virtual std::vector<Node*> get_subnodes() override;
     virtual void build() override;
 };
 
@@ -320,7 +295,6 @@ public:
 
     virtual std::vector<Object*> get_inputs() override;
     virtual std::vector<Object*> get_outputs() override;
-    virtual std::vector<Node*> get_subnodes() override;
     virtual void build() override;
 };
 

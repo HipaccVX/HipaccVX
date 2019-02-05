@@ -233,11 +233,11 @@ VX_API_ENTRY vx_node VX_API_CALL vxMagnitudeNode(vx_graph graph, vx_image grad_x
     sat_n->in = sqrt_im;
     sat_n->out = mag_im;
 
-  	node->subgraph.push_back(xx_n);
-  	node->subgraph.push_back(yy_n);
-  	node->subgraph.push_back(add_n);
-  	node->subgraph.push_back(sqrt_n);
-  	node->subgraph.push_back(sat_n);
+    node->subnodes.push_back(xx_n);
+    node->subnodes.push_back(yy_n);
+    node->subnodes.push_back(add_n);
+    node->subnodes.push_back(sqrt_n);
+    node->subnodes.push_back(sat_n);
 
     // return an OpenVX node
     auto vx = new _vx_node();
@@ -276,8 +276,8 @@ VX_API_ENTRY vx_node VX_API_CALL vxMultiplyNode (vx_graph graph, vx_image in1, v
     auto *mul_n = new HipaVX::SimplePointMul();
     auto *muls_n =  new HipaVX::SimplePointScalarMul<float>();
     auto *sat_n = new HipaVX::SaturateNode();
-  	node->subgraph.push_back(mul_n);
-  	node->subgraph.push_back(muls_n);
+    node->subnodes.push_back(mul_n);
+    node->subnodes.push_back(muls_n);
 
     std::unique_ptr<HipaVX::Image> muls_im, mul_im;
     mul_im.reset(new HipaVX::Image(in1_im->w, in2_im->h, VX_DF_IMAGE_S32));
@@ -292,7 +292,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxMultiplyNode (vx_graph graph, vx_image in1, v
     }
     else {
         muls_im.reset(new HipaVX::Image(in1_im->w, in2_im->h, VX_DF_IMAGE_S32));
-  	    node->subgraph.push_back(sat_n);
+        node->subnodes.push_back(sat_n);
         muls_n->out = muls_im.get();
         sat_n->in = muls_im.get();
         sat_n->out = out_im;
