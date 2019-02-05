@@ -50,8 +50,7 @@ public:
     virtual ~WriteImageNode() override = default;
     Image *in;
     std::string out_file;
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
+    virtual void build() override;
 };
 
 class HipaccNode: public Node
@@ -66,8 +65,7 @@ public:
 
     std::string kernel_name;
 
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
+    virtual void build() override;
 };
 
 template<typename T>
@@ -102,9 +100,6 @@ public:
 
 	function_ast::ReduceAroundPixel::Type r_type = function_ast::ReduceAroundPixel::Type::SUM;
     std::shared_ptr<function_ast::Stencil> stencil;
-
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
 	virtual void build() override;
 };
 
@@ -121,8 +116,6 @@ public:
     Image *out_x;
     Image *out_y;
 
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
     virtual void build() override;
 };
 
@@ -200,8 +193,6 @@ public:
     Image *in;
     Image *out;
 
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
     virtual void build() override;
 };
 
@@ -273,8 +264,6 @@ public:
 
     Image Vc;
 
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
     virtual void build() override;
 };
 
@@ -292,9 +281,6 @@ public:
 
     SaturateNode saturate_node;
 
-
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
     virtual void build() override;
 };
 
@@ -309,9 +295,6 @@ public:
     vx_int32 diameter;
     vx_float32 sigmaSpace;
     vx_float32 sigmaValues;
-
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
 };
 
 class AnotherBilateralFilterNode: public Node
@@ -327,8 +310,6 @@ public:
 
     std::shared_ptr<function_ast::Stencil> stencil;
 
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
     virtual void build() override;
 };
 
@@ -365,22 +346,6 @@ template <typename T>
 LinearMask<T>::LinearMask()
 {
     node_name = "Linear Mask";
-}
-template <typename T>
-std::vector<Object *> LinearMask<T>::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in);
-	if (normalization != nullptr)
-		used_objects.emplace_back(normalization.get());
-    return used_objects;
-}
-template <typename T>
-std::vector<Object *> LinearMask<T>::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(out);
-    return used_objects;
 }
 template <typename T>
 void LinearMask<T>::build()
@@ -439,6 +404,13 @@ void LinearMask<T>::build()
 	}
 
 	kernel.function << assign(target_pixel(out_node), temp_variable);
+
+
+    inputs.emplace_back(in);
+    if (normalization != nullptr)
+        inputs.emplace_back(normalization.get());
+
+    outputs.emplace_back(out);
  }
 
 }

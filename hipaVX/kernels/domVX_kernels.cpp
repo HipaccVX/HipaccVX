@@ -17,34 +17,14 @@ WriteImageNode::WriteImageNode()
 {
     node_name = "Image Writer";
 }
-std::vector<Object *> WriteImageNode::get_inputs()
+void WriteImageNode::build()
 {
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in);
-    return used_objects;
-}
-std::vector<Object *> WriteImageNode::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    return used_objects;
+    inputs.emplace_back(in);
 }
 
 Sobel3x3Node::Sobel3x3Node()
 {
     node_name = "Sobel 3x3";
-}
-std::vector<Object *> Sobel3x3Node::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in);
-    return used_objects;
-}
-std::vector<Object *> Sobel3x3Node::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(out_x);
-    used_objects.emplace_back(out_y);
-    return used_objects;
 }
 void Sobel3x3Node::build()
 {
@@ -75,23 +55,15 @@ void Sobel3x3Node::build()
 
     subnodes.push_back(&sobel_x);
     subnodes.push_back(&sobel_y);
+
+    inputs.emplace_back(in);
+    outputs.emplace_back(out_x);
+    outputs.emplace_back(out_y);
 }
 
 Add3_3::Add3_3()
 {
     node_name = "Add 3x3";
-}
-std::vector<Object *> Add3_3::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in);
-    return used_objects;
-}
-std::vector<Object *> Add3_3::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(out);
-    return used_objects;
 }
 void Add3_3::build()
 {
@@ -111,6 +83,9 @@ void Add3_3::build()
     add.build();
 
     subnodes.push_back(&add);
+
+    inputs.emplace_back(in);
+    outputs.emplace_back(out);
 }
 
 HarrisCorners::HarrisCorners(Image *in)
@@ -135,19 +110,6 @@ HarrisCorners::HarrisCorners(Image *in)
       Vc(in->w, in->h, VX_TYPE_FLOAT32)
 {
     node_name = "Harris Corner";
-}
-std::vector<Object *> HarrisCorners::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in);
-    return used_objects;
-}
-std::vector<Object *> HarrisCorners::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(&Vc);
-    used_objects.emplace_back(corners);
-    return used_objects;
 }
 void HarrisCorners::build()
 {
@@ -243,24 +205,16 @@ void HarrisCorners::build()
     subnodes.push_back(&trace_A_square_kernel);
     subnodes.push_back(&trace_A_square_k_kernel);
     subnodes.push_back(&Mc_kernel);
+
+
+    inputs.emplace_back(in);
+    outputs.emplace_back(&Vc);
+    outputs.emplace_back(corners);
 }
 
 VXConvolveNode::VXConvolveNode()
 {
     node_name = "VX Convolution";
-}
-std::vector<Object *> VXConvolveNode::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in);
-    used_objects.emplace_back(convolution);
-    return used_objects;
-}
-std::vector<Object *> VXConvolveNode::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(out);
-    return used_objects;
 }
 void VXConvolveNode::build()
 {
@@ -294,23 +248,21 @@ void VXConvolveNode::build()
     subnodes.push_back(&lin_mask_node);
     if (out->col == VX_DF_IMAGE_U8)
         subnodes.push_back(&saturate_node);
+
+    inputs.emplace_back(in);
+    inputs.emplace_back(convolution);
+    outputs.emplace_back(out);
 }
 
 HipaccNode::HipaccNode()
 {
     node_name = "Custom Hipacc";
+
 }
-std::vector<Object *> HipaccNode::get_inputs()
+void HipaccNode::build()
 {
-    std::vector<Object*> used_objects;
-    used_objects.insert(used_objects.end(), parameters.begin(), parameters.end());
-    return used_objects;
-}
-std::vector<Object *> HipaccNode::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(out);
-    return used_objects;
+    inputs.insert(inputs.end(), parameters.begin(), parameters.end());
+    outputs.emplace_back(out);
 }
 
 VXBilateralFilterNode::VXBilateralFilterNode()
@@ -460,37 +412,17 @@ VXBilateralFilterNode::VXBilateralFilterNode()
 
         kernel.function.statements.emplace_back(g_2_def);
         kernel.function.statements.emplace_back(assignment);
-    }*/
+    }
 
-}
-std::vector<Object *> VXBilateralFilterNode::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in);
-    return used_objects;
-}
-std::vector<Object *> VXBilateralFilterNode::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(out);
-    return used_objects;
+    inputs.emplace_back(in);
+    outputs.emplace_back(out);
+*/
+
 }
 
 AnotherBilateralFilterNode::AnotherBilateralFilterNode()
 {
     node_name = "Another Bilateral Filter";
-}
-std::vector<Object *> AnotherBilateralFilterNode::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in);
-    return used_objects;
-}
-std::vector<Object *> AnotherBilateralFilterNode::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(out);
-    return used_objects;
 }
 void AnotherBilateralFilterNode::build()
 {
@@ -542,5 +474,9 @@ void AnotherBilateralFilterNode::build()
     kernel.function << iterate;
 
     kernel.function << assign(target_pixel(out_node), convert(p / d + constant(0.5f), function_ast::Datatype::UINT8));
+
+
+    inputs.emplace_back(in);
+    outputs.emplace_back(out);
 }
 }

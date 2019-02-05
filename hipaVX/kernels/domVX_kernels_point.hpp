@@ -65,8 +65,6 @@ public:
 
     function_ast::NodeType operation;
 
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
 	virtual void build() override;
 };
 
@@ -138,8 +136,6 @@ public:
 
     function_ast::NodeType operation;
 
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
 	virtual void build() override;
 };
 
@@ -233,8 +229,6 @@ public:
 
     function_ast::NodeType operation;
 
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
 	virtual void build() override;
 };
 
@@ -322,8 +316,6 @@ public:
     Image *in;
     Image *out;
 
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
 	virtual void build() override;
 };
 
@@ -337,8 +329,6 @@ public:
     Image *out;
     Threshold *threshold;
 
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
     virtual void build() override;
 };
 
@@ -352,8 +342,6 @@ public:
     Image *out;
     vx_channel_e channel_vx;
 
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
     virtual void build() override;
 };
 
@@ -369,8 +357,6 @@ public:
 
     Image *out;
 
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
     virtual void build() override;
 };
 
@@ -392,9 +378,6 @@ public:
         outp_list.emplace_back(parameter);
     }
 
-    std::vector<Object*> get_inputs()  override { return inp_list; }
-    std::vector<Object*> get_outputs() override { return outp_list; }
-
     void build() override {
         for(auto it : subnodes) {
             it->build();
@@ -414,8 +397,6 @@ public:
 
     SimplePointScalarShiftRight<unsigned> shift_node; // TODO: ?? how do we know datatype
 
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
     virtual void build() override;
 };
 
@@ -435,8 +416,6 @@ public:
 
     vx_enum policy;
 
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
     virtual void build() override;
 };
 
@@ -459,8 +438,6 @@ public:
 
     bool saturate;
 
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
     virtual void build() override;
 };
 
@@ -480,8 +457,6 @@ public:
 
     vx_enum policy;
 
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
     virtual void build() override;
 };
 
@@ -502,8 +477,6 @@ public:
 
     SimplePointScalarMul<float> mapping_node;
 
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
     virtual void build() override;
 };
 
@@ -528,8 +501,6 @@ public:
 
     SaturateNode saturate_node;
 
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
     virtual void build() override;
 };
 
@@ -546,8 +517,6 @@ public:
 
     SaturateNode saturate_node;
 
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
     virtual void build() override;
 };
 
@@ -572,9 +541,6 @@ public:
 
     SaturateNode saturate_node;
 
-
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
     virtual void build() override;
 };
 
@@ -596,8 +562,6 @@ public:
     SimplePointAdd add_node;
     std::unique_ptr<Image> add_image;
 
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
     virtual void build() override;
 };
 
@@ -611,28 +575,12 @@ public:
     Image *in;
     Image *out;
 
-    virtual std::vector<Object*> get_inputs() override;
-    virtual std::vector<Object*> get_outputs() override;
     virtual void build() override;
 };
 }
 
 namespace HipaVX
 {
-template <typename T>
-std::vector<Object *> SimplePointScalar<T>::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in);
-    return used_objects;
-}
-template <typename T>
-std::vector<Object *> SimplePointScalar<T>::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(out);
-    return used_objects;
-}
 template <typename T>
 void SimplePointScalar<T>::build()
 {
@@ -665,5 +613,8 @@ void SimplePointScalar<T>::build()
 		kernel.function << assign(target_pixel(out_node), current_pixel(in_node) << c);
 		break;
 	}
+
+    inputs.emplace_back(in);
+    outputs.emplace_back(out);
 }
 }

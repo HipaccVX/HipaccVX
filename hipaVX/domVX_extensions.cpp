@@ -80,8 +80,8 @@ void vxDrawDotGraph(vx_graph graph, std::string filename, vx_uint32 node_depth)
     std::string edges;
     for(auto node: nodes)
     {
-        auto inputs = node->get_inputs();
-        auto outputs = node->get_outputs();
+        auto inputs = node->inputs;
+        auto outputs = node->outputs;
 
         for(auto input: inputs)
         {

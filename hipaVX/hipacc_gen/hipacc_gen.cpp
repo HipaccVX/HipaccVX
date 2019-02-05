@@ -574,12 +574,12 @@ std::vector<HipaVX::Image*> get_all_images(HipaVX::Graph *g)
         auto node = nodes[nodes.size() - 1];
         nodes.pop_back();
 
-        for(auto ref: node->get_inputs())
+        for(auto ref: node->inputs)
         {
             if (ref->type == VX_TYPE_IMAGE)
                 images.push_back((HipaVX::Image*) ref);
         }
-        for(auto ref: node->get_outputs())
+        for(auto ref: node->outputs)
         {
             if (ref->type == VX_TYPE_IMAGE)
                 images.push_back((HipaVX::Image*) ref);

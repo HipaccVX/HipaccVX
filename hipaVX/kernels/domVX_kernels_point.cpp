@@ -9,19 +9,6 @@ namespace HipaVX
 {
 
 // ----------- Single Operation Unary (1to1) Point Operators ----------------
-std::vector<Object *> SimplePointUnary::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in);
-    return used_objects;
-}
-
-std::vector<Object *> SimplePointUnary::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(out);
-    return used_objects;
-}
 
 void SimplePointUnary::build()
 {
@@ -48,24 +35,11 @@ void SimplePointUnary::build()
 	    kernel.function << assign(target_pixel(out_node), current_pixel(in_node) * current_pixel(in_node));
 		break;
 	}
+    inputs.emplace_back(in);
+    outputs.emplace_back(out);
 }
 
 // ----------- Single Operation Binary (2to1) Point Operators ----------------
-std::vector<Object *> SimplePointBinary::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in_1);
-    used_objects.emplace_back(in_2);
-    return used_objects;
-}
-
-std::vector<Object *> SimplePointBinary::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(out);
-    return used_objects;
-}
-
 void SimplePointBinary::build()
 {
 	auto in_node_1 = std::make_shared<function_ast::Image>(in_1);
@@ -98,26 +72,16 @@ void SimplePointBinary::build()
 	case function_ast::NodeType::BitwiseXor:
 		kernel.function << assign(target_pixel(out_node), current_pixel(in_node_1) ^ current_pixel(in_node_2));
 		break;
-	}
+    }
+
+    inputs.emplace_back(in_1);
+    inputs.emplace_back(in_2);
+    outputs.emplace_back(out);
 }
 
 SaturateNode::SaturateNode()
 {
     node_name = "Saturate";
-}
-
-std::vector<Object *> SaturateNode::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in);
-    return used_objects;
-}
-
-std::vector<Object *> SaturateNode::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(out);
-    return used_objects;
 }
 
 void SaturateNode::build()
@@ -155,25 +119,14 @@ void SaturateNode::build()
 	kernel.function << greater_else;
 
 	kernel.function << assign(target_pixel(out_node), temp);
+
+    inputs.emplace_back(in);
+    outputs.emplace_back(out);
 }
 
 ConvertDepthNode::ConvertDepthNode()
 {
     node_name = "Depth Converter";
-}
-
-std::vector<Object *> ConvertDepthNode::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in);
-    return used_objects;
-}
-
-std::vector<Object *> ConvertDepthNode::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(out);
-    return used_objects;
 }
 
 void ConvertDepthNode::build() {
@@ -203,26 +156,14 @@ void ConvertDepthNode::build() {
 	kernel.function << greater_else;
 
 	kernel.function << assign(target_pixel(out_node), temp);
+
+    inputs.emplace_back(in);
+    outputs.emplace_back(out);
 }
 
 VXSubtractNode::VXSubtractNode()
 {
     node_name = "VX Subtraction Node";
-}
-
-std::vector<Object *> VXSubtractNode::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in_1);
-    used_objects.emplace_back(in_2);
-    return used_objects;
-}
-
-std::vector<Object *> VXSubtractNode::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(out);
-    return used_objects;
 }
 
 void VXSubtractNode::build()
@@ -249,26 +190,15 @@ void VXSubtractNode::build()
     subnodes.push_back(&diff_node);
     if (policy == VX_CONVERT_POLICY_SATURATE)
         subnodes.push_back(&saturate_node);
+
+    inputs.emplace_back(in_1);
+    inputs.emplace_back(in_2);
+    outputs.emplace_back(out);
 }
 
 VXThresholdNode::VXThresholdNode()
 {
     node_name = "VX Threshold";
-}
-
-std::vector<Object *> VXThresholdNode::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in);
-    used_objects.emplace_back(threshold);
-    return used_objects;
-}
-
-std::vector<Object *> VXThresholdNode::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(out);
-    return used_objects;
 }
 
 void VXThresholdNode::build()
@@ -301,26 +231,14 @@ void VXThresholdNode::build()
         kernel.function << if_outrange;
         kernel.function << else_outrange;
     }
+
+    inputs.emplace_back(in);
+    outputs.emplace_back(out);
 }
 
 AbsDiffNode::AbsDiffNode()
 {
     node_name = "Absolute Difference";
-}
-
-std::vector<Object *> AbsDiffNode::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in_1);
-    used_objects.emplace_back(in_2);
-    return used_objects;
-}
-
-std::vector<Object *> AbsDiffNode::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(out);
-    return used_objects;
 }
 
 void AbsDiffNode::build()
@@ -356,26 +274,15 @@ void AbsDiffNode::build()
     subnodes.push_back(&abs_node);
     if (saturate)
         subnodes.push_back(&saturate_node);
+
+    inputs.emplace_back(in_1);
+    inputs.emplace_back(in_2);
+    outputs.emplace_back(out);
 }
 
 VXAddNode::VXAddNode()
 {
     node_name = "VX Addition Node";
-}
-
-std::vector<Object *> VXAddNode::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in_1);
-    used_objects.emplace_back(in_2);
-    return used_objects;
-}
-
-std::vector<Object *> VXAddNode::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(out);
-    return used_objects;
 }
 
 void VXAddNode::build()
@@ -402,26 +309,15 @@ void VXAddNode::build()
     subnodes.push_back(&add_node);
     if (policy == VX_CONVERT_POLICY_SATURATE)
         subnodes.push_back(&saturate_node);
+
+    inputs.emplace_back(in_1);
+    inputs.emplace_back(in_2);
+    outputs.emplace_back(out);
 }
 
 PhaseNode::PhaseNode()
 {
     node_name = "VX Phase";
-}
-
-std::vector<Object *> PhaseNode::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in_1);
-    used_objects.emplace_back(in_2);
-    return used_objects;
-}
-
-std::vector<Object *> PhaseNode::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(out);
-    return used_objects;
 }
 
 void PhaseNode::build()
@@ -446,27 +342,15 @@ void PhaseNode::build()
     subnodes.push_back(&div_node);
     subnodes.push_back(&atan2_node);
     subnodes.push_back(&mapping_node);
+
+    inputs.emplace_back(in_1);
+    inputs.emplace_back(in_2);
+    outputs.emplace_back(out);
 }
 
 VXMultiplyNode::VXMultiplyNode()
 {
     node_name = "VX Multiplication";
-}
-
-std::vector<Object *> VXMultiplyNode::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in_1);
-    used_objects.emplace_back(in_2);
-    used_objects.emplace_back(scalar);
-    return used_objects;
-}
-
-std::vector<Object *> VXMultiplyNode::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(out);
-    return used_objects;
 }
 
 void VXMultiplyNode::build()
@@ -500,26 +384,15 @@ void VXMultiplyNode::build()
     subnodes.push_back(&mul_scalar_node);
     if (overflow_policy == VX_CONVERT_POLICY_SATURATE)
         subnodes.push_back(&saturate_node);
+
+    inputs.emplace_back(in_1);
+    inputs.emplace_back(in_2);
+    outputs.emplace_back(out);
 }
 
 VXAccumulateNode::VXAccumulateNode()
 {
     node_name = "VX Accumulation";
-}
-
-std::vector<Object *> VXAccumulateNode::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in);
-    used_objects.emplace_back(in_out);
-    return used_objects;
-}
-
-std::vector<Object *> VXAccumulateNode::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in_out);
-    return used_objects;
 }
 
 void VXAccumulateNode::build()
@@ -537,27 +410,15 @@ void VXAccumulateNode::build()
 
     subnodes.push_back(&add_node);
     subnodes.push_back(&saturate_node);
+
+    inputs.emplace_back(in);
+    inputs.emplace_back(in_out);
+    outputs.emplace_back(in_out);
 }
 
 VXAccumulateSquareNode::VXAccumulateSquareNode()
 {
     node_name = "VX Squared Accumulation";
-}
-
-std::vector<Object *> VXAccumulateSquareNode::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in);
-    used_objects.emplace_back(in_out);
-    used_objects.emplace_back(shift);
-    return used_objects;
-}
-
-std::vector<Object *> VXAccumulateSquareNode::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in_out);
-    return used_objects;
 }
 
 void VXAccumulateSquareNode::build()
@@ -592,27 +453,16 @@ void VXAccumulateSquareNode::build()
     subnodes.push_back(&depth_node);
     subnodes.push_back(&add_node);
     subnodes.push_back(&saturate_node);
+
+    inputs.emplace_back(in);
+    inputs.emplace_back(in_out);
+    inputs.emplace_back(shift);
+    outputs.emplace_back(in_out);
 }
 
 VXAccumulateWeightedNode::VXAccumulateWeightedNode()
 {
     node_name = "VX Weighted Accumulation";
-}
-
-std::vector<Object *> VXAccumulateWeightedNode::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in);
-    used_objects.emplace_back(in_out);
-    used_objects.emplace_back(alpha);
-    return used_objects;
-}
-
-std::vector<Object *> VXAccumulateWeightedNode::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in_out);
-    return used_objects;
 }
 
 void VXAccumulateWeightedNode::build()
@@ -640,25 +490,16 @@ void VXAccumulateWeightedNode::build()
     subnodes.push_back(&mul_scalar_left_node);
     subnodes.push_back(&mul_scalar_right_node);
     subnodes.push_back(&add_node);
+
+    inputs.emplace_back(in);
+    inputs.emplace_back(in_out);
+    inputs.emplace_back(alpha);
+    outputs.emplace_back(in_out);
 }
 
 VXChannelExtractNode::VXChannelExtractNode()
 {
     node_name = "VX Channel Extraction";
-}
-
-std::vector<Object *> VXChannelExtractNode::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in);
-    return used_objects;
-}
-
-std::vector<Object *> VXChannelExtractNode::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(out);
-    return used_objects;
 }
 
 void VXChannelExtractNode::build()
@@ -693,28 +534,14 @@ void VXChannelExtractNode::build()
     }
 
 	kernel.function << assign(target_pixel(out_node), extract4(current_pixel(in_node), function_ast::Datatype::UCHAR4, channel_ast));
+
+    inputs.emplace_back(in);
+    outputs.emplace_back(out);
 }
 
 VXChannelCombineNode::VXChannelCombineNode()
 {
     node_name = "VX Channel Combination";
-}
-
-std::vector<Object *> VXChannelCombineNode::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in_1);
-    used_objects.emplace_back(in_2);
-    used_objects.emplace_back(in_3);
-    used_objects.emplace_back(in_4);
-    return used_objects;
-}
-
-std::vector<Object *> VXChannelCombineNode::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(out);
-    return used_objects;
 }
 
 void VXChannelCombineNode::build()
@@ -732,27 +559,17 @@ void VXChannelCombineNode::build()
 	kernel.output = out_node;
 
 	kernel.function << assign(target_pixel(out_node), vect4(current_pixel(in_node_1), current_pixel(in_node_2), current_pixel(in_node_3), current_pixel(in_node_4), function_ast::Datatype::UCHAR4));
+
+    inputs.emplace_back(in_1);
+    inputs.emplace_back(in_2);
+    inputs.emplace_back(in_3);
+    inputs.emplace_back(in_4);
+    outputs.emplace_back(out);
 }
-
-
 
 VXCopy::VXCopy()
 {
     node_name = "VX copy";
-}
-
-std::vector<Object *> VXCopy::get_inputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(in);
-    return used_objects;
-}
-
-std::vector<Object *> VXCopy::get_outputs()
-{
-    std::vector<Object*> used_objects;
-    used_objects.emplace_back(out);
-    return used_objects;
 }
 
 void VXCopy::build()
@@ -763,6 +580,9 @@ void VXCopy::build()
     kernel.output = out_node;
 
     kernel.function << assign(target_pixel(out_node), current_pixel(in_node));
+
+    inputs.emplace_back(in);
+    outputs.emplace_back(out);
 }
 
 }
