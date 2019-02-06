@@ -57,8 +57,11 @@ public:
     {
         type = AbstractionType::Map;
     }
-    std::shared_ptr<function_ast::Node> din;
-    std::shared_ptr<function_ast::Node> dout;
+    HipaVX::Image* in_img = new HipaVX::Image(1, 1, VX_DF_IMAGE_U8);
+    HipaVX::Image* out_img = new HipaVX::Image(1, 1, VX_DF_IMAGE_U8);
+
+    std::shared_ptr<function_ast::Node> din = std::make_shared<function_ast::CurrentPixelvalue>(std::make_shared<function_ast::Image>(in_img));
+    std::shared_ptr<function_ast::Node> dout = std::make_shared<function_ast::CurrentPixelvalue>(std::make_shared<function_ast::Image>(out_img));
     function_ast::Statements function;
     virtual std::string generate_source() override {
         return "implement this";
