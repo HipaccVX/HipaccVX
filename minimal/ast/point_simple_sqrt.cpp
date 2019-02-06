@@ -8,7 +8,6 @@ int main(int argc, const char *argv[]) {
     function_ast::ForEveryPixel kernel;
 
     function_ast::Image in, out;
-
 	auto in_node = std::make_shared<function_ast::Image>(in);
 	auto out_node = std::make_shared<function_ast::Image>(out);
 
