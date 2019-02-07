@@ -51,8 +51,9 @@ class Image: public Object
 {
 public:
 	Image(vx_uint32 width, vx_uint32 height, vx_df_image color);
+	Image() {};
 	virtual ~Image() = default;
-	vx_uint32 w, h;
+	vx_uint32 w=0, h=0;
 	vx_df_image col;
 };
 

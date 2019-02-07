@@ -103,7 +103,6 @@ enum class VectChannelType
     CHANNEL3
 };
 
-
 enum class ReductionType
 {
     SUM,
@@ -838,6 +837,20 @@ public:
     Statements& operator <<(std::shared_ptr<Node> n)
     {
         statements.push_back(n);
+        return *this;
+    }
+    Statements& append(Statements &n)
+    {
+        //statements.push_back(n);
+        statements.insert(std::end(statements), std::begin(n.statements), std::end(n.statements));
+        return *this;
+    }
+    Statements& replicate(Statements n)
+    {
+        //statements.push_back(n);
+        for (auto it = std::begin(n.statements); it != std::end(n.statements); it++){
+            statements.emplace_back(*it);
+        }
         return *this;
     }
 };
