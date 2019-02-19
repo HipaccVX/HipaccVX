@@ -120,6 +120,8 @@ int main()
 			printf("graph has been created... \n");
 			//Step 3.Create node and add into a graph
 			vx_node nodes[] = {
+                vxFWriteImageNode(graph, images[0], "akif-200x300_bw_done_nothing.png"),
+
 				vxSobel3x3Node(graph, images[0], images[1], images[2]),
 				vxMagnitudeNode(graph, images[1], images[2], images[3]),
 				vxConvertDepthNode(graph, images[3], images[4], VX_CONVERT_POLICY_SATURATE, two_scalar),
@@ -130,7 +132,7 @@ int main()
 				vxFWriteImageNode(graph, images[4], "akif-200x300_bw_out.png"),
 
 
-				vxAndNode(graph, images[4], images[5], images[6]),
+                vxAndNode(graph, images[4], images[5], images[6]),
 				vxOrNode(graph, images[4], images[6], images[7]),
 				vxFWriteImageNode(graph, images[7], "akif-200x300_bw_out_and_or.png"),
 
@@ -182,15 +184,15 @@ int main()
 				/*vxScaleImageNode(graph, images[0], images[25], VX_INTERPOLATION_NEAREST_NEIGHBOR),
 				vxFWriteImageNode(graph, images[25], "akif-200x300_bw_scaled_down.png"),
 				vxScaleImageNode(graph, images[0], images[26], VX_INTERPOLATION_NEAREST_NEIGHBOR),
-				vxFWriteImageNode(graph, images[26], "akif-200x300_bw_scaled_up.png"),*/
+                vxFWriteImageNode(graph, images[26], "akif-200x300_bw_scaled_up.png"),*/
 
 				vxChannelCombineNode(graph, images[21], images[20], images[19], images[22], images[27]),
 				vxFWriteImageNode(graph, images[27], "akif-200x300_rgba_rgba.png"),
 				vxChannelCombineNode(graph, images[20], images[19], images[21], images[22], images[28]),
 				vxFWriteImageNode(graph, images[28], "akif-200x300_rgba_gbra.png"),
 
-				vxAnotherBilateralFilterNode(graph, images[0], 16, images[29]),
-				vxFWriteImageNode(graph, images[29], "akif-200x300_bw_another_bilateral.png"),
+                //vxAnotherBilateralFilterNode(graph, images[0], 16, images[29]),
+                //vxFWriteImageNode(graph, images[29], "akif-200x300_bw_another_bilateral.png"),
 			};
 
             //Step4.Verify Graph

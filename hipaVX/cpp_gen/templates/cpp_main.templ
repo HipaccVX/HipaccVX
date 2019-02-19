@@ -1,0 +1,131 @@
+#include <vector>
+#include <cstdint>
+#include <cmath>
+
+#include "hipacc_helper.hpp"
+
+struct uchar4
+{
+	unsigned char arr[4];
+	uchar4(unsigned char x, unsigned char y, unsigned char z, unsigned char w)
+	{
+		arr[0] = x; arr[1] = y; arr[2] = z; arr[3] = w;
+	}
+    uchar4()
+    {
+    }
+};
+struct uint4
+{
+	unsigned int arr[4];
+	uint4(unsigned int x, unsigned int y, unsigned int z, unsigned int w)
+	{
+		arr[0] = x; arr[1] = y; arr[2] = z; arr[3] = w;
+	}
+    uint4()
+    {
+    }
+};
+template<class T>
+struct matrix
+{
+    std::vector<T> data;
+    int w, h;
+    matrix()
+    {
+        w = h = 0;
+    }
+    matrix(int width, int height)
+    {
+        w = width; h = height;
+        data.resize(w * h);
+    }
+    matrix(int width, int height, T* data)
+    {
+        w = width; h = height;
+        this->data.resize(w * h);
+        for (int i = 0; i < w*h; i++)
+        {
+            this->data[i] = data[i];
+        }
+    }
+    matrix(int width, int height, std::vector<T> data)
+    {
+        w = width; h = height;
+        this->data = data;
+    }
+};
+
+template <class out, class T, class U, class L>
+out reduce(matrix<T>& image, int currY, int currX, matrix<U>& stencil, L&& reduction)
+{
+    out result;
+    bool done_first = false;
+    for(int stencil_y = 0; stencil_y < stencil.h; stencil_y++)
+    {
+        for(int stencil_x = 0; stencil_x < stencil.w; stencil_x++)
+        {
+            int new_y = currY + stencil_y - stencil.h / 2;
+            int new_x = currX + stencil_x - stencil.w / 2;
+
+            if (new_y < 0 || new_x < 0 || new_y >= image.h || new_x >= image.w)
+                continue;
+
+            out curr = image.data[new_y * image.w + new_x];
+            if (done_first)
+            {
+                result = reduction(result, curr);
+            }
+            else
+            {
+                result = curr;
+                done_first = true;
+            }
+        }
+    }
+    return result;
+}
+
+template <class out, class T, class U, class L1, class L2>
+out local_reduce(matrix<T>& image, int currY, int currX, matrix<U>& stencil, L1&& local_point, L2&& reduction)
+{
+    out result;
+    bool done_first = false;
+    for(int stencil_y = 0; stencil_y < stencil.h; stencil_y++)
+    {
+        for(int stencil_x = 0; stencil_x < stencil.w; stencil_x++)
+        {
+            int new_y = currY + stencil_y - stencil.h / 2;
+            int new_x = currX + stencil_x - stencil.w / 2;
+
+            if (new_y < 0 || new_x < 0 || new_y >= image.h || new_x >= image.w)
+                continue;
+
+            U stencil_value = stencil.data[stencil_y * stencil.w + stencil_x];
+            out curr = local_point(image.data[new_y * image.w + new_x], stencil_value);
+            if (done_first)
+            {
+                result = reduction(result, curr);
+            }
+            else
+            {
+                result = curr;
+                done_first = true;
+            }
+        }
+    }
+    return result;
+}
+
+@@@KERNEL_DEFINITIONS@@@
+
+int main(int argc, const char **argv)
+{
+@@@IMAGE_DEFINITIONS@@@
+
+
+@@@KERNEL_CALLS@@@
+
+
+    return EXIT_SUCCESS;
+}

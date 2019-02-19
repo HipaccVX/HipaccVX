@@ -577,24 +577,24 @@ public:
 class Vect4: public Node
 {
 public:
-	Vect4()
-	{
-		type = NodeType::Vect4;
-		subnodes.resize(5);
-	}
-	Vect4(
-        std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2,
-        std::shared_ptr<function_ast::Node> n3, std::shared_ptr<function_ast::Node> n4,
-        Datatype dtype
-        ) : to_dtype(dtype)
-	{
-		type = NodeType::Vect4;
-		subnodes = {n1, n2, n3, n4};
-	}
+    Vect4()
+    {
+            type = NodeType::Vect4;
+            subnodes.resize(5);
+    }
+    Vect4(
+    std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2,
+    std::shared_ptr<function_ast::Node> n3, std::shared_ptr<function_ast::Node> n4,
+    Datatype dtype
+    ) : to_dtype(dtype)
+    {
+            type = NodeType::Vect4;
+            subnodes = {n1, n2, n3, n4};
+    }
     Datatype to_dtype;
     virtual std::string generate_source() override;
 
-	virtual ~Vect4() = default;
+    virtual ~Vect4() = default;
 };
 
 class Extract4: public Node
