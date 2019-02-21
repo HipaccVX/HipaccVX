@@ -79,6 +79,10 @@ enum class NodeType
     StencilvalueAtCurrentStencilPos,
 
     Statements,
+
+    Pregenerated,
+    PixelAccessor,
+    WindowAccessor
 };
 
 enum class Datatype
@@ -132,21 +136,47 @@ public:
     }
 
     virtual ~Node() = default;
-    virtual std::string generate_source() = 0;
+};
+
+class PixelAccessor: public Node
+{
+public:
+    int num;
+    PixelAccessor()
+    {
+        type = NodeType::PixelAccessor;
+    }
+    PixelAccessor(int number)
+        :num(number)
+    {
+        type = NodeType::PixelAccessor;
+    }
+
+    virtual std::string generate_source()
+    {
+        return "PixelAccessor_" + std::to_string(num) + "()";
+    }
+};
+class WindowAccesor: public Node
+{
+public:
+
+    WindowAccesor()
+    {
+        type = NodeType::WindowAccessor;
+    }
 };
 
 class SimpleBinaryNode: public Node
 {
 public:
-	virtual ~SimpleBinaryNode() override = default;
-    virtual std::string generate_source() override;
+    virtual ~SimpleBinaryNode() override = default;
 };
 
 class SimpleUnaryFunctionNode: public Node
 {
 public:
-	virtual ~SimpleUnaryFunctionNode() override = default;
-    virtual std::string generate_source() override;
+    virtual ~SimpleUnaryFunctionNode() override = default;
 };
 
 class Add: public SimpleBinaryNode
@@ -592,7 +622,6 @@ public:
             subnodes = {n1, n2, n3, n4};
     }
     Datatype to_dtype;
-    virtual std::string generate_source() override;
 
     virtual ~Vect4() = default;
 };
@@ -612,7 +641,6 @@ public:
 	}
     Datatype from_dtype;
     VectChannelType channel;
-    virtual std::string generate_source() override;
 
 	virtual ~Extract4() = default;
 };
@@ -630,7 +658,6 @@ public:
         parent = n1;
     }
     Node *parent;
-    virtual std::string generate_source() override;
 };
 
 class StencilvalueAtCurrentStencilPos: public Node
@@ -647,7 +674,6 @@ public:
         parent = n1;
     }
     Node *parent;
-    virtual std::string generate_source() override;
 };
 
 class ReductionOutput: public Node
@@ -664,7 +690,6 @@ public:
         parent = n1;
     }
     Node *parent;
-    virtual std::string generate_source() override;
 };
 
 class IterateAroundPixel: public Node
@@ -686,8 +711,6 @@ public:
     }
     std::shared_ptr<PixelvalueAtCurrentStencilPos> pixel_value;
     std::shared_ptr<StencilvalueAtCurrentStencilPos> stencil_value;
-
-    virtual std::string generate_source() override;
 };
 
 class ReduceAroundPixel: public Node
@@ -721,8 +744,6 @@ public:
     std::shared_ptr<ReductionOutput> reduction_output;
     Type reduction_type;
     Datatype datatype;
-
-    virtual std::string generate_source() override;
 };
 
 template<typename T>
@@ -739,7 +760,6 @@ public:
         this->value = value;
     }
     T value;
-    virtual std::string generate_source() override;
 };
 
 class Variable: public Node
@@ -757,7 +777,6 @@ public:
     }
     Datatype datatype;
     std::string name;
-    virtual std::string generate_source() override;
 };
 
 class VariableDefinition: public Node
@@ -773,7 +792,6 @@ public:
         type = NodeType::VariableDefinition;
         subnodes = {n1};
     }
-    virtual std::string generate_source() override;
 };
 
 class Assignment: public Node
@@ -789,7 +807,6 @@ public:
         type = NodeType::Assignment;
         subnodes = {n1, n2};
     }
-    virtual std::string generate_source() override;
 };
 
 class TargetPixel: public Node
@@ -805,7 +822,6 @@ public:
         type = NodeType::TargetPixel;
         subnodes = {n1};
     }
-    virtual std::string generate_source() override;
 };
 
 class Image: public Node
@@ -821,19 +837,45 @@ public:
         this->image = image;
     }
     HipaVX::Image *image;
-    virtual std::string generate_source() override;
 };
 
 class Statements: public Node
 {
 public:
+    struct Mapping
+    {
+        HipaVX::Image *im;
+        std::shared_ptr<PixelAccessor> pa;
+    };
+    std::vector<Mapping> pixel_mappings;
+
+    std::shared_ptr<PixelAccessor> operator[](unsigned int index)
+    {
+        if (index >= pixel_mappings.size())
+            throw std::runtime_error("PixelAccessor* Statements::operator[](unsigned int index): Index out of bounds");
+        return pixel_mappings[index].pa;
+    }
+    Mapping* get_mapping(unsigned int index)
+    {
+        if (index >= pixel_mappings.size())
+            throw std::runtime_error("PixelAccessor* Statements::operator[](unsigned int index): Index out of bounds");
+        return &pixel_mappings[index];
+    }
+
     Statements()
     {
         type = NodeType::Statements;
     }
+    Statements(int number_mappings)
+    {
+        pixel_mappings.resize(number_mappings);
+        for(int i = 0; i < number_mappings; i++)
+            pixel_mappings[i].pa.reset(new PixelAccessor(i));
+    }
     std::vector<std::shared_ptr<Node>> statements;
     virtual ~Statements() override = default;
-    virtual std::string generate_source() override;
+
+
     Statements& operator <<(std::shared_ptr<Node> n)
     {
         statements.push_back(n);
@@ -869,8 +911,6 @@ public:
 	}
     std::shared_ptr<Node> condition;
     Statements body;
-
-    virtual std::string generate_source() override;
 };
 
 class Else: public Node
@@ -881,7 +921,6 @@ public:
         type = NodeType::Else;
     }
     Statements body;
-    virtual std::string generate_source() override;
 };
 
 class CurrentPixelvalue: public Node
@@ -897,7 +936,6 @@ public:
         type = NodeType::CurrentPixelvalue;
         subnodes = {n1};
     }
-    virtual std::string generate_source() override;
 };
 
 class ForEveryPixel: public Node
@@ -910,7 +948,6 @@ public:
     std::vector<std::shared_ptr<Node>> inputs;
     std::shared_ptr<Node> output;
     Statements function;
-    virtual std::string generate_source() override;
 };
 
 class Stencil: public Node
@@ -924,7 +961,6 @@ public:
     std::vector<std::string> mask;
     int dim[2]; //dim[0] = x, dim[1] = y
     Datatype datatype;
-    virtual std::string generate_source() override;
 
     template<typename T>
     static std::vector<std::string> from_t(std::vector<T> v)
@@ -936,6 +972,7 @@ public:
         return to_return;
     }
 };
+
 
 }
 
@@ -1013,4 +1050,13 @@ std::shared_ptr<function_ast::Node> extract4(std::shared_ptr<function_ast::Node>
 
 std::shared_ptr<function_ast::Node> unequal(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
 
+
+// TODO Own file?
+
+template <class ReturnType, class ParameterType>
+class ASTVisitor
+{
+public:
+    virtual ReturnType visit(function_ast::Node* n, ParameterType p) = 0;
+};
 #endif

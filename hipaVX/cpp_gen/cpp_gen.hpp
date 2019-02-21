@@ -1,15 +1,15 @@
+#pragma once
+
 #include "../ast.hpp"
 #include "../gen_template.hpp"
 #include "../kernels/domVX_kernels.hpp"
 
-#include "ast_gen.hpp"
-
 #include <iostream>
 #include <vector>
 #include <string>
+#include <map>
 
 
-#pragma once
 
 using std::string;
 
@@ -29,3 +29,13 @@ static std::map<vx_df_image, string> VX_DF_IMAGE_to_cpp = {
 string generate_image_name(HipaVX::Image *image);
 
 void process_graph(HipaVX::Graph *graph);
+
+
+
+
+class CPPVisitor: public ASTVisitor<std::string, int>
+{
+public:
+    virtual std::string visit(function_ast::Node *n, int i) override;
+};
+

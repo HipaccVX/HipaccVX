@@ -6,12 +6,40 @@
 #include "VX/vx.h"
 #include "VX/vx_compatibility.h"
 #include "hipaVX/domVX_extensions.hpp"
+#include "hipaVX/abstractions.hpp"
 
 #define WIDTH  200
 #define HEIGHT 300
 
 int main()
 {
+    //AST, output single, input[asd]
+    /*function_ast::Statements ast_fun(3);
+    ast_fun << assign(ast_fun[0], ast_fun[1] * (ast_fun[2] + ast_fun[1]));
+
+    std::cout << "AST Generation: \n";
+    std::cout << ast_fun.generate_source();
+    std::cout << "\n";
+
+
+    //DomVX
+
+    auto image_i_1 = new HipaVX::Image(1024, 1024, VX_DF_IMAGE_U8);
+    auto image_i_2 = new HipaVX::Image(1024, 1024, VX_DF_IMAGE_U8);
+    auto image_o = new HipaVX::Image(1024, 1024, VX_DF_IMAGE_U8);
+
+
+    auto t = std::make_shared<DomVX::MapTest>();
+    t->function = ast_fun;
+    t->register_image({image_o, image_i_1, image_i_2});
+
+    std::cout << "DomVX Generation: \n";
+    std::cout << t->generate_source();
+    std::cout << "\n";
+
+    return 0;
+*/
+
 	vx_status status = VX_FAILURE;
 	//Step 1.Create Context
 	vx_context context = vxCreateContext();
@@ -158,8 +186,8 @@ int main()
 				vxGaussian3x3Node(graph, images[0], images[16]),
 				vxFWriteImageNode(graph, images[16], "akif-200x300_bw_gaussian.png"),
 
-				vxHarrisCornersNode(graph, images[0], harris_strength, harris_min_distance,
-									harris_sensitivity, 3, 3, harris_corners, harris_corners_num),
+                //vxHarrisCornersNode(graph, images[0], harris_strength, harris_min_distance,
+                //					harris_sensitivity, 3, 3, harris_corners, harris_corners_num),
 				//vxFWriteImageNode(graph, images[17], "akif-200x300_bw_harris.png"),
 
 				vxThresholdNode(graph, images[0], thresh, images[17]),

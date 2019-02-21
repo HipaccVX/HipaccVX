@@ -13,9 +13,11 @@
 #include "../VX/vx.h"
 #include "domVX_types.hpp"
 #include "ast.hpp"
-#include "hipacc_gen/ast_gen.hpp"
+//#include "hipacc_gen/ast_gen.hpp"
 
 #pragma once
+
+using std::string;
 
 namespace DomVX
 {
@@ -77,6 +79,18 @@ void change_input(AbsNode &ptrn, HipaVX::Image *im) {
 
 // TODO: define window, pixel etc. and detach from Map, Win2D
 
+
+class Datum
+{
+public:
+    HipaVX::Image *im;
+    int x, y;
+
+    Datum(HipaVX::Image *image, int X, int Y)
+        :im(image), x(X), y(Y)
+    {}
+};
+
 class Map: public AbstractionNode
 {
 public:
@@ -89,12 +103,52 @@ public:
     function_ast::Statements function;
 
     // TODO: change the printer functions to determine the target and source pixels at the time of printing
-    std::shared_ptr<function_ast::Node> din = std::make_shared<function_ast::CurrentPixelvalue>(std::make_shared<function_ast::Image>(in_img));
-    std::shared_ptr<function_ast::Node> dout = std::make_shared<function_ast::CurrentPixelvalue>(std::make_shared<function_ast::Image>(out_img));
+    std::shared_ptr<function_ast::Node> din;
+    std::shared_ptr<function_ast::Node> dout;
     virtual std::string generate_source() override {
         return "implement this";
     };
 };
+
+class MapTest: public AbstractionNode
+{
+public:
+    MapTest()
+    {
+        type = AbstractionType::Map;
+    }
+    function_ast::Statements function;
+
+    void register_image(HipaVX::Image* image, int index)
+    {
+        function.get_mapping(index)->im = image;
+    }
+    void register_image(std::initializer_list<HipaVX::Image*> images)
+    {
+        int index = 0;
+        for (auto image: images)
+        {
+            function.get_mapping(index)->im = image;
+        }
+    }
+    void register_image(std::initializer_list<HipaVX::Image*> images, std::initializer_list<int> indexes)
+    {
+        auto it_index = indexes.begin();
+        for (auto image: images)
+        {
+            if (it_index == indexes.end())
+                throw std::runtime_error("void Map::register_image(std::initializer_list<HipaVX::Image*> images, std::initializer_list<int> indexes): indexes smaller than images");
+            function.get_mapping(*it_index)->im = image;
+            it_index++;
+        }
+    }
+
+    virtual std::string generate_source() override
+    {
+        return "implement this";
+    };
+};
+
 
 class Reduce: public AbstractionNode
 {
@@ -117,27 +171,6 @@ public:
     };
 };
 
-
-class Datum 
-{
-public:
-    HipaVX::Image out_pix;
-    std::vector<std::vector<HipaVX::Image>> buf;
-
-    function_ast::Statements function;
-
-    //template<typename WT>
-    //Datum& reduce(Win2D<WT> win2d, DomVX::Reduce &red) {
-    //    for(int i = 0; i < win2d.dom.size(); i++) {
-    //        if (win2d.dom[i] == 0) continue;
-    //        buf.emplace_back(std::vector<HipaVX::Image>());
-    //        change_input(red, &win2d.buck.back()[0]);
-    //        change_output(red, &win2d.buf.back()[0]);
-    //        function.append(red.function);
-    //    }
-    //    return *this;
-    //}
-};
 
 
 template<typename T>

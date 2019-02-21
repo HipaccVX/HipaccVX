@@ -2,7 +2,6 @@
 #include "../gen_template.hpp"
 #include "../kernels/domVX_kernels.hpp"
 
-#include "ast_gen.hpp"
 #include "config_reader.hpp"
 
 #include <iostream>
@@ -30,3 +29,9 @@ static std::map<vx_df_image, string> VX_DF_IMAGE_to_hipacc = {
 string generate_image_name(HipaVX::Image *image);
 
 void process_graph(HipaVX::Graph *graph);
+
+class HipaccVisitor: public ASTVisitor<std::string, int>
+{
+public:
+    virtual std::string visit(function_ast::Node *n, int i) override;
+};

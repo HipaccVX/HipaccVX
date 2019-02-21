@@ -2,9 +2,13 @@
 #include "../VX/vx_compatibility.h"
 #include "domVX_types.hpp"
 
-#define HIPACC_GEN
+//#define HIPACC_GEN
 #ifdef HIPACC_GEN
     #include "hipacc_gen/hipacc_gen.hpp"
+#endif
+#define CPP_GEN
+#ifdef CPP_GEN
+    #include "cpp_gen/cpp_gen.hpp"
 #endif
 
 // TODO: Consider individual files for the API set of the following objects:
