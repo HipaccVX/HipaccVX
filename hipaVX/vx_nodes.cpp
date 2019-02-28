@@ -279,22 +279,24 @@ VX_API_ENTRY vx_node VX_API_CALL vxMultiplyNode (vx_graph graph, vx_image in1, v
     node->subnodes.push_back(mul_n);
     node->subnodes.push_back(muls_n);
 
-    std::unique_ptr<HipaVX::Image> muls_im, mul_im;
-    mul_im.reset(new HipaVX::Image(in1_im->w, in2_im->h, VX_DF_IMAGE_S32));
+    node->img_list.emplace_back(new HipaVX::Image(in1_im->w, in1_im->h, VX_DF_IMAGE_S32));
+    auto mul_im  =  node->img_list[0].get();
 
     mul_n->in_1 = in1_im;
     mul_n->in_2 = in2_im;
-    mul_n->out  = mul_im.get();
-    muls_n->in  = mul_im.get(); 
+    mul_n->out  = mul_im;
+    muls_n->in  = mul_im; 
     muls_n->scalar = scale_s->f32; 
     if (overflow_policy != VX_CONVERT_POLICY_SATURATE) {
         muls_n->out = out_im;
     }
     else {
-        muls_im.reset(new HipaVX::Image(in1_im->w, in2_im->h, VX_DF_IMAGE_S32));
+        node->img_list.emplace_back(new HipaVX::Image(in2_im->w, in2_im->h, VX_DF_IMAGE_S32));
+        auto muls_im  =  node->img_list[1].get();
+
         node->subnodes.push_back(sat_n);
-        muls_n->out = muls_im.get();
-        sat_n->in = muls_im.get();
+        muls_n->out = muls_im;
+        sat_n->in = muls_im;
         sat_n->out = out_im;
     }
 
