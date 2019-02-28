@@ -5,14 +5,14 @@
 
 #include "VX/vx.h"
 #include "VX/vx_compatibility.h"
-#include "VX/hipaVX/domVX_extensions.hpp"
+#include "hipaVX/domVX_extensions.hpp"
 
 
 int main(int argc, char *argv[])
 {
   vx_status status = VX_SUCCESS;
-  vx_uint32 width = 640;
-  vx_uint32 height = 480;
+  vx_uint32 width = 200;
+  vx_uint32 height = 300;
   vx_uint32 th = 40;
   vx_uint32 i;
   

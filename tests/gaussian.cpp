@@ -8,8 +8,8 @@
 #include "hipaVX/domVX_extensions.hpp"
 
 int main(int argc, char *argv[]) {
-    vx_uint32 width = 640;
-    vx_uint32 height = 480;
+    vx_uint32 width = 200;
+    vx_uint32 height = 300;
     
     vx_context context = vxCreateContext();
     
