@@ -586,31 +586,31 @@ void SimplePointScalar<T>::build()
 {
 	auto in_node = std::make_shared<function_ast::Image>(in);
 
-	kernel.inputs.push_back(in_node);
+    kernel->inputs.push_back(in_node);
 	auto out_node = std::make_shared<function_ast::Image>(out);
-	kernel.output = out_node;
+    kernel->output = out_node;
 
 	auto c = constant<>(scalar);
 
 	switch(operation)
 	{
 	case function_ast::NodeType::Add:
-		kernel.function << assign(target_pixel(out_node), current_pixel(in_node) + c);
+        kernel->function << assign(target_pixel(out_node), current_pixel(in_node) + c);
 		break;
 	case function_ast::NodeType::Sub:
-		kernel.function << assign(target_pixel(out_node), current_pixel(in_node) - c);
+        kernel->function << assign(target_pixel(out_node), current_pixel(in_node) - c);
 		break;
 	case function_ast::NodeType::Mul:
-		kernel.function << assign(target_pixel(out_node), current_pixel(in_node) * c);
+        kernel->function << assign(target_pixel(out_node), current_pixel(in_node) * c);
 		break;
 	case function_ast::NodeType::Div:
-		kernel.function << assign(target_pixel(out_node), current_pixel(in_node) / c);
+        kernel->function << assign(target_pixel(out_node), current_pixel(in_node) / c);
 		break;
 	case function_ast::NodeType::ShiftRight:
-		kernel.function << assign(target_pixel(out_node), current_pixel(in_node) >> c);
+        kernel->function << assign(target_pixel(out_node), current_pixel(in_node) >> c);
 		break;
 	case function_ast::NodeType::ShiftLeft:
-		kernel.function << assign(target_pixel(out_node), current_pixel(in_node) << c);
+        kernel->function << assign(target_pixel(out_node), current_pixel(in_node) << c);
 		break;
 	}
 

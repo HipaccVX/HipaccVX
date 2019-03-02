@@ -441,17 +441,17 @@ void AnotherBilateralFilterNode::build()
 
     // this function operates on Images
     auto in_node = std::make_shared<function_ast::Image>(in);
-    kernel.inputs.push_back(in_node);
-    kernel.inputs.push_back(stencil);
+    kernel->inputs.push_back(in_node);
+    kernel->inputs.push_back(stencil);
     auto out_node = std::make_shared<function_ast::Image>(out);
-    kernel.output = out_node;
+    kernel->output = out_node;
 
     auto c_r = std::make_shared<function_ast::Variable>("c_r", function_ast::Datatype::FLOAT);
     auto d = std::make_shared<function_ast::Variable>("d", function_ast::Datatype::FLOAT);
     auto p = std::make_shared<function_ast::Variable>("p", function_ast::Datatype::FLOAT);
     auto center = std::make_shared<function_ast::Variable>("center", function_ast::Datatype::FLOAT);
 
-    kernel.function << define(c_r)    << assign(c_r, constant(0.5f) / (constant(sigma_r) * constant(sigma_r)))
+    kernel->function << define(c_r)    << assign(c_r, constant(0.5f) / (constant(sigma_r) * constant(sigma_r)))
                      << define(d)      << assign(d, constant(0.f))
                      << define(p)      << assign(p, constant(0.f))
                      << define(center) << assign(center, current_pixel(in_node));
@@ -471,9 +471,9 @@ void AnotherBilateralFilterNode::build()
     iterate->subnodes[0] = in_node;
     iterate->subnodes[1] = stencil;
     iterate->subnodes[2] = iterate_body; //The body
-    kernel.function << iterate;
+    kernel->function << iterate;
 
-    kernel.function << assign(target_pixel(out_node), convert(p / d + constant(0.5f), function_ast::Datatype::UINT8));
+    kernel->function << assign(target_pixel(out_node), convert(p / d + constant(0.5f), function_ast::Datatype::UINT8));
 
 
     inputs.emplace_back(in);

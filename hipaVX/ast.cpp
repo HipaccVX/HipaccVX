@@ -27,6 +27,12 @@ std::shared_ptr<function_ast::Node> operator<<(std::shared_ptr<function_ast::Nod
     return std::make_shared<function_ast::ShiftLeft>(a, shift);
 }
 
+std::shared_ptr<function_ast::Statements> operator<<(std::shared_ptr<function_ast::Statements> a, std::shared_ptr<function_ast::Node> statement)
+{
+    (*a) << statement;
+    return a;
+}
+
 std::shared_ptr<function_ast::Node> operator>>(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> shift)
 {
     return std::make_shared<function_ast::ShiftRight>(a, shift);

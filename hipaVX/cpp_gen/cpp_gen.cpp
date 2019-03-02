@@ -144,7 +144,7 @@ std::string generate_source_recursive(std::vector<HipaVX::Node*> nodes, const ge
         {
             //sources += function_ast::generate_call(&node->kernel) + '\n';
             CPPVisitor v;
-            sources += v.visit(&node->kernel, 0) + '\n';
+            sources += v.visit(node->kernel, 0) + '\n';
         }
         else
         {
@@ -217,7 +217,7 @@ void process_graph(HipaVX::Graph *graph)
 }
 
 
-std::string CPPVisitor::visit(function_ast::Node *n, int i)
+std::string CPPVisitor::visit(std::shared_ptr<function_ast::Node> n, int i)
 {
     switch(n->type)
     {
@@ -242,7 +242,7 @@ std::string CPPVisitor::visit(function_ast::Node *n, int i)
     case function_ast::NodeType::BitwiseOr:
     case function_ast::NodeType::BitwiseXor:
     {
-        auto s = dynamic_cast<function_ast::SimpleBinaryNode*>(n);
+        auto s = std::dynamic_pointer_cast<function_ast::SimpleBinaryNode>(n);
         std::string op;
 
         switch(s->type)
@@ -302,8 +302,8 @@ std::string CPPVisitor::visit(function_ast::Node *n, int i)
             break;
         }
 
-        auto left = this->visit(s->subnodes[0].get(), 0);
-        auto right = this->visit(s->subnodes[1].get(), 0);
+        auto left = this->visit(s->subnodes[0], 0);
+        auto right = this->visit(s->subnodes[1], 0);
 
         return "(" + left + " " + op + " " + right + ")";
     }
@@ -316,7 +316,7 @@ std::string CPPVisitor::visit(function_ast::Node *n, int i)
     case function_ast::NodeType::Abs:
     case function_ast::NodeType::Atan2:
     {
-        auto s = dynamic_cast<function_ast::SimpleUnaryFunctionNode*>(n);
+        auto s = std::dynamic_pointer_cast<function_ast::SimpleUnaryFunctionNode>(n);
         std::string func;
 
         switch(s->type)
@@ -340,30 +340,30 @@ std::string CPPVisitor::visit(function_ast::Node *n, int i)
             func = "~";
             break;
         case function_ast::NodeType::Conversion:
-            func = "(" + to_string(dynamic_cast<function_ast::Conversion*>(s)->to) + ")";
+            func = "(" + to_string(std::dynamic_pointer_cast<function_ast::Conversion>(s)->to) + ")";
             break;
         }
 
-        auto argument = this->visit(s->subnodes[0].get(), 0);
+        auto argument = this->visit(s->subnodes[0], 0);
 
         return func + "(" + argument + ")";
     }
 
     case function_ast::NodeType::Constant:
     {
-        if (auto c = dynamic_cast<function_ast::Constant<float>*>(n))
+        if (auto c = dynamic_cast<function_ast::Constant<float>*>(n.get()))
         {
             return std::to_string(c->value);
         }
-        else if (auto c = dynamic_cast<function_ast::Constant<unsigned char>*>(n))
+        else if (auto c = dynamic_cast<function_ast::Constant<unsigned char>*>(n.get()))
         {
             return std::to_string(c->value);
         }
-        else if (auto c = dynamic_cast<function_ast::Constant<unsigned int>*>(n))
+        else if (auto c = dynamic_cast<function_ast::Constant<unsigned int>*>(n.get()))
         {
             return std::to_string(c->value);
         }
-        else if (auto c = dynamic_cast<function_ast::Constant<int>*>(n))
+        else if (auto c = dynamic_cast<function_ast::Constant<int>*>(n.get()))
         {
             return std::to_string(c->value);
         }
@@ -372,7 +372,7 @@ std::string CPPVisitor::visit(function_ast::Node *n, int i)
 
     case function_ast::NodeType::Vect4:
     {
-        auto s = dynamic_cast<function_ast::Vect4*>(n);
+        auto s = std::dynamic_pointer_cast<function_ast::Vect4>(n);
         std::string func = "";
 
         switch(s->to_dtype)
@@ -389,16 +389,16 @@ std::string CPPVisitor::visit(function_ast::Node *n, int i)
             break;
         }
 
-        auto argument = this->visit(s->subnodes[0].get(), 0) + ", "+
-                this->visit(s->subnodes[1].get(), 0) + ", "+
-                this->visit(s->subnodes[2].get(), 0) + ", "+
-                this->visit(s->subnodes[3].get(), 0);
+        auto argument = this->visit(s->subnodes[0], 0) + ", "+
+                this->visit(s->subnodes[1], 0) + ", "+
+                this->visit(s->subnodes[2], 0) + ", "+
+                this->visit(s->subnodes[3], 0);
         return func + "("+ argument + ")";
     }
 
     case function_ast::NodeType::Extract4:
     {
-        auto s = dynamic_cast<function_ast::Extract4*>(n);
+        auto s = std::dynamic_pointer_cast<function_ast::Extract4>(n);
         string channel;
         switch(s->channel)
         {
@@ -418,54 +418,54 @@ std::string CPPVisitor::visit(function_ast::Node *n, int i)
             throw std::runtime_error("AST: Vect4 is called with an unsupported datatype");
         }
 
-        auto argument = this->visit(s->subnodes[0].get(), 0);
+        auto argument = this->visit(s->subnodes[0], 0);
         return argument + ".arr[" + channel + "]";
     }
 
     case function_ast::NodeType::Variable:
     {
-        return dynamic_cast<function_ast::Variable*>(n)->name;
+        return std::dynamic_pointer_cast<function_ast::Variable>(n)->name;
     }
 
     case function_ast::NodeType::VariableDefinition:
     {
-        auto s = dynamic_cast<function_ast::VariableDefinition*>(n);
+        auto s = std::dynamic_pointer_cast<function_ast::VariableDefinition>(n);
         std::string datatype = to_string(std::dynamic_pointer_cast<function_ast::Variable>(s->subnodes[0])->datatype);
-        return datatype + " " + this->visit(s->subnodes[0].get(), 0);
+        return datatype + " " + this->visit(s->subnodes[0], 0);
     }
 
     case function_ast::NodeType::Assignment:
     {
-        auto s = dynamic_cast<function_ast::Assignment*>(n);
+        auto s = std::dynamic_pointer_cast<function_ast::Assignment>(n);
         if (s->subnodes[0]->type == function_ast::NodeType::ReductionOutput)
         {
-            auto right = this->visit(s->subnodes[1].get(), 0);
+            auto right = this->visit(s->subnodes[1], 0);
             return "return " + right + ";";
         }
         else
         {
-            auto left = this->visit(s->subnodes[0].get(), 0);
-            auto right = this->visit(s->subnodes[1].get(), 0);
+            auto left = this->visit(s->subnodes[0], 0);
+            auto right = this->visit(s->subnodes[1], 0);
 
-            return left + "=" + right;
+            return left + " = " + right;
         }
     }
 
     case function_ast::NodeType::TargetPixel:
     {
-        auto s = dynamic_cast<function_ast::TargetPixel*>(n);
+        auto s = std::dynamic_pointer_cast<function_ast::TargetPixel>(n);
         std::string name = generate_image_name((function_ast::Image*) s->subnodes[0].get());
         return name + ".data[xy_matrix_flat]";
     }
 
     case function_ast::NodeType::If:
     {
-        auto s = dynamic_cast<function_ast::If*>(n);
+        auto s = std::dynamic_pointer_cast<function_ast::If>(n);
         std::string to_return;
 
-        to_return += "if (" + this->visit(s->condition.get(), 0) + ")\n";
+        to_return += "if (" + this->visit(s->condition, 0) + ")\n";
         to_return += "{\n";
-        to_return += this->visit(&s->body, 0);
+        to_return += this->visit(s->body, 0);
         to_return += "}\n";
 
         return to_return;
@@ -473,12 +473,12 @@ std::string CPPVisitor::visit(function_ast::Node *n, int i)
 
     case function_ast::NodeType::Else:
     {
-        auto s = dynamic_cast<function_ast::Else*>(n);
+        auto s = std::dynamic_pointer_cast<function_ast::Else>(n);
         std::string to_return;
 
         to_return += "else\n";
         to_return += "{\n";
-        to_return += this->visit(&s->body, 0);
+        to_return += this->visit(s->body, 0);
         to_return += "}\n";
 
         return to_return;
@@ -486,12 +486,12 @@ std::string CPPVisitor::visit(function_ast::Node *n, int i)
 
     case function_ast::NodeType::Image:
     {
-        return generate_image_name(dynamic_cast<function_ast::Image*>(n));
+        return generate_image_name(std::dynamic_pointer_cast<function_ast::Image>(n).get());
     }
 
     case function_ast::NodeType::ForEveryPixel:
     {
-        auto fep = dynamic_cast<function_ast::ForEveryPixel*>(n);
+        auto fep = std::dynamic_pointer_cast<function_ast::ForEveryPixel>(n);
         function_ast::Image *output = (function_ast::Image*) fep->output.get();
 
         std::string definitions = "";
@@ -520,7 +520,7 @@ std::string CPPVisitor::visit(function_ast::Node *n, int i)
             }
         }
 
-        std::string code = this->visit(&fep->function, i);
+        std::string code = this->visit(fep->function, i);
 
 
 
@@ -536,7 +536,7 @@ std::string CPPVisitor::visit(function_ast::Node *n, int i)
 
     case function_ast::NodeType::CurrentPixelvalue:
     {
-        auto s = dynamic_cast<function_ast::CurrentPixelvalue*>(n);
+        auto s = std::dynamic_pointer_cast<function_ast::CurrentPixelvalue>(n);
         std::string name = generate_image_name((function_ast::Image*) s->subnodes[0].get());
         return name + ".data[xy_matrix_flat]";
     }
@@ -558,7 +558,7 @@ std::string CPPVisitor::visit(function_ast::Node *n, int i)
 
     case function_ast::NodeType::ReduceAroundPixel:
     {
-        auto s = dynamic_cast<function_ast::ReduceAroundPixel*>(n);
+        auto s = std::dynamic_pointer_cast<function_ast::ReduceAroundPixel>(n);
         auto stencil = std::dynamic_pointer_cast<function_ast::Stencil>(s->subnodes[1]);
         std::string reduction = "@std::string generate(ReduceAroundPixel *s)";
 
@@ -586,7 +586,7 @@ std::string CPPVisitor::visit(function_ast::Node *n, int i)
         t = use_template(t, "STENCIL_NAME", stencil->name);
         t = use_template(t, "REDUCTION", reduction);
         t = use_template(t, "IMAGE_NAME", generate_image_name(std::dynamic_pointer_cast<function_ast::Image>(s->subnodes[0]).get()));
-        t = use_template(t, "BODY", this->visit(s->subnodes[2].get(), i));
+        t = use_template(t, "BODY", this->visit(s->subnodes[2], i));
 
         return t;
     }
@@ -603,12 +603,12 @@ std::string CPPVisitor::visit(function_ast::Node *n, int i)
 
     case function_ast::NodeType::Statements:
     {
-        auto s = dynamic_cast<function_ast::Statements*>(n);
+        auto s = std::dynamic_pointer_cast<function_ast::Statements>(n);
         std::string to_return;
 
         for(auto statement: s->statements)
         {
-            to_return += this->visit(statement.get(), i);
+            to_return += this->visit(statement, i);
             if (statement->type != function_ast::NodeType::If && statement->type != function_ast::NodeType::Else)
                 to_return += ";\n";
         }
@@ -619,9 +619,51 @@ std::string CPPVisitor::visit(function_ast::Node *n, int i)
     case function_ast::NodeType::Pregenerated:
         break;
     case function_ast::NodeType::PixelAccessor:
-        break;
+    {
+        auto s = std::dynamic_pointer_cast<function_ast::PixelAccessor>(n);
+        if (current_mapping == nullptr)
+            return "PixelAccessor_" + std::to_string(s->num);
+        else
+        {
+            auto image = std::make_shared<function_ast::Image>();
+            image->image = current_mapping->pixel_mappings.at(s->num);
+            auto pixel = std::make_shared<function_ast::CurrentPixelvalue>();
+            pixel->subnodes[0] = image;
+            return visit(pixel, i+1);
+        }
+    }
+
     case function_ast::NodeType::WindowAccessor:
         break;
     }
     throw std::runtime_error("CPP Generate: reached end of switch case");
 }
+
+
+std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n, int i)
+{
+    switch(n->type)
+    {
+    case DomVX::AbstractionType::ForEveryPixelTest:
+    {
+        auto s = std::dynamic_pointer_cast<DomVX::ForEveryPixelTest>(n);
+        std::string str = "";
+        for (auto call: s->calls)
+        {
+            str += visit(call, i+1);
+        }
+        return str;
+    }
+    case DomVX::AbstractionType::MapTest:
+    {
+        auto s = std::dynamic_pointer_cast<DomVX::MapTest>(n);
+
+        current_mapping = s;
+        std::string str = visit(s->get_statements(), 0);
+        current_mapping = nullptr;
+        return str;
+    }
+    }
+    return "";
+}
+

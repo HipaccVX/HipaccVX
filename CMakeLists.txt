@@ -16,9 +16,14 @@ add_library (HipaVX_Hipacc ${HipaVX_SRC} ${HipaccGen_SRC})
 add_library (HipaVX_Cpp ${HipaVX_SRC} ${CppGen_SRC})
 
 add_executable (main_hipacc main.cpp)
-target_include_directories (main_hipacc PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/VX ${CMAKE_CURRENT_SOURCE_DIR}/hipaVX ${CMAKE_CURRENT_SOURCE_DIR}/hipaVX/hipacc_gen)
+target_include_directories (main_hipacc PUBLIC ${HipaVX_SRC})
 target_link_libraries (main_hipacc HipaVX_Hipacc)
 
 add_executable (main_cpp main.cpp)
-target_include_directories (main_cpp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/VX ${CMAKE_CURRENT_SOURCE_DIR}/hipaVX ${CMAKE_CURRENT_SOURCE_DIR}/hipaVX/hipacc_gen)
+target_include_directories (main_cpp PUBLIC ${HipaVX_SRC})
 target_link_libraries (main_cpp HipaVX_Cpp)
+
+
+
+
+add_subdirectory(minimal)

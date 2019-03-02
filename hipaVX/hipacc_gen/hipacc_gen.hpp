@@ -33,5 +33,5 @@ void process_graph(HipaVX::Graph *graph);
 class HipaccVisitor: public ASTVisitor<std::string, int>
 {
 public:
-    virtual std::string visit(function_ast::Node *n, int i) override;
+    virtual std::string visit(std::shared_ptr<function_ast::Node> n, int i) override;
 };

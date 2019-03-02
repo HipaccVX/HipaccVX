@@ -13,26 +13,26 @@ namespace HipaVX
 void SimplePointUnary::build()
 {
 	auto in_node = std::make_shared<function_ast::Image>(in);
-	kernel.inputs.push_back(in_node);
+    kernel->inputs.push_back(in_node);
 	auto out_node = std::make_shared<function_ast::Image>(out);
-	kernel.output = out_node;
+    kernel->output = out_node;
 
 	switch(operation)
 	{
 	case function_ast::NodeType::Sqrt:
-		kernel.function << assign(target_pixel(out_node), sqrt(current_pixel(in_node)));
+        kernel->function << assign(target_pixel(out_node), sqrt(current_pixel(in_node)));
 		break;
     case function_ast::NodeType::Abs:
-        kernel.function << assign(target_pixel(out_node), abs(current_pixel(in_node)));
+        kernel->function << assign(target_pixel(out_node), abs(current_pixel(in_node)));
         break;
 	case function_ast::NodeType::Atan2:
-		kernel.function << assign(target_pixel(out_node), atan2(current_pixel(in_node)));
+        kernel->function << assign(target_pixel(out_node), atan2(current_pixel(in_node)));
 		break;
 	case function_ast::NodeType::Not:
-	    kernel.function << assign(target_pixel(out_node), ~current_pixel(in_node));
+        kernel->function << assign(target_pixel(out_node), ~current_pixel(in_node));
 		break;
 	case function_ast::NodeType::Mul: // Unary node Mul is "square"
-	    kernel.function << assign(target_pixel(out_node), current_pixel(in_node) * current_pixel(in_node));
+        kernel->function << assign(target_pixel(out_node), current_pixel(in_node) * current_pixel(in_node));
 		break;
 	}
     inputs.emplace_back(in);
@@ -44,33 +44,33 @@ void SimplePointBinary::build()
 {
 	auto in_node_1 = std::make_shared<function_ast::Image>(in_1);
 	auto in_node_2 = std::make_shared<function_ast::Image>(in_2);
-	kernel.inputs.push_back(in_node_1);
-	kernel.inputs.push_back(in_node_2);
+    kernel->inputs.push_back(in_node_1);
+    kernel->inputs.push_back(in_node_2);
 	auto out_node = std::make_shared<function_ast::Image>(out);
-	kernel.output = out_node;
+    kernel->output = out_node;
 
 	switch(operation)
 	{
 	case function_ast::NodeType::Add:
-		kernel.function << assign(target_pixel(out_node), current_pixel(in_node_1) + current_pixel(in_node_2));
+        kernel->function << assign(target_pixel(out_node), current_pixel(in_node_1) + current_pixel(in_node_2));
 		break;
 	case function_ast::NodeType::Sub:
-		kernel.function << assign(target_pixel(out_node), current_pixel(in_node_1) - current_pixel(in_node_2));
+        kernel->function << assign(target_pixel(out_node), current_pixel(in_node_1) - current_pixel(in_node_2));
 		break;
 	case function_ast::NodeType::Mul:
-		kernel.function << assign(target_pixel(out_node), current_pixel(in_node_1) * current_pixel(in_node_2));
+        kernel->function << assign(target_pixel(out_node), current_pixel(in_node_1) * current_pixel(in_node_2));
 		break;
 	case function_ast::NodeType::Div:
-		kernel.function << assign(target_pixel(out_node), current_pixel(in_node_1) / current_pixel(in_node_2));
+        kernel->function << assign(target_pixel(out_node), current_pixel(in_node_1) / current_pixel(in_node_2));
 		break;
 	case function_ast::NodeType::BitwiseAnd:
-		kernel.function << assign(target_pixel(out_node), current_pixel(in_node_1) & current_pixel(in_node_2));
+        kernel->function << assign(target_pixel(out_node), current_pixel(in_node_1) & current_pixel(in_node_2));
 		break;
 	case function_ast::NodeType::BitwiseOr:
-		kernel.function << assign(target_pixel(out_node), current_pixel(in_node_1) | current_pixel(in_node_2));
+        kernel->function << assign(target_pixel(out_node), current_pixel(in_node_1) | current_pixel(in_node_2));
 		break;
 	case function_ast::NodeType::BitwiseXor:
-		kernel.function << assign(target_pixel(out_node), current_pixel(in_node_1) ^ current_pixel(in_node_2));
+        kernel->function << assign(target_pixel(out_node), current_pixel(in_node_1) ^ current_pixel(in_node_2));
 		break;
     }
 
@@ -87,12 +87,12 @@ SaturateNode::SaturateNode()
 void SaturateNode::build()
 {
 	auto in_node = std::make_shared<function_ast::Image>(in);
-	kernel.inputs.push_back(in_node);
+    kernel->inputs.push_back(in_node);
 	auto out_node = std::make_shared<function_ast::Image>(out);
-	kernel.output = out_node;
+    kernel->output = out_node;
 
 	auto temp = std::make_shared<function_ast::Variable>("temp", function_ast::Datatype::INT32);
-	kernel.function << define(temp) << assign(temp, current_pixel(in_node));
+    kernel->function << define(temp) << assign(temp, current_pixel(in_node));
 
 	std::shared_ptr<function_ast::Node> min, max;
 
@@ -115,10 +115,10 @@ void SaturateNode::build()
 	less_if->body << assign(temp, min);
 	greater_else->body << less_if;
 
-	kernel.function << greater_if;
-	kernel.function << greater_else;
+    kernel->function << greater_if;
+    kernel->function << greater_else;
 
-	kernel.function << assign(target_pixel(out_node), temp);
+    kernel->function << assign(target_pixel(out_node), temp);
 
     inputs.emplace_back(in);
     outputs.emplace_back(out);
@@ -131,14 +131,14 @@ ConvertDepthNode::ConvertDepthNode()
 
 void ConvertDepthNode::build() {
 	auto in_node = std::make_shared<function_ast::Image>(in);
-	kernel.inputs.push_back(in_node);
+    kernel->inputs.push_back(in_node);
 	auto out_node = std::make_shared<function_ast::Image>(out);
-	kernel.output = out_node;
+    kernel->output = out_node;
 
     // Shift right
 	auto temp = std::make_shared<function_ast::Variable>("value", function_ast::Datatype::INT16); // TODO: datatype
 	auto shift_c = constant<>(shift->i32);
-    kernel.function << define(temp) << assign(temp, current_pixel(in_node) >> shift_c);
+    kernel->function << define(temp) << assign(temp, current_pixel(in_node) >> shift_c);
 
 	std::shared_ptr<function_ast::Node> min = constant<int>(0);
 	std::shared_ptr<function_ast::Node> max = constant<int>(255);
@@ -152,10 +152,10 @@ void ConvertDepthNode::build() {
 	auto greater_else = ELSE();
 	     greater_else->body << less_if;
 
-	kernel.function << greater_if;
-	kernel.function << greater_else;
+    kernel->function << greater_if;
+    kernel->function << greater_else;
 
-	kernel.function << assign(target_pixel(out_node), temp);
+    kernel->function << assign(target_pixel(out_node), temp);
 
     inputs.emplace_back(in);
     outputs.emplace_back(out);
@@ -204,13 +204,13 @@ VXThresholdNode::VXThresholdNode()
 void VXThresholdNode::build()
 {
 	auto in_node = std::make_shared<function_ast::Image>(in);
-	kernel.inputs.push_back(in_node);
+    kernel->inputs.push_back(in_node);
 	auto out_node = std::make_shared<function_ast::Image>(out);
-	kernel.output = out_node;
+    kernel->output = out_node;
 
     // buffer input image
 	// auto in_d = std::make_shared<function_ast::Variable>("in_d", in_node->type); //TODO: how to gen in dtype? function_ast::Datatype::INT16);
-    // kernel.function << define(in_d) << assign(in_d, current_pixel(in_node));
+    // kernel->function << define(in_d) << assign(in_d, current_pixel(in_node));
 
     // TODO: Even move the outer selection to kernels_point.cpp
     if (threshold->threshold_type == VX_THRESHOLD_TYPE_BINARY)
@@ -219,8 +219,8 @@ void VXThresholdNode::build()
              if_less->body << assign(target_pixel(out_node), constant<>(threshold->true_value));
 	    auto else_less = ELSE();
 	         else_less->body << assign(target_pixel(out_node), constant<>(threshold->true_value));
-        kernel.function << if_less;
-        kernel.function << else_less;
+        kernel->function << if_less;
+        kernel->function << else_less;
     }
     else
     {
@@ -228,8 +228,8 @@ void VXThresholdNode::build()
 	         if_outrange->body << assign(target_pixel(out_node), constant<>(threshold->false_value));
 	    auto else_outrange = ELSE();
 	         else_outrange->body << assign(target_pixel(out_node), constant<>(threshold->true_value));
-        kernel.function << if_outrange;
-        kernel.function << else_outrange;
+        kernel->function << if_outrange;
+        kernel->function << else_outrange;
     }
 
     inputs.emplace_back(in);
@@ -505,10 +505,10 @@ VXChannelExtractNode::VXChannelExtractNode()
 void VXChannelExtractNode::build()
 {
 	auto in_node = std::make_shared<function_ast::Image>(in);
-	kernel.inputs.push_back(in_node);
+    kernel->inputs.push_back(in_node);
 
 	auto out_node = std::make_shared<function_ast::Image>(out);
-	kernel.output = out_node;
+    kernel->output = out_node;
 
     function_ast::VectChannelType channel_ast; 
     switch(channel_vx)
@@ -533,7 +533,7 @@ void VXChannelExtractNode::build()
         throw std::runtime_error("VXChannelExtractNode: Unsupported Channel Type");
     }
 
-	kernel.function << assign(target_pixel(out_node), extract4(current_pixel(in_node), function_ast::Datatype::UCHAR4, channel_ast));
+    kernel->function << assign(target_pixel(out_node), extract4(current_pixel(in_node), function_ast::Datatype::UCHAR4, channel_ast));
 
     inputs.emplace_back(in);
     outputs.emplace_back(out);
@@ -550,15 +550,15 @@ void VXChannelCombineNode::build()
 	auto in_node_2 = std::make_shared<function_ast::Image>(in_2);
 	auto in_node_3 = std::make_shared<function_ast::Image>(in_3);
 	auto in_node_4 = std::make_shared<function_ast::Image>(in_4);
-	kernel.inputs.push_back(in_node_1);
-	kernel.inputs.push_back(in_node_2);
-	kernel.inputs.push_back(in_node_3);
-	kernel.inputs.push_back(in_node_4);
+    kernel->inputs.push_back(in_node_1);
+    kernel->inputs.push_back(in_node_2);
+    kernel->inputs.push_back(in_node_3);
+    kernel->inputs.push_back(in_node_4);
 
 	auto out_node = std::make_shared<function_ast::Image>(out);
-	kernel.output = out_node;
+    kernel->output = out_node;
 
-	kernel.function << assign(target_pixel(out_node), vect4(current_pixel(in_node_1), current_pixel(in_node_2), current_pixel(in_node_3), current_pixel(in_node_4), function_ast::Datatype::UCHAR4));
+    kernel->function << assign(target_pixel(out_node), vect4(current_pixel(in_node_1), current_pixel(in_node_2), current_pixel(in_node_3), current_pixel(in_node_4), function_ast::Datatype::UCHAR4));
 
     inputs.emplace_back(in_1);
     inputs.emplace_back(in_2);
@@ -575,11 +575,11 @@ VXCopy::VXCopy()
 void VXCopy::build()
 {
     auto in_node = std::make_shared<function_ast::Image>(in);
-    kernel.inputs.push_back(in_node);
+    kernel->inputs.push_back(in_node);
     auto out_node = std::make_shared<function_ast::Image>(out);
-    kernel.output = out_node;
+    kernel->output = out_node;
 
-    kernel.function << assign(target_pixel(out_node), current_pixel(in_node));
+    kernel->function << assign(target_pixel(out_node), current_pixel(in_node));
 
     inputs.emplace_back(in);
     outputs.emplace_back(out);

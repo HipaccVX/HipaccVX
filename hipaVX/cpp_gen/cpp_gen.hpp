@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../ast.hpp"
+#include "../abstractions.hpp"
 #include "../gen_template.hpp"
 #include "../kernels/domVX_kernels.hpp"
 
@@ -32,10 +33,11 @@ void process_graph(HipaVX::Graph *graph);
 
 
 
-
-class CPPVisitor: public ASTVisitor<std::string, int>
+class CPPVisitor: public ASTVisitor<std::string, int>, public AbstractionsVisitor<std::string, int>
 {
+    std::shared_ptr<DomVX::MapTest> current_mapping;
 public:
-    virtual std::string visit(function_ast::Node *n, int i) override;
+    virtual std::string visit(std::shared_ptr<function_ast::Node> n, int i = 0) override;
+    virtual std::string visit(std::shared_ptr<DomVX::AbstractionNode> n, int i = 0) override;
 };
 

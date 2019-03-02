@@ -367,10 +367,10 @@ void LinearMask<T>::build()
 		throw std::runtime_error("void LinearMask<T>::build() error: no datatype for Stencil");
 
 	auto in_node = std::make_shared<function_ast::Image>(in);
-	kernel.inputs.push_back(in_node);
-	kernel.inputs.push_back(stencil);
+    kernel->inputs.push_back(in_node);
+    kernel->inputs.push_back(stencil);
 	auto out_node = std::make_shared<function_ast::Image>(out);
-	kernel.output = out_node;
+    kernel->output = out_node;
 
 	auto reduce = std::make_shared<function_ast::ReduceAroundPixel>();
 
@@ -384,26 +384,26 @@ void LinearMask<T>::build()
 	reduce->datatype = (use_image_datatype_for_sum) ? convert_type(out->col) : convert_type(sum_datatype);
 
 	auto temp_variable = std::make_shared<function_ast::Variable>("temp_variable", reduce->datatype);
-	kernel.function << define(temp_variable) << assign(temp_variable, reduce);
+    kernel->function << define(temp_variable) << assign(temp_variable, reduce);
 	if (normalization != nullptr)
 	{
 		switch(normalization->data_type)
 		{
 		case VX_TYPE_UINT8:
-			kernel.function << assign(temp_variable, temp_variable * constant(normalization->ui8));
+            kernel->function << assign(temp_variable, temp_variable * constant(normalization->ui8));
 			break;
 		case VX_TYPE_INT32:
-			kernel.function << assign(temp_variable, temp_variable * constant(normalization->ui32));
+            kernel->function << assign(temp_variable, temp_variable * constant(normalization->ui32));
 			break;
 		case VX_TYPE_FLOAT32:
-			kernel.function << assign(temp_variable, temp_variable * constant(normalization->f32));
+            kernel->function << assign(temp_variable, temp_variable * constant(normalization->f32));
 			break;
 		default:
 			throw std::runtime_error("void LinearMask<T>::build():\n\tNot supported Scalar type");
 		}
 	}
 
-	kernel.function << assign(target_pixel(out_node), temp_variable);
+    kernel->function << assign(target_pixel(out_node), temp_variable);
 
 
     inputs.emplace_back(in);

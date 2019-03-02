@@ -574,11 +574,11 @@ std::string generate_source_recursive(std::vector<HipaVX::Node*> nodes, const ge
             case generator::Type::Definition:
             {
                 HipaccVisitor v;
-                sources += v.visit(&node->kernel, 0) + '\n';
+                sources += v.visit(node->kernel, 0) + '\n';
 
             } break;
             case generator::Type::Call:
-                sources += function_ast::generate_call(&node->kernel) + '\n';
+                sources += function_ast::generate_call(node->kernel.get()) + '\n';
                 break;
             }
         }
@@ -652,7 +652,7 @@ void process_graph(HipaVX::Graph *graph)
     _write_to_file("main.hipaVX.cpp", main);
 }
 
-std::string HipaccVisitor::visit(function_ast::Node *n, int i)
+std::string HipaccVisitor::visit(std::shared_ptr<function_ast::Node> n, int i)
 {
     switch(n->type)
     {
@@ -677,7 +677,7 @@ std::string HipaccVisitor::visit(function_ast::Node *n, int i)
     case function_ast::NodeType::BitwiseOr:
     case function_ast::NodeType::BitwiseXor:
     {
-        auto s = dynamic_cast<function_ast::SimpleBinaryNode*>(n);
+        auto s = std::dynamic_pointer_cast<function_ast::SimpleBinaryNode>(n);
         std::string op;
 
         switch(s->type)
@@ -737,8 +737,8 @@ std::string HipaccVisitor::visit(function_ast::Node *n, int i)
             break;
         }
 
-        auto left = this->visit(s->subnodes[0].get(), 0);
-        auto right = this->visit(s->subnodes[1].get(), 0);
+        auto left = this->visit(s->subnodes[0], 0);
+        auto right = this->visit(s->subnodes[1], 0);
 
         return "(" + left + " " + op + " " + right + ")";
     }
@@ -751,7 +751,7 @@ std::string HipaccVisitor::visit(function_ast::Node *n, int i)
     case function_ast::NodeType::Abs:
     case function_ast::NodeType::Atan2:
     {
-        auto s = dynamic_cast<function_ast::SimpleUnaryFunctionNode*>(n);
+        auto s = std::dynamic_pointer_cast<function_ast::SimpleUnaryFunctionNode>(n);
         std::string func;
 
         switch(s->type)
@@ -775,30 +775,30 @@ std::string HipaccVisitor::visit(function_ast::Node *n, int i)
             func = "~";
             break;
         case function_ast::NodeType::Conversion:
-            func = "(" + to_string(dynamic_cast<function_ast::Conversion*>(s)->to) + ")";
+            func = "(" + to_string(std::dynamic_pointer_cast<function_ast::Conversion>(s)->to) + ")";
             break;
         }
 
-        auto argument = this->visit(s->subnodes[0].get(), 0);
+        auto argument = this->visit(s->subnodes[0], 0);
 
         return func + "(" + argument + ")";
     }
 
     case function_ast::NodeType::Constant:
     {
-        if (auto c = dynamic_cast<function_ast::Constant<float>*>(n))
+        if (auto c = dynamic_cast<function_ast::Constant<float>*>(n.get()))
         {
             return std::to_string(c->value);
         }
-        else if (auto c = dynamic_cast<function_ast::Constant<unsigned char>*>(n))
+        else if (auto c = dynamic_cast<function_ast::Constant<unsigned char>*>(n.get()))
         {
             return std::to_string(c->value);
         }
-        else if (auto c = dynamic_cast<function_ast::Constant<unsigned int>*>(n))
+        else if (auto c = dynamic_cast<function_ast::Constant<unsigned int>*>(n.get()))
         {
             return std::to_string(c->value);
         }
-        else if (auto c = dynamic_cast<function_ast::Constant<int>*>(n))
+        else if (auto c = dynamic_cast<function_ast::Constant<int>*>(n.get()))
         {
             return std::to_string(c->value);
         }
@@ -807,7 +807,7 @@ std::string HipaccVisitor::visit(function_ast::Node *n, int i)
 
     case function_ast::NodeType::Vect4:
     {
-        auto s = dynamic_cast<function_ast::Vect4*>(n);
+        auto s = std::dynamic_pointer_cast<function_ast::Vect4>(n);
         std::string func = "";
 
         switch(s->to_dtype)
@@ -824,16 +824,16 @@ std::string HipaccVisitor::visit(function_ast::Node *n, int i)
             break;
         }
 
-        auto argument = this->visit(s->subnodes[0].get(), 0) + ", "+
-                this->visit(s->subnodes[1].get(), 0) + ", "+
-                this->visit(s->subnodes[2].get(), 0) + ", "+
-                this->visit(s->subnodes[3].get(), 0);
+        auto argument = this->visit(s->subnodes[0], 0) + ", "+
+                this->visit(s->subnodes[1], 0) + ", "+
+                this->visit(s->subnodes[2], 0) + ", "+
+                this->visit(s->subnodes[3], 0);
         return func + "("+ argument + ")";
     }
 
     case function_ast::NodeType::Extract4:
     {
-        auto s = dynamic_cast<function_ast::Extract4*>(n);
+        auto s = std::dynamic_pointer_cast<function_ast::Extract4>(n);
         string channel;
         switch(s->channel)
         {
@@ -868,34 +868,34 @@ std::string HipaccVisitor::visit(function_ast::Node *n, int i)
             break;
         }
 
-        auto argument = this->visit(s->subnodes[0].get(), 0);
+        auto argument = this->visit(s->subnodes[0], 0);
         return func + "("+ argument + ")." + channel;
     }
 
     case function_ast::NodeType::Variable:
     {
-        return dynamic_cast<function_ast::Variable*>(n)->name;
+        return std::dynamic_pointer_cast<function_ast::Variable>(n)->name;
     }
 
     case function_ast::NodeType::VariableDefinition:
     {
-        auto s = dynamic_cast<function_ast::VariableDefinition*>(n);
+        auto s = std::dynamic_pointer_cast<function_ast::VariableDefinition>(n);
         std::string datatype = to_string(std::dynamic_pointer_cast<function_ast::Variable>(s->subnodes[0])->datatype);
-        return datatype + " " + this->visit(s->subnodes[0].get(), 0);
+        return datatype + " " + this->visit(s->subnodes[0], 0);
     }
 
     case function_ast::NodeType::Assignment:
     {
-        auto s = dynamic_cast<function_ast::Assignment*>(n);
+        auto s = std::dynamic_pointer_cast<function_ast::Assignment>(n);
         if (s->subnodes[0]->type == function_ast::NodeType::ReductionOutput)
         {
-            auto right = this->visit(s->subnodes[1].get(), 0);
+            auto right = this->visit(s->subnodes[1], 0);
             return "return " + right + ";";
         }
         else
         {
-            auto left = this->visit(s->subnodes[0].get(), 0);
-            auto right = this->visit(s->subnodes[1].get(), 0);
+            auto left = this->visit(s->subnodes[0], 0);
+            auto right = this->visit(s->subnodes[1], 0);
 
             return left + "=" + right;
         }
@@ -908,12 +908,12 @@ std::string HipaccVisitor::visit(function_ast::Node *n, int i)
 
     case function_ast::NodeType::If:
     {
-        auto s = dynamic_cast<function_ast::If*>(n);
+        auto s = std::dynamic_pointer_cast<function_ast::If>(n);
         std::string to_return;
 
-        to_return += "if (" + this->visit(s->condition.get(), 0) + ")\n";
+        to_return += "if (" + this->visit(s->condition, 0) + ")\n";
         to_return += "{\n";
-        to_return += this->visit(&s->body, 0);
+        to_return += this->visit(s->body, 0);
         to_return += "}\n";
 
         return to_return;
@@ -921,12 +921,12 @@ std::string HipaccVisitor::visit(function_ast::Node *n, int i)
 
     case function_ast::NodeType::Else:
     {
-        auto s = dynamic_cast<function_ast::Else*>(n);
+        auto s = std::dynamic_pointer_cast<function_ast::Else>(n);
         std::string to_return;
 
         to_return += "else\n";
         to_return += "{\n";
-        to_return += this->visit(&s->body, 0);
+        to_return += this->visit(s->body, 0);
         to_return += "}\n";
 
         return to_return;
@@ -934,12 +934,12 @@ std::string HipaccVisitor::visit(function_ast::Node *n, int i)
 
     case function_ast::NodeType::Image:
     {
-        return function_ast::generate_image_name(dynamic_cast<function_ast::Image*>(n));
+        return function_ast::generate_image_name(std::dynamic_pointer_cast<function_ast::Image>(n).get());
     }
 
     case function_ast::NodeType::ForEveryPixel:
     {
-        auto s = dynamic_cast<function_ast::ForEveryPixel*>(n);
+        auto s = std::dynamic_pointer_cast<function_ast::ForEveryPixel>(n);
 
         string member_variables;
         string constructor_parameters;
@@ -956,13 +956,13 @@ std::string HipaccVisitor::visit(function_ast::Node *n, int i)
             string type;
             if (node->type == function_ast::NodeType::Variable)
             {
-                name = visit(node.get(), i);
+                name = visit(node, i);
                 type = to_string(std::dynamic_pointer_cast<function_ast::Variable>(node)->datatype);
             }
             if (node->type == function_ast::NodeType::Image)
             {
                 auto image = std::dynamic_pointer_cast<function_ast::Image>(node);
-                name = visit(image.get(), i);
+                name = visit(image, i);
                 type = "Accessor<" + VX_DF_IMAGE_to_hipacc[image->image->col] + ">&";
             }
             if (node->type == function_ast::NodeType::Stencil)
@@ -994,7 +994,7 @@ std::string HipaccVisitor::visit(function_ast::Node *n, int i)
             throw std::runtime_error("std::string generate(ForEveryPixel *s)");
 
         HipaccVisitor v;
-        string kernel = v.visit(&s->function, 0);
+        string kernel = v.visit(s->function, 0);
 
         string def = read_file(hipaVX_folder + "/templates/hipacc_kernel.templ");
         def = use_template(def, "KERNEL_NAME", "Kernel");
@@ -1012,7 +1012,7 @@ std::string HipaccVisitor::visit(function_ast::Node *n, int i)
 
     case function_ast::NodeType::CurrentPixelvalue:
     {
-        auto s = dynamic_cast<function_ast::CurrentPixelvalue*>(n);
+        auto s = std::dynamic_pointer_cast<function_ast::CurrentPixelvalue>(n);
         return generate_image_name(std::dynamic_pointer_cast<function_ast::Image>(s->subnodes[0]).get()) + "()";
     }
 
@@ -1023,13 +1023,13 @@ std::string HipaccVisitor::visit(function_ast::Node *n, int i)
 
     case function_ast::NodeType::IterateAroundPixel:
     {
-        auto s = dynamic_cast<function_ast::IterateAroundPixel*>(n);
+        auto s = std::dynamic_pointer_cast<function_ast::IterateAroundPixel>(n);
         auto stencil = std::dynamic_pointer_cast<function_ast::Stencil>(s->subnodes[1]);
         std::string t = "iterate(@@@DOM_NAME@@@, [&] () -> void {\n"
                         "@@@BODY@@@\n"
                         "})";
         t = use_template(t, "DOM_NAME", stencil->name);
-        t = use_template(t, "BODY", this->visit(s->subnodes[2].get(), i));
+        t = use_template(t, "BODY", this->visit(s->subnodes[2], i));
         return t;
     }
 
@@ -1040,7 +1040,7 @@ std::string HipaccVisitor::visit(function_ast::Node *n, int i)
 
     case function_ast::NodeType::ReduceAroundPixel:
     {
-        auto s = dynamic_cast<function_ast::ReduceAroundPixel*>(n);
+        auto s = std::dynamic_pointer_cast<function_ast::ReduceAroundPixel>(n);
 
         auto stencil = std::dynamic_pointer_cast<function_ast::Stencil>(s->subnodes[1]);
         std::string reduction = "";
@@ -1063,14 +1063,14 @@ std::string HipaccVisitor::visit(function_ast::Node *n, int i)
         t = use_template(t, "REDUCE_DATATYPE", to_string(s->datatype));
         t = use_template(t, "DOM_NAME", stencil->name);
         t = use_template(t, "REDUCTION", reduction);
-        t = use_template(t, "BODY", this->visit(s->subnodes[2].get(), i));
+        t = use_template(t, "BODY", this->visit(s->subnodes[2], i));
 
         return t;
     }
 
     case function_ast::NodeType::PixelvalueAtCurrentStencilPos:
     {
-        auto s = dynamic_cast<function_ast::PixelvalueAtCurrentStencilPos*>(n);
+        auto s = std::dynamic_pointer_cast<function_ast::PixelvalueAtCurrentStencilPos>(n);
         std::shared_ptr<function_ast::Stencil>stencil;
         std::shared_ptr<function_ast::Image> image;
         function_ast::IterateAroundPixel* iterate;
@@ -1086,12 +1086,12 @@ std::string HipaccVisitor::visit(function_ast::Node *n, int i)
             image = std::dynamic_pointer_cast<function_ast::Image>(reduce->subnodes[0]);
         }
 
-        return this->visit(image.get(), i) + "(" + stencil->name + ")";
+        return this->visit(image, i) + "(" + stencil->name + ")";
     }
 
     case function_ast::NodeType::StencilvalueAtCurrentStencilPos:
     {
-        auto s = dynamic_cast<function_ast::StencilvalueAtCurrentStencilPos*>(n);
+        auto s = std::dynamic_pointer_cast<function_ast::StencilvalueAtCurrentStencilPos>(n);
         std::shared_ptr<function_ast::Stencil> stencil;
         function_ast::IterateAroundPixel* iterate;
         function_ast::ReduceAroundPixel* reduce;
@@ -1109,12 +1109,12 @@ std::string HipaccVisitor::visit(function_ast::Node *n, int i)
 
     case function_ast::NodeType::Statements:
     {
-        auto s = dynamic_cast<function_ast::Statements*>(n);
+        auto s = std::dynamic_pointer_cast<function_ast::Statements>(n);
         std::string to_return;
 
         for(auto statement: s->statements)
         {
-            to_return += this->visit(statement.get(), i);
+            to_return += this->visit(statement, i);
             if (statement->type != function_ast::NodeType::If && statement->type != function_ast::NodeType::Else)
                 to_return += ";\n";
         }

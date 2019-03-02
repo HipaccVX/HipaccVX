@@ -151,11 +151,6 @@ public:
     {
         type = NodeType::PixelAccessor;
     }
-
-    virtual std::string generate_source()
-    {
-        return "PixelAccessor_" + std::to_string(num) + "()";
-    }
 };
 class WindowAccesor: public Node
 {
@@ -610,7 +605,7 @@ public:
     Vect4()
     {
             type = NodeType::Vect4;
-            subnodes.resize(5);
+            subnodes.resize(4);
     }
     Vect4(
     std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2,
@@ -632,7 +627,7 @@ public:
 	Extract4()
 	{
 		type = NodeType::Extract4;
-		subnodes.resize(2);
+        subnodes.resize(1);
 	}
 	Extract4( std::shared_ptr<function_ast::Node> n1, Datatype dtype, VectChannelType channel) : from_dtype(dtype), channel(channel)
 	{
@@ -842,35 +837,25 @@ public:
 class Statements: public Node
 {
 public:
-    struct Mapping
-    {
-        HipaVX::Image *im;
-        std::shared_ptr<PixelAccessor> pa;
-    };
-    std::vector<Mapping> pixel_mappings;
+    std::vector<std::shared_ptr<PixelAccessor>> pixel_accessors;
 
-    std::shared_ptr<PixelAccessor> operator[](unsigned int index)
+    std::shared_ptr<PixelAccessor> pixel_accessor(unsigned int index)
     {
-        if (index >= pixel_mappings.size())
+        if (index >= pixel_accessors.size())
             throw std::runtime_error("PixelAccessor* Statements::operator[](unsigned int index): Index out of bounds");
-        return pixel_mappings[index].pa;
-    }
-    Mapping* get_mapping(unsigned int index)
-    {
-        if (index >= pixel_mappings.size())
-            throw std::runtime_error("PixelAccessor* Statements::operator[](unsigned int index): Index out of bounds");
-        return &pixel_mappings[index];
+        return pixel_accessors[index];
     }
 
     Statements()
     {
         type = NodeType::Statements;
     }
-    Statements(int number_mappings)
+    Statements(unsigned int number_mappings)
     {
-        pixel_mappings.resize(number_mappings);
-        for(int i = 0; i < number_mappings; i++)
-            pixel_mappings[i].pa.reset(new PixelAccessor(i));
+		type = NodeType::Statements;
+        pixel_accessors.resize(number_mappings);
+        for(unsigned int i = 0; i < number_mappings; i++)
+            pixel_accessors[i].reset(new PixelAccessor(i));
     }
     std::vector<std::shared_ptr<Node>> statements;
     virtual ~Statements() override = default;
@@ -885,6 +870,12 @@ public:
     {
         //statements.push_back(n);
         statements.insert(std::end(statements), std::begin(n.statements), std::end(n.statements));
+        return *this;
+    }
+    Statements& append(std::shared_ptr<Statements> &n)
+    {
+        //statements.push_back(n);
+        statements.insert(std::end(statements), std::begin(n->statements), std::end(n->statements));
         return *this;
     }
     Statements& replicate(Statements n)
@@ -903,14 +894,16 @@ public:
 	If()
 	{
 		type = NodeType::If;
+        body = std::make_shared<Statements>();
 	}
 	If(std::shared_ptr<Node> c)
 	{
 		type = NodeType::If;
 		condition = c;
+        body = std::make_shared<Statements>();
 	}
     std::shared_ptr<Node> condition;
-    Statements body;
+    std::shared_ptr<Statements> body;
 };
 
 class Else: public Node
@@ -919,8 +912,9 @@ public:
     Else()
     {
         type = NodeType::Else;
-    }
-    Statements body;
+        body = std::make_shared<Statements>();
+	}
+	std::shared_ptr<Statements> body;
 };
 
 class CurrentPixelvalue: public Node
@@ -944,10 +938,11 @@ public:
     ForEveryPixel()
     {
         type = NodeType::ForEveryPixel;
+        function = std::make_shared<Statements>();
     }
     std::vector<std::shared_ptr<Node>> inputs;
     std::shared_ptr<Node> output;
-    Statements function;
+	std::shared_ptr<Statements> function;
 };
 
 class Stencil: public Node
@@ -1000,6 +995,8 @@ std::shared_ptr<function_ast::Node> operator!(std::shared_ptr<function_ast::Node
 std::shared_ptr<function_ast::Node> operator~(std::shared_ptr<function_ast::Node> a);
 
 std::shared_ptr<function_ast::Node> operator<<(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> shift);
+
+std::shared_ptr<function_ast::Statements> operator<<(std::shared_ptr<function_ast::Statements> a, std::shared_ptr<function_ast::Node> shift);
 
 std::shared_ptr<function_ast::Node> operator>>(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> shift);
 
@@ -1057,6 +1054,60 @@ template <class ReturnType, class ParameterType>
 class ASTVisitor
 {
 public:
-    virtual ReturnType visit(function_ast::Node* n, ParameterType p) = 0;
+    virtual ReturnType visit(std::shared_ptr<function_ast::Node> n, ParameterType p) = 0;
+    /*  switch(n->type)
+        {
+        case function_ast::NodeType::None:
+            throw std::runtime_error("MapVisitor visited None");
+        case function_ast::NodeType::Add:
+        case function_ast::NodeType::Sub:
+        case function_ast::NodeType::Mul:
+        case function_ast::NodeType::Div:
+        case function_ast::NodeType::ShiftLeft:
+        case function_ast::NodeType::ShiftRight:
+        case function_ast::NodeType::Less:
+        case function_ast::NodeType::LessEquals:
+        case function_ast::NodeType::Equals:
+        case function_ast::NodeType::GreaterEquals:
+        case function_ast::NodeType::Greater:
+        case function_ast::NodeType::Unequals:
+        case function_ast::NodeType::And:
+        case function_ast::NodeType::Or:
+        case function_ast::NodeType::Xor:
+        case function_ast::NodeType::BitwiseAnd:
+        case function_ast::NodeType::BitwiseOr:
+        case function_ast::NodeType::BitwiseXor:
+        case function_ast::NodeType::BitwiseNot:
+        case function_ast::NodeType::Not:
+        case function_ast::NodeType::Sqrt:
+        case function_ast::NodeType::Exp:
+        case function_ast::NodeType::Conversion:
+        case function_ast::NodeType::Abs:
+        case function_ast::NodeType::Atan2:
+        case function_ast::NodeType::Constant:
+        case function_ast::NodeType::Vect4:
+        case function_ast::NodeType::Extract4:
+        case function_ast::NodeType::Variable:
+        case function_ast::NodeType::VariableDefinition:
+        case function_ast::NodeType::Assignment:
+        case function_ast::NodeType::TargetPixel:
+        case function_ast::NodeType::If:
+        case function_ast::NodeType::Else:
+        case function_ast::NodeType::Image:
+        case function_ast::NodeType::ForEveryPixel:
+        case function_ast::NodeType::CurrentPixelvalue:
+        case function_ast::NodeType::Stencil:
+        case function_ast::NodeType::IterateAroundPixel:
+        case function_ast::NodeType::ReductionOutput:
+        case function_ast::NodeType::ReduceAroundPixel:
+        case function_ast::NodeType::PixelvalueAtCurrentStencilPos:
+        case function_ast::NodeType::StencilvalueAtCurrentStencilPos:
+        case function_ast::NodeType::Statements:
+        case function_ast::NodeType::Pregenerated:
+        case function_ast::NodeType::PixelAccessor:
+        case function_ast::NodeType::WindowAccessor:
+        default:
+            break;
+        }*/
 };
 #endif
