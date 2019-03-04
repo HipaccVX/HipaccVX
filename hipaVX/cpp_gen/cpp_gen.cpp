@@ -538,7 +538,23 @@ std::string CPPVisitor::visit(std::shared_ptr<function_ast::Node> n, int i)
     {
         auto s = std::dynamic_pointer_cast<function_ast::CurrentPixelvalue>(n);
         std::string name = generate_image_name((function_ast::Image*) s->subnodes[0].get());
-        return name + ".data[xy_matrix_flat]";
+
+        // Legacy, only needed to allow current HipaVX implementation
+        if (current_mapping == nullptr)
+        {
+            return name + ".data[xy_matrix_flat]";
+        }
+        else
+        {
+            if (current_output_pixel_index == "")
+            {
+                return name + ".data[pixel_index]";
+            }
+            else
+            {
+                return name + ".data[" + current_output_pixel_index + "]";
+            }
+        }
     }
 
     case function_ast::NodeType::Stencil:
@@ -647,12 +663,27 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n, int i)
     case DomVX::AbstractionType::ForEveryPixelTest:
     {
         auto s = std::dynamic_pointer_cast<DomVX::ForEveryPixelTest>(n);
-        std::string str = "";
-        for (auto call: s->calls)
-        {
-            str += visit(call, i+1);
-        }
-        return str;
+
+        std::string flat_index_name = "xy_matrix_flat_" + std::to_string(s->id);
+        std::string templ =
+R"END(for(int y_matrix_@@@ID@@@ = 0; y_matrix_@@@ID@@@ < @@@HEIGHT@@@; y_matrix_@@@ID@@@++)
+{
+    for (int x_matrix_@@@ID@@@ = 0; x_matrix_@@@ID@@@ < @@@WIDTH@@@; x_matrix_@@@ID@@@++)
+    {
+        int @@@FLAT_INDEX_NAME@@@ = y_matrix_@@@ID@@@ * @@@WIDTH@@@ + x_matrix_@@@ID@@@;
+        @@@CODE@@@
+    }
+})END";
+        templ = use_template(templ, "HEIGHT", s->out->h);
+        templ = use_template(templ, "WIDTH", s->out->w);
+        templ = use_template(templ, "ID", s->id);
+        templ = use_template(templ, "FLAT_INDEX_NAME", flat_index_name);
+
+        current_output_pixel_index = flat_index_name;
+        templ = use_template(templ, "CODE", visit(s->call, i+1));
+        current_output_pixel_index = "";
+
+        return templ;
     }
     case DomVX::AbstractionType::MapTest:
     {

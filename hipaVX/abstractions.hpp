@@ -178,131 +178,9 @@ public:
             it_index++;
         }
     }
-private:
-    class MapVisitor: public ASTVisitor<std::shared_ptr<function_ast::Node>, int>
-    {
-        std::vector<HipaVX::Image*>& pixel_mappings;
-    public:
-        MapVisitor(std::vector<HipaVX::Image*>& pixel_mappings)
-            :pixel_mappings(pixel_mappings)
-        {}
-        virtual std::shared_ptr<function_ast::Node> visit(std::shared_ptr<function_ast::Node> visiting, int i) override
-        {
-            switch(visiting->type)
-            {
-            case function_ast::NodeType::None:
-                throw std::runtime_error("MapVisitor visited None");
-            case function_ast::NodeType::Add:
-            case function_ast::NodeType::Sub:
-            case function_ast::NodeType::Mul:
-            case function_ast::NodeType::Div:
-            case function_ast::NodeType::ShiftLeft:
-            case function_ast::NodeType::ShiftRight:
-            case function_ast::NodeType::Less:
-            case function_ast::NodeType::LessEquals:
-            case function_ast::NodeType::Equals:
-            case function_ast::NodeType::GreaterEquals:
-            case function_ast::NodeType::Greater:
-            case function_ast::NodeType::Unequals:
-            case function_ast::NodeType::And:
-            case function_ast::NodeType::Or:
-            case function_ast::NodeType::Xor:
-            case function_ast::NodeType::BitwiseAnd:
-            case function_ast::NodeType::BitwiseOr:
-            case function_ast::NodeType::BitwiseXor:
-            case function_ast::NodeType::BitwiseNot:
-            case function_ast::NodeType::Assignment:
-            {
-                visiting->subnodes[0] = visit(visiting->subnodes[0], i);
-                visiting->subnodes[1] = visit(visiting->subnodes[1], i);
-                return visiting;
-            }
-            case function_ast::NodeType::Not:
-            case function_ast::NodeType::Sqrt:
-            case function_ast::NodeType::Exp:
-            case function_ast::NodeType::Conversion:
-            case function_ast::NodeType::Abs:
-            case function_ast::NodeType::Atan2:
-            case function_ast::NodeType::Extract4:
-            {
-                visiting->subnodes[0] = visit(visiting->subnodes[0], i);
-                return visiting;
-            }
-            case function_ast::NodeType::Vect4:
-            {
-                visiting->subnodes[0] = visit(visiting->subnodes[0], i);
-                visiting->subnodes[1] = visit(visiting->subnodes[1], i);
-                visiting->subnodes[2] = visit(visiting->subnodes[2], i);
-                visiting->subnodes[3] = visit(visiting->subnodes[3], i);
-                return visiting;
-            }
-            case function_ast::NodeType::If:
-            {
-                auto s = std::dynamic_pointer_cast<function_ast::If>(visiting);
-                s->condition = visit(s->condition, i);
-                visit(s->body, i);
-                return visiting;
-            }
-            case function_ast::NodeType::Else:
-            {
-                auto s = std::dynamic_pointer_cast<function_ast::Else>(visiting);
-                visit(s->body, i);
-                return visiting;
-            }
-            case function_ast::NodeType::Statements:
-            {
-                auto s = std::dynamic_pointer_cast<function_ast::Statements>(visiting);
-                for(unsigned int index = 0; index < s->statements.size(); index++)
-                {
-                    s->statements[index] = visit(s->statements[index], i);
-                }
-                return visiting;
-            }
-
-            //This is the real "magic"
-            case function_ast::NodeType::PixelAccessor:
-            {
-                auto s = std::dynamic_pointer_cast<function_ast::PixelAccessor>(visiting);
-                auto image = std::make_shared<function_ast::Image>();
-                image->image = pixel_mappings.at(s->num);
-                auto pixel = std::make_shared<function_ast::CurrentPixelvalue>();
-                pixel->subnodes[0] = image;
-                return pixel;
-            }
-
-            case function_ast::NodeType::ForEveryPixel:
-            case function_ast::NodeType::IterateAroundPixel:
-            case function_ast::NodeType::ReduceAroundPixel:
-            case function_ast::NodeType::TargetPixel:
-                throw std::runtime_error("MapGenerator: Should not happen? / Not supported yet? / Gonna get deleted anyway?)");
-            // Doesn't have any childs
-            case function_ast::NodeType::CurrentPixelvalue:
-            case function_ast::NodeType::Stencil:
-            case function_ast::NodeType::ReductionOutput:
-            case function_ast::NodeType::PixelvalueAtCurrentStencilPos:
-            case function_ast::NodeType::StencilvalueAtCurrentStencilPos:
-            case function_ast::NodeType::Pregenerated:
-            case function_ast::NodeType::WindowAccessor:
-            case function_ast::NodeType::Image:
-            case function_ast::NodeType::Constant:
-            case function_ast::NodeType::Variable:
-            case function_ast::NodeType::VariableDefinition:
-            {
-                return visiting;
-            }
-            default:
-                break;
-            }
-            throw std::runtime_error("MapVisitor: reached end of switch case");
-        }
-    };
-public:
-
     virtual std::string generate_source() override
     {
-        MapVisitor v(pixel_mappings);
-        v.visit(function, 0);
-        return "implement this";
+        return "will be deleted";
     }
 };
 
@@ -310,7 +188,7 @@ public:
 class ForEveryPixelTest: public AbstractionNode
 {
 public:
-    std::vector<std::shared_ptr<AbstractionNode>> calls;
+    std::shared_ptr<AbstractionNode> call;
     HipaVX::Image *out;
     ForEveryPixelTest(HipaVX::Image* output)
     {
@@ -320,13 +198,13 @@ public:
     ForEveryPixelTest& map(std::shared_ptr<MapTest> mapping)
     {
         mapping->register_image(out, 0);
-        calls.emplace_back(mapping);
+        call = mapping;
         return *this;
     }
 
     std::string generate_source()
     {
-        return "";
+        return "will be deleted";
     }
 };
 
@@ -458,36 +336,3 @@ public:
     virtual ReturnType visit(std::shared_ptr<DomVX::AbstractionNode> n, ParameterType p) = 0;
 };
 
-
-
-//std::string visitor_cpp_raster(){
-//    std::string to_return ="";
-//
-//    to_return += ;
-//
-//   return to_return;
-//}
-
-//class LocalOp: public Node
-//{
-//public:
-//    LocalOp()
-//    {
-//        type = NodeType::LocalOp;
-//    }
-//    std::string name;
-//    std::vector<std::string> mask;
-//    int dim[2]; //dim[0] = x, dim[1] = y
-//    Datatype datatype;
-//    virtual std::string generate_source() override;
-//
-//    template<typename T>
-//    static std::vector<std::string> from_t(std::vector<T> v)
-//    {
-//        std::vector<std::string> to_return;
-//        to_return.reserve(v.size());
-//        for(auto e: v)
-//            to_return.emplace_back(std::to_string(e));
-//        return to_return;
-//    }
-//};

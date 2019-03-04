@@ -40,6 +40,7 @@ int main()
     std::cout << v.visit(ast_fun, 0);
     std::cout << "\n";
 
+    //Create new Statements with same amount of pixel accessors
     ast_fun = std::make_shared<function_ast::Statements>(3);
     ast_fun << assign(ast_fun->pixel_accessor(0), ast_fun->pixel_accessor(2) + ast_fun->pixel_accessor(1));
 
