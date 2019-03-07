@@ -63,7 +63,7 @@ public:
     Image *in;
 	Image *out;
 
-    function_ast::NodeType operation;
+    ast4vx::NodeType operation;
 
 	virtual void build() override;
 };
@@ -73,7 +73,7 @@ class SqrtNode: public SimplePointUnary
 public:
     SqrtNode()
     {
-		operation = function_ast::NodeType::Sqrt;
+		operation = ast4vx::NodeType::Sqrt;
         node_name = "Sqrt";
     }
     virtual ~SqrtNode() override = default;
@@ -84,7 +84,7 @@ class Atan2Node: public SimplePointUnary
 public:
     Atan2Node()
     {
-		operation = function_ast::NodeType::Atan2;
+		operation = ast4vx::NodeType::Atan2;
         node_name = "Atan2";
     }
     virtual ~Atan2Node() override = default;
@@ -95,7 +95,7 @@ class AbsNode: public SimplePointUnary
 public:
     AbsNode()
     {
-		operation = function_ast::NodeType::Abs;
+		operation = ast4vx::NodeType::Abs;
         node_name = "Abs";
     }
     virtual ~AbsNode() override = default;
@@ -106,7 +106,7 @@ class NotNode: public SimplePointUnary
 public:
     NotNode()
     {
-		operation = function_ast::NodeType::Not;
+		operation = ast4vx::NodeType::Not;
         node_name = "Not";
     }
     virtual ~NotNode() override = default;
@@ -117,7 +117,7 @@ class SquareNode: public SimplePointUnary
 public:
     SquareNode()
     {
-		operation = function_ast::NodeType::Mul;
+		operation = ast4vx::NodeType::Mul;
         node_name = "Square";
     }
     virtual ~SquareNode() override = default;
@@ -134,7 +134,7 @@ public:
     Image *in_2;
 	Image *out;
 
-    function_ast::NodeType operation;
+    ast4vx::NodeType operation;
 
 	virtual void build() override;
 };
@@ -144,7 +144,7 @@ class SimplePointMul: public SimplePointBinary
 public:
     SimplePointMul()
     {
-		operation = function_ast::NodeType::Mul;
+		operation = ast4vx::NodeType::Mul;
         node_name = "Point Multiplication";
     }
     virtual ~SimplePointMul() override = default;
@@ -155,7 +155,7 @@ class SimplePointAdd: public SimplePointBinary
 public:
     SimplePointAdd()
     {
-		operation = function_ast::NodeType::Add;
+		operation = ast4vx::NodeType::Add;
         node_name = "Point Addition";
     }
     virtual ~SimplePointAdd() override = default;
@@ -166,7 +166,7 @@ class SimplePointSub: public SimplePointBinary
 public:
     SimplePointSub()
     {
-		operation = function_ast::NodeType::Sub;
+		operation = ast4vx::NodeType::Sub;
         node_name = "Point Subtraction";
     }
     virtual ~SimplePointSub() override = default;
@@ -177,7 +177,7 @@ class SimplePointDiv: public SimplePointBinary
 public:
     SimplePointDiv()
     {
-		operation = function_ast::NodeType::Div;
+		operation = ast4vx::NodeType::Div;
         node_name = "Point Division";
     }
     virtual ~SimplePointDiv() override = default;
@@ -188,7 +188,7 @@ class AndNode: public SimplePointBinary
 public:
     AndNode()
     {
-		operation = function_ast::NodeType::BitwiseAnd;
+		operation = ast4vx::NodeType::BitwiseAnd;
         node_name = "And";
     }
     virtual ~AndNode() override = default;
@@ -199,7 +199,7 @@ class XorNode: public SimplePointBinary
 public:
     XorNode()
     {
-		operation = function_ast::NodeType::BitwiseXor;
+		operation = ast4vx::NodeType::BitwiseXor;
         node_name = "Xor";
     }
     virtual ~XorNode() override = default;
@@ -210,7 +210,7 @@ class OrNode: public SimplePointBinary
 public:
     OrNode()
     {
-		operation = function_ast::NodeType::BitwiseOr;
+		operation = ast4vx::NodeType::BitwiseOr;
         node_name = "or";
     }
     virtual ~OrNode() override = default;
@@ -227,7 +227,7 @@ public:
     T scalar;
 	Image *out;
 
-    function_ast::NodeType operation;
+    ast4vx::NodeType operation;
 
 	virtual void build() override;
 };
@@ -238,7 +238,7 @@ class SimplePointScalarAdd: public SimplePointScalar<T>
 public:
     SimplePointScalarAdd()
     {
-		this->operation = function_ast::NodeType::Add;
+		this->operation = ast4vx::NodeType::Add;
         this->node_name = "Scalar Addition";
     }
     virtual ~SimplePointScalarAdd() override = default;
@@ -250,7 +250,7 @@ class SimplePointScalarSub: public SimplePointScalar<T>
 public:
     SimplePointScalarSub()
 	{
-		this->operation = function_ast::NodeType::Sub;
+		this->operation = ast4vx::NodeType::Sub;
         this->node_name = "Scalar Subtraction";
     }
     virtual ~SimplePointScalarSub() override = default;
@@ -262,7 +262,7 @@ class SimplePointScalarMul: public SimplePointScalar<T>
 public:
     SimplePointScalarMul()
 	{
-		this->operation = function_ast::NodeType::Mul;
+		this->operation = ast4vx::NodeType::Mul;
         this->node_name = "Scalar Multiplication";
     }
     virtual ~SimplePointScalarMul() override = default;
@@ -274,7 +274,7 @@ class SimplePointScalarDiv: public SimplePointScalar<T>
 public:
     SimplePointScalarDiv()
 	{
-		this->operation = function_ast::NodeType::Div;
+		this->operation = ast4vx::NodeType::Div;
         this->node_name = "Scalar Division";
     }
     virtual ~SimplePointScalarDiv() override = default;
@@ -286,7 +286,7 @@ class SimplePointScalarShiftRight: public SimplePointScalar<T>
 public:
     SimplePointScalarShiftRight()
 	{
-		this->operation = function_ast::NodeType::ShiftRight;
+		this->operation = ast4vx::NodeType::ShiftRight;
         this->node_name = "Scalar Shift Right";
     }
     virtual ~SimplePointScalarShiftRight() override = default;
@@ -298,7 +298,7 @@ class SimplePointScalarShiftLeft: public SimplePointScalar<T>
 public:
     SimplePointScalarShiftLeft()
 	{
-		this->operation = function_ast::NodeType::ShiftLeft;
+		this->operation = ast4vx::NodeType::ShiftLeft;
         this->node_name = "Scalar Shift Left";
     }
     virtual ~SimplePointScalarShiftLeft() override = default;
@@ -584,32 +584,32 @@ namespace HipaVX
 template <typename T>
 void SimplePointScalar<T>::build()
 {
-	auto in_node = std::make_shared<function_ast::Image>(in);
+	auto in_node = std::make_shared<ast4vx::Image>(in);
 
     kernel->inputs.push_back(in_node);
-	auto out_node = std::make_shared<function_ast::Image>(out);
+	auto out_node = std::make_shared<ast4vx::Image>(out);
     kernel->output = out_node;
 
 	auto c = constant<>(scalar);
 
 	switch(operation)
 	{
-	case function_ast::NodeType::Add:
+	case ast4vx::NodeType::Add:
         kernel->function << assign(target_pixel(out_node), current_pixel(in_node) + c);
 		break;
-	case function_ast::NodeType::Sub:
+	case ast4vx::NodeType::Sub:
         kernel->function << assign(target_pixel(out_node), current_pixel(in_node) - c);
 		break;
-	case function_ast::NodeType::Mul:
+	case ast4vx::NodeType::Mul:
         kernel->function << assign(target_pixel(out_node), current_pixel(in_node) * c);
 		break;
-	case function_ast::NodeType::Div:
+	case ast4vx::NodeType::Div:
         kernel->function << assign(target_pixel(out_node), current_pixel(in_node) / c);
 		break;
-	case function_ast::NodeType::ShiftRight:
+	case ast4vx::NodeType::ShiftRight:
         kernel->function << assign(target_pixel(out_node), current_pixel(in_node) >> c);
 		break;
-	case function_ast::NodeType::ShiftLeft:
+	case ast4vx::NodeType::ShiftLeft:
         kernel->function << assign(target_pixel(out_node), current_pixel(in_node) << c);
 		break;
 	}

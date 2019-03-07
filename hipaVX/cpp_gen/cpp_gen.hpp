@@ -35,10 +35,22 @@ void process_graph(HipaVX::Graph *graph);
 
 class CPPVisitor: public ASTVisitor<std::string, int>, public AbstractionsVisitor<std::string, int>
 {
-    std::shared_ptr<DomVX::MapTest> current_mapping;
+    std::vector<HipaVX::Image*> *pixelaccessor_mapping = nullptr;
+
     std::string current_output_pixel_index = "";
+    std::string current_output_y = "";
+    std::string current_output_x = "";
+    std::string current_output_width = "";
+    std::string current_output_height = "";
+
+    std::map<std::shared_ptr<ast4vx::WindowDescriptor>, std::string> desc_to_name;
+
 public:
-    virtual std::string visit(std::shared_ptr<function_ast::Node> n, int i = 0) override;
+    virtual std::string visit(std::shared_ptr<ast4vx::Node> n, int i = 0) override;
+
     virtual std::string visit(std::shared_ptr<DomVX::AbstractionNode> n, int i = 0) override;
+
+    std::string setup_outer_loop(std::shared_ptr<DomVX::Map> m);
+    std::string setup_outer_loop(std::shared_ptr<DomVX::LocalOperation> m, const std::vector<HipaVX::Image *> &out);
 };
 

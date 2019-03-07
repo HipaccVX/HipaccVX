@@ -10,16 +10,16 @@
 int main(int argc, const char *argv[]) {
 
     CPPVisitor v;
-    auto map = std::make_shared<DomVX::MapTest>();
+    auto map = std::make_shared<DomVX::Map>();
 	
     auto image_i = new HipaVX::Image(1024, 1024, VX_DF_IMAGE_U8);
     auto image_o = new HipaVX::Image(1024, 1024, VX_DF_IMAGE_U8);
 
-    auto ast_fun = std::make_shared<function_ast::Statements>(2);
-    ast_fun << assign(ast_fun->pixel_accessor(0), sqrt(ast_fun->pixel_accessor(1)));
+    auto ast_fun = std::make_shared<ast4vx::Statements>(1, 1);
+    ast_fun << assign(ast_fun->d_out(0), sqrt(ast_fun->d_in(0)));
 
     map->set_statements(ast_fun);
-    map->register_image({image_o, image_i});
+    map->register_images({image_o}, {image_i});
 
     std::cout << v.visit(map);
 

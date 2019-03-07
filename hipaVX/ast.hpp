@@ -18,7 +18,7 @@ namespace HipaVX
 class Image;
 }
 
-namespace function_ast
+namespace ast4vx
 {
 
 // TODO: Consider different enum types for abstractions and scalar operations
@@ -79,10 +79,17 @@ enum class NodeType
     StencilvalueAtCurrentStencilPos,
 
     Statements,
+    LocalToPixel,
+    PixelToPixel,
 
     Pregenerated,
     PixelAccessor,
-    WindowAccessor
+    PixelAccessorTest,
+    PixelAccessorWindow,
+    WindowAccessor,
+    WindowDescriptor,
+    M,
+    Window,
 };
 
 enum class Datatype
@@ -152,13 +159,32 @@ public:
         type = NodeType::PixelAccessor;
     }
 };
-class WindowAccesor: public Node
+class PixelAccessorTest: public Node
 {
 public:
-
-    WindowAccesor()
+    int num;
+    PixelAccessorTest()
     {
-        type = NodeType::WindowAccessor;
+        type = NodeType::PixelAccessorTest;
+    }
+    PixelAccessorTest(int number)
+        :num(number)
+    {
+        type = NodeType::PixelAccessorTest;
+    }
+};
+class PixelAccessorWindow: public Node
+{
+public:
+    int num;
+    PixelAccessorWindow()
+    {
+        type = NodeType::PixelAccessorWindow;
+    }
+    PixelAccessorWindow(int number)
+        :num(number)
+    {
+        type = NodeType::PixelAccessorWindow;
     }
 };
 
@@ -182,7 +208,7 @@ public:
         type = NodeType::Add;
         subnodes.resize(2);
     }
-    Add(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
+    Add(std::shared_ptr<ast4vx::Node> n1, std::shared_ptr<ast4vx::Node> n2)
     {
         type = NodeType::Add;
         subnodes = {n1, n2};
@@ -199,7 +225,7 @@ public:
         type = NodeType::Sub;
         subnodes.resize(2);
     }
-    Sub(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
+    Sub(std::shared_ptr<ast4vx::Node> n1, std::shared_ptr<ast4vx::Node> n2)
     {
         type = NodeType::Sub;
         subnodes = {n1, n2};
@@ -216,7 +242,7 @@ public:
         type = NodeType::Mul;
         subnodes.resize(2);
     }
-    Mul(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
+    Mul(std::shared_ptr<ast4vx::Node> n1, std::shared_ptr<ast4vx::Node> n2)
     {
         type = NodeType::Mul;
         subnodes = {n1, n2};
@@ -233,7 +259,7 @@ public:
         type = NodeType::Div;
         subnodes.resize(2);
     }
-    Div(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
+    Div(std::shared_ptr<ast4vx::Node> n1, std::shared_ptr<ast4vx::Node> n2)
     {
         type = NodeType::Div;
         subnodes = {n1, n2};
@@ -250,7 +276,7 @@ public:
         type = NodeType::ShiftLeft;
         subnodes.resize(2);
     }
-    ShiftLeft(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
+    ShiftLeft(std::shared_ptr<ast4vx::Node> n1, std::shared_ptr<ast4vx::Node> n2)
     {
         type = NodeType::ShiftLeft;
         subnodes = {n1, n2};
@@ -267,7 +293,7 @@ public:
         type = NodeType::ShiftRight;
         subnodes.resize(2);
     }
-    ShiftRight(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
+    ShiftRight(std::shared_ptr<ast4vx::Node> n1, std::shared_ptr<ast4vx::Node> n2)
     {
         type = NodeType::ShiftRight;
         subnodes = {n1, n2};
@@ -284,7 +310,7 @@ public:
 		type = NodeType::And;
 		subnodes.resize(2);
 	}
-	And(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
+    And(std::shared_ptr<ast4vx::Node> n1, std::shared_ptr<ast4vx::Node> n2)
 	{
 		type = NodeType::And;
 		subnodes = {n1, n2};
@@ -301,7 +327,7 @@ public:
 		type = NodeType::Or;
 		subnodes.resize(2);
 	}
-	Or(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
+    Or(std::shared_ptr<ast4vx::Node> n1, std::shared_ptr<ast4vx::Node> n2)
 	{
 		type = NodeType::Or;
 		subnodes = {n1, n2};
@@ -318,7 +344,7 @@ public:
 		type = NodeType::Xor;
 		subnodes.resize(2);
 	}
-	Xor(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
+    Xor(std::shared_ptr<ast4vx::Node> n1, std::shared_ptr<ast4vx::Node> n2)
 	{
 		type = NodeType::Xor;
 		subnodes = {n1, n2};
@@ -335,7 +361,7 @@ public:
         type = NodeType::BitwiseAnd;
         subnodes.resize(2);
     }
-    BitwiseAnd(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
+    BitwiseAnd(std::shared_ptr<ast4vx::Node> n1, std::shared_ptr<ast4vx::Node> n2)
     {
         type = NodeType::BitwiseAnd;
         subnodes = {n1, n2};
@@ -352,7 +378,7 @@ public:
         type = NodeType::Less;
         subnodes.resize(2);
     }
-    Less(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
+    Less(std::shared_ptr<ast4vx::Node> n1, std::shared_ptr<ast4vx::Node> n2)
     {
         type = NodeType::Less;
         subnodes = {n1, n2};
@@ -369,7 +395,7 @@ public:
         type = NodeType::LessEquals;
         subnodes.resize(2);
     }
-    LessEquals(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
+    LessEquals(std::shared_ptr<ast4vx::Node> n1, std::shared_ptr<ast4vx::Node> n2)
     {
         type = NodeType::LessEquals;
         subnodes = {n1, n2};
@@ -386,7 +412,7 @@ public:
         type = NodeType::Equals;
         subnodes.resize(2);
     }
-    Equals(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
+    Equals(std::shared_ptr<ast4vx::Node> n1, std::shared_ptr<ast4vx::Node> n2)
     {
         type = NodeType::Equals;
         subnodes = {n1, n2};
@@ -403,7 +429,7 @@ public:
         type = NodeType::GreaterEquals;
         subnodes.resize(2);
     }
-    GreaterEquals(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
+    GreaterEquals(std::shared_ptr<ast4vx::Node> n1, std::shared_ptr<ast4vx::Node> n2)
     {
         type = NodeType::GreaterEquals;
         subnodes = {n1, n2};
@@ -420,7 +446,7 @@ public:
         type = NodeType::Greater;
         subnodes.resize(2);
     }
-    Greater(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
+    Greater(std::shared_ptr<ast4vx::Node> n1, std::shared_ptr<ast4vx::Node> n2)
     {
         type = NodeType::Greater;
         subnodes = {n1, n2};
@@ -437,7 +463,7 @@ public:
         type = NodeType::Unequals;
         subnodes.resize(2);
     }
-    Unequals(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
+    Unequals(std::shared_ptr<ast4vx::Node> n1, std::shared_ptr<ast4vx::Node> n2)
     {
         type = NodeType::Unequals;
         subnodes = {n1, n2};
@@ -454,7 +480,7 @@ public:
 		type = NodeType::BitwiseOr;
 		subnodes.resize(2);
 	}
-	BitwiseOr(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
+    BitwiseOr(std::shared_ptr<ast4vx::Node> n1, std::shared_ptr<ast4vx::Node> n2)
 	{
 		type = NodeType::BitwiseOr;
 		subnodes = {n1, n2};
@@ -471,7 +497,7 @@ public:
 		type = NodeType::BitwiseXor;
 		subnodes.resize(2);
 	}
-	BitwiseXor(std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2)
+    BitwiseXor(std::shared_ptr<ast4vx::Node> n1, std::shared_ptr<ast4vx::Node> n2)
 	{
 		type = NodeType::BitwiseXor;
 		subnodes = {n1, n2};
@@ -608,8 +634,8 @@ public:
             subnodes.resize(4);
     }
     Vect4(
-    std::shared_ptr<function_ast::Node> n1, std::shared_ptr<function_ast::Node> n2,
-    std::shared_ptr<function_ast::Node> n3, std::shared_ptr<function_ast::Node> n4,
+    std::shared_ptr<ast4vx::Node> n1, std::shared_ptr<ast4vx::Node> n2,
+    std::shared_ptr<ast4vx::Node> n3, std::shared_ptr<ast4vx::Node> n4,
     Datatype dtype
     ) : to_dtype(dtype)
     {
@@ -629,7 +655,7 @@ public:
 		type = NodeType::Extract4;
         subnodes.resize(1);
 	}
-	Extract4( std::shared_ptr<function_ast::Node> n1, Datatype dtype, VectChannelType channel) : from_dtype(dtype), channel(channel)
+    Extract4( std::shared_ptr<ast4vx::Node> n1, Datatype dtype, VectChannelType channel) : from_dtype(dtype), channel(channel)
 	{
 		type = NodeType::Extract4;
 		subnodes = {n1};
@@ -834,28 +860,84 @@ public:
     HipaVX::Image *image;
 };
 
+class WindowAccessor: public Node, public std::enable_shared_from_this<WindowAccessor>
+{
+
+public:
+    class M: public Node
+    {
+    public:
+        unsigned x, y;
+        std::weak_ptr<WindowAccessor> parent;
+    private:
+        M(std::shared_ptr<WindowAccessor> parent)
+            :parent(parent)
+        {
+            type = NodeType::M;
+        }
+        friend class WindowAccessor;
+    };
+    std::vector<std::shared_ptr<M>> accessors;
+
+    int num;
+    WindowAccessor()
+    {
+        type = NodeType::WindowAccessor;
+    }
+    WindowAccessor(int number)
+        :num(number)
+    {
+        type = NodeType::WindowAccessor;
+    }
+    std::shared_ptr<M> pixel_at(unsigned int x, unsigned int y)
+    {
+        auto it = std::find_if(accessors.begin(), accessors.end(), [x, y] (std::shared_ptr<M> m)
+        {
+                return m->x == x && m->y == y;
+        });
+        if (it != accessors.end())
+            return *it;
+
+        auto m = std::shared_ptr<M>(new M(shared_from_this()));
+        accessors.emplace_back(m);
+        return m;
+    }
+};
+
 class Statements: public Node
 {
 public:
-    std::vector<std::shared_ptr<PixelAccessor>> pixel_accessors;
+    std::vector<std::shared_ptr<PixelAccessorTest>> out_pixel_mappings;
+    std::vector<std::shared_ptr<PixelAccessorTest>> in_pixel_mappings;
 
-    std::shared_ptr<PixelAccessor> pixel_accessor(unsigned int index)
+    std::shared_ptr<PixelAccessorTest> d_in(unsigned int index)
     {
-        if (index >= pixel_accessors.size())
-            throw std::runtime_error("PixelAccessor* Statements::operator[](unsigned int index): Index out of bounds");
-        return pixel_accessors[index];
+        if (index >= in_pixel_mappings.size())
+            throw std::runtime_error("PixelAccessor* Statements::d_in(unsigned int index): Index out of bounds");
+        return in_pixel_mappings[index];
+    }
+    std::shared_ptr<PixelAccessorTest> d_out(unsigned int index)
+    {
+        if (index >= out_pixel_mappings.size())
+            throw std::runtime_error("PixelAccessor* Statements::d_in(unsigned int index): Index out of bounds");
+        return out_pixel_mappings[index];
     }
 
     Statements()
     {
         type = NodeType::Statements;
     }
-    Statements(unsigned int number_mappings)
+    Statements(unsigned int out, unsigned int in)
     {
-		type = NodeType::Statements;
-        pixel_accessors.resize(number_mappings);
-        for(unsigned int i = 0; i < number_mappings; i++)
-            pixel_accessors[i].reset(new PixelAccessor(i));
+        type = NodeType::Statements;
+        out_pixel_mappings.resize(out);
+        in_pixel_mappings.resize(in);
+        unsigned int i = 0;
+        for(; i < out; i++)
+            out_pixel_mappings[i].reset(new PixelAccessorTest(i));
+
+        for(; i < out + in; i++)
+            in_pixel_mappings[i-out].reset(new PixelAccessorTest(i));
     }
     std::vector<std::shared_ptr<Node>> statements;
     virtual ~Statements() override = default;
@@ -887,6 +969,173 @@ public:
         return *this;
     }
 };
+
+class LocalToPixel: public Statements
+{
+public:
+    std::vector<std::shared_ptr<WindowAccessor>> windows;
+    LocalToPixel(int num_output_images, int num_input_images, int num_windows)
+        :Statements(num_output_images, num_input_images)
+    {
+        type = NodeType::LocalToPixel;
+        windows.resize(num_windows);
+        for(unsigned int i = 0; i < windows.size(); i++)
+            windows[i].reset(new WindowAccessor(i));
+    }
+    std::shared_ptr<WindowAccessor> window(unsigned int index)
+    {
+        if (index >= windows.size())
+            throw std::runtime_error("LocalToPixel::window(unsigned int index): Index out of bounds");
+        return windows[index];
+    }
+};
+
+class WindowDescriptor: public Node
+{
+public:
+    unsigned int width, height;
+    Datatype datatype;
+    std::vector<std::vector<unsigned char>> domain;
+
+    WindowDescriptor(unsigned int x, unsigned int y, Datatype datatype = Datatype::INT32)
+    {
+        if (y <= 0 || x <= 0)
+            throw std::runtime_error("WindowDescriptor::WindowDescriptor domain size must be > 0");
+
+        type = NodeType::WindowDescriptor;
+
+        this->datatype = datatype;
+        width = x;
+        height = y;
+        domain.resize(y);
+        for(auto& line: domain)
+        {
+            line.resize(x);
+        }
+    }
+
+    WindowDescriptor(unsigned int x, unsigned int y, std::initializer_list<int> dom, Datatype datatype = Datatype::INT32)
+    {
+        if (y <= 0 || x <= 0)
+            throw std::runtime_error("WindowDescriptor::WindowDescriptor domain size must be > 0");
+        if (dom.size() != y * x)
+            throw std::runtime_error("WindowDescriptor::WindowDescriptor dom needs to have x * y elements");
+
+        type = NodeType::WindowDescriptor;
+
+        this->datatype = datatype;
+        width = x;
+        height = y;
+
+        auto dom_it = dom.begin();
+        y = x = 0;
+        for(y = 0; y < height; y++)
+        {
+            domain.push_back(std::vector<unsigned char>());
+            for(x = 0; x < width; x++)
+            {
+                domain[y].push_back(*dom_it);
+                dom_it++;
+            }
+        }
+    }
+
+    void set_domain(std::initializer_list<int> dom)
+    {
+        if (dom.size() != height * width)
+            throw std::runtime_error("WindowDescriptor::WindowDescriptor dom needs to have x * y elements");
+
+        domain.clear();
+        auto dom_it = dom.begin();
+        for(unsigned int y = 0; y < height; y++)
+        {
+            domain.push_back(std::vector<unsigned char>());
+            for(unsigned x = 0; x < width; x++)
+            {
+                domain[y].push_back(*dom_it);
+                dom_it++;
+            }
+        }
+    }
+};
+
+class WindowOperation: public Node
+{
+public:
+    enum class State
+    {
+        None,
+        At,
+        Forall,
+        ToPixel,
+    };
+
+    State current_state = State::None;
+    std::shared_ptr<WindowDescriptor> output;
+    std::shared_ptr<LocalToPixel> to_pixel_op;
+
+    std::vector<std::shared_ptr<WindowDescriptor>> window_inputs;
+public:
+    std::vector<std::vector<std::shared_ptr<Statements>>> statements;
+
+    WindowOperation(unsigned int x, unsigned int y)
+    {
+        if (y <= 0 || x <= 0)
+            throw std::runtime_error("Window::Window: domain size must be > 0");
+
+        type = NodeType::Window;
+        statements.resize(y);
+        for(unsigned int i = 0; i < statements.size(); i++)
+        {
+            statements[i].resize(x);
+        }
+    }
+
+    void set_window_inputs(std::initializer_list<std::shared_ptr<WindowDescriptor>> in)
+    {
+        window_inputs.clear();
+        for(auto wd: in)
+            window_inputs.emplace_back(wd);
+    }
+
+    void compute_at(unsigned int x, unsigned int y, std::shared_ptr<Statements> s)
+    {
+        if (current_state != State::None && current_state != State::At)
+            throw std::runtime_error("Window::compute_at(): Window already in another state");
+        if (y >= statements.size() || x >= statements[x].size())
+            throw std::runtime_error("Window::compute_at(): Index out of bounds");
+        if (statements[y][x] != nullptr)
+            throw std::runtime_error("Window::compute_at(): Coordinate already written to");
+
+        current_state = State::At;
+        statements[y][x] = s;
+    }
+
+    void to_pixel(std::shared_ptr<LocalToPixel> s)
+    {
+        if (current_state != State::None && current_state != State::ToPixel)
+            throw std::runtime_error("Window::to_pixel(): Window already in another state");
+        if (to_pixel_op != nullptr)
+            throw std::runtime_error("Window::to_pixel(): Already written");
+
+        current_state = State::ToPixel;
+        to_pixel_op = s;
+    }
+
+    std::shared_ptr<WindowDescriptor> get_window_output()
+    {
+        if (current_state != State::At && current_state != State::Forall)
+            throw std::runtime_error("Window::get_window_output(): Window not in the right state");
+        if (output.get() == nullptr)
+        {
+            output = std::make_shared<WindowDescriptor>(statements[0].size(), statements.size());
+            output->domain = window_inputs[0]->domain;
+        }
+
+        return output;
+    }
+};
+
 
 class If: public Node
 {
@@ -972,80 +1221,81 @@ public:
 }
 
 
-std::shared_ptr<function_ast::Node> operator+(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
+std::shared_ptr<ast4vx::Node> operator+(std::shared_ptr<ast4vx::Node> a, std::shared_ptr<ast4vx::Node> b);
 
-std::shared_ptr<function_ast::Node> operator-(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
+std::shared_ptr<ast4vx::Node> operator-(std::shared_ptr<ast4vx::Node> a, std::shared_ptr<ast4vx::Node> b);
 
-std::shared_ptr<function_ast::Node> operator*(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
+std::shared_ptr<ast4vx::Node> operator*(std::shared_ptr<ast4vx::Node> a, std::shared_ptr<ast4vx::Node> b);
 
-std::shared_ptr<function_ast::Node> operator/(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
+std::shared_ptr<ast4vx::Node> operator/(std::shared_ptr<ast4vx::Node> a, std::shared_ptr<ast4vx::Node> b);
 
-std::shared_ptr<function_ast::Node> operator&(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
+std::shared_ptr<ast4vx::Node> operator&(std::shared_ptr<ast4vx::Node> a, std::shared_ptr<ast4vx::Node> b);
 
-std::shared_ptr<function_ast::Node> operator&&(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
+std::shared_ptr<ast4vx::Node> operator&&(std::shared_ptr<ast4vx::Node> a, std::shared_ptr<ast4vx::Node> b);
 
-std::shared_ptr<function_ast::Node> operator|(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
+std::shared_ptr<ast4vx::Node> operator|(std::shared_ptr<ast4vx::Node> a, std::shared_ptr<ast4vx::Node> b);
 
-std::shared_ptr<function_ast::Node> operator||(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
+std::shared_ptr<ast4vx::Node> operator||(std::shared_ptr<ast4vx::Node> a, std::shared_ptr<ast4vx::Node> b);
 
-std::shared_ptr<function_ast::Node> operator^(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
+std::shared_ptr<ast4vx::Node> operator^(std::shared_ptr<ast4vx::Node> a, std::shared_ptr<ast4vx::Node> b);
 
-std::shared_ptr<function_ast::Node> operator!(std::shared_ptr<function_ast::Node> a);
+std::shared_ptr<ast4vx::Node> operator!(std::shared_ptr<ast4vx::Node> a);
 
-std::shared_ptr<function_ast::Node> operator~(std::shared_ptr<function_ast::Node> a);
+std::shared_ptr<ast4vx::Node> operator~(std::shared_ptr<ast4vx::Node> a);
 
-std::shared_ptr<function_ast::Node> operator<<(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> shift);
+std::shared_ptr<ast4vx::Node> operator<<(std::shared_ptr<ast4vx::Node> a, std::shared_ptr<ast4vx::Node> shift);
 
-std::shared_ptr<function_ast::Statements> operator<<(std::shared_ptr<function_ast::Statements> a, std::shared_ptr<function_ast::Node> shift);
+std::shared_ptr<ast4vx::Statements> operator<<(std::shared_ptr<ast4vx::Statements> a, std::shared_ptr<ast4vx::Node> statement);
+std::shared_ptr<ast4vx::LocalToPixel> operator<<(std::shared_ptr<ast4vx::LocalToPixel> a, std::shared_ptr<ast4vx::Node> statement);
 
-std::shared_ptr<function_ast::Node> operator>>(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> shift);
+std::shared_ptr<ast4vx::Node> operator>>(std::shared_ptr<ast4vx::Node> a, std::shared_ptr<ast4vx::Node> shift);
 
-std::shared_ptr<function_ast::Node> square(std::shared_ptr<function_ast::Node> a);
+std::shared_ptr<ast4vx::Node> square(std::shared_ptr<ast4vx::Node> a);
 
-std::shared_ptr<function_ast::Node> exp(std::shared_ptr<function_ast::Node> a);
+std::shared_ptr<ast4vx::Node> exp(std::shared_ptr<ast4vx::Node> a);
 
-std::shared_ptr<function_ast::Node> sqrt(std::shared_ptr<function_ast::Node> a);
+std::shared_ptr<ast4vx::Node> sqrt(std::shared_ptr<ast4vx::Node> a);
 
-std::shared_ptr<function_ast::Node> atan2(std::shared_ptr<function_ast::Node> a);
+std::shared_ptr<ast4vx::Node> atan2(std::shared_ptr<ast4vx::Node> a);
 
-std::shared_ptr<function_ast::Node> abs(std::shared_ptr<function_ast::Node> a);
+std::shared_ptr<ast4vx::Node> abs(std::shared_ptr<ast4vx::Node> a);
 
-std::shared_ptr<function_ast::Node> assign(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
+std::shared_ptr<ast4vx::Node> assign(std::shared_ptr<ast4vx::Node> a, std::shared_ptr<ast4vx::Node> b);
 
-std::shared_ptr<function_ast::Node> target_pixel(std::shared_ptr<function_ast::Node> a);
+std::shared_ptr<ast4vx::Node> target_pixel(std::shared_ptr<ast4vx::Node> a);
 
-std::shared_ptr<function_ast::Node> current_pixel(std::shared_ptr<function_ast::Node> a);
+std::shared_ptr<ast4vx::Node> current_pixel(std::shared_ptr<ast4vx::Node> a);
 
-std::shared_ptr<function_ast::Node> convert(std::shared_ptr<function_ast::Node> a, function_ast::Datatype type);
+std::shared_ptr<ast4vx::Node> convert(std::shared_ptr<ast4vx::Node> a, ast4vx::Datatype type);
 
 template <typename T>
-std::shared_ptr<function_ast::Node> constant(T t)
+std::shared_ptr<ast4vx::Node> constant(T t)
 {
-    return std::make_shared<function_ast::Constant<T>>(t);
+    return std::make_shared<ast4vx::Constant<T>>(t);
 }
 
-std::shared_ptr<function_ast::Node> define(std::shared_ptr<function_ast::Node> n);
+std::shared_ptr<ast4vx::Node> define(std::shared_ptr<ast4vx::Node> n);
 
-std::shared_ptr<function_ast::If> IF(std::shared_ptr<function_ast::Node> n);
+std::shared_ptr<ast4vx::If> IF(std::shared_ptr<ast4vx::Node> n);
 
-std::shared_ptr<function_ast::Else> ELSE();
+std::shared_ptr<ast4vx::Else> ELSE();
 
-std::shared_ptr<function_ast::Node> less(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
+std::shared_ptr<ast4vx::Node> less(std::shared_ptr<ast4vx::Node> a, std::shared_ptr<ast4vx::Node> b);
 
-std::shared_ptr<function_ast::Node> less_equal(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
+std::shared_ptr<ast4vx::Node> less_equal(std::shared_ptr<ast4vx::Node> a, std::shared_ptr<ast4vx::Node> b);
 
-std::shared_ptr<function_ast::Node> equal(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
+std::shared_ptr<ast4vx::Node> equal(std::shared_ptr<ast4vx::Node> a, std::shared_ptr<ast4vx::Node> b);
 
-std::shared_ptr<function_ast::Node> greater_equal(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
+std::shared_ptr<ast4vx::Node> greater_equal(std::shared_ptr<ast4vx::Node> a, std::shared_ptr<ast4vx::Node> b);
 
-std::shared_ptr<function_ast::Node> greater(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
+std::shared_ptr<ast4vx::Node> greater(std::shared_ptr<ast4vx::Node> a, std::shared_ptr<ast4vx::Node> b);
 
-std::shared_ptr<function_ast::Node> vect4(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b, 
-                                          std::shared_ptr<function_ast::Node> c, std::shared_ptr<function_ast::Node> d, function_ast::Datatype type );
+std::shared_ptr<ast4vx::Node> vect4(std::shared_ptr<ast4vx::Node> a, std::shared_ptr<ast4vx::Node> b,
+                                          std::shared_ptr<ast4vx::Node> c, std::shared_ptr<ast4vx::Node> d, ast4vx::Datatype type );
 
-std::shared_ptr<function_ast::Node> extract4(std::shared_ptr<function_ast::Node> a, function_ast::Datatype type, function_ast::VectChannelType e);
+std::shared_ptr<ast4vx::Node> extract4(std::shared_ptr<ast4vx::Node> a, ast4vx::Datatype type, ast4vx::VectChannelType e);
 
-std::shared_ptr<function_ast::Node> unequal(std::shared_ptr<function_ast::Node> a, std::shared_ptr<function_ast::Node> b);
+std::shared_ptr<ast4vx::Node> unequal(std::shared_ptr<ast4vx::Node> a, std::shared_ptr<ast4vx::Node> b);
 
 
 // TODO Own file?
@@ -1054,7 +1304,7 @@ template <class ReturnType, class ParameterType>
 class ASTVisitor
 {
 public:
-    virtual ReturnType visit(std::shared_ptr<function_ast::Node> n, ParameterType p) = 0;
+    virtual ReturnType visit(std::shared_ptr<ast4vx::Node> n, ParameterType p) = 0;
     /*  switch(n->type)
         {
         case function_ast::NodeType::None:
