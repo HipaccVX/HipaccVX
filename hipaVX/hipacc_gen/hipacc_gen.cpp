@@ -950,25 +950,44 @@ std::string HipaccVisitor::visit(std::shared_ptr<function_ast::Node> n, int i)
 
         std::vector<function_ast::Variable*> variables;
 
-        for(auto node: s->inputs)
-        {
-            string name;
-            string type;
+        // Dirty hack
+        for(auto node: s->inputs) {
+            string name="";
             if (node->type == function_ast::NodeType::Variable)
             {
                 name = visit(node, i);
-                type = to_string(std::dynamic_pointer_cast<function_ast::Variable>(node)->datatype);
             }
             if (node->type == function_ast::NodeType::Image)
             {
                 auto image = std::dynamic_pointer_cast<function_ast::Image>(node);
                 name = visit(image, i);
-                type = "Accessor<" + VX_DF_IMAGE_to_hipacc[image->image->col] + ">&";
             }
             if (node->type == function_ast::NodeType::Stencil)
             {
                 auto s = std::dynamic_pointer_cast<function_ast::Stencil>(node);
                 name = s->name;
+            }
+
+            s->input_params.emplace(name, node);
+        }
+
+        for(auto node_it: s->input_params)
+        {
+            auto node = node_it.second;
+            string name = node_it.first;
+            string type;
+            if (node->type == function_ast::NodeType::Variable)
+            {
+                type = to_string(std::dynamic_pointer_cast<function_ast::Variable>(node)->datatype);
+            }
+            if (node->type == function_ast::NodeType::Image)
+            {
+                auto image = std::dynamic_pointer_cast<function_ast::Image>(node);
+                type = "Accessor<" + VX_DF_IMAGE_to_hipacc[image->image->col] + ">&";
+            }
+            if (node->type == function_ast::NodeType::Stencil)
+            {
+                auto s = std::dynamic_pointer_cast<function_ast::Stencil>(node);
                 type = "Domain&";
 
                 member_variables += tabs + type + " " + name + ";\n";

@@ -13,6 +13,8 @@
 #include <algorithm>
 #include <memory>
 
+#include <map>
+
 namespace HipaVX
 {
 class Image;
@@ -940,6 +942,10 @@ public:
         type = NodeType::ForEveryPixel;
         function = std::make_shared<Statements>();
     }
+
+    // temporary solution to having unique parameters
+    std::map<std::string, std::shared_ptr<Node>> input_params;
+
     std::vector<std::shared_ptr<Node>> inputs;
     std::shared_ptr<Node> output;
 	std::shared_ptr<Statements> function;
