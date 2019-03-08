@@ -38,6 +38,12 @@ std::shared_ptr<ast4vx::LocalToPixel> operator<<(std::shared_ptr<ast4vx::LocalTo
     return a;
 }
 
+std::shared_ptr<ast4vx::Reduction> operator<<(std::shared_ptr<ast4vx::Reduction> a, std::shared_ptr<ast4vx::Node> statement)
+{
+    (*a) << statement;
+    return a;
+}
+
 std::shared_ptr<ast4vx::Node> operator>>(std::shared_ptr<ast4vx::Node> a, std::shared_ptr<ast4vx::Node> shift)
 {
     return std::make_shared<ast4vx::ShiftRight>(a, shift);

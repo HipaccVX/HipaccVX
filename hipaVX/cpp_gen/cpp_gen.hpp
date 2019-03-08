@@ -38,6 +38,8 @@ class CPPVisitor: public ASTVisitor<std::string, int>, public AbstractionsVisito
     std::vector<std::string> *pixelaccessor_mapping = nullptr;
     std::vector<std::string> *windowdescriptor_mapping = nullptr;
 
+    std::string accumulator_string = "";
+
     std::string current_output_pixel_index = "";
     std::string current_output_y = "";
     std::string current_output_x = "";

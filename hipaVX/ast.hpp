@@ -90,6 +90,7 @@ enum class NodeType
     WindowDescriptor,
     WindowAccessorPosition,
     WindowOperation,
+    Reduction,
 };
 
 enum class Datatype
@@ -99,6 +100,7 @@ enum class Datatype
     UINT32,
     FLOAT,
     UINT8,
+    INT8,
     UINT16,
     INT16,
 
@@ -995,6 +997,33 @@ public:
     }
 };
 
+class Reduction: public Statements
+{
+public:
+    std::shared_ptr<Node> initial;
+
+    template <class T>
+    Reduction(Constant<T> c = Constant<T>())
+        :Statements(1,2)
+    {
+        type = NodeType::Reduction;
+        initial = std::make_shared<Constant<T>>(c);
+    }
+
+    std::shared_ptr<PixelAccessorTest> left()
+    {
+        return d_in(0);
+    }
+    std::shared_ptr<PixelAccessorTest> right()
+    {
+        return d_in(1);
+    }
+    std::shared_ptr<PixelAccessorTest> out()
+    {
+        return d_out(0);
+    }
+};
+
 class WindowDescriptor: public Node
 {
 public:
@@ -1073,12 +1102,14 @@ public:
         At,
         Forall,
         ToPixel,
+        Reduce,
     };
 
     State current_state = State::None;
     std::shared_ptr<WindowDescriptor> output;
-    std::shared_ptr<LocalToPixel> to_pixel_op;
+    std::shared_ptr<LocalToPixel> ltp_statement;
     std::shared_ptr<Statements> forall_statement;
+    std::shared_ptr<Reduction> reduction_statement;
 
     std::vector<std::shared_ptr<WindowDescriptor>> window_inputs;
 public:
@@ -1128,15 +1159,26 @@ public:
         forall_statement = s;
     }
 
+    void reduce(std::shared_ptr<Reduction> s)
+    {
+        if (current_state != State::None && current_state != State::Reduce)
+            throw std::runtime_error("Window::reduce(): Window already in another state");
+        if (reduction_statement != nullptr)
+            throw std::runtime_error("Window::reduce(): Already written");
+
+        current_state = State::Reduce;
+        reduction_statement = s;
+    }
+
     void to_pixel(std::shared_ptr<LocalToPixel> s)
     {
         if (current_state != State::None && current_state != State::ToPixel)
             throw std::runtime_error("Window::to_pixel(): Window already in another state");
-        if (to_pixel_op != nullptr)
+        if (ltp_statement != nullptr)
             throw std::runtime_error("Window::to_pixel(): Already written");
 
         current_state = State::ToPixel;
-        to_pixel_op = s;
+        ltp_statement = s;
     }
 
     std::shared_ptr<WindowDescriptor> get_window_output()
@@ -1264,6 +1306,7 @@ std::shared_ptr<ast4vx::Node> operator<<(std::shared_ptr<ast4vx::Node> a, std::s
 
 std::shared_ptr<ast4vx::Statements> operator<<(std::shared_ptr<ast4vx::Statements> a, std::shared_ptr<ast4vx::Node> statement);
 std::shared_ptr<ast4vx::LocalToPixel> operator<<(std::shared_ptr<ast4vx::LocalToPixel> a, std::shared_ptr<ast4vx::Node> statement);
+std::shared_ptr<ast4vx::Reduction> operator<<(std::shared_ptr<ast4vx::Reduction> a, std::shared_ptr<ast4vx::Node> statement);
 
 std::shared_ptr<ast4vx::Node> operator>>(std::shared_ptr<ast4vx::Node> a, std::shared_ptr<ast4vx::Node> shift);
 

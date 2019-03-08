@@ -161,7 +161,7 @@ class LocalOperation: public AbstractionNode
 public:
     std::vector<std::tuple<HipaVX::Image*, std::shared_ptr<ast4vx::WindowDescriptor>>> input_descriptor;
     std::vector<std::shared_ptr<ast4vx::WindowOperation>> operations;
-    std::vector<std::vector<std::vector<HipaVX::Image *>>> operation_images;
+    std::vector<std::vector<HipaVX::Image *>> operation_output_images;
 
 public:
 
@@ -177,14 +177,10 @@ public:
             input_descriptor.emplace_back(desc);
     }
 
-    void add_operation(std::shared_ptr<ast4vx::WindowOperation> op, std::initializer_list<HipaVX::Image*> out, std::initializer_list<HipaVX::Image*> in)
+    void add_operation(std::shared_ptr<ast4vx::WindowOperation> op, std::initializer_list<HipaVX::Image*> out = {})
     {
-        std::vector<HipaVX::Image *> output_images(out);
-        std::vector<HipaVX::Image *> input_images(in);
-        std::vector<std::vector<HipaVX::Image*>> op_images = {output_images, input_images};
-
         operations.emplace_back(op);
-        operation_images.emplace_back(op_images);
+        operation_output_images.emplace_back(out);
     }
 };
 

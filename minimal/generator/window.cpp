@@ -18,6 +18,9 @@ int main()
     auto ast_forall = std::make_shared<ast4vx::Statements>(1, 1);
     ast_forall << assign(ast_forall->d_out(0), ast_forall->d_in(0) * ast_forall->d_in(0));
 
+    auto ast_reduction = std::make_shared<ast4vx::Reduction>(ast4vx::Constant<int>(0));
+    ast_reduction << assign(ast_reduction->out(), ast_reduction->left() + ast_reduction->right());
+
     auto l_to_p = std::make_shared<ast4vx::LocalToPixel>(1, 0, 2);
     auto win_1 = l_to_p->window(0);
     auto win_2 = l_to_p->window(1);
@@ -86,10 +89,16 @@ int main()
     last_op->set_window_inputs({window_1_op_1_desc, window_1_op_2_op1_desc});
     last_op->to_pixel(l_to_p);
 
+
+    auto reduction_op = std::make_shared<ast4vx::WindowOperation>(3, 5);
+    reduction_op->set_window_inputs({window_in});
+    reduction_op->reduce(ast_reduction);
+
     //---------------------------- HipaVX -------------------------------------
     //Create HipaVX input and outputs
 
     auto image_o = new HipaVX::Image(1024, 512, VX_DF_IMAGE_U8);
+    auto image_o_2 = new HipaVX::Image(1024, 512, VX_DF_IMAGE_U8);
     auto image_i = new HipaVX::Image(1024, 512, VX_DF_IMAGE_U8);
 
 
@@ -98,11 +107,12 @@ int main()
 
     local_op->set_input_window_desc({{image_i, window_in}});
 
-    local_op->add_operation(window_op_forall, {}, {image_i});
-    local_op->add_operation(window_1_op_1, {}, {});
-    local_op->add_operation(window_1_op_2, {}, {});
-    local_op->add_operation(window_1_op_2_op_1, {}, {});
-    local_op->add_operation(last_op, {image_o}, {});
+    local_op->add_operation(window_op_forall);
+    local_op->add_operation(window_1_op_1);
+    local_op->add_operation(window_1_op_2);
+    local_op->add_operation(window_1_op_2_op_1);
+    local_op->add_operation(last_op, {image_o});
+    local_op->add_operation(reduction_op, {image_o_2});
 
     CPPVisitor v;
     std::cout << v.visit(local_op) << "\n";

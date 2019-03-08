@@ -77,6 +77,9 @@ std::string to_string(Datatype d)
     case Datatype::UINT8:
         datatype = "unsigned char";
         break;
+    case Datatype::INT8:
+        datatype = "char";
+        break;
     case Datatype::INT16:
         datatype = "short";
         break;
@@ -459,15 +462,15 @@ std::string CPPVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i)
             if (current_output_y != "")
                 y = current_output_y;
 
-            return name + ".write(" + x + ", " + y + ", " + this->visit(s->subnodes[1], 0) + ")";
+            if (accumulator_string == "" || name != accumulator_string)
+                return name + ".write(" + x + ", " + y + ", " + this->visit(s->subnodes[1], 0) + ")";
+            // else: fall through
         }
-        else
-        {
-            auto left = this->visit(s->subnodes[0], 0);
-            auto right = this->visit(s->subnodes[1], 0);
 
-            return left + " = " + right;
-        }
+        auto left = this->visit(s->subnodes[0], 0);
+        auto right = this->visit(s->subnodes[1], 0);
+
+        return left + " = " + right;
     }
 
     case ast4vx::NodeType::TargetPixel:
@@ -695,6 +698,9 @@ std::string CPPVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i)
         if (current_output_y != "")
             y = current_output_y;
 
+        if (accumulator_string != "" && name == accumulator_string)
+            return name;
+
         return name + ".get(" + x + ", " + y + ")";
     }
 
@@ -702,68 +708,75 @@ std::string CPPVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i)
     {
         auto s = std::dynamic_pointer_cast<ast4vx::WindowOperation>(n);
 
+        if (s->current_state == ast4vx::WindowOperation::State::ToPixel)
+            return visit(s->ltp_statement);
+
         std::string code = "";
 
-        switch(s->current_state)
+        std::shared_ptr<ast4vx::Variable> accum_var;
+        if (s->current_state == ast4vx::WindowOperation::State::Reduce)
         {
-        case ast4vx::WindowOperation::State::At:
-        {
-            // TODO check window_inputs if same domain
-            auto domain = s->window_inputs[i].get()->domain;
+            // Setup the accumulator variable
+            accum_var = std::make_shared<ast4vx::Variable>();
+            if (auto c = std::dynamic_pointer_cast<ast4vx::Constant<int>>(s->reduction_statement->initial))
+                accum_var->datatype = ast4vx::Datatype::INT32;
+            else if (auto c = std::dynamic_pointer_cast<ast4vx::Constant<float>>(s->reduction_statement->initial))
+                accum_var->datatype = ast4vx::Datatype::FLOAT;
+            else if (auto c = std::dynamic_pointer_cast<ast4vx::Constant<unsigned char>>(s->reduction_statement->initial))
+                accum_var->datatype = ast4vx::Datatype::UINT8;
+            else if (auto c = std::dynamic_pointer_cast<ast4vx::Constant<unsigned int>>(s->reduction_statement->initial))
+                accum_var->datatype = ast4vx::Datatype::UINT32;
+            else
+                throw std::runtime_error("CPPVisitor: WindowOperation: reduce: could not determine the constants type");
+            accumulator_string = "accumulator_" + std::to_string(s->reduction_statement->id);
+            accum_var->name = accumulator_string;
 
-            for(unsigned int y = 0; y < domain.size(); y++)
+            code += visit(std::make_shared<ast4vx::VariableDefinition>(accum_var)) + ";\n";
+            code += visit(assign(accum_var, s->reduction_statement->initial)) + ";\n";
+
+            // Change second input to the accumulator
+
+        }
+
+        // TODO check window_inputs if same domain
+        auto domain = s->window_inputs[i].get()->domain;
+
+        for(unsigned int y = 0; y < domain.size(); y++)
+        {
+            for(unsigned int x = 0; x < domain[0].size(); x++)
             {
-                for(unsigned int x = 0; x < domain[0].size(); x++)
+                if (domain[y][x] == 0)
+                    continue;
+                if (s->current_state == ast4vx::WindowOperation::State::At)
                 {
-                    if (domain[y][x] == 0)
-                        continue;
                     if (s->statements[y][x].get() == nullptr)
                         continue;
                     if (s->statements[y][x]->out_pixel_mappings.size() != 1)
                         throw std::runtime_error("CPPVisitor: WindowOperation: At operations requires exactly one output mapping");
+                }
+                auto old_x = current_output_x;
+                auto old_y = current_output_y;
+                current_output_x = std::to_string(x);
+                current_output_y = std::to_string(y);
 
-                    auto old_x = current_output_x;
-                    auto old_y = current_output_y;
-                    current_output_x = std::to_string(x);
-                    current_output_y = std::to_string(y);
+                if (s->current_state == ast4vx::WindowOperation::State::At)
                     code += visit(s->statements[y][x]);
-                    current_output_x = old_x;
-                    current_output_y = old_y;
-                }
-            }
-
-            return code;
-        }
-
-        case ast4vx::WindowOperation::State::Forall:
-        {
-            // TODO check window_inputs if same domain
-            auto domain = s->window_inputs[i].get()->domain;
-
-            for(unsigned int y = 0; y < domain.size(); y++)
-            {
-                for(unsigned int x = 0; x < domain[0].size(); x++)
-                {
-                    if (domain[y][x] == 0)
-                        continue;
-
-                    auto old_x = current_output_x;
-                    auto old_y = current_output_y;
-                    current_output_x = std::to_string(x);
-                    current_output_y = std::to_string(y);
+                else if (s->current_state == ast4vx::WindowOperation::State::Forall)
                     code += visit(s->forall_statement);
-                    current_output_x = old_x;
-                    current_output_y = old_y;
-                }
+                else if (s->current_state == ast4vx::WindowOperation::State::Reduce)
+                    code += visit(s->reduction_statement);
+                current_output_x = old_x;
+                current_output_y = old_y;
             }
-            return code;
         }
 
-        case ast4vx::WindowOperation::State::ToPixel:
-            return visit(s->to_pixel_op);
-            break;
+        // Write back the Accumulator
+        if (s->current_state == ast4vx::WindowOperation::State::Reduce)
+        {
+            code += visit(assign(std::make_shared<ast4vx::PixelAccessorTest>(0), accum_var));
         }
-        throw std::runtime_error("CPP Generate: WindowOperation reached end of switch case");
+
+        return code;
     }
 
     case ast4vx::NodeType::LocalToPixel:
@@ -778,6 +791,32 @@ std::string CPPVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i)
             if (statement->type != ast4vx::NodeType::If && statement->type != ast4vx::NodeType::Else)
                 to_return += ";\n";
         }
+
+        return to_return;
+    }
+
+    case ast4vx::NodeType::Reduction:
+    {
+        auto s = std::dynamic_pointer_cast<ast4vx::Reduction>(n);
+        std::string to_return;
+
+        std::vector<std::string> mapping;
+
+        mapping.emplace_back(accumulator_string);
+        mapping.emplace_back(accumulator_string);
+        mapping.emplace_back(windowdescriptor_mapping->at(0));
+
+        auto old_pixel_mapping = pixelaccessor_mapping;
+        pixelaccessor_mapping = &mapping;
+
+        for(auto statement: s->statements)
+        {
+            to_return += this->visit(statement, i);
+            if (statement->type != ast4vx::NodeType::If && statement->type != ast4vx::NodeType::Else)
+                to_return += ";\n";
+        }
+
+        pixelaccessor_mapping = old_pixel_mapping;
 
         return to_return;
     }
@@ -896,12 +935,10 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n, int i)
 
 
         std::vector<HipaVX::Image *> output_images;
-        std::vector<HipaVX::Image *> input_images;
 
-        for(auto images: s->operation_images)
+        for(auto images: s->operation_output_images)
         {
-            output_images.insert(output_images.end(), images[0].begin(), images[0].end());
-            input_images.insert(input_images.end(), images[1].begin(), images[1].end());
+            output_images.insert(output_images.end(), images.begin(), images.end());
         }
 
         std::string outer_loop = setup_outer_loop(s, output_images);
@@ -950,28 +987,28 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n, int i)
 
             std::vector<std::string> pixel_mappings;
             std::vector<std::string> window_mappings;
-            // Bind an actual output image is only relevant for ToPixel
-            if (op->current_state == ast4vx::WindowOperation::State::ToPixel)
+            if (op->current_state == ast4vx::WindowOperation::State::ToPixel || op->current_state == ast4vx::WindowOperation::State::Reduce)
             {
-                for(auto &out_images: s->operation_images[i][0])
+                // Bind an actual output image is only relevant for ToPixel and Reduce
+                for(auto &out_images: s->operation_output_images[i])
                     pixel_mappings.emplace_back(generate_image_name(out_images));
                 for(auto &windesc: op->window_inputs)
                     window_mappings.emplace_back(desc_to_name[windesc]);
                 windowdescriptor_mapping = &window_mappings;
             }
             else if (op->current_state == ast4vx::WindowOperation::State::At || op->current_state == ast4vx::WindowOperation::State::Forall)
-                pixel_mappings.emplace_back(desc_to_name[op->output]);
-            for(auto& map: op->window_inputs)
             {
-                pixel_mappings.emplace_back(desc_to_name[map]);
+                pixel_mappings.emplace_back(desc_to_name[op->output]);
+                for(auto& map: op->window_inputs)
+                {
+                    pixel_mappings.emplace_back(desc_to_name[map]);
+                }
             }
 
             auto old_mapping = pixelaccessor_mapping;
             pixelaccessor_mapping = &pixel_mappings;
 
-
             code += visit(op) + "\n";
-
 
             pixelaccessor_mapping = old_mapping;
             windowdescriptor_mapping = nullptr;
