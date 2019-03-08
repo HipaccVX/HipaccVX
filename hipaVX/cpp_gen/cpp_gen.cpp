@@ -452,14 +452,7 @@ std::string CPPVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i)
             std::string y = "y";
             if (pixelaccessor_mapping)
             {
-                // Window was defined, output is to the current mapping temp variable
-                /*if (current_window_pixel_output_name != "")
-                {
-                    auto right = this->visit(s->subnodes[1], 0);
-                    return current_window_pixel_output_name + " = " + right;
-                }*/
-
-                name = generate_image_name(pixelaccessor_mapping->at(accessor->num));
+                name = pixelaccessor_mapping->at(accessor->num);
             }
             if (current_output_x != "")
                 x = current_output_x;
@@ -667,7 +660,7 @@ std::string CPPVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i)
             return "PixelAccessor_" + std::to_string(s->num);
         else
         {
-            std::string name = generate_image_name((*pixelaccessor_mapping)[s->num]);
+            std::string name = (*pixelaccessor_mapping)[s->num];
 
             // Legacy, only needed to allow current HipaVX implementation
             if (pixelaccessor_mapping == nullptr)
@@ -696,7 +689,7 @@ std::string CPPVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i)
         std::string x = "x";
         std::string y = "y";
         if (pixelaccessor_mapping)
-            name = generate_image_name(pixelaccessor_mapping->at(s->num));
+            name = pixelaccessor_mapping->at(s->num);
         if (current_output_x != "")
             x = current_output_x;
         if (current_output_y != "")
@@ -705,8 +698,102 @@ std::string CPPVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i)
         return name + ".get(" + x + ", " + y + ")";
     }
 
-    case ast4vx::NodeType::Window:
-        break;
+    case ast4vx::NodeType::WindowOperation:
+    {
+        auto s = std::dynamic_pointer_cast<ast4vx::WindowOperation>(n);
+
+        std::string code = "";
+
+        switch(s->current_state)
+        {
+        case ast4vx::WindowOperation::State::At:
+        {
+            // TODO check window_inputs if same domain
+            auto domain = s->window_inputs[i].get()->domain;
+
+            for(unsigned int y = 0; y < domain.size(); y++)
+            {
+                for(unsigned int x = 0; x < domain[0].size(); x++)
+                {
+                    if (domain[y][x] == 0)
+                        continue;
+                    if (s->statements[y][x].get() == nullptr)
+                        continue;
+                    if (s->statements[y][x]->out_pixel_mappings.size() != 1)
+                        throw std::runtime_error("CPPVisitor: WindowOperation: At operations requires exactly one output mapping");
+
+                    auto old_x = current_output_x;
+                    auto old_y = current_output_y;
+                    current_output_x = std::to_string(x);
+                    current_output_y = std::to_string(y);
+                    code += visit(s->statements[y][x]);
+                    current_output_x = old_x;
+                    current_output_y = old_y;
+                }
+            }
+
+            return code;
+        }
+
+        case ast4vx::WindowOperation::State::Forall:
+        {
+            // TODO check window_inputs if same domain
+            auto domain = s->window_inputs[i].get()->domain;
+
+            for(unsigned int y = 0; y < domain.size(); y++)
+            {
+                for(unsigned int x = 0; x < domain[0].size(); x++)
+                {
+                    if (domain[y][x] == 0)
+                        continue;
+
+                    auto old_x = current_output_x;
+                    auto old_y = current_output_y;
+                    current_output_x = std::to_string(x);
+                    current_output_y = std::to_string(y);
+                    code += visit(s->forall_statement);
+                    current_output_x = old_x;
+                    current_output_y = old_y;
+                }
+            }
+            return code;
+        }
+
+        case ast4vx::WindowOperation::State::ToPixel:
+            return visit(s->to_pixel_op);
+            break;
+        }
+        throw std::runtime_error("CPP Generate: WindowOperation reached end of switch case");
+    }
+
+    case ast4vx::NodeType::LocalToPixel:
+    {
+        auto s = std::dynamic_pointer_cast<ast4vx::LocalToPixel>(n);
+        std::string to_return;
+
+
+        for(auto statement: s->statements)
+        {
+            to_return += this->visit(statement, i);
+            if (statement->type != ast4vx::NodeType::If && statement->type != ast4vx::NodeType::Else)
+                to_return += ";\n";
+        }
+
+        return to_return;
+    }
+
+    case ast4vx::NodeType::WindowAccessorPosition:
+    {
+        auto s = std::dynamic_pointer_cast<ast4vx::WindowAccessor::Position>(n);
+        auto parent = s->parent.lock();
+
+        if (windowdescriptor_mapping == nullptr)
+            return "Window" + std::to_string(parent->num) + "(" + std::to_string(s->x)
+                     + ", " + std::to_string(s->y) + ")";
+
+        return windowdescriptor_mapping->at(parent->num) + ".get(" + std::to_string(s->x)
+                 + ", " + std::to_string(s->y) + ")";
+    }
     }
     throw std::runtime_error("CPP Generate: reached end of switch case");
 }
@@ -787,8 +874,12 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n, int i)
 
         std::string outer_loop = setup_outer_loop(s);
 
-        std::vector<HipaVX::Image*> mappings = s->output_pixel_mappings;
-        mappings.insert(mappings.begin(), s->input_pixel_mappings.begin(), s->input_pixel_mappings.end());
+        std::vector<std::string> mappings;
+
+        for(auto& im: s->output_pixel_mappings)
+            mappings.emplace_back(generate_image_name(im));
+        for(auto& im: s->input_pixel_mappings)
+            mappings.emplace_back(generate_image_name(im));
 
         pixelaccessor_mapping = &mappings;
         std::string code = visit(s->get_statements(), 0);
@@ -820,7 +911,7 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n, int i)
         {
             auto& in_image = std::get<0>(s->input_descriptor[i]);
             auto& in_desc = std::get<1>(s->input_descriptor[i]);
-            std::string input_matrix_name = "input_window_" + std::to_string(s->id) + "_" + std::to_string(in_desc->id);
+            std::string input_matrix_name = "temp_window_" + std::to_string(in_desc->id);
 
             std::string copy = "std::matrix<@@@DATATYPE@@@> @@@COPY_NAME@@@ = @@@IMAGE_NAME@@@.copy_roi<@@@DATATYPE@@@>(@@@X@@@, @@@Y@@@, @@@W@@@, @@@H@@@);\n";
             copy = use_template(copy, "COPY_NAME", input_matrix_name);
@@ -835,25 +926,55 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n, int i)
             desc_to_name[in_desc] = input_matrix_name;
         }
 
-        for(auto ops: s->operations)
+        code += "\n";
+
+        for(unsigned int i = 0; i < s->operations.size(); i++)
         {
-            if (ops->output != nullptr)
+            auto &op = s->operations[i];
+
+            if (op->output != nullptr)
             {
-                auto& in_desc = ops->output;
+                auto& in_desc = op->output;
                 std::string matrix_name = "temp_window_" + std::to_string(in_desc->id);
 
                 std::string copy = "std::matrix<@@@DATATYPE@@@> @@@COPY_NAME@@@ = @@@ORIG_NAME@@@.copy_roi<@@@DATATYPE@@@>(0, 0, @@@W@@@, @@@H@@@);\n";
                 copy = use_template(copy, "COPY_NAME", matrix_name);
-                copy = use_template(copy, "ORIG_NAME", desc_to_name[ops->window_inputs[0]]);
+                copy = use_template(copy, "ORIG_NAME", desc_to_name[op->window_inputs[0]]);
                 copy = use_template(copy, "DATATYPE", to_string(in_desc->datatype));
                 copy = use_template(copy, "W", std::to_string(in_desc->width));
                 copy = use_template(copy, "H", std::to_string(in_desc->height));
 
                 code += copy;
                 desc_to_name[in_desc] = matrix_name;
-
-                //code += visit(ops);
             }
+
+            std::vector<std::string> pixel_mappings;
+            std::vector<std::string> window_mappings;
+            // Bind an actual output image is only relevant for ToPixel
+            if (op->current_state == ast4vx::WindowOperation::State::ToPixel)
+            {
+                for(auto &out_images: s->operation_images[i][0])
+                    pixel_mappings.emplace_back(generate_image_name(out_images));
+                for(auto &windesc: op->window_inputs)
+                    window_mappings.emplace_back(desc_to_name[windesc]);
+                windowdescriptor_mapping = &window_mappings;
+            }
+            else if (op->current_state == ast4vx::WindowOperation::State::At || op->current_state == ast4vx::WindowOperation::State::Forall)
+                pixel_mappings.emplace_back(desc_to_name[op->output]);
+            for(auto& map: op->window_inputs)
+            {
+                pixel_mappings.emplace_back(desc_to_name[map]);
+            }
+
+            auto old_mapping = pixelaccessor_mapping;
+            pixelaccessor_mapping = &pixel_mappings;
+
+
+            code += visit(op) + "\n";
+
+
+            pixelaccessor_mapping = old_mapping;
+            windowdescriptor_mapping = nullptr;
         }
 
         current_output_y = current_output_x = current_output_width = current_output_height = "";

@@ -88,8 +88,8 @@ enum class NodeType
     PixelAccessorWindow,
     WindowAccessor,
     WindowDescriptor,
-    M,
-    Window,
+    WindowAccessorPosition,
+    WindowOperation,
 };
 
 enum class Datatype
@@ -864,20 +864,25 @@ class WindowAccessor: public Node, public std::enable_shared_from_this<WindowAcc
 {
 
 public:
-    class M: public Node
+    class Position: public Node
     {
     public:
-        unsigned x, y;
+        unsigned int x, y;
         std::weak_ptr<WindowAccessor> parent;
     private:
-        M(std::shared_ptr<WindowAccessor> parent)
+        Position(std::shared_ptr<WindowAccessor> parent)
             :parent(parent)
         {
-            type = NodeType::M;
+            type = NodeType::WindowAccessorPosition;
+        }
+        Position(unsigned int x, unsigned int y, std::shared_ptr<WindowAccessor> parent)
+            :x(x), y(y), parent(parent)
+        {
+            type = NodeType::WindowAccessorPosition;
         }
         friend class WindowAccessor;
     };
-    std::vector<std::shared_ptr<M>> accessors;
+    std::vector<std::shared_ptr<Position>> accessors;
 
     int num;
     WindowAccessor()
@@ -889,16 +894,16 @@ public:
     {
         type = NodeType::WindowAccessor;
     }
-    std::shared_ptr<M> pixel_at(unsigned int x, unsigned int y)
+    std::shared_ptr<Position> pixel_at(unsigned int x, unsigned int y)
     {
-        auto it = std::find_if(accessors.begin(), accessors.end(), [x, y] (std::shared_ptr<M> m)
+        auto it = std::find_if(accessors.begin(), accessors.end(), [x, y] (std::shared_ptr<Position> m)
         {
                 return m->x == x && m->y == y;
         });
         if (it != accessors.end())
             return *it;
 
-        auto m = std::shared_ptr<M>(new M(shared_from_this()));
+        auto m = std::shared_ptr<Position>(new Position(x, y, shared_from_this()));
         accessors.emplace_back(m);
         return m;
     }
@@ -1073,6 +1078,7 @@ public:
     State current_state = State::None;
     std::shared_ptr<WindowDescriptor> output;
     std::shared_ptr<LocalToPixel> to_pixel_op;
+    std::shared_ptr<Statements> forall_statement;
 
     std::vector<std::shared_ptr<WindowDescriptor>> window_inputs;
 public:
@@ -1083,7 +1089,7 @@ public:
         if (y <= 0 || x <= 0)
             throw std::runtime_error("Window::Window: domain size must be > 0");
 
-        type = NodeType::Window;
+        type = NodeType::WindowOperation;
         statements.resize(y);
         for(unsigned int i = 0; i < statements.size(); i++)
         {
@@ -1109,6 +1115,17 @@ public:
 
         current_state = State::At;
         statements[y][x] = s;
+    }
+
+    void forall(std::shared_ptr<Statements> s)
+    {
+        if (current_state != State::None && current_state != State::Forall)
+            throw std::runtime_error("Window::forall(): Window already in another state");
+        if (forall_statement != nullptr)
+            throw std::runtime_error("Window::forall(): Already written");
+
+        current_state = State::Forall;
+        forall_statement = s;
     }
 
     void to_pixel(std::shared_ptr<LocalToPixel> s)

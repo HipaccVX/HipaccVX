@@ -35,7 +35,8 @@ void process_graph(HipaVX::Graph *graph);
 
 class CPPVisitor: public ASTVisitor<std::string, int>, public AbstractionsVisitor<std::string, int>
 {
-    std::vector<HipaVX::Image*> *pixelaccessor_mapping = nullptr;
+    std::vector<std::string> *pixelaccessor_mapping = nullptr;
+    std::vector<std::string> *windowdescriptor_mapping = nullptr;
 
     std::string current_output_pixel_index = "";
     std::string current_output_y = "";

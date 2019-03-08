@@ -26,8 +26,6 @@ int main()
     t->set_statements(ast_fun);
     t->register_images({image_o}, {image_i_1, image_i_2});
 
-    //for_every_pixel->map(t);
-
     std::cout << "DomVX Generation: \n";
     std::cout << v.visit(t, 0);
     std::cout << "\n";

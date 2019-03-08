@@ -1126,7 +1126,7 @@ std::string HipaccVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i)
         break;
     case ast4vx::NodeType::PixelAccessor:
         break;
-    case ast4vx::NodeType::Window:
+    case ast4vx::NodeType::WindowOperation:
         break;
     }
     throw std::runtime_error("Hipacc Generate: reached end of switch case");
