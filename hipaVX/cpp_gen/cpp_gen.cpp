@@ -940,7 +940,8 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n, int i)
         {
             output_images.insert(output_images.end(), images.begin(), images.end());
         }
-
+        if (output_images.size() == 0)
+            throw std::runtime_error("CPPVisitor: LocalOperation: At least one output image is expected");
         std::string outer_loop = setup_outer_loop(s, output_images);
         std::string code = "";
 

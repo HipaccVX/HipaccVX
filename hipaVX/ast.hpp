@@ -981,8 +981,8 @@ class LocalToPixel: public Statements
 {
 public:
     std::vector<std::shared_ptr<WindowAccessor>> windows;
-    LocalToPixel(int num_output_images, int num_input_images, int num_windows)
-        :Statements(num_output_images, num_input_images)
+    LocalToPixel(int num_output_images, int num_windows)
+        :Statements(num_output_images, 0)
     {
         type = NodeType::LocalToPixel;
         windows.resize(num_windows);

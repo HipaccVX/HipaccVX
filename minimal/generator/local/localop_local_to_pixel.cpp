@@ -1,0 +1,47 @@
+#include "../../../VX/vx.h"
+#include "../../../hipaVX/domVX_types.hpp"
+#include "../../../hipaVX/abstractions.hpp"
+#include "../../../hipaVX/cpp_gen/cpp_gen.hpp"
+#include <string>
+
+int main()
+{
+    // Create a LocalToPixel function
+    // It can have
+    auto l_to_p = std::make_shared<ast4vx::LocalToPixel>(1, 1);
+    auto win_1 = l_to_p->window(0);
+    l_to_p << assign(l_to_p->d_out(0), win_1->pixel_at(0, 2) + win_1->pixel_at(0, 4));
+
+
+    // Create dummy input window and set its domain
+    auto window_in = std::make_shared<ast4vx::WindowDescriptor>(3, 5);
+    window_in->set_domain({0, 0, 1,
+                           0, 0, 0,
+                           0, 0, 0,
+                           0, 0, 0,
+                           1, 0, 0});
+
+
+    auto local_to_pixel = std::make_shared<ast4vx::WindowOperation>(3, 5);
+    local_to_pixel->set_window_inputs({window_in});
+    local_to_pixel->to_pixel(l_to_p);
+
+    //---------------------------- HipaVX -------------------------------------
+
+    auto image_o = new HipaVX::Image(1024, 512, VX_DF_IMAGE_U8);
+    auto image_i = new HipaVX::Image(1024, 512, VX_DF_IMAGE_U8);
+
+    // Create the local operation
+    auto local_op = std::shared_ptr<DomVX::LocalOperation>(new DomVX::LocalOperation());
+
+    // Bind the dummy window accessors to the input images
+    local_op->set_input_window_desc({{image_i, window_in}});
+    // Add the Local to Pixel operation
+    local_op->add_operation(local_to_pixel, {image_o});
+
+    CPPVisitor v;
+    std::cout << v.visit(local_op) << "\n";
+
+    return 0;
+}
+
