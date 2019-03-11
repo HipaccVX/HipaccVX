@@ -17,3 +17,7 @@ target_link_libraries (03_detect_cycles HipaVX_Hipacc)
 add_executable (04_gen_acyclic 04_gen_acyclic.cpp)
 target_include_directories (04_gen_acyclic PUBLIC ${ROOT_DIR} ${HIPAVX_DIR})
 target_link_libraries (04_gen_acyclic HipaVX_Hipacc)
+
+add_executable (05_reverse.cpp 05_reverse.cpp)
+target_include_directories (05_reverse.cpp PUBLIC ${ROOT_DIR} ${HIPAVX_DIR})
+target_link_libraries (05_reverse.cpp HipaVX_Hipacc)

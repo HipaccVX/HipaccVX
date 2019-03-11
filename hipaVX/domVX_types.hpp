@@ -46,6 +46,8 @@ class Object {
 
   bool virt;
 
+  bool alive = false; // after optimizations
+
  protected:
   static int next_id;
 

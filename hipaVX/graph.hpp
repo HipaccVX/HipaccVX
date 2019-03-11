@@ -1,5 +1,6 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/depth_first_search.hpp>  // dfs search
+#include <boost/graph/transpose_graph.hpp>
 #include <boost/graph/graph_utility.hpp>       // print_graph
 #include <boost/graph/graphviz.hpp>
 #include <boost/property_map/property_map.hpp>
@@ -15,8 +16,7 @@
 
 #pragma once
 
-// Vertex { std::string name }
-// VertexTask { std::string name }
+// Vertex { std::string name, VertexTask task}
 
 namespace graphVX {
 
@@ -60,7 +60,7 @@ inline vertex_writer<NameMap, TaskMap> make_vertex_writer(NameMap nm,
 }
 
 
-// ---------------------- bsf visitors for cycle detection ----------------------
+// ---------------------- dfs visitors for cycle detection ----------------------
 struct cycle_detector_dfs : public boost::dfs_visitor<>
 {
   cycle_detector_dfs(bool& has_cycle) : m_has_cycle(has_cycle) { }
@@ -95,6 +95,55 @@ inline cycle_detector_with_backedges_dfs<EdgeDesc> make_cycle_dbe(EdgeDesc e) {
 }
 
 
+// -------------- dfs visitors for dead node elimination ----------------------
+template<class GraphType>
+struct mark_as_alive: public boost::dfs_visitor<>
+{
+  mark_as_alive() { }
+  mark_as_alive(GraphType& g_) : g(g_){ }
+
+  template <class Vertex, class Graph>
+  void discover_vertex(Vertex v, Graph&) { g[v].alive = true; };
+
+//    template <class Vertex, class Graph>
+//    void start_vertex(Vertex v, Graph&) { g[v].alive = true; }
+
+ private:
+  GraphType& g;
+};
+
+struct terminator {
+    template<class Vertex, class Graph>
+    bool operator()(const Vertex& v, const Graph& g) {
+        return v == boost::vertex(0, g);
+    }
+};
+
+
+
+// --------------------- independent functions -------------------------------
+template <class GraphT>
+void _print_graph(GraphT _g) {
+  boost::print_graph(_g, get(&VertexType::name, _g));
+}
+
+template <class GraphT>
+void _write_graphviz(GraphT _g, std::string name) {
+  std::ofstream file_out(name + ".dot");
+  boost::write_graphviz(file_out, _g,
+                        make_vertex_writer(boost::get(&VertexType::name, _g),
+                                           boost::get(&VertexType::task, _g)));
+}
+
+template <class GraphT>
+void _dump_graph(GraphT _g, std::string _name) {
+  std::cout << _name << std::endl;
+  graphVX::_print_graph(_g);
+  graphVX::_write_graphviz(_g, _name);
+  std::cout << "\n";
+}
+
+
 // --------------------------- wrapper class -------------------------------
 //  boost::adjacency_list<
 //          OutEdgeList, VertexList, Directed,
@@ -123,11 +172,12 @@ typedef _GraphT::edge_descriptor EdgeDesc;
 
 template <class GraphT>
 class dag {
- private:
-  GraphT g;
-
  public:
+  GraphT g, g_trans;
+
   GraphT get_graph() { return g; }
+
+  GraphT get_reversed_graph() { return g_trans; }
 
   // filling out the graph
   template <class Vertex>
@@ -142,7 +192,11 @@ class dag {
   // printing the graph
   void print_graph();
 
-  void write_graphviz(std::string filename = "out");
+  void write_graphviz(std::string filename = "graph");
+
+  void dump_graph(std::string name = "graph");
+
+  void dump_reversed(std::string name = "reversed");
 
   // detecting cycles
   bool detect_cycles();
@@ -152,6 +206,9 @@ class dag {
   bool has_cycle();
 
   void print_back_edges();
+
+  // reverse graph
+  GraphT* reverse();
 
   // random graphs for testing
   template <class Node, class Image>
@@ -193,17 +250,23 @@ std::pair<EdgeDesc, bool> dag<GraphT>::add_edge(VertexDesc src, VertexDesc dst) 
 // ------------------ class methods for printing -------------------------------
 template <class GraphT>
 void dag<GraphT>::print_graph() {
-  boost::print_graph(g, get(&VertexType::name, g));
+  graphVX::_print_graph(g);
 }
 
 template <class GraphT>
-void dag<GraphT>::write_graphviz(std::string filename) {
-  std::ofstream file_out(filename + ".dot");
-  boost::write_graphviz(file_out, g,
-                        make_vertex_writer(boost::get(&VertexType::name, g),
-                                           boost::get(&VertexType::task, g)));
+void dag<GraphT>::write_graphviz(std::string _name) {
+  graphVX::_write_graphviz(g, _name);
 }
 
+template <class GraphT>
+void dag<GraphT>::dump_graph(std::string _name) {
+  graphVX::_dump_graph(g, _name);
+}
+
+template <class GraphT>
+void dag<GraphT>::dump_reversed(std::string _name) {
+  graphVX::_dump_graph(g_trans, _name);
+}
 
 // ------------------ class methods for detecting cycles -----------------------
 template <class GraphT>
@@ -225,7 +288,6 @@ bool dag<GraphT>::detect_cycles_and_back_edges() {
     depth_first_search(g, visitor(vis));
     return cycle_exist;
 }
-
 
 template <class GraphT>
 bool dag<GraphT>::has_cycle() { return cycle_exist; }
@@ -275,6 +337,14 @@ void dag<GraphT>::gen_rand_graph(unsigned n, unsigned k) {
         else
             add_edge(nodes[v], images[v]);
     }
+}
+
+
+// ------------------ class methods for detecting cycles -----------------------
+template <class GraphT>
+GraphT* dag<GraphT>::reverse() {
+  boost::transpose_graph(g, g_trans);
+  return &g_trans;
 }
 
 }  // namespace graphVX
