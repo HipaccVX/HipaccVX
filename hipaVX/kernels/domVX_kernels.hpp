@@ -77,10 +77,14 @@ public:
         type = VX_TYPE_HIPAVX_MATRIX;
     }
 
-    std::vector<T> mask;
+    std::vector<T> matrix;
     int dim[2]; //dim[0] = x, dim[1] = y
 
     void from_VX_Matrix(VX_Matrix *m);
+};
+
+class Domain2D: public Mask2D<unsigned char>
+{
 };
 
 template <typename T>
@@ -98,8 +102,8 @@ public:
     bool use_image_datatype_for_sum = true;
     vx_df_image sum_datatype;
 
-	function_ast::ReduceAroundPixel::Type r_type = function_ast::ReduceAroundPixel::Type::SUM;
-    std::shared_ptr<function_ast::Stencil> stencil;
+	ast4vx::ReduceAroundPixel::Type r_type = ast4vx::ReduceAroundPixel::Type::SUM;
+    std::shared_ptr<ast4vx::Stencil> stencil;
 	virtual void build() override;
 };
 
@@ -124,7 +128,7 @@ class BoxFilter: public LinearMask<int>
 public:
     BoxFilter()
     {
-        this->mask.mask = {1, 1, 1, 1, 1, 1, 1, 1, 1};
+        this->mask.matrix = {1, 1, 1, 1, 1, 1, 1, 1, 1};
         this->mask.dim[0] = this->mask.dim[1] = 3;
         float norm = 1.0f / 9;
         Scalar* norm_scalar = new Scalar(VX_TYPE_FLOAT32, &norm);
@@ -141,7 +145,7 @@ class GaussianFilter: public LinearMask<int>
 public:
     GaussianFilter()
     {
-        this->mask.mask = {1, 2, 1, 2, 4, 2, 1, 2, 1};
+        this->mask.matrix = {1, 2, 1, 2, 4, 2, 1, 2, 1};
         this->mask.dim[0] = this->mask.dim[1] = 3;
         float norm = 1.0f / 16;
         Scalar* norm_scalar = new Scalar(VX_TYPE_FLOAT32, &norm);
@@ -158,9 +162,9 @@ class Dilate: public LinearMask<int>
 public:
 	Dilate()
 	{
-        this->mask.mask = {1, 1, 1, 1, 1, 1, 1, 1, 1};
+        this->mask.matrix = {1, 1, 1, 1, 1, 1, 1, 1, 1};
         this->mask.dim[0] = this->mask.dim[1] = 3;
-		this->r_type = function_ast::ReduceAroundPixel::Type::MAX;
+		this->r_type = ast4vx::ReduceAroundPixel::Type::MAX;
 		this->use_image_datatype_for_sum = true;
 		this->node_name = "Dilate";
 	}
@@ -172,9 +176,9 @@ class Erode: public LinearMask<int>
 public:
 	Erode()
 	{
-        this->mask.mask = {1, 1, 1, 1, 1, 1, 1, 1, 1};
+        this->mask.matrix = {1, 1, 1, 1, 1, 1, 1, 1, 1};
         this->mask.dim[0] = this->mask.dim[1] = 3;
-		this->r_type = function_ast::ReduceAroundPixel::Type::MIN;
+		this->r_type = ast4vx::ReduceAroundPixel::Type::MIN;
 		this->use_image_datatype_for_sum = true;
 		this->node_name = "Erode";
 	}
@@ -308,7 +312,7 @@ public:
 
     vx_int32 sigma_r;
 
-    std::shared_ptr<function_ast::Stencil> stencil;
+    std::shared_ptr<ast4vx::Stencil> stencil;
 
     virtual void build() override;
 };
@@ -335,10 +339,10 @@ void Mask2D<T>::from_VX_Matrix(VX_Matrix *m)
 
     T* data = (T*) m->mat.data();
 
-    mask.clear();
+    matrix.clear();
     for(unsigned int i = 0; i < dim[0] * dim[1]; i++)
     {
-        mask.push_back(data[i]);
+        matrix.push_back(data[i]);
     }
 }
 
@@ -350,31 +354,31 @@ LinearMask<T>::LinearMask()
 template <typename T>
 void LinearMask<T>::build()
 {
-	stencil = std::make_shared<function_ast::Stencil>();
+	stencil = std::make_shared<ast4vx::Stencil>();
     stencil->dim[0] = mask.dim[0];
     stencil->dim[1] = mask.dim[1];
-    stencil->mask = function_ast::Stencil::from_t<T>(mask.mask);
+    stencil->mask = ast4vx::Stencil::from_t<T>(mask.matrix);
 	stencil->name = "stencil";
 	if (std::is_same<T, int>::value)
-		stencil->datatype = function_ast::Datatype::INT32;
+		stencil->datatype = ast4vx::Datatype::INT32;
 	else if (std::is_same<T, float>::value)
-		stencil->datatype = function_ast::Datatype::FLOAT;
+		stencil->datatype = ast4vx::Datatype::FLOAT;
 	else if (std::is_same<T, uint8_t>::value)
-		stencil->datatype = function_ast::Datatype::UINT8;
+		stencil->datatype = ast4vx::Datatype::UINT8;
 	else if (std::is_same<T, int16_t>::value)
-		stencil->datatype = function_ast::Datatype::INT16;
+		stencil->datatype = ast4vx::Datatype::INT16;
 	else
 		throw std::runtime_error("void LinearMask<T>::build() error: no datatype for Stencil");
 
-	auto in_node = std::make_shared<function_ast::Image>(in);
+	auto in_node = std::make_shared<ast4vx::Image>(in);
     kernel->inputs.push_back(in_node);
     kernel->inputs.push_back(stencil);
-	auto out_node = std::make_shared<function_ast::Image>(out);
+	auto out_node = std::make_shared<ast4vx::Image>(out);
     kernel->output = out_node;
 
-	auto reduce = std::make_shared<function_ast::ReduceAroundPixel>();
+	auto reduce = std::make_shared<ast4vx::ReduceAroundPixel>();
 
-	auto reduce_body = std::make_shared<function_ast::Statements>();
+	auto reduce_body = std::make_shared<ast4vx::Statements>();
 	*reduce_body << assign(reduce->reduction_output, reduce->stencil_value * reduce->pixel_value);
 
 	reduce->subnodes[0] = in_node;
@@ -383,7 +387,7 @@ void LinearMask<T>::build()
 	reduce->reduction_type = r_type;
 	reduce->datatype = (use_image_datatype_for_sum) ? convert_type(out->col) : convert_type(sum_datatype);
 
-	auto temp_variable = std::make_shared<function_ast::Variable>("temp_variable", reduce->datatype);
+	auto temp_variable = std::make_shared<ast4vx::Variable>("temp_variable", reduce->datatype);
     kernel->function << define(temp_variable) << assign(temp_variable, reduce);
 	if (normalization != nullptr)
 	{

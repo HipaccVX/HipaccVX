@@ -3,20 +3,20 @@
 
 #include <iostream>
 
-function_ast::Datatype convert_type(vx_df_image type) {
-  switch (type) {
+ast4vx::Datatype convert_type(vx_df_image type) {
+    switch (type) {
     case VX_DF_IMAGE_U8:
-      return function_ast::Datatype::UINT8;
+		return ast4vx::Datatype::UINT8;
     case VX_DF_IMAGE_S16:
-      return function_ast::Datatype::INT16;
+		return ast4vx::Datatype::INT16;
     case VX_DF_IMAGE_U16:
-      return function_ast::Datatype::UINT16;
+		return ast4vx::Datatype::UINT16;
     case VX_DF_IMAGE_S32:
-      return function_ast::Datatype::INT32;
+		return ast4vx::Datatype::INT32;
     case VX_DF_IMAGE_U32:
-      return function_ast::Datatype::UINT32;
+		return ast4vx::Datatype::UINT32;
     case VX_TYPE_FLOAT32:
-      return function_ast::Datatype::FLOAT;
+		return ast4vx::Datatype::FLOAT;
   }
   throw std::runtime_error("Unknown type in function_ast::Datatype convert");
 }
