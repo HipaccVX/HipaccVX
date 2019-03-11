@@ -39,11 +39,12 @@ class Object {
     return name;
   }
 
- public:
-  // TODO: make these protected
-  const int my_id;
+ public: // TODO: make these protected
+  int my_id;
 
   ObjectType type;
+
+  bool virt;
 
  protected:
   static int next_id;
@@ -51,8 +52,6 @@ class Object {
   std::string name;
 
   VertexTask task = VertexTask::Invalid;
-
-  bool virt;
 };
 
 

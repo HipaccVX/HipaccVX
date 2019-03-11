@@ -1,6 +1,6 @@
+// -------- generate a new random graph untill there are no cycles
 // export CPLUS_INCLUDE_PATH=../../
 // g++ -Wall -Werror 01_simple.cpp ../../hipaVX/domVX_types.cpp
-// Create and fill out an example graph
 
 #include <iostream>
 #include "../../hipaVX/domVX_types.hpp"
