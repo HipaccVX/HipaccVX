@@ -22,16 +22,25 @@ function_ast::Datatype convert_type(vx_df_image type) {
 }
 
 namespace HipaVX {
-VertexTask set_task_from_type(HipaVX::ObjectType type) {
-  switch (type) {
+
+  // TOOD: extend this
+VertexTask set_task_from_type(HipaVX::ObjectType _type) {
+  switch (_type) {
+    case VX_TYPE_NODE:
+    case VX_TYPE_KERNEL:
+    case VX_TYPE_CONVOLUTION:
+      return VertexTask::Computation;
     case VX_TYPE_IMAGE:
     case VX_TYPE_SCALAR:
+    case VX_TYPE_ARRAY:
+    case VX_TYPE_MATRIX:
       return VertexTask::Buffer;
-    case VX_TYPE_NODE:
-      return VertexTask::Computation;
+    case VX_TYPE_INVALID:
+      throw std::runtime_error("set task: an object has a VX_TYPE_INVALID");
     default:
-      throw std::runtime_error("Unsupported vx_type_e in set_task");
+      return VertexTask::API;
   }
+
 }
 
 int Object::next_id = 0;

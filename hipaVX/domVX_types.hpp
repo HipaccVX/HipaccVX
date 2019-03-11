@@ -9,19 +9,19 @@
 
 function_ast::Datatype convert_type(vx_df_image type);
 
-// making implementation names independent from the standard
 namespace HipaVX {
+
 using ObjectType = vx_type_e;
-}  // namespace HipaVX
 
-namespace HipaVX {
-enum class VertexTask { Computation, Buffer, None };
+enum class VertexTask { Computation, Buffer, API, Invalid};
 
-VertexTask set_task_from_type(HipaVX::ObjectType type);
+VertexTask set_task_from_type(ObjectType type);
+
+
 
 class Object {
  public:
-  Object() : my_id(next_id++){};
+  Object() : my_id(next_id++) {};
 
   bool is_virtual() { return virt; };
 
@@ -29,32 +29,48 @@ class Object {
 
   void set_task(VertexTask _task) { task = _task; }
 
-  void set_task() { set_task_from_type(type); }
+  void set_task() { task = set_task_from_type(type); }
 
-  void set_name(std::string name = "Object") {
-    name = name + std::to_string(my_id);
+  void set_name(std::string _name = "Object") {
+    name = _name + std::to_string(my_id);
+  }
+
+  std::string get_name() {
+    return name;
   }
 
  public:
   // TODO: make these protected
   const int my_id;
 
-  std::string name;
-
   ObjectType type;
 
  protected:
   static int next_id;
 
-  VertexTask task;
+  std::string name;
+
+  VertexTask task = VertexTask::Invalid;
 
   bool virt;
 };
 
+
 class Scalar : public Object {
  public:
   Scalar(ObjectType t, const void *ptr) : data_type(t) {
+    set_name("Scalar");
+    init();
+    set_value(ptr);
+  }
+
+  void init() {
     type = VX_TYPE_SCALAR;
+    set_task();
+
+  }
+
+  void set_value(const void *ptr) {
     switch (data_type) {
       case VX_TYPE_INT32:
         i32 = *((vx_int32 *)ptr);
@@ -87,13 +103,27 @@ class Scalar : public Object {
   };
 };
 
+
 class Image : public Object {
  public:
-  Image(){};
+  Image(){
+    set_name("Img");
+    init();
+  };
+
+  Image(std::string _name) {
+    set_name(_name);
+    init();
+  }
 
   Image(vx_uint32 width, vx_uint32 height, vx_df_image color) :
       w(width), h(height), col(color) {
+    init();
+  }
+
+  void init() {
     type = VX_TYPE_IMAGE;
+    set_task();
   }
 
   virtual ~Image() = default;
@@ -101,12 +131,18 @@ class Image : public Object {
   vx_df_image col;
 };
 
+
 class Array : public Image {
  public:
-  Array(vx_enum item_type, vx_size cap, vx_size rows) : 
-      Image(rows, cap, VX_DF_IMAGE_S32), 
-      type(item_type), capacity(cap) {
+  Array(vx_enum item_type, vx_size cap, vx_size rows) :
+      Image(rows, cap, VX_DF_IMAGE_S32), type(item_type), capacity(cap) {
+    init();
+    set_name("Arr");
+  }
+
+  void init() {
     type = VX_TYPE_ARRAY;
+    set_task();
   }
 
   virtual ~Array() = default;
@@ -114,17 +150,30 @@ class Array : public Image {
   vx_size capacity;
 };
 
+
 class Node : public Object {
  protected:
-  std::string node_name = "nodename not set";
 
  public:
+  std::string node_name; //remove me
+
   Node() {
-    type = VX_TYPE_NODE;
-    kernel = std::make_shared<function_ast::ForEveryPixel>();
+    set_name("Node");
+    init();
   }
+
+  Node(std::string _name) {
+    set_name(_name);
+    init();
+  }
+
+  void init() {
+    kernel = std::make_shared<function_ast::ForEveryPixel>();
+    type = VX_TYPE_NODE;
+    set_task();
+  }
+
   virtual ~Node() = default;
-  std::string get_name() { return node_name; }
 
   std::vector<Node *> subnodes;
   std::vector<Object *> inputs;
@@ -136,27 +185,30 @@ class Node : public Object {
   virtual void build() {}
 };
 
-class Graph : public Object {
+
+class Convolution : public Object {
  public:
-  std::vector<Node *> graph;
-  bool built = false;
+  Convolution() { 
+    type = VX_TYPE_CONVOLUTION; 
+    set_name("Convolve");
+    set_task();
+  }
 
-  void build();
-};
-
-class VX_Matrix : public Object {
- public:
-  VX_Matrix() { type = VX_TYPE_MATRIX; }
-
-  vx_enum data_type;
+  std::vector<vx_int16> coefficients;
   vx_size rows;
   vx_size columns;
-  std::vector<u_char> mat;
+  vx_uint32 scale;
 };
+
 
 class Threshold : public Object {
  public:
-  Threshold() { type = VX_TYPE_THRESHOLD; }
+  Threshold() { 
+    type = VX_TYPE_THRESHOLD; 
+    set_name("Threshold");
+    set_task();
+  }
+
   vx_threshold_type_e threshold_type;
 
   vx_int32 value;
@@ -170,21 +222,40 @@ class Threshold : public Object {
   vx_df_image output_format;
 };
 
+
+class VX_Matrix : public Object {
+ public:
+  VX_Matrix() { 
+    type = VX_TYPE_MATRIX; 
+    set_name("Matrix");
+    set_task();
+  }
+
+  vx_enum data_type;
+  vx_size rows;
+  vx_size columns;
+  std::vector<u_char> mat;
+};
+
+
+class Graph : public Object {
+ public:
+  std::vector<Node *> graph;
+  bool built = false;
+
+  void build();
+};
+
+
 class Context : public Object {
  public:
   std::vector<Image *> images;
   std::vector<Graph *> graphs;
 };
 
-class Convolution : public Object {
- public:
-  Convolution() { type = VX_TYPE_CONVOLUTION; }
-  std::vector<vx_int16> coefficients;
-  vx_size rows;
-  vx_size columns;
-  vx_uint32 scale;
-};
 }  // namespace HipaVX
+
+
 
 struct _vx_reference {
   HipaVX::Object *o;
