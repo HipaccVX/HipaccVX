@@ -12,7 +12,7 @@ using HipaVX::Node;
 using HipaVX::Scalar;
 
 int main() {
-  graphVX::dag<AppGraphT> g;
+  graphVX::dag g;
 
   // Number of vertices and edges
   g.gen_rand_graph<Node, Image>(10, 23);

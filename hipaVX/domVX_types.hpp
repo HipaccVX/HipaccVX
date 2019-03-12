@@ -36,7 +36,7 @@ class Object {
   }
 
   std::string get_name() {
-    return name;
+    return this->name;
   }
 
  public: // TODO: make these protected

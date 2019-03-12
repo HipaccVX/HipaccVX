@@ -12,13 +12,13 @@ using HipaVX::Image;
 using HipaVX::Node;
 using HipaVX::Scalar;
 
-dag<AppGraphT>* generate_acyclic_graph() {
-  dag<AppGraphT>* g_ptr;
+dag* generate_acyclic_graph() {
+  dag* g_ptr;
 
   bool has_cycle = true;
   while (has_cycle) {
     std::cout << "Create a new graph" << std::endl;
-    g_ptr = new dag<AppGraphT>();
+    g_ptr = new dag();
     g_ptr->gen_rand_graph<Node, Image>(10, 23);
     has_cycle = g_ptr->detect_cycles();
     std::cout << std::endl;
@@ -30,7 +30,7 @@ dag<AppGraphT>* generate_acyclic_graph() {
 
 int main() {
   auto g_ptr = generate_acyclic_graph();
-  dag<AppGraphT> g = *g_ptr;
+  dag g = *g_ptr;
 
   std::cout << "graph:" << std::endl;
   g.print_graph();

@@ -40,7 +40,7 @@ void ex_graph(Graph_t &g) {
 
 
 int main() {
-  graphVX::dag<AppGraphT> g;
+  graphVX::dag g;
   ex_graph(g);
 
   std::cout << "graph:" << std::endl;

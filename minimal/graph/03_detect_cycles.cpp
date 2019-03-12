@@ -15,7 +15,7 @@ using HipaVX::Scalar;
 
 
 int main() {
-  graphVX::dag<AppGraphT> g;
+  graphVX::dag g;
   g.gen_rand_graph<Node, Image>(10, 23);
 
 #ifndef PRINT_BACK_EDGES
