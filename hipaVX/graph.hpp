@@ -8,6 +8,7 @@
 #include <boost/graph/topological_sort.hpp>
 
 #include <algorithm>
+#include <iterator>
 #include <random>
 
 #include "domVX_types.hpp"
@@ -66,7 +67,7 @@ inline vertex_writer<NameMap, TaskMap> make_vertex_writer(NameMap nm,
 // ---------------------- dfs visitors for cycle detection ----------------------
 struct cycle_detector_dfs : public boost::dfs_visitor<>
 {
-  cycle_detector_dfs(bool& has_cycle) : m_has_cycle(has_cycle) { }
+  cycle_detector_dfs(bool& has_cycle) : m_has_cycle(has_cycle) { has_cycle = false; }
 
   template <class Edge, class Graph>
   void back_edge(Edge, Graph&) { m_has_cycle = true; }
@@ -78,7 +79,7 @@ protected:
 template<class EdgeDesc>
 struct cycle_detector_with_backedges_dfs : public boost::dfs_visitor<> {
     cycle_detector_with_backedges_dfs(bool& has_cycle_, std::vector<EdgeDesc>& back_edges_) :
-        has_cycle(has_cycle_), back_edges(back_edges_) { }
+        has_cycle(has_cycle_), back_edges(back_edges_) { has_cycle = false; }
 
     template <class Edge, class Graph>
     void back_edge(Edge e, Graph&) {
@@ -98,9 +99,23 @@ inline cycle_detector_with_backedges_dfs<EdgeDesc> make_cycle_dbe(EdgeDesc e) {
     return cycle_detector_with_backedges_dfs<EdgeDesc>(e);
 }
 
-struct terminator {
-  using VertexDesc = boost::adjacency_list<>::vertex_descriptor;
+typedef boost::adjacency_list<boost::listS, boost::vecS, // VertexList = vecS
+                              boost::directedS,          // boost::bidirectionalS,
+                              VertexType> AppGraphT;
 
+//typedef boost::adjacency_list<> _GraphT;
+
+//typedef _GraphT::vertex_descriptor VertexDesc;
+//
+//typedef _GraphT::edge_descriptor EdgeDesc;
+
+typedef boost::adjacency_list<AppGraphT> _GraphT;
+
+typedef boost::graph_traits<AppGraphT>::vertex_descriptor VertexDesc;
+
+typedef boost::graph_traits<AppGraphT>::edge_descriptor EdgeDesc;
+
+struct terminator {
   std::vector<VertexDesc> dest;
 
   terminator(std::vector<VertexDesc>& _dest) {
@@ -174,13 +189,6 @@ void _depth_first_visit(VertexDesc root_vertex, GraphT g,
   boost::depth_first_visit(g, root_vertex, vis, color_map, terminator);
 }
 
-
-typedef boost::adjacency_list<> _GraphT;
-
-typedef _GraphT::vertex_descriptor VertexDesc;
-
-typedef _GraphT::edge_descriptor EdgeDesc;
-
 template<class GraphT>
 std::list<VertexDesc>* _topological_sort(GraphT g) {
     using OrderedList = std::list<VertexDesc>;
@@ -215,9 +223,6 @@ void _print_list(std::list<VertexOrEdgeDesc> list, GraphT g, std::string message
 //      for the VertexList and/or OutEdgeList template parameters.
 //  link:
 //  https://www.boost.org/doc/libs/1_60_0/libs/graph/doc/adjacency_list.html
-
-typedef boost::adjacency_list<boost::listS, boost::vecS, boost::directedS,
-                              VertexType> AppGraphT;
 
 
 using VertPredicate = std::function<bool(VertexDesc)>;
@@ -292,6 +297,9 @@ class dag {
   // random graphs for testing
   template <class Node, class Image>
   void gen_rand_graph(unsigned nvertex, unsigned nedges);
+
+  template <class Node, class Image>
+  void gen_rand_acyclic_graph(unsigned nvertex, unsigned nedges);
 
   private:
     bool cycle_exist = false;
@@ -416,6 +424,50 @@ OptGraphT* dag::eliminate_dead_nodes() {
 // ------------------- random graph generation ---------------------------------
 template <class Node, class Image>
 void dag::gen_rand_graph(unsigned n, unsigned k) {
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<> dis(0, n - 1);
+  std::uniform_int_distribution<> dis3(1, 3);
+
+  VertexDesc images[n];
+  VertexDesc nodes[n];
+
+  for (unsigned v = 0; v < n; v++ ) {
+      auto new_node  = new Node();
+      auto new_image = new Image();
+      nodes[v] = add_vertex(*new_node);
+      images[v] = add_vertex(*new_image);
+  }
+
+  // input and output images are not virtual
+  int n_in = 1; //dis3(gen);
+  int n_out = 2; //dis3(gen);
+
+  for (int i = 0; i < n_in; i++ ) {
+    auto v = images[i];
+    g[v].virt = false;
+    inputs.push_back(v);
+    add_edge(v, nodes[dis(gen)]);
+  }
+  for (int i = 0; i < n_out; i++ ) {
+    auto v = images[n - 1 - i];
+    g[v].virt = false;
+    outputs.push_back(v);
+    add_edge(nodes[dis(gen)], v);
+  }
+
+  for (unsigned i = 0; i < k; i++ ) {
+      unsigned u = dis(gen); //rand() % n;
+      unsigned v = dis(gen); //rand() % n;
+      if (i % 2)
+          add_edge(images[u], nodes[v]);
+      else
+          add_edge(nodes[v], images[v]);
+  }
+}
+
+template <class Node, class Image>
+void dag::gen_rand_acyclic_graph(unsigned n, unsigned k) {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> dis(0, n - 1);
@@ -424,28 +476,12 @@ void dag::gen_rand_graph(unsigned n, unsigned k) {
     VertexDesc images[n];
     VertexDesc nodes[n];
 
+    // Create a random graph
     for (unsigned v = 0; v < n; v++ ) {
         auto new_node  = new Node();
         auto new_image = new Image();
         nodes[v] = add_vertex(*new_node);
         images[v] = add_vertex(*new_image);
-    }
-
-    // input and output images are not virtual
-    int n_in = 1; //dis3(gen);
-    int n_out = 2; //dis3(gen);
-
-    for (int i = 0; i < n_in; i++ ) {
-      auto v = images[i];
-      g[v].virt = false;
-      inputs.push_back(v);
-      add_edge(v, nodes[dis(gen)]);
-    }
-    for (int i = 0; i < n_out; i++ ) {
-      auto v = images[n - 1 - i];
-      g[v].virt = false;
-      outputs.push_back(v);
-      add_edge(nodes[dis(gen)], v);
     }
 
     for (unsigned i = 0; i < k; i++ ) {
@@ -456,5 +492,66 @@ void dag::gen_rand_graph(unsigned n, unsigned k) {
         else
             add_edge(nodes[v], images[v]);
     }
+
+    // cleanup cycles
+    detect_cycles_and_back_edges();
+    while (cycle_exist) {
+      boost::remove_edge(back_edges[0], g);
+      //print_back_edges();
+      back_edges.clear();
+      detect_cycles_and_back_edges();
+    }
+
+    auto ordered = graphVX::_topological_sort(g);
+    //_print_list(*ordered, g);
+    //dump_graph();
+
+    // input and output images
+    int n_in = dis3(gen);
+    int n_out = dis3(gen);
+
+    // inputs
+    int cntr = 0;
+    for (auto v : *ordered) {
+      // make sure that initial nodes are images
+      //if (boost::in_degree(v, g) == 1) break;
+      if (g[v].get_task() != VertexTask::Buffer) {
+         clear_vertex(v, g);
+         //remove_vertex(v, g);
+      } else {
+        if (cntr < n_in) {
+          g[v].virt = false;
+          inputs.push_back(v);
+          add_edge(v, nodes[dis(gen)]);
+          cntr++;
+        } else {
+          break;
+        }
+      }
+    }
+
+    // outputs
+    cntr = 0;
+    for (auto v_it = ordered->rbegin(); v_it != ordered->rend(); ++v_it) {
+      auto v = *v_it;
+      //std:: cout << "------ " <<  g[v].get_name() << "
+      //              , degree" << boost::out_degree(v, g) << std::endl;
+      if (boost::out_degree(v, g) == 0 ) {
+        if(g[v].get_task() == VertexTask::Buffer) {
+          //if(boost::in_degree(v, g) > 0 && cntr < n_out) {
+          if(cntr < n_out) {
+            g[v].virt = false;
+            outputs.push_back(v);
+            add_edge(nodes[dis(gen)], v);
+            cntr++;
+          }
+        } else {
+          clear_vertex(v, g);
+          //remove_vertex(v, g);
+        }
+      }
+    }
+    //print_io_nodes();
 }
+
 }  // namespace graphVX
