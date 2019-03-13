@@ -1,4 +1,3 @@
-// -------- Generate a random graph
 // export CPLUS_INCLUDE_PATH=../../
 // g++ -Wall -Werror 06*.cpp ../../hipaVX/domVX_types.cpp
 

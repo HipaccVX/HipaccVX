@@ -5,6 +5,9 @@
 #include <boost/graph/graphviz.hpp>
 #include <boost/property_map/property_map.hpp>
 #include <boost/graph/depth_first_search.hpp>
+#include <boost/graph/topological_sort.hpp>
+
+#include <algorithm>
 #include <random>
 
 #include "domVX_types.hpp"
@@ -171,6 +174,32 @@ void _depth_first_visit(VertexDesc root_vertex, GraphT g,
   boost::depth_first_visit(g, root_vertex, vis, color_map, terminator);
 }
 
+
+typedef boost::adjacency_list<> _GraphT;
+
+typedef _GraphT::vertex_descriptor VertexDesc;
+
+typedef _GraphT::edge_descriptor EdgeDesc;
+
+template<class GraphT>
+std::list<VertexDesc>* _topological_sort(GraphT g) {
+    using OrderedList = std::list<VertexDesc>;
+
+    OrderedList* sorted = new OrderedList;
+
+    topological_sort(g, std::front_inserter(*sorted));
+
+    return sorted;
+}
+
+template<class VertexOrEdgeDesc, class GraphT>
+void _print_list(std::list<VertexOrEdgeDesc> list, GraphT g, std::string message = "") {
+  std::cout << message << std::endl;
+  for (auto i = list.begin(); i != list.end(); ++i)
+    std::cout << g[*i].get_name() << " ";
+  std::cout << std::endl << std::endl;
+}
+
 // --------------------------- wrapper class -------------------------------
 //  boost::adjacency_list<
 //          OutEdgeList, VertexList, Directed,
@@ -190,11 +219,6 @@ void _depth_first_visit(VertexDesc root_vertex, GraphT g,
 typedef boost::adjacency_list<boost::listS, boost::vecS, boost::directedS,
                               VertexType> AppGraphT;
 
-typedef boost::adjacency_list<> _GraphT;
-
-typedef _GraphT::vertex_descriptor VertexDesc;
-
-typedef _GraphT::edge_descriptor EdgeDesc;
 
 using VertPredicate = std::function<bool(VertexDesc)>;
 
@@ -202,12 +226,16 @@ using OptGraphT = boost::filtered_graph<AppGraphT, boost::keep_all, VertPredicat
 
 
 class dag {
+ using OrderedList = std::list<VertexDesc>;
+
  public:
   AppGraphT g, g_trans;
 
   OptGraphT* _g_opt;
 
   std::vector<VertexDesc> inputs, outputs;
+
+  OrderedList* order_of_exec;
 
  public:
   AppGraphT get_graph() { return g; }
@@ -237,6 +265,8 @@ class dag {
 
   void dump_optimized(std::string name = "optimized");
 
+  void print_order_of_exec();
+
   // detecting cycles
   bool detect_cycles();
 
@@ -250,6 +280,14 @@ class dag {
   AppGraphT* reverse();
 
   OptGraphT* eliminate_dead_nodes();
+
+  // topological sort for order of execution
+  OrderedList* set_order_of_exec() {
+    order_of_exec = _topological_sort(*_g_opt);
+    return order_of_exec;
+  };
+
+  OrderedList* get_order_of_exec() { return order_of_exec; };
 
   // random graphs for testing
   template <class Node, class Image>
@@ -302,16 +340,19 @@ void dag::dump_reversed(std::string _name) {
 }
 
 void dag::dump_optimized(std::string _name) {
-  //auto g_opt =*_g_opt;
   graphVX::_dump_graph(*_g_opt, _name);
 }
 
-void dag::print_io_nodes(){
+void dag::print_io_nodes() {
   std::cout << "inputs" << std::endl;
   for (auto i : inputs) std::cout << g[i].get_name() << " ";
   std::cout << "\noutputs" << std::endl;
   for (auto i : outputs) std::cout << g[i].get_name() << " ";
   std::cout << std::endl;
+}
+
+void dag::print_order_of_exec() {
+  _print_list(*order_of_exec, *_g_opt, "order of execution: ");
 }
 
 // ------------------ class methods for detecting cycles -----------------------
