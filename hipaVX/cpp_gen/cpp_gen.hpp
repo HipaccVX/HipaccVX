@@ -37,14 +37,13 @@ class CPPVisitor: public ASTVisitor<std::string, int>, public AbstractionsVisito
 {
     std::vector<std::string> *pixelaccessor_mapping = nullptr;
     std::vector<std::string> *windowdescriptor_mapping = nullptr;
+    std::vector<std::string> *maskaccessor_mapping = nullptr;
 
     std::string accumulator_string = "";
 
     std::string current_output_pixel_index = "";
     std::string current_output_y = "";
     std::string current_output_x = "";
-    std::string current_output_width = "";
-    std::string current_output_height = "";
 
     std::map<std::shared_ptr<ast4vx::WindowDescriptor>, std::string> desc_to_name;
 

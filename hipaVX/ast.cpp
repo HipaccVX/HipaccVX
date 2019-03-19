@@ -44,6 +44,12 @@ std::shared_ptr<ast4vx::Reduction> operator<<(std::shared_ptr<ast4vx::Reduction>
     return a;
 }
 
+std::shared_ptr<ast4vx::MaskPixelToPixel> operator<<(std::shared_ptr<ast4vx::MaskPixelToPixel> a, std::shared_ptr<ast4vx::Node> statement)
+{
+    (*a) << statement;
+    return a;
+}
+
 std::shared_ptr<ast4vx::Node> operator>>(std::shared_ptr<ast4vx::Node> a, std::shared_ptr<ast4vx::Node> shift)
 {
     return std::make_shared<ast4vx::ShiftRight>(a, shift);

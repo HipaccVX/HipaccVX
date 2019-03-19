@@ -34,7 +34,6 @@ enum class AbstractionType
     LocalOp,
     Map,
     LocalOperation,
-    MapFindName
 };
 
 class AbstractionNode
@@ -123,7 +122,6 @@ public:
     }
 };
 
-
 class Reduce: public AbstractionNode
 {
 public:
@@ -140,20 +138,6 @@ public:
     std::shared_ptr<ast4vx::Node> dleft = std::make_shared<ast4vx::CurrentPixelvalue>(std::make_shared<ast4vx::Image>(left_img));
     std::shared_ptr<ast4vx::Node> dright = std::make_shared<ast4vx::CurrentPixelvalue>(std::make_shared<ast4vx::Image>(right_img));
     std::shared_ptr<ast4vx::Node> dout = std::make_shared<ast4vx::CurrentPixelvalue>(std::make_shared<ast4vx::Image>(out_img));
-};
-
-class MapDesc: public AbstractionNode, public ast4vx::Variable
-{
-
-public:
-    MapDesc()
-    {
-        AbstractionNode::type = AbstractionType::MapFindName;
-        name = "MapFindName_" + std::to_string(AbstractionNode::id);
-    }
-    std::shared_ptr<MapDesc> successor;
-    std::shared_ptr<Map> me;
-    int x, y;
 };
 
 class LocalOperation: public AbstractionNode

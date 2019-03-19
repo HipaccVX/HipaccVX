@@ -93,6 +93,8 @@ enum class NodeType
     WindowAccessorPosition,
     WindowOperation,
     Reduction,
+    MaskPixelToPixel,
+    MaskAccessor,
 };
 
 enum class Datatype
@@ -983,7 +985,7 @@ class LocalToPixel: public Statements
 {
 public:
     std::vector<std::shared_ptr<WindowAccessor>> windows;
-    LocalToPixel(int num_output_images, int num_windows)
+    LocalToPixel(unsigned int num_output_images, unsigned int num_windows)
         :Statements(num_output_images, 0)
     {
         type = NodeType::LocalToPixel;
@@ -998,6 +1000,42 @@ public:
         return windows[index];
     }
 };
+
+class MaskAccessor: public Node
+{
+public:
+    int num;
+    MaskAccessor()
+    {
+        type = NodeType::MaskAccessor;
+    }
+    MaskAccessor(int number)
+        :num(number)
+    {
+        type = NodeType::MaskAccessor;
+    }
+};
+
+class MaskPixelToPixel: public Statements
+{
+public:
+    std::vector<std::shared_ptr<MaskAccessor>> masks;
+    MaskPixelToPixel(unsigned int num_output_images, unsigned int num_input_images, unsigned int num_masks)
+        :Statements(num_output_images, num_input_images)
+    {
+        type = NodeType::MaskPixelToPixel;
+        masks.resize(num_masks);
+        for(unsigned int i = 0; i < masks.size(); i++)
+            masks[i].reset(new MaskAccessor(i));
+    }
+    std::shared_ptr<MaskAccessor> m_in(unsigned int index)
+    {
+        if (index >= masks.size())
+            throw std::runtime_error("MaskPixelToPixel::m_in(unsigned int index): Index out of bounds");
+        return masks[index];
+    }
+};
+
 
 class Reduction: public Statements
 {
@@ -1029,9 +1067,19 @@ public:
 class WindowDescriptor: public Node
 {
 public:
+    union mask_type
+    {
+        int32_t i;
+        float f;
+        mask_type(int32_t i) :i(i){}
+        mask_type(float f) :f(f){}
+    };
+    bool mask_is_int;
+
     unsigned int width, height;
-    Datatype datatype;
+    Datatype output_datatype;
     std::vector<std::vector<unsigned char>> domain;
+    std::vector<std::vector<mask_type>> mask;
 
     WindowDescriptor(unsigned int x, unsigned int y, Datatype datatype = Datatype::INT32)
     {
@@ -1040,7 +1088,7 @@ public:
 
         type = NodeType::WindowDescriptor;
 
-        this->datatype = datatype;
+        this->output_datatype = datatype;
         width = x;
         height = y;
         domain.resize(y);
@@ -1059,7 +1107,7 @@ public:
 
         type = NodeType::WindowDescriptor;
 
-        this->datatype = datatype;
+        this->output_datatype = datatype;
         width = x;
         height = y;
 
@@ -1070,7 +1118,7 @@ public:
             domain.push_back(std::vector<unsigned char>());
             for(x = 0; x < width; x++)
             {
-                domain[y].push_back(*dom_it);
+                domain[y].push_back((*dom_it != 0)?1:0);
                 dom_it++;
             }
         }
@@ -1079,7 +1127,7 @@ public:
     void set_domain(std::initializer_list<int> dom)
     {
         if (dom.size() != height * width)
-            throw std::runtime_error("WindowDescriptor::WindowDescriptor dom needs to have x * y elements");
+            throw std::runtime_error("WindowDescriptor::set_domain: dom needs to have x * y elements");
 
         domain.clear();
         auto dom_it = dom.begin();
@@ -1088,8 +1136,59 @@ public:
             domain.push_back(std::vector<unsigned char>());
             for(unsigned x = 0; x < width; x++)
             {
-                domain[y].push_back(*dom_it);
+                domain[y].push_back((*dom_it != 0)?1:0);
                 dom_it++;
+            }
+        }
+    }
+
+    void set_mask(std::initializer_list<int32_t> m, bool derive_domain = true)
+    {
+        if (m.size() != height * width)
+            throw std::runtime_error("WindowDescriptor::set_mask: m needs to have x * y elements");
+
+        mask_is_int = true;
+
+        if (derive_domain)
+            domain.clear();
+        mask.clear();
+        auto m_it = m.begin();
+        for(unsigned int y = 0; y < height; y++)
+        {
+            mask.push_back(std::vector<mask_type>());
+            if (derive_domain)
+                domain.push_back(std::vector<unsigned char>());
+            for(unsigned x = 0; x < width; x++)
+            {
+                mask[y].push_back(*m_it);
+                if (derive_domain)
+                    domain[y].push_back((*m_it != 0)?1:0);
+                m_it++;
+            }
+        }
+    }
+
+    void set_mask(std::initializer_list<float> m, bool derive_domain = true)
+    {
+        if (m.size() != height * width)
+            throw std::runtime_error("WindowDescriptor::set_mask: m needs to have x * y elements");
+
+        mask_is_int = false;
+        if (derive_domain)
+            domain.clear();
+        mask.clear();
+        auto m_it = m.begin();
+        for(unsigned int y = 0; y < height; y++)
+        {
+            mask.push_back(std::vector<mask_type>());
+            if (derive_domain)
+                domain.push_back(std::vector<unsigned char>());
+            for(unsigned x = 0; x < width; x++)
+            {
+                mask[y].push_back(*m_it);
+                if (derive_domain)
+                    domain[y].push_back((*m_it != 0.f)?1:0);
+                m_it++;
             }
         }
     }
@@ -1313,6 +1412,7 @@ std::shared_ptr<ast4vx::Node> operator<<(std::shared_ptr<ast4vx::Node> a, std::s
 std::shared_ptr<ast4vx::Statements> operator<<(std::shared_ptr<ast4vx::Statements> a, std::shared_ptr<ast4vx::Node> statement);
 std::shared_ptr<ast4vx::LocalToPixel> operator<<(std::shared_ptr<ast4vx::LocalToPixel> a, std::shared_ptr<ast4vx::Node> statement);
 std::shared_ptr<ast4vx::Reduction> operator<<(std::shared_ptr<ast4vx::Reduction> a, std::shared_ptr<ast4vx::Node> statement);
+std::shared_ptr<ast4vx::MaskPixelToPixel> operator<<(std::shared_ptr<ast4vx::MaskPixelToPixel> a, std::shared_ptr<ast4vx::Node> statement);
 
 std::shared_ptr<ast4vx::Node> operator>>(std::shared_ptr<ast4vx::Node> a, std::shared_ptr<ast4vx::Node> shift);
 
