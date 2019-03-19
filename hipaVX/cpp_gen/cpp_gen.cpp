@@ -704,6 +704,17 @@ std::string CPPVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i)
         return name + ".get(" + x + ", " + y + ")";
     }
 
+    case ast4vx::NodeType::MaskAccessor:
+    {
+        auto s = std::dynamic_pointer_cast<ast4vx::MaskAccessor>(n);
+
+        std::string name = maskaccessor_mapping->at(s->num);
+        std::string x = current_output_x;
+        std::string y = current_output_y;
+
+        return name + ".get(" + x + ", " + y + ")";
+    }
+
     case ast4vx::NodeType::WindowOperation:
     {
         auto s = std::dynamic_pointer_cast<ast4vx::WindowOperation>(n);
@@ -733,10 +744,51 @@ std::string CPPVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i)
 
             code += visit(std::make_shared<ast4vx::VariableDefinition>(accum_var)) + ";\n";
             code += visit(assign(accum_var, s->reduction_statement->initial)) + ";\n";
-
-            // Change second input to the accumulator
-
         }
+
+        std::vector<std::string> mask_mapping;
+        for (auto &desc: s->window_inputs)
+        {
+            auto &mask = desc->mask;
+
+            if (!mask.empty())
+            {
+                std::string name = "mask_" + std::to_string(s->id) + "_" + std::to_string(desc->id);
+
+                std::string values = "{";
+                std::string vec;
+                unsigned int i = 0;
+                unsigned long size = mask.size() * mask[0].size();
+                for (auto &line: mask)
+                {
+                    for (auto value: line)
+                    {
+                        if (desc->mask_is_int)
+                            values += std::to_string(value.i);
+                        else
+                            values += std::to_string(value.f);
+                        if (i != size - 1)
+                            values += ", ";
+                        i++;
+                    }
+                }
+                values += "}";
+
+                std::string mask_def = "std::matrix<@@@DATATYPE@@@> @@@MASK_NAME@@@(@@@W@@@, @@@H@@@, @@@VALUES@@@);\n";
+                mask_def = use_template(mask_def, "MASK_NAME", name);
+                mask_def = use_template(mask_def, "VALUES", values);
+                mask_def = use_template(mask_def, "DATATYPE", (desc->mask_is_int)?"int":"float");
+                mask_def = use_template(mask_def, "W", std::to_string(mask.size()));
+                mask_def = use_template(mask_def, "H", std::to_string(mask[0].size()));
+
+                code += mask_def;
+
+                mask_mapping.emplace_back(name);
+            }
+        }
+
+        auto old_mask_mapping = maskaccessor_mapping;
+        maskaccessor_mapping = &mask_mapping;
 
         // TODO check window_inputs if same domain
         auto domain = s->window_inputs[i].get()->domain;
@@ -765,10 +817,12 @@ std::string CPPVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i)
                     code += visit(s->forall_statement);
                 else if (s->current_state == ast4vx::WindowOperation::State::Reduce)
                     code += visit(s->reduction_statement);
+
                 current_output_x = old_x;
                 current_output_y = old_y;
             }
         }
+        maskaccessor_mapping = old_mask_mapping;
 
         // Write back the Accumulator
         if (s->current_state == ast4vx::WindowOperation::State::Reduce)
@@ -783,15 +837,25 @@ std::string CPPVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i)
     {
         auto s = std::dynamic_pointer_cast<ast4vx::LocalToPixel>(n);
         std::string to_return;
-
-
         for(auto statement: s->statements)
         {
             to_return += this->visit(statement, i);
             if (statement->type != ast4vx::NodeType::If && statement->type != ast4vx::NodeType::Else)
                 to_return += ";\n";
         }
+        return to_return;
+    }
 
+    case ast4vx::NodeType::MaskPixelToPixel:
+    {
+        auto s = std::dynamic_pointer_cast<ast4vx::MaskPixelToPixel>(n);
+        std::string to_return;
+        for(auto statement: s->statements)
+        {
+            to_return += this->visit(statement, i);
+            if (statement->type != ast4vx::NodeType::If && statement->type != ast4vx::NodeType::Else)
+                to_return += ";\n";
+        }
         return to_return;
     }
 
@@ -872,8 +936,6 @@ R"END(for(int @@@Y_NAME@@@ = 0; @@@Y_NAME@@@ < @@@HEIGHT@@@; @@@Y_NAME@@@++)
 
     current_output_y = y_index_name;
     current_output_x = x_index_name;
-    current_output_width = std::to_string(m->output_pixel_mappings[0]->w);
-    current_output_height = std::to_string(m->output_pixel_mappings[0]->h);
 
     return templ;
 }
@@ -897,8 +959,6 @@ R"END(for(int @@@Y_NAME@@@ = 0; @@@Y_NAME@@@ < @@@HEIGHT@@@; @@@Y_NAME@@@++)
 
     current_output_y = y_index_name;
     current_output_x = x_index_name;
-    current_output_width = std::to_string(out[0]->w);
-    current_output_height = std::to_string(out[0]->h);
 
     return templ;
 }
@@ -924,7 +984,7 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n, int i)
         std::string code = visit(s->get_statements(), 0);
         pixelaccessor_mapping = nullptr;
 
-        current_output_y = current_output_x = current_output_width = current_output_height = "";
+        current_output_y = current_output_x = "";
 
         outer_loop = use_template(outer_loop, "CODE", code);
         return outer_loop;
@@ -954,7 +1014,7 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n, int i)
             std::string copy = "std::matrix<@@@DATATYPE@@@> @@@COPY_NAME@@@ = @@@IMAGE_NAME@@@.copy_roi<@@@DATATYPE@@@>(@@@X@@@, @@@Y@@@, @@@W@@@, @@@H@@@);\n";
             copy = use_template(copy, "COPY_NAME", input_matrix_name);
             copy = use_template(copy, "IMAGE_NAME", generate_image_name(in_image));
-            copy = use_template(copy, "DATATYPE", to_string(in_desc->datatype));
+            copy = use_template(copy, "DATATYPE", to_string(in_desc->output_datatype));
             copy = use_template(copy, "X", current_output_x + "-(" + std::to_string(in_desc->width/2) + ")");
             copy = use_template(copy, "Y", current_output_y + "-(" + std::to_string(in_desc->height/2) + ")");
             copy = use_template(copy, "W", std::to_string(in_desc->width));
@@ -978,7 +1038,7 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n, int i)
                 std::string copy = "std::matrix<@@@DATATYPE@@@> @@@COPY_NAME@@@ = @@@ORIG_NAME@@@.copy_roi<@@@DATATYPE@@@>(0, 0, @@@W@@@, @@@H@@@);\n";
                 copy = use_template(copy, "COPY_NAME", matrix_name);
                 copy = use_template(copy, "ORIG_NAME", desc_to_name[op->window_inputs[0]]);
-                copy = use_template(copy, "DATATYPE", to_string(in_desc->datatype));
+                copy = use_template(copy, "DATATYPE", to_string(in_desc->output_datatype));
                 copy = use_template(copy, "W", std::to_string(in_desc->width));
                 copy = use_template(copy, "H", std::to_string(in_desc->height));
 
@@ -1015,7 +1075,7 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n, int i)
             windowdescriptor_mapping = nullptr;
         }
 
-        current_output_y = current_output_x = current_output_width = current_output_height = "";
+        current_output_y = current_output_x = "";
         outer_loop = use_template(outer_loop, "CODE", code);
         return outer_loop;
     }
