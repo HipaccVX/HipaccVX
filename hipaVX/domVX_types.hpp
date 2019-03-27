@@ -23,6 +23,8 @@ class Object {
  public:
   Object() : my_id(next_id++) {};
 
+  virtual ~Object() = default;
+
   bool is_virtual() { return virt; };
 
   VertexTask get_task() { return task; }
@@ -127,9 +129,16 @@ class Image : public Object {
     set_task();
   }
 
+  vx_uint32 get_width()  { return w;};
+  vx_uint32 get_height() { return h;};
+
   virtual ~Image() = default;
   vx_uint32 w = 0, h = 0;
   vx_df_image col;
+
+  vx_df_image get_dtype() { return col; }
+
+  void set_dtype(vx_df_image type) { col = type; }
 };
 
 
