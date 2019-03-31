@@ -746,50 +746,6 @@ std::string CPPVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i)
             code += visit(assign(accum_var, s->reduction_statement->initial)) + ";\n";
         }
 
-        std::vector<std::string> mask_mapping;
-        for (auto &desc: s->window_inputs)
-        {
-            auto &mask = desc->mask;
-
-            if (!mask.empty())
-            {
-                std::string name = "mask_" + std::to_string(s->id) + "_" + std::to_string(desc->id);
-
-                std::string values = "{";
-                std::string vec;
-                unsigned int i = 0;
-                unsigned long size = mask.size() * mask[0].size();
-                for (auto &line: mask)
-                {
-                    for (auto value: line)
-                    {
-                        if (desc->mask_is_int)
-                            values += std::to_string(value.i);
-                        else
-                            values += std::to_string(value.f);
-                        if (i != size - 1)
-                            values += ", ";
-                        i++;
-                    }
-                }
-                values += "}";
-
-                std::string mask_def = "std::matrix<@@@DATATYPE@@@> @@@MASK_NAME@@@(@@@W@@@, @@@H@@@, @@@VALUES@@@);\n";
-                mask_def = use_template(mask_def, "MASK_NAME", name);
-                mask_def = use_template(mask_def, "VALUES", values);
-                mask_def = use_template(mask_def, "DATATYPE", (desc->mask_is_int)?"int":"float");
-                mask_def = use_template(mask_def, "W", std::to_string(mask.size()));
-                mask_def = use_template(mask_def, "H", std::to_string(mask[0].size()));
-
-                code += mask_def;
-
-                mask_mapping.emplace_back(name);
-            }
-        }
-
-        auto old_mask_mapping = maskaccessor_mapping;
-        maskaccessor_mapping = &mask_mapping;
-
         // TODO check window_inputs if same domain
         auto domain = s->window_inputs[i].get()->domain;
 
@@ -822,7 +778,6 @@ std::string CPPVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i)
                 current_output_y = old_y;
             }
         }
-        maskaccessor_mapping = old_mask_mapping;
 
         // Write back the Accumulator
         if (s->current_state == ast4vx::WindowOperation::State::Reduce)
@@ -901,7 +856,36 @@ std::string CPPVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i)
     throw std::runtime_error("CPP Generate: reached end of switch case");
 }
 
+std::string create_matrix_mask_def(std::shared_ptr<DomVX::Mask> mask, std::string name)
+{
+    std::string values = "{";
+    std::string vec;
+    unsigned int i = 0;
+    unsigned long size = mask->mask.size() * mask->mask[0].size();
+    for (auto &line: mask->mask)
+    {
+        for (auto value: line)
+        {
+            if (mask->mask_is_int)
+                values += std::to_string(value.i);
+            else
+                values += std::to_string(value.f);
+            if (i != size - 1)
+                values += ", ";
+            i++;
+        }
+    }
+    values += "}";
 
+    std::string mask_def = "std::matrix<@@@DATATYPE@@@> @@@MASK_NAME@@@(@@@W@@@, @@@H@@@, @@@VALUES@@@);\n";
+    mask_def = use_template(mask_def, "MASK_NAME", name);
+    mask_def = use_template(mask_def, "VALUES", values);
+    mask_def = use_template(mask_def, "DATATYPE", (mask->mask_is_int)?"int":"float");
+    mask_def = use_template(mask_def, "W", std::to_string(mask->mask.size()));
+    mask_def = use_template(mask_def, "H", std::to_string(mask->mask[0].size()));
+
+    return mask_def;
+}
 std::string create_matrix_def(std::string type, std::string name, std::string w, std::string h)
 {
     std::string matrix_def = "std::matrix<@@@DATATYPE@@@> @@@MATRIXNAME@@@(@@@WIDTH@@@, @@@HEIGHT@@@);\n";
@@ -993,9 +977,9 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n, int i)
     {
         auto s = std::dynamic_pointer_cast<DomVX::LocalOperation>(n);
 
-
         std::vector<HipaVX::Image *> output_images;
 
+        // Get all the output images
         for(auto images: s->operation_output_images)
         {
             output_images.insert(output_images.end(), images.begin(), images.end());
@@ -1005,6 +989,7 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n, int i)
         std::string outer_loop = setup_outer_loop(s, output_images);
         std::string code = "";
 
+        // Create the roi from the input images
         for(unsigned int i = 0; i < s->input_descriptor.size(); i++)
         {
             auto& in_image = std::get<0>(s->input_descriptor[i]);
@@ -1048,6 +1033,23 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n, int i)
 
             std::vector<std::string> pixel_mappings;
             std::vector<std::string> window_mappings;
+            std::vector<std::string> mask_mappings;
+
+            // Create mask definition if there are mask bindings for this operation
+            if (s->mask_bindings.count(op) != 0)
+            {
+                auto mask_bindings = s->mask_bindings[op];
+
+                for (auto &mask : mask_bindings)
+                {
+                    std::string name = "mask_" + std::to_string(op->id);
+                    code += create_matrix_mask_def(mask, name);
+                    mask_mappings.push_back(name);
+                }
+                code += "\n";
+            }
+
+            // Setup all mappings
             if (op->current_state == ast4vx::WindowOperation::State::ToPixel || op->current_state == ast4vx::WindowOperation::State::Reduce)
             {
                 // Bind an actual output image is only relevant for ToPixel and Reduce
@@ -1065,12 +1067,13 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n, int i)
                     pixel_mappings.emplace_back(desc_to_name[map]);
                 }
             }
-
             auto old_mapping = pixelaccessor_mapping;
             pixelaccessor_mapping = &pixel_mappings;
+            maskaccessor_mapping = &mask_mappings;
 
             code += visit(op) + "\n";
 
+            maskaccessor_mapping = nullptr;
             pixelaccessor_mapping = old_mapping;
             windowdescriptor_mapping = nullptr;
         }

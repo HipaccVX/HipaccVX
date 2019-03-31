@@ -1065,19 +1065,11 @@ public:
 class WindowDescriptor: public Node
 {
 public:
-    union mask_type
-    {
-        int32_t i;
-        float f;
-        mask_type(int32_t i) :i(i){}
-        mask_type(float f) :f(f){}
-    };
-    bool mask_is_int;
+    bool dom_from_mask = false;
 
     unsigned int width, height;
     Datatype output_datatype;
     std::vector<std::vector<unsigned char>> domain;
-    std::vector<std::vector<mask_type>> mask;
 
     WindowDescriptor(unsigned int x, unsigned int y, Datatype datatype = Datatype::INT32)
     {
@@ -1140,55 +1132,9 @@ public:
         }
     }
 
-    void set_mask(std::initializer_list<int32_t> m, bool derive_domain = true)
+    void deduce_domain_from_mask(bool deduce = true)
     {
-        if (m.size() != height * width)
-            throw std::runtime_error("WindowDescriptor::set_mask: m needs to have x * y elements");
-
-        mask_is_int = true;
-
-        if (derive_domain)
-            domain.clear();
-        mask.clear();
-        auto m_it = m.begin();
-        for(unsigned int y = 0; y < height; y++)
-        {
-            mask.push_back(std::vector<mask_type>());
-            if (derive_domain)
-                domain.push_back(std::vector<unsigned char>());
-            for(unsigned x = 0; x < width; x++)
-            {
-                mask[y].push_back(*m_it);
-                if (derive_domain)
-                    domain[y].push_back((*m_it != 0)?1:0);
-                m_it++;
-            }
-        }
-    }
-
-    void set_mask(std::initializer_list<float> m, bool derive_domain = true)
-    {
-        if (m.size() != height * width)
-            throw std::runtime_error("WindowDescriptor::set_mask: m needs to have x * y elements");
-
-        mask_is_int = false;
-        if (derive_domain)
-            domain.clear();
-        mask.clear();
-        auto m_it = m.begin();
-        for(unsigned int y = 0; y < height; y++)
-        {
-            mask.push_back(std::vector<mask_type>());
-            if (derive_domain)
-                domain.push_back(std::vector<unsigned char>());
-            for(unsigned x = 0; x < width; x++)
-            {
-                mask[y].push_back(*m_it);
-                if (derive_domain)
-                    domain[y].push_back((*m_it != 0.f)?1:0);
-                m_it++;
-            }
-        }
+        dom_from_mask = deduce;
     }
 };
 

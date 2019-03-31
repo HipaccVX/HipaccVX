@@ -17,11 +17,11 @@ int main()
 
     // Create dummy input window and set its domain
     auto window_in = std::make_shared<ast4vx::WindowDescriptor>(3, 5);
-    window_in->set_mask({-1, -1,  1,
-                         -1,  0,  1,
-                         -1,  0,  1,
-                         -1,  0,  1,
-                         -1,  1,  1});
+    window_in->set_domain({1, 1, 1,
+                           1, 0, 1,
+                           1, 0, 1,
+                           1, 0, 1,
+                           1, 1, 1});
 
     // Set the Pixel to Pixel function which should be done for all pixels in the domain
     auto window_op_1 = std::make_shared<ast4vx::WindowOperation>(3, 5);
@@ -39,11 +39,18 @@ int main()
     auto image_i = new HipaVX::Image(1024, 512, VX_DF_IMAGE_U8);
     auto image_o = new HipaVX::Image(1024, 512, VX_DF_IMAGE_U8);
 
+    auto mask = std::shared_ptr<DomVX::Mask>(new DomVX::Mask(3, 5, {-1, -1,  1,
+                                                                    -1,  0,  1,
+                                                                    -1,  0,  1,
+                                                                    -1,  0,  1,
+                                                                    -1,  1,  1}));
     // Create the local operation
     auto local_op = std::shared_ptr<DomVX::LocalOperation>(new DomVX::LocalOperation());
 
     // Bind the dummy window accessors to the input images
     local_op->set_input_window_desc({{image_i, window_in}});
+    // Bind the masks to their corresponding WindowOperations
+    local_op->set_masks({{window_op_1, mask}});
 
     // Add the Pixel to Pixel compute_at operation
     local_op->add_operation(window_op_1);
