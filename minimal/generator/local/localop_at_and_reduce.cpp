@@ -28,7 +28,7 @@ int main()
 
     // Associate pixel to pixel functions with the domain coordinates via compute_at
     // these pixel to pixel functions must have one output pixel accessor
-    auto window_op_1 = std::make_shared<ast4vx::WindowOperation>(3, 5);
+    auto window_op_1 = std::make_shared<ast4vx::WindowOperation>();
     window_op_1->set_window_inputs({window_in});
     window_op_1->compute_at(2, 0, ast_fun_1);
     window_op_1->compute_at(0, 2, ast_fun_2);
@@ -36,7 +36,7 @@ int main()
 
     // Chain a reduce function
     // This is done via setting the window_op_1's output to this operations input
-    auto reduction_op = std::make_shared<ast4vx::WindowOperation>(3, 5);
+    auto reduction_op = std::make_shared<ast4vx::WindowOperation>();
     reduction_op->set_window_inputs({window_op_1->get_window_output()});
     reduction_op->reduce(ast_reduction);
 
