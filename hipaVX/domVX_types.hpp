@@ -50,12 +50,12 @@ class Object {
 
   bool alive = false; // after optimizations
 
- protected:
-  static int next_id;
-
   std::string name;
 
   VertexTask task = VertexTask::Invalid;
+
+ protected:
+  static int next_id;
 };
 
 
@@ -110,7 +110,6 @@ class Scalar : public Object {
 class Image : public Object {
  public:
   Image(){
-    set_name("Img");
     init();
   };
 
@@ -124,9 +123,15 @@ class Image : public Object {
     init();
   }
 
+  Image(vx_uint32 width, vx_uint32 height) :
+      w(width), h(height), col(VX_TYPE_DF_IMAGE) {
+    init();
+  }
+
   void init() {
     type = VX_TYPE_IMAGE;
     set_task();
+    set_name("Img");
   }
 
   vx_uint32 get_width()  { return w;};

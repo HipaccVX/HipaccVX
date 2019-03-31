@@ -19,12 +19,21 @@ int main() {
   hipacc_writer gen;
   std::cout << gen.dump_code();
 
-  HipaVX::Image c; 
-  c.set_dtype(VX_DF_IMAGE_U8);
+  // image
+  HipaVX::Image im(1024, 1024, VX_DF_IMAGE_U8);
+  im.set_dtype(VX_DF_IMAGE_U32);
 
-  gen.def(&c);
+  // accessor
+  //HipaccAccessor acc;
+  HipaccAccessor acc(&im);
 
+  std::stringstream ss;
+  gen.def(ss, &im);
+  gen.def(ss, &acc);
 
-  std::cout << gen.ss_im.str();
+  std::cout << ss.str();
+  // Or
+  // gen.def(&im);
+  // std::cout << gen.ss_im.str();
   return 0;
 }

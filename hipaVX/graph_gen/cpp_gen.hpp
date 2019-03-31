@@ -43,24 +43,35 @@ class HipaccAccessor {
  public:
   HipaccImage* im;
   std::string name;
-  HipaccDataType dtype;
 
   bool isRoiSet;
   bool isInterpSet;
 
+  ROI roi;
+
   void init() {
     isRoiSet = false;
     isInterpSet = false;
-    //roi = ROI{ x = 0, u = 0, width = 0, height = 0}; 
+    roi = ROI{ 0, 0, 0, 0}; 
   }
 
-  ROI roi;
+  bool isImgSet() { return !(im == NULL); };
+
   int width()  { return im->get_width(); };
 
   int height() { return im->get_height(); };
 
+  std::string get_name() { return name; };
+
   HipaccAccessor( ) {
     init();
+    im = NULL;
+  };
+
+  HipaccAccessor( HipaccImage* _im ) : im(_im) {
+    init();
+    // TODO: make sure that this is unique
+    name = im->get_name() + "_acc";
   };
 
 };
@@ -118,7 +129,7 @@ class hipacc_writer {
 
 // ------------------------ public API ---------------------------------------
 std::string hipacc_writer::dump_code() {
-  ss << initial_includes();
+  ss << initial_includes() << std::endl;
    return ss.str();
 }
 
@@ -201,6 +212,10 @@ void hipacc_writer::def(std::stringstream &ss, HipaccImage* n) {
 }
 
 void hipacc_writer::def(std::stringstream &ss, HipaccAccessor* n) {
+  if (n->isImgSet() == false) {
+    ERRORM("hipacc_writer::def(acc) : acc " + n->get_name() + " has no image");
+  }
+
   std::stringstream params;
   params << n->width() << ", " << n->height();
 
@@ -212,7 +227,7 @@ void hipacc_writer::def(std::stringstream &ss, HipaccAccessor* n) {
     params << "more";
   }
 
-  ss << "Accessor" << "<" << dtype(n) + "> " << name(n) << "(" << params.str() << ");\n";
+  ss << "Accessor" << "<" << dtype(n->im) + "> " << name(n) << "(" << params.str() << ");\n";
 }
 
 
