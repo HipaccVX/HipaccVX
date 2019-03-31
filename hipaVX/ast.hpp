@@ -1067,8 +1067,6 @@ public:
 class WindowDescriptor: public Node
 {
 public:
-    bool dom_from_mask = false;
-
     unsigned int width, height;
     Datatype output_datatype;
     std::vector<std::vector<unsigned char>> domain;
@@ -1132,11 +1130,6 @@ public:
                 dom_it++;
             }
         }
-    }
-
-    void deduce_domain_from_mask(bool deduce = true)
-    {
-        dom_from_mask = deduce;
     }
 };
 
