@@ -4,7 +4,7 @@
 #include <iostream>
 #include "../../hipaVX/domVX_types.hpp"
 #include "../../hipaVX/graph.hpp"
-#include "../../hipaVX/graph_gen/cpp_gen.hpp"
+#include "../../hipaVX/graph_gen/hipacc_graph_gen.hpp"
 
 
 using graphVX::AppGraphT;
