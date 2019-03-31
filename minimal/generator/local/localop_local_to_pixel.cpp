@@ -22,7 +22,7 @@ int main()
                            1, 0, 0});
 
 
-    auto local_to_pixel = std::make_shared<ast4vx::WindowOperation>(3, 5);
+    auto local_to_pixel = std::make_shared<ast4vx::WindowOperation>();
     local_to_pixel->set_window_inputs({window_in});
     local_to_pixel->to_pixel(l_to_p);
 

@@ -23,16 +23,9 @@ int main()
                            1, 0, 1,
                            1, 1, 1});
 
-    // Set the Pixel to Pixel function which should be done for all pixels in the domain
-    auto window_op_1 = std::make_shared<ast4vx::WindowOperation>(3, 5);
-    window_op_1->set_window_inputs({window_in});
-    window_op_1->forall(ast_forall);
-
-    // Chain a reduce function
-    // This is done via setting the window_op_1's output to this operations input
-    auto reduction_op = std::make_shared<ast4vx::WindowOperation>(3, 5);
-    reduction_op->set_window_inputs({window_op_1->get_window_output()});
-    reduction_op->reduce(ast_reduction);
+    // There are handy functions for "forall" and "reduce", which reduces the mundane calls
+    auto forall_op = forall(window_in, ast_forall);
+    auto reduction_op = reduce(forall_op, ast_reduction);
 
     //---------------------------- DomVX --------------------------------------
 
@@ -50,10 +43,10 @@ int main()
     // Bind the dummy window accessors to the input images
     local_op->set_input_window_desc({{image_i, window_in}});
     // Bind the masks to their corresponding WindowOperations
-    local_op->set_masks({{window_op_1, mask}});
+    local_op->set_masks({{forall_op, mask}});
 
     // Add the Pixel to Pixel compute_at operation
-    local_op->add_operation(window_op_1);
+    local_op->add_operation(forall_op);
     // Add the reduction operation, needs an output image
     local_op->add_operation(reduction_op, {image_o});
 

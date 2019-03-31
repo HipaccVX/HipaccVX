@@ -191,23 +191,6 @@ public:
     }
 };
 
-class Reduce: public AbstractionNode
-{
-public:
-    Reduce()
-    {
-        type = AbstractionType::Reduce;
-    }
-    HipaVX::Image* left_img = new HipaVX::Image(1, 1, VX_DF_IMAGE_U8);
-    HipaVX::Image* right_img = new HipaVX::Image(1, 1, VX_DF_IMAGE_U8);
-    HipaVX::Image* out_img = new HipaVX::Image(1, 1, VX_DF_IMAGE_U8);
-    ast4vx::Statements function;
-
-    std::shared_ptr<ast4vx::Node> dleft = std::make_shared<ast4vx::CurrentPixelvalue>(std::make_shared<ast4vx::Image>(left_img));
-    std::shared_ptr<ast4vx::Node> dright = std::make_shared<ast4vx::CurrentPixelvalue>(std::make_shared<ast4vx::Image>(right_img));
-    std::shared_ptr<ast4vx::Node> dout = std::make_shared<ast4vx::CurrentPixelvalue>(std::make_shared<ast4vx::Image>(out_img));
-};
-
 class LocalOperation: public AbstractionNode
 {
 public:
@@ -253,8 +236,6 @@ public:
         operation_output_images.emplace_back(out);
     }
 };
-
-
 
 }
 

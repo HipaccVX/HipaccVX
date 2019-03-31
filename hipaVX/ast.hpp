@@ -1140,6 +1140,8 @@ public:
 
 class WindowOperation: public Node
 {
+private:
+    bool explicit_x_y;
 public:
     enum class State
     {
@@ -1163,7 +1165,7 @@ public:
     WindowOperation(unsigned int x, unsigned int y)
     {
         if (y <= 0 || x <= 0)
-            throw std::runtime_error("Window::Window: domain size must be > 0");
+            throw std::runtime_error("WindowOperation::WindowOperation: domain size must be > 0");
 
         type = NodeType::WindowOperation;
         statements.resize(y);
@@ -1171,6 +1173,12 @@ public:
         {
             statements[i].resize(x);
         }
+        explicit_x_y = true;
+    }
+    WindowOperation()
+    {
+        type = NodeType::WindowOperation;
+        explicit_x_y = false;
     }
 
     void set_window_inputs(std::initializer_list<std::shared_ptr<WindowDescriptor>> in)
@@ -1178,16 +1186,30 @@ public:
         window_inputs.clear();
         for(auto wd: in)
             window_inputs.emplace_back(wd);
+
+        if (!explicit_x_y)
+        {
+            if (window_inputs.size() == 0)
+                throw std::runtime_error("WindowOperation::set_window_inputs(): If the WindowOperation size is not explicitly set, at least one input window must be given");
+
+            statements.resize(window_inputs[0]->height);
+            for(unsigned int i = 0; i < statements.size(); i++)
+            {
+                statements[i].resize(window_inputs[0]->width);
+            }
+        }
     }
 
     void compute_at(unsigned int x, unsigned int y, std::shared_ptr<Statements> s)
     {
         if (current_state != State::None && current_state != State::At)
-            throw std::runtime_error("Window::compute_at(): Window already in another state");
+            throw std::runtime_error("WindowOperation::compute_at(): Window already in another state");
+        if (!explicit_x_y && statements.size() == 0)
+            throw std::runtime_error("WindowOperation::compute_at(): If the WindowOperation size is not explicitly set, set_window_inputs(...) needs to get called before at(...)");
         if (y >= statements.size() || x >= statements[x].size())
-            throw std::runtime_error("Window::compute_at(): Index out of bounds");
+            throw std::runtime_error("WindowOperation::compute_at(): Index out of bounds");
         if (statements[y][x] != nullptr)
-            throw std::runtime_error("Window::compute_at(): Coordinate already written to");
+            throw std::runtime_error("WindowOperation::compute_at(): Coordinate already written to");
 
         current_state = State::At;
         statements[y][x] = s;
@@ -1196,9 +1218,9 @@ public:
     void forall(std::shared_ptr<Statements> s)
     {
         if (current_state != State::None && current_state != State::Forall)
-            throw std::runtime_error("Window::forall(): Window already in another state");
+            throw std::runtime_error("WindowOperation::forall(): Window already in another state");
         if (forall_statement != nullptr)
-            throw std::runtime_error("Window::forall(): Already written");
+            throw std::runtime_error("WindowOperation::forall(): Already written");
 
         current_state = State::Forall;
         forall_statement = s;
@@ -1207,9 +1229,9 @@ public:
     void reduce(std::shared_ptr<Reduction> s)
     {
         if (current_state != State::None && current_state != State::Reduce)
-            throw std::runtime_error("Window::reduce(): Window already in another state");
+            throw std::runtime_error("WindowOperation::reduce(): Window already in another state");
         if (reduction_statement != nullptr)
-            throw std::runtime_error("Window::reduce(): Already written");
+            throw std::runtime_error("WindowOperation::reduce(): Already written");
 
         current_state = State::Reduce;
         reduction_statement = s;
@@ -1218,9 +1240,9 @@ public:
     void to_pixel(std::shared_ptr<LocalToPixel> s)
     {
         if (current_state != State::None && current_state != State::ToPixel)
-            throw std::runtime_error("Window::to_pixel(): Window already in another state");
+            throw std::runtime_error("WindowOperation::to_pixel(): Window already in another state");
         if (ltp_statement != nullptr)
-            throw std::runtime_error("Window::to_pixel(): Already written");
+            throw std::runtime_error("WindowOperation::to_pixel(): Already written");
 
         current_state = State::ToPixel;
         ltp_statement = s;
@@ -1229,7 +1251,7 @@ public:
     std::shared_ptr<WindowDescriptor> get_window_output()
     {
         if (current_state != State::At && current_state != State::Forall)
-            throw std::runtime_error("Window::get_window_output(): Window not in the right state");
+            throw std::runtime_error("WindowOperation::get_window_output(): Window not in the right state");
         if (output.get() == nullptr)
         {
             output = std::make_shared<WindowDescriptor>(statements[0].size(), statements.size());
@@ -1402,6 +1424,21 @@ std::shared_ptr<ast4vx::Node> vect4(std::shared_ptr<ast4vx::Node> a, std::shared
 std::shared_ptr<ast4vx::Node> extract4(std::shared_ptr<ast4vx::Node> a, ast4vx::Datatype type, ast4vx::VectChannelType e);
 
 std::shared_ptr<ast4vx::Node> unequal(std::shared_ptr<ast4vx::Node> a, std::shared_ptr<ast4vx::Node> b);
+
+std::shared_ptr<ast4vx::WindowOperation> reduce(std::shared_ptr<ast4vx::WindowDescriptor> in_win,
+                                                std::shared_ptr<ast4vx::Reduction> reduction_function);
+std::shared_ptr<ast4vx::WindowOperation> reduce(std::shared_ptr<ast4vx::WindowOperation> predecessor,
+                                                std::shared_ptr<ast4vx::Reduction> reduction_function);
+std::shared_ptr<ast4vx::WindowOperation> reduce(std::initializer_list<std::shared_ptr<ast4vx::WindowDescriptor>> in_win,
+                                                std::shared_ptr<ast4vx::Reduction> reduction_function);
+
+std::shared_ptr<ast4vx::WindowOperation> forall(std::shared_ptr<ast4vx::WindowDescriptor> in_win,
+                                                std::shared_ptr<ast4vx::Statements> forall_function);
+std::shared_ptr<ast4vx::WindowOperation> forall(std::shared_ptr<ast4vx::WindowOperation> predecessor,
+                                                std::shared_ptr<ast4vx::Statements> forall_function);
+std::shared_ptr<ast4vx::WindowOperation> forall(std::initializer_list<std::shared_ptr<ast4vx::WindowDescriptor>> in_win,
+                                                std::shared_ptr<ast4vx::Statements> forall_function);
+
 
 
 // TODO Own file?
