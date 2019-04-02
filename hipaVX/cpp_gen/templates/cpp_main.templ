@@ -26,6 +26,32 @@ struct uint4
     {
     }
 };
+
+template<class T>
+struct BoundaryCondition
+{
+    enum class Type
+    {
+        Undefined,
+        Constant
+    };
+    T c;
+    Type type;
+    BoundaryCondition()
+    {
+        type = Type::Undefined;
+    }
+    BoundaryCondition(Type t)
+    {
+        type = t;
+    }
+    BoundaryCondition(T constant)
+    {
+        type = Type::Constant;
+        c = constant;
+    }
+};
+
 template<class T>
 struct matrix
 {
@@ -53,6 +79,38 @@ struct matrix
     {
         w = width; h = height;
         this->data = data;
+    }
+
+    T get(int x, int y, BoundaryCondition<T> b = BoundaryCondition<T>())
+    {
+        if (x >= 0 && x < w && y >= 0 && y < h)
+            return data[y * w + h];
+        switch(b.type)
+        {
+        case BoundaryCondition<T>::Type::Constant:
+            return b.c;
+        case BoundaryCondition<T>::Type::Undefined:
+        default:
+            return T();
+        }
+    }
+
+    template <class Other>
+    matrix<Other> copy_roi(int x, int y, int w, int h, BoundaryCondition<T> b = BoundaryCondition<T>())
+    {
+        matrix<Other> to_return(w, h);
+        for(int i = y; i < y+h; i++)
+        {
+            for(int j = x; j < x+w; j++)
+            {
+                to_return[i-y][j-x] = get(j, i, b);
+            }
+        }
+    }
+
+    void write(int x, int y, T d)
+    {
+        data[y * w + x] = d;
     }
 };
 

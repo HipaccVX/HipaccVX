@@ -364,7 +364,7 @@ string node_generator(HipaVX::HipaccNode* n, Type t)
 
 }
 
-namespace function_ast
+namespace ast4vx
 {
 
 // !!! get rid of this use tuples
@@ -396,7 +396,7 @@ std::string to_string(Datatype d)
     return datatype;
 }
 
-std::tuple<std::vector<Kernelcall_Variable*>, std::vector<Kernelcall_Variable*>> generate_accessor(HipaVX::Image *image, function_ast::Stencil *stencil)
+std::tuple<std::vector<Kernelcall_Variable*>, std::vector<Kernelcall_Variable*>> generate_accessor(HipaVX::Image *image, ast4vx::Stencil *stencil)
 {
     std::vector<Kernelcall_Variable*> to_return_call_parameters;
     std::vector<Kernelcall_Variable*> to_return;
@@ -489,11 +489,11 @@ std::string generate_call(ForEveryPixel *fep)
         /*case secret::NodeType::Variable:
             tuple = generator::generate_scalar((HipaVX::Scalar*) n->parameters[i]);
             break;*/
-        case function_ast::NodeType::Image:
+        case ast4vx::NodeType::Image:
         {
             auto image = std::dynamic_pointer_cast<Image>(node);
             HipaVX::Image *HVX_image = image->image;
-            if (i+1 < fep->inputs.size() && fep->inputs[i+1]->type == function_ast::NodeType::Stencil)
+            if (i+1 < fep->inputs.size() && fep->inputs[i+1]->type == ast4vx::NodeType::Stencil)
             {
                 auto stencil = std::dynamic_pointer_cast<Stencil>(fep->inputs[i+1]);
                 tuple = generate_accessor(HVX_image, stencil.get());
@@ -578,7 +578,7 @@ std::string generate_source_recursive(std::vector<HipaVX::Node*> nodes, const ge
 
             } break;
             case generator::Type::Call:
-                sources += function_ast::generate_call(node->kernel.get()) + '\n';
+                sources += ast4vx::generate_call(node->kernel.get()) + '\n';
                 break;
             }
         }
@@ -652,87 +652,87 @@ void process_graph(HipaVX::Graph *graph)
     _write_to_file("main.hipaVX.cpp", main);
 }
 
-std::string HipaccVisitor::visit(std::shared_ptr<function_ast::Node> n, int i)
+std::string HipaccVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i)
 {
     switch(n->type)
     {
-    case function_ast::NodeType::None:
+    case ast4vx::NodeType::None:
         throw std::runtime_error("HipaccVisitor visited None");
-    case function_ast::NodeType::Add:
-    case function_ast::NodeType::Sub:
-    case function_ast::NodeType::Mul:
-    case function_ast::NodeType::Div:
-    case function_ast::NodeType::ShiftLeft:
-    case function_ast::NodeType::ShiftRight:
-    case function_ast::NodeType::Less:
-    case function_ast::NodeType::LessEquals:
-    case function_ast::NodeType::Equals:
-    case function_ast::NodeType::GreaterEquals:
-    case function_ast::NodeType::Greater:
-    case function_ast::NodeType::Unequals:
-    case function_ast::NodeType::And:
-    case function_ast::NodeType::Or:
-    case function_ast::NodeType::Xor:
-    case function_ast::NodeType::BitwiseAnd:
-    case function_ast::NodeType::BitwiseOr:
-    case function_ast::NodeType::BitwiseXor:
+    case ast4vx::NodeType::Add:
+    case ast4vx::NodeType::Sub:
+    case ast4vx::NodeType::Mul:
+    case ast4vx::NodeType::Div:
+    case ast4vx::NodeType::ShiftLeft:
+    case ast4vx::NodeType::ShiftRight:
+    case ast4vx::NodeType::Less:
+    case ast4vx::NodeType::LessEquals:
+    case ast4vx::NodeType::Equals:
+    case ast4vx::NodeType::GreaterEquals:
+    case ast4vx::NodeType::Greater:
+    case ast4vx::NodeType::Unequals:
+    case ast4vx::NodeType::And:
+    case ast4vx::NodeType::Or:
+    case ast4vx::NodeType::Xor:
+    case ast4vx::NodeType::BitwiseAnd:
+    case ast4vx::NodeType::BitwiseOr:
+    case ast4vx::NodeType::BitwiseXor:
     {
-        auto s = std::dynamic_pointer_cast<function_ast::SimpleBinaryNode>(n);
+        auto s = std::dynamic_pointer_cast<ast4vx::SimpleBinaryNode>(n);
         std::string op;
 
         switch(s->type)
         {
-        case function_ast::NodeType::Add:
+        case ast4vx::NodeType::Add:
             op = "+";
             break;
-        case function_ast::NodeType::Sub:
+        case ast4vx::NodeType::Sub:
             op = "-";
             break;
-        case function_ast::NodeType::Mul:
+        case ast4vx::NodeType::Mul:
             op = "*";
             break;
-        case function_ast::NodeType::Div:
+        case ast4vx::NodeType::Div:
             op = "/";
             break;
-        case function_ast::NodeType::ShiftLeft:
+        case ast4vx::NodeType::ShiftLeft:
             op = "<<";
             break;
-        case function_ast::NodeType::ShiftRight:
+        case ast4vx::NodeType::ShiftRight:
             op = ">>";
             break;
-        case function_ast::NodeType::And:
+        case ast4vx::NodeType::And:
             op = "&&";
             break;
-        case function_ast::NodeType::Or:
+        case ast4vx::NodeType::Or:
             op = "||";
             break;
-        case function_ast::NodeType::Xor:
+        case ast4vx::NodeType::Xor:
             throw std::runtime_error("std::string generate(SimpleBinaryNode *s): No logical XOR available");
-        case function_ast::NodeType::BitwiseAnd:
+        case ast4vx::NodeType::BitwiseAnd:
             op = "&";
             break;
-        case function_ast::NodeType::BitwiseOr:
+        case ast4vx::NodeType::BitwiseOr:
             op = "|";
             break;
-        case function_ast::NodeType::BitwiseXor:
+        case ast4vx::NodeType::BitwiseXor:
             op = "^";
             break;
-        case function_ast::NodeType::Less:
+        case ast4vx::NodeType::Less:
             op = "<";
             break;
-        case function_ast::NodeType::LessEquals:
+        case ast4vx::NodeType::LessEquals:
             op = "<=";
             break;
-        case function_ast::NodeType::Equals:
+        case ast4vx::NodeType::Equals:
             op = "==";
             break;
-        case function_ast::NodeType::GreaterEquals:
+        case ast4vx::NodeType::GreaterEquals:
             op = ">=";
             break;
-        case function_ast::NodeType::Greater:
+        case ast4vx::NodeType::Greater:
             op = ">";
             break;
-        case function_ast::NodeType::Unequals:
+        case ast4vx::NodeType::Unequals:
             op = "!=";
             break;
         }
@@ -743,39 +743,39 @@ std::string HipaccVisitor::visit(std::shared_ptr<function_ast::Node> n, int i)
         return "(" + left + " " + op + " " + right + ")";
     }
 
-    case function_ast::NodeType::BitwiseNot:
-    case function_ast::NodeType::Not:
-    case function_ast::NodeType::Sqrt:
-    case function_ast::NodeType::Exp:
-    case function_ast::NodeType::Conversion:
-    case function_ast::NodeType::Abs:
-    case function_ast::NodeType::Atan2:
+    case ast4vx::NodeType::BitwiseNot:
+    case ast4vx::NodeType::Not:
+    case ast4vx::NodeType::Sqrt:
+    case ast4vx::NodeType::Exp:
+    case ast4vx::NodeType::Conversion:
+    case ast4vx::NodeType::Abs:
+    case ast4vx::NodeType::Atan2:
     {
-        auto s = std::dynamic_pointer_cast<function_ast::SimpleUnaryFunctionNode>(n);
+        auto s = std::dynamic_pointer_cast<ast4vx::SimpleUnaryFunctionNode>(n);
         std::string func;
 
         switch(s->type)
         {
-        case function_ast::NodeType::Sqrt:
+        case ast4vx::NodeType::Sqrt:
             func = "sqrt";
             break;
-        case function_ast::NodeType::Exp:
+        case ast4vx::NodeType::Exp:
             func = "exp";
             break;
-        case function_ast::NodeType::Atan2:
+        case ast4vx::NodeType::Atan2:
             func = "atan2";
             break;
-        case function_ast::NodeType::Abs:
+        case ast4vx::NodeType::Abs:
             func = "abs";
             break;
-        case function_ast::NodeType::Not:
+        case ast4vx::NodeType::Not:
             func = "!";
             break;
-        case function_ast::NodeType::BitwiseNot:
+        case ast4vx::NodeType::BitwiseNot:
             func = "~";
             break;
-        case function_ast::NodeType::Conversion:
-            func = "(" + to_string(std::dynamic_pointer_cast<function_ast::Conversion>(s)->to) + ")";
+        case ast4vx::NodeType::Conversion:
+            func = "(" + to_string(std::dynamic_pointer_cast<ast4vx::Conversion>(s)->to) + ")";
             break;
         }
 
@@ -784,38 +784,38 @@ std::string HipaccVisitor::visit(std::shared_ptr<function_ast::Node> n, int i)
         return func + "(" + argument + ")";
     }
 
-    case function_ast::NodeType::Constant:
+    case ast4vx::NodeType::Constant:
     {
-        if (auto c = dynamic_cast<function_ast::Constant<float>*>(n.get()))
+        if (auto c = dynamic_cast<ast4vx::Constant<float>*>(n.get()))
         {
             return std::to_string(c->value);
         }
-        else if (auto c = dynamic_cast<function_ast::Constant<unsigned char>*>(n.get()))
+        else if (auto c = dynamic_cast<ast4vx::Constant<unsigned char>*>(n.get()))
         {
             return std::to_string(c->value);
         }
-        else if (auto c = dynamic_cast<function_ast::Constant<unsigned int>*>(n.get()))
+        else if (auto c = dynamic_cast<ast4vx::Constant<unsigned int>*>(n.get()))
         {
             return std::to_string(c->value);
         }
-        else if (auto c = dynamic_cast<function_ast::Constant<int>*>(n.get()))
+        else if (auto c = dynamic_cast<ast4vx::Constant<int>*>(n.get()))
         {
             return std::to_string(c->value);
         }
         return "CPP Generate: Constant type fail";
     }
 
-    case function_ast::NodeType::Vect4:
+    case ast4vx::NodeType::Vect4:
     {
-        auto s = std::dynamic_pointer_cast<function_ast::Vect4>(n);
+        auto s = std::dynamic_pointer_cast<ast4vx::Vect4>(n);
         std::string func = "";
 
         switch(s->to_dtype)
         {
-        case function_ast::Datatype::UCHAR4:
+        case ast4vx::Datatype::UCHAR4:
             func = "make_uchar4";
             break;
-        case function_ast::Datatype::UINT4:
+        case ast4vx::Datatype::UINT4:
             func = "make_uint4";
             break;
         default:
@@ -831,22 +831,22 @@ std::string HipaccVisitor::visit(std::shared_ptr<function_ast::Node> n, int i)
         return func + "("+ argument + ")";
     }
 
-    case function_ast::NodeType::Extract4:
+    case ast4vx::NodeType::Extract4:
     {
-        auto s = std::dynamic_pointer_cast<function_ast::Extract4>(n);
+        auto s = std::dynamic_pointer_cast<ast4vx::Extract4>(n);
         string channel;
         switch(s->channel)
         {
-        case function_ast::VectChannelType::CHANNEL0:
+        case ast4vx::VectChannelType::CHANNEL0:
             channel = "x";
             break;
-        case function_ast::VectChannelType::CHANNEL1:
+        case ast4vx::VectChannelType::CHANNEL1:
             channel = "y";
             break;
-        case function_ast::VectChannelType::CHANNEL2:
+        case ast4vx::VectChannelType::CHANNEL2:
             channel = "z";
             break;
-        case function_ast::VectChannelType::CHANNEL3:
+        case ast4vx::VectChannelType::CHANNEL3:
             channel = "w";
             break;
         default:
@@ -856,10 +856,10 @@ std::string HipaccVisitor::visit(std::shared_ptr<function_ast::Node> n, int i)
         std::string func = "";
         switch(s->from_dtype)
         {
-        case function_ast::Datatype::UCHAR4:
+        case ast4vx::Datatype::UCHAR4:
             func = "convert_uchar4";
             break;
-        case function_ast::Datatype::UINT4:
+        case ast4vx::Datatype::UINT4:
             func = "convert_uint4";
             break;
         default:
@@ -872,22 +872,22 @@ std::string HipaccVisitor::visit(std::shared_ptr<function_ast::Node> n, int i)
         return func + "("+ argument + ")." + channel;
     }
 
-    case function_ast::NodeType::Variable:
+    case ast4vx::NodeType::Variable:
     {
-        return std::dynamic_pointer_cast<function_ast::Variable>(n)->name;
+        return std::dynamic_pointer_cast<ast4vx::Variable>(n)->name;
     }
 
-    case function_ast::NodeType::VariableDefinition:
+    case ast4vx::NodeType::VariableDefinition:
     {
-        auto s = std::dynamic_pointer_cast<function_ast::VariableDefinition>(n);
-        std::string datatype = to_string(std::dynamic_pointer_cast<function_ast::Variable>(s->subnodes[0])->datatype);
+        auto s = std::dynamic_pointer_cast<ast4vx::VariableDefinition>(n);
+        std::string datatype = to_string(std::dynamic_pointer_cast<ast4vx::Variable>(s->subnodes[0])->datatype);
         return datatype + " " + this->visit(s->subnodes[0], 0);
     }
 
-    case function_ast::NodeType::Assignment:
+    case ast4vx::NodeType::Assignment:
     {
-        auto s = std::dynamic_pointer_cast<function_ast::Assignment>(n);
-        if (s->subnodes[0]->type == function_ast::NodeType::ReductionOutput)
+        auto s = std::dynamic_pointer_cast<ast4vx::Assignment>(n);
+        if (s->subnodes[0]->type == ast4vx::NodeType::ReductionOutput)
         {
             auto right = this->visit(s->subnodes[1], 0);
             return "return " + right + ";";
@@ -901,14 +901,14 @@ std::string HipaccVisitor::visit(std::shared_ptr<function_ast::Node> n, int i)
         }
     }
 
-    case function_ast::NodeType::TargetPixel:
+    case ast4vx::NodeType::TargetPixel:
     {
         return "output()";
     }
 
-    case function_ast::NodeType::If:
+    case ast4vx::NodeType::If:
     {
-        auto s = std::dynamic_pointer_cast<function_ast::If>(n);
+        auto s = std::dynamic_pointer_cast<ast4vx::If>(n);
         std::string to_return;
 
         to_return += "if (" + this->visit(s->condition, 0) + ")\n";
@@ -919,9 +919,9 @@ std::string HipaccVisitor::visit(std::shared_ptr<function_ast::Node> n, int i)
         return to_return;
     }
 
-    case function_ast::NodeType::Else:
+    case ast4vx::NodeType::Else:
     {
-        auto s = std::dynamic_pointer_cast<function_ast::Else>(n);
+        auto s = std::dynamic_pointer_cast<ast4vx::Else>(n);
         std::string to_return;
 
         to_return += "else\n";
@@ -932,14 +932,14 @@ std::string HipaccVisitor::visit(std::shared_ptr<function_ast::Node> n, int i)
         return to_return;
     }
 
-    case function_ast::NodeType::Image:
+    case ast4vx::NodeType::Image:
     {
-        return function_ast::generate_image_name(std::dynamic_pointer_cast<function_ast::Image>(n).get());
+        return ast4vx::generate_image_name(std::dynamic_pointer_cast<ast4vx::Image>(n).get());
     }
 
-    case function_ast::NodeType::ForEveryPixel:
+    case ast4vx::NodeType::ForEveryPixel:
     {
-        auto s = std::dynamic_pointer_cast<function_ast::ForEveryPixel>(n);
+        auto s = std::dynamic_pointer_cast<ast4vx::ForEveryPixel>(n);
 
         string member_variables;
         string constructor_parameters;
@@ -948,23 +948,23 @@ std::string HipaccVisitor::visit(std::shared_ptr<function_ast::Node> n, int i)
 
         string tabs = "\t";
 
-        std::vector<function_ast::Variable*> variables;
+        std::vector<ast4vx::Variable*> variables;
 
         // Dirty hack
         for(auto node: s->inputs) {
             string name="";
-            if (node->type == function_ast::NodeType::Variable)
+            if (node->type == ast4vx::NodeType::Variable)
             {
                 name = visit(node, i);
             }
-            if (node->type == function_ast::NodeType::Image)
+            if (node->type == ast4vx::NodeType::Image)
             {
-                auto image = std::dynamic_pointer_cast<function_ast::Image>(node);
+                auto image = std::dynamic_pointer_cast<ast4vx::Image>(node);
                 name = visit(image, i);
             }
-            if (node->type == function_ast::NodeType::Stencil)
+            if (node->type == ast4vx::NodeType::Stencil)
             {
-                auto s = std::dynamic_pointer_cast<function_ast::Stencil>(node);
+                auto s = std::dynamic_pointer_cast<ast4vx::Stencil>(node);
                 name = s->name;
             }
 
@@ -976,18 +976,18 @@ std::string HipaccVisitor::visit(std::shared_ptr<function_ast::Node> n, int i)
             auto node = node_it.second;
             string name = node_it.first;
             string type;
-            if (node->type == function_ast::NodeType::Variable)
+            if (node->type == ast4vx::NodeType::Variable)
             {
-                type = to_string(std::dynamic_pointer_cast<function_ast::Variable>(node)->datatype);
+                type = to_string(std::dynamic_pointer_cast<ast4vx::Variable>(node)->datatype);
             }
-            if (node->type == function_ast::NodeType::Image)
+            if (node->type == ast4vx::NodeType::Image)
             {
-                auto image = std::dynamic_pointer_cast<function_ast::Image>(node);
+                auto image = std::dynamic_pointer_cast<ast4vx::Image>(node);
                 type = "Accessor<" + VX_DF_IMAGE_to_hipacc[image->image->col] + ">&";
             }
-            if (node->type == function_ast::NodeType::Stencil)
+            if (node->type == ast4vx::NodeType::Stencil)
             {
-                auto s = std::dynamic_pointer_cast<function_ast::Stencil>(node);
+                auto s = std::dynamic_pointer_cast<ast4vx::Stencil>(node);
                 type = "Domain&";
 
                 member_variables += tabs + type + " " + name + ";\n";
@@ -1003,13 +1003,13 @@ std::string HipaccVisitor::visit(std::shared_ptr<function_ast::Node> n, int i)
             constructor_init_list += ", " + name + "(" + name + ")";
 
 
-            if (node->type == function_ast::NodeType::Image)
+            if (node->type == ast4vx::NodeType::Image)
             {
                 add_accessor += tabs + '\t' + "add_accessor(&" + name + ");\n";
             }
         }
 
-        if (s->output->type != function_ast::NodeType::Image)
+        if (s->output->type != ast4vx::NodeType::Image)
             throw std::runtime_error("std::string generate(ForEveryPixel *s)");
 
         HipaccVisitor v;
@@ -1023,27 +1023,27 @@ std::string HipaccVisitor::visit(std::shared_ptr<function_ast::Node> n, int i)
         def = use_template(def, "ADD_ACCESSOR", add_accessor);
         def = use_template(def, "MISC_CONSTRUCTOR", "");
         def = use_template(def, "KERNEL", kernel);
-        def = use_template(def, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[std::dynamic_pointer_cast<function_ast::Image>(s->output)->image->col]);
+        def = use_template(def, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[std::dynamic_pointer_cast<ast4vx::Image>(s->output)->image->col]);
         def = use_template(def, "ID", std::to_string(s->id));
 
         return def;
     }
 
-    case function_ast::NodeType::CurrentPixelvalue:
+    case ast4vx::NodeType::CurrentPixelvalue:
     {
-        auto s = std::dynamic_pointer_cast<function_ast::CurrentPixelvalue>(n);
-        return generate_image_name(std::dynamic_pointer_cast<function_ast::Image>(s->subnodes[0]).get()) + "()";
+        auto s = std::dynamic_pointer_cast<ast4vx::CurrentPixelvalue>(n);
+        return generate_image_name(std::dynamic_pointer_cast<ast4vx::Image>(s->subnodes[0]).get()) + "()";
     }
 
-    case function_ast::NodeType::Stencil:
+    case ast4vx::NodeType::Stencil:
     {
         return "Stencil generate todo";
     }
 
-    case function_ast::NodeType::IterateAroundPixel:
+    case ast4vx::NodeType::IterateAroundPixel:
     {
-        auto s = std::dynamic_pointer_cast<function_ast::IterateAroundPixel>(n);
-        auto stencil = std::dynamic_pointer_cast<function_ast::Stencil>(s->subnodes[1]);
+        auto s = std::dynamic_pointer_cast<ast4vx::IterateAroundPixel>(n);
+        auto stencil = std::dynamic_pointer_cast<ast4vx::Stencil>(s->subnodes[1]);
         std::string t = "iterate(@@@DOM_NAME@@@, [&] () -> void {\n"
                         "@@@BODY@@@\n"
                         "})";
@@ -1052,26 +1052,26 @@ std::string HipaccVisitor::visit(std::shared_ptr<function_ast::Node> n, int i)
         return t;
     }
 
-    case function_ast::NodeType::ReductionOutput:
+    case ast4vx::NodeType::ReductionOutput:
     {
         return "ReductionOutput should not generate";
     }
 
-    case function_ast::NodeType::ReduceAroundPixel:
+    case ast4vx::NodeType::ReduceAroundPixel:
     {
-        auto s = std::dynamic_pointer_cast<function_ast::ReduceAroundPixel>(n);
+        auto s = std::dynamic_pointer_cast<ast4vx::ReduceAroundPixel>(n);
 
-        auto stencil = std::dynamic_pointer_cast<function_ast::Stencil>(s->subnodes[1]);
+        auto stencil = std::dynamic_pointer_cast<ast4vx::Stencil>(s->subnodes[1]);
         std::string reduction = "";
         switch(s->reduction_type)
         {
-        case function_ast::ReduceAroundPixel::Type::SUM:
+        case ast4vx::ReduceAroundPixel::Type::SUM:
             reduction = "SUM";
             break;
-        case function_ast::ReduceAroundPixel::Type::MIN:
+        case ast4vx::ReduceAroundPixel::Type::MIN:
             reduction = "MIN";
             break;
-        case function_ast::ReduceAroundPixel::Type::MAX:
+        case ast4vx::ReduceAroundPixel::Type::MAX:
             reduction = "MAX";
             break;
         }
@@ -1087,65 +1087,65 @@ std::string HipaccVisitor::visit(std::shared_ptr<function_ast::Node> n, int i)
         return t;
     }
 
-    case function_ast::NodeType::PixelvalueAtCurrentStencilPos:
+    case ast4vx::NodeType::PixelvalueAtCurrentStencilPos:
     {
-        auto s = std::dynamic_pointer_cast<function_ast::PixelvalueAtCurrentStencilPos>(n);
-        std::shared_ptr<function_ast::Stencil>stencil;
-        std::shared_ptr<function_ast::Image> image;
-        function_ast::IterateAroundPixel* iterate;
-        function_ast::ReduceAroundPixel* reduce;
-        if ((iterate = dynamic_cast<function_ast::IterateAroundPixel*>(s->parent)))
+        auto s = std::dynamic_pointer_cast<ast4vx::PixelvalueAtCurrentStencilPos>(n);
+        std::shared_ptr<ast4vx::Stencil>stencil;
+        std::shared_ptr<ast4vx::Image> image;
+        ast4vx::IterateAroundPixel* iterate;
+        ast4vx::ReduceAroundPixel* reduce;
+        if ((iterate = dynamic_cast<ast4vx::IterateAroundPixel*>(s->parent)))
         {
-            stencil = std::dynamic_pointer_cast<function_ast::Stencil>(iterate->subnodes[1]);
-            image = std::dynamic_pointer_cast<function_ast::Image>(iterate->subnodes[0]);
+            stencil = std::dynamic_pointer_cast<ast4vx::Stencil>(iterate->subnodes[1]);
+            image = std::dynamic_pointer_cast<ast4vx::Image>(iterate->subnodes[0]);
         }
-        else if ((reduce = dynamic_cast<function_ast::ReduceAroundPixel*>(s->parent)))
+        else if ((reduce = dynamic_cast<ast4vx::ReduceAroundPixel*>(s->parent)))
         {
-            stencil = std::dynamic_pointer_cast<function_ast::Stencil>(reduce->subnodes[1]);
-            image = std::dynamic_pointer_cast<function_ast::Image>(reduce->subnodes[0]);
+            stencil = std::dynamic_pointer_cast<ast4vx::Stencil>(reduce->subnodes[1]);
+            image = std::dynamic_pointer_cast<ast4vx::Image>(reduce->subnodes[0]);
         }
 
         return this->visit(image, i) + "(" + stencil->name + ")";
     }
 
-    case function_ast::NodeType::StencilvalueAtCurrentStencilPos:
+    case ast4vx::NodeType::StencilvalueAtCurrentStencilPos:
     {
-        auto s = std::dynamic_pointer_cast<function_ast::StencilvalueAtCurrentStencilPos>(n);
-        std::shared_ptr<function_ast::Stencil> stencil;
-        function_ast::IterateAroundPixel* iterate;
-        function_ast::ReduceAroundPixel* reduce;
-        if ((iterate = dynamic_cast<function_ast::IterateAroundPixel*>(s->parent)))
+        auto s = std::dynamic_pointer_cast<ast4vx::StencilvalueAtCurrentStencilPos>(n);
+        std::shared_ptr<ast4vx::Stencil> stencil;
+        ast4vx::IterateAroundPixel* iterate;
+        ast4vx::ReduceAroundPixel* reduce;
+        if ((iterate = dynamic_cast<ast4vx::IterateAroundPixel*>(s->parent)))
         {
-            stencil = std::dynamic_pointer_cast<function_ast::Stencil>(iterate->subnodes[1]);
+            stencil = std::dynamic_pointer_cast<ast4vx::Stencil>(iterate->subnodes[1]);
         }
-        else if ((reduce = dynamic_cast<function_ast::ReduceAroundPixel*>(s->parent)))
+        else if ((reduce = dynamic_cast<ast4vx::ReduceAroundPixel*>(s->parent)))
         {
-            stencil = std::dynamic_pointer_cast<function_ast::Stencil>(reduce->subnodes[1]);
+            stencil = std::dynamic_pointer_cast<ast4vx::Stencil>(reduce->subnodes[1]);
         }
 
         return stencil->name + "_mask" + "(" + stencil->name + ")";
     }
 
-    case function_ast::NodeType::Statements:
+    case ast4vx::NodeType::Statements:
     {
-        auto s = std::dynamic_pointer_cast<function_ast::Statements>(n);
+        auto s = std::dynamic_pointer_cast<ast4vx::Statements>(n);
         std::string to_return;
 
         for(auto statement: s->statements)
         {
             to_return += this->visit(statement, i);
-            if (statement->type != function_ast::NodeType::If && statement->type != function_ast::NodeType::Else)
+            if (statement->type != ast4vx::NodeType::If && statement->type != ast4vx::NodeType::Else)
                 to_return += ";\n";
         }
 
         return to_return;
     }
 
-    case function_ast::NodeType::Pregenerated:
+    case ast4vx::NodeType::Pregenerated:
         break;
-    case function_ast::NodeType::PixelAccessor:
+    case ast4vx::NodeType::PixelAccessor:
         break;
-    case function_ast::NodeType::WindowAccessor:
+    case ast4vx::NodeType::WindowOperation:
         break;
     }
     throw std::runtime_error("Hipacc Generate: reached end of switch case");

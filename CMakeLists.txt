@@ -11,8 +11,8 @@ list(APPEND HipaVX_SRC ${GLOB_RESULT})
 file(GLOB GLOB_RESULT LIST_DIRECTORIES FALSE ${HIPAVX_DIR}/kernels/*)
 list(APPEND HipaVX_SRC ${GLOB_RESULT})
 
-file(GLOB_RECURSE HipaccGen_SRC ${CMAKE_CURRENT_SOURCE_DIR}/hipaVX/hipacc_gen/*)
-file(GLOB_RECURSE CppGen_SRC ${CMAKE_CURRENT_SOURCE_DIR}/hipaVX/cpp_gen/*)
+file(GLOB_RECURSE HipaccGen_SRC ${HIPAVX_DIR}/hipacc_gen/*)
+file(GLOB_RECURSE CppGen_SRC ${HIPAVX_DIR}/cpp_gen/*)
 
 add_library (HipaVX_Hipacc ${HipaVX_SRC} ${HipaccGen_SRC})
 add_library (HipaVX_Cpp ${HipaVX_SRC} ${CppGen_SRC})

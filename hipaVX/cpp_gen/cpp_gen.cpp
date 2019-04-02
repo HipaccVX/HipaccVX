@@ -55,7 +55,7 @@ string node_generator(HipaVX::HipaccNode* n, Type t)
 
 }
 
-namespace function_ast
+namespace ast4vx
 {
 
 // !!! get rid of this use tuples
@@ -76,6 +76,9 @@ std::string to_string(Datatype d)
         break;
     case Datatype::UINT8:
         datatype = "unsigned char";
+        break;
+    case Datatype::INT8:
+        datatype = "char";
         break;
     case Datatype::INT16:
         datatype = "short";
@@ -217,87 +220,87 @@ void process_graph(HipaVX::Graph *graph)
 }
 
 
-std::string CPPVisitor::visit(std::shared_ptr<function_ast::Node> n, int i)
+std::string CPPVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i)
 {
     switch(n->type)
     {
-    case function_ast::NodeType::None:
+    case ast4vx::NodeType::None:
         throw std::runtime_error("CPPVisitor visited None");
-    case function_ast::NodeType::Add:
-    case function_ast::NodeType::Sub:
-    case function_ast::NodeType::Mul:
-    case function_ast::NodeType::Div:
-    case function_ast::NodeType::ShiftLeft:
-    case function_ast::NodeType::ShiftRight:
-    case function_ast::NodeType::Less:
-    case function_ast::NodeType::LessEquals:
-    case function_ast::NodeType::Equals:
-    case function_ast::NodeType::GreaterEquals:
-    case function_ast::NodeType::Greater:
-    case function_ast::NodeType::Unequals:
-    case function_ast::NodeType::And:
-    case function_ast::NodeType::Or:
-    case function_ast::NodeType::Xor:
-    case function_ast::NodeType::BitwiseAnd:
-    case function_ast::NodeType::BitwiseOr:
-    case function_ast::NodeType::BitwiseXor:
+    case ast4vx::NodeType::Add:
+    case ast4vx::NodeType::Sub:
+    case ast4vx::NodeType::Mul:
+    case ast4vx::NodeType::Div:
+    case ast4vx::NodeType::ShiftLeft:
+    case ast4vx::NodeType::ShiftRight:
+    case ast4vx::NodeType::Less:
+    case ast4vx::NodeType::LessEquals:
+    case ast4vx::NodeType::Equals:
+    case ast4vx::NodeType::GreaterEquals:
+    case ast4vx::NodeType::Greater:
+    case ast4vx::NodeType::Unequals:
+    case ast4vx::NodeType::And:
+    case ast4vx::NodeType::Or:
+    case ast4vx::NodeType::Xor:
+    case ast4vx::NodeType::BitwiseAnd:
+    case ast4vx::NodeType::BitwiseOr:
+    case ast4vx::NodeType::BitwiseXor:
     {
-        auto s = std::dynamic_pointer_cast<function_ast::SimpleBinaryNode>(n);
+        auto s = std::dynamic_pointer_cast<ast4vx::SimpleBinaryNode>(n);
         std::string op;
 
         switch(s->type)
         {
-        case function_ast::NodeType::Add:
+        case ast4vx::NodeType::Add:
             op = "+";
             break;
-        case function_ast::NodeType::Sub:
+        case ast4vx::NodeType::Sub:
             op = "-";
             break;
-        case function_ast::NodeType::Mul:
+        case ast4vx::NodeType::Mul:
             op = "*";
             break;
-        case function_ast::NodeType::Div:
+        case ast4vx::NodeType::Div:
             op = "/";
             break;
-        case function_ast::NodeType::ShiftLeft:
+        case ast4vx::NodeType::ShiftLeft:
             op = "<<";
             break;
-        case function_ast::NodeType::ShiftRight:
+        case ast4vx::NodeType::ShiftRight:
             op = ">>";
             break;
-        case function_ast::NodeType::And:
+        case ast4vx::NodeType::And:
             op = "&&";
             break;
-        case function_ast::NodeType::Or:
+        case ast4vx::NodeType::Or:
             op = "||";
             break;
-        case function_ast::NodeType::Xor:
+        case ast4vx::NodeType::Xor:
             throw std::runtime_error("std::string generate(SimpleBinaryNode *s): No logical XOR available");
-        case function_ast::NodeType::BitwiseAnd:
+        case ast4vx::NodeType::BitwiseAnd:
             op = "&";
             break;
-        case function_ast::NodeType::BitwiseOr:
+        case ast4vx::NodeType::BitwiseOr:
             op = "|";
             break;
-        case function_ast::NodeType::BitwiseXor:
+        case ast4vx::NodeType::BitwiseXor:
             op = "^";
             break;
-        case function_ast::NodeType::Less:
+        case ast4vx::NodeType::Less:
             op = "<";
             break;
-        case function_ast::NodeType::LessEquals:
+        case ast4vx::NodeType::LessEquals:
             op = "<=";
             break;
-        case function_ast::NodeType::Equals:
+        case ast4vx::NodeType::Equals:
             op = "==";
             break;
-        case function_ast::NodeType::GreaterEquals:
+        case ast4vx::NodeType::GreaterEquals:
             op = ">=";
             break;
-        case function_ast::NodeType::Greater:
+        case ast4vx::NodeType::Greater:
             op = ">";
             break;
-        case function_ast::NodeType::Unequals:
+        case ast4vx::NodeType::Unequals:
             op = "!=";
             break;
         }
@@ -308,39 +311,39 @@ std::string CPPVisitor::visit(std::shared_ptr<function_ast::Node> n, int i)
         return "(" + left + " " + op + " " + right + ")";
     }
 
-    case function_ast::NodeType::BitwiseNot:
-    case function_ast::NodeType::Not:
-    case function_ast::NodeType::Sqrt:
-    case function_ast::NodeType::Exp:
-    case function_ast::NodeType::Conversion:
-    case function_ast::NodeType::Abs:
-    case function_ast::NodeType::Atan2:
+    case ast4vx::NodeType::BitwiseNot:
+    case ast4vx::NodeType::Not:
+    case ast4vx::NodeType::Sqrt:
+    case ast4vx::NodeType::Exp:
+    case ast4vx::NodeType::Conversion:
+    case ast4vx::NodeType::Abs:
+    case ast4vx::NodeType::Atan2:
     {
-        auto s = std::dynamic_pointer_cast<function_ast::SimpleUnaryFunctionNode>(n);
+        auto s = std::dynamic_pointer_cast<ast4vx::SimpleUnaryFunctionNode>(n);
         std::string func;
 
         switch(s->type)
         {
-        case function_ast::NodeType::Sqrt:
+        case ast4vx::NodeType::Sqrt:
             func = "sqrt";
             break;
-        case function_ast::NodeType::Exp:
+        case ast4vx::NodeType::Exp:
             func = "exp";
             break;
-        case function_ast::NodeType::Atan2:
+        case ast4vx::NodeType::Atan2:
             func = "atan2";
             break;
-        case function_ast::NodeType::Abs:
+        case ast4vx::NodeType::Abs:
             func = "abs";
             break;
-        case function_ast::NodeType::Not:
+        case ast4vx::NodeType::Not:
             func = "!";
             break;
-        case function_ast::NodeType::BitwiseNot:
+        case ast4vx::NodeType::BitwiseNot:
             func = "~";
             break;
-        case function_ast::NodeType::Conversion:
-            func = "(" + to_string(std::dynamic_pointer_cast<function_ast::Conversion>(s)->to) + ")";
+        case ast4vx::NodeType::Conversion:
+            func = "(" + to_string(std::dynamic_pointer_cast<ast4vx::Conversion>(s)->to) + ")";
             break;
         }
 
@@ -349,38 +352,38 @@ std::string CPPVisitor::visit(std::shared_ptr<function_ast::Node> n, int i)
         return func + "(" + argument + ")";
     }
 
-    case function_ast::NodeType::Constant:
+    case ast4vx::NodeType::Constant:
     {
-        if (auto c = dynamic_cast<function_ast::Constant<float>*>(n.get()))
+        if (auto c = dynamic_cast<ast4vx::Constant<float>*>(n.get()))
         {
             return std::to_string(c->value);
         }
-        else if (auto c = dynamic_cast<function_ast::Constant<unsigned char>*>(n.get()))
+        else if (auto c = dynamic_cast<ast4vx::Constant<unsigned char>*>(n.get()))
         {
             return std::to_string(c->value);
         }
-        else if (auto c = dynamic_cast<function_ast::Constant<unsigned int>*>(n.get()))
+        else if (auto c = dynamic_cast<ast4vx::Constant<unsigned int>*>(n.get()))
         {
             return std::to_string(c->value);
         }
-        else if (auto c = dynamic_cast<function_ast::Constant<int>*>(n.get()))
+        else if (auto c = dynamic_cast<ast4vx::Constant<int>*>(n.get()))
         {
             return std::to_string(c->value);
         }
         return "CPP Generate: Constant type fail";
     }
 
-    case function_ast::NodeType::Vect4:
+    case ast4vx::NodeType::Vect4:
     {
-        auto s = std::dynamic_pointer_cast<function_ast::Vect4>(n);
+        auto s = std::dynamic_pointer_cast<ast4vx::Vect4>(n);
         std::string func = "";
 
         switch(s->to_dtype)
         {
-        case function_ast::Datatype::UCHAR4:
+        case ast4vx::Datatype::UCHAR4:
             func = "uchar4";
             break;
-        case function_ast::Datatype::UINT4:
+        case ast4vx::Datatype::UINT4:
             func = "uint4";
             break;
         default:
@@ -396,22 +399,22 @@ std::string CPPVisitor::visit(std::shared_ptr<function_ast::Node> n, int i)
         return func + "("+ argument + ")";
     }
 
-    case function_ast::NodeType::Extract4:
+    case ast4vx::NodeType::Extract4:
     {
-        auto s = std::dynamic_pointer_cast<function_ast::Extract4>(n);
+        auto s = std::dynamic_pointer_cast<ast4vx::Extract4>(n);
         string channel;
         switch(s->channel)
         {
-        case function_ast::VectChannelType::CHANNEL0:
+        case ast4vx::VectChannelType::CHANNEL0:
             channel = "0";
             break;
-        case function_ast::VectChannelType::CHANNEL1:
+        case ast4vx::VectChannelType::CHANNEL1:
             channel = "1";
             break;
-        case function_ast::VectChannelType::CHANNEL2:
+        case ast4vx::VectChannelType::CHANNEL2:
             channel = "2";
             break;
-        case function_ast::VectChannelType::CHANNEL3:
+        case ast4vx::VectChannelType::CHANNEL3:
             channel = "3";
             break;
         default:
@@ -422,45 +425,64 @@ std::string CPPVisitor::visit(std::shared_ptr<function_ast::Node> n, int i)
         return argument + ".arr[" + channel + "]";
     }
 
-    case function_ast::NodeType::Variable:
+    case ast4vx::NodeType::Variable:
     {
-        return std::dynamic_pointer_cast<function_ast::Variable>(n)->name;
+        return std::dynamic_pointer_cast<ast4vx::Variable>(n)->name;
     }
 
-    case function_ast::NodeType::VariableDefinition:
+    case ast4vx::NodeType::VariableDefinition:
     {
-        auto s = std::dynamic_pointer_cast<function_ast::VariableDefinition>(n);
-        std::string datatype = to_string(std::dynamic_pointer_cast<function_ast::Variable>(s->subnodes[0])->datatype);
+        auto s = std::dynamic_pointer_cast<ast4vx::VariableDefinition>(n);
+        std::string datatype = to_string(std::dynamic_pointer_cast<ast4vx::Variable>(s->subnodes[0])->datatype);
         return datatype + " " + this->visit(s->subnodes[0], 0);
     }
 
-    case function_ast::NodeType::Assignment:
+    case ast4vx::NodeType::Assignment:
     {
-        auto s = std::dynamic_pointer_cast<function_ast::Assignment>(n);
-        if (s->subnodes[0]->type == function_ast::NodeType::ReductionOutput)
+        auto s = std::dynamic_pointer_cast<ast4vx::Assignment>(n);
+
+        if (s->subnodes[0]->type == ast4vx::NodeType::ReductionOutput)
         {
             auto right = this->visit(s->subnodes[1], 0);
             return "return " + right + ";";
         }
-        else
+        else if(s->subnodes[0]->type == ast4vx::NodeType::PixelAccessorTest)
         {
-            auto left = this->visit(s->subnodes[0], 0);
-            auto right = this->visit(s->subnodes[1], 0);
+            auto accessor = std::dynamic_pointer_cast<ast4vx::PixelAccessorTest>(s->subnodes[0]);
 
-            return left + " = " + right;
+            std::string name = "PixelAccessor_" + std::to_string(accessor->num);
+            std::string x = "x";
+            std::string y = "y";
+            if (pixelaccessor_mapping)
+            {
+                name = pixelaccessor_mapping->at(accessor->num);
+            }
+            if (current_output_x != "")
+                x = current_output_x;
+            if (current_output_y != "")
+                y = current_output_y;
+
+            if (accumulator_string == "" || name != accumulator_string)
+                return name + ".write(" + x + ", " + y + ", " + this->visit(s->subnodes[1], 0) + ")";
+            // else: fall through
         }
+
+        auto left = this->visit(s->subnodes[0], 0);
+        auto right = this->visit(s->subnodes[1], 0);
+
+        return left + " = " + right;
     }
 
-    case function_ast::NodeType::TargetPixel:
+    case ast4vx::NodeType::TargetPixel:
     {
-        auto s = std::dynamic_pointer_cast<function_ast::TargetPixel>(n);
-        std::string name = generate_image_name((function_ast::Image*) s->subnodes[0].get());
+        auto s = std::dynamic_pointer_cast<ast4vx::TargetPixel>(n);
+        std::string name = generate_image_name((ast4vx::Image*) s->subnodes[0].get());
         return name + ".data[xy_matrix_flat]";
     }
 
-    case function_ast::NodeType::If:
+    case ast4vx::NodeType::If:
     {
-        auto s = std::dynamic_pointer_cast<function_ast::If>(n);
+        auto s = std::dynamic_pointer_cast<ast4vx::If>(n);
         std::string to_return;
 
         to_return += "if (" + this->visit(s->condition, 0) + ")\n";
@@ -471,9 +493,9 @@ std::string CPPVisitor::visit(std::shared_ptr<function_ast::Node> n, int i)
         return to_return;
     }
 
-    case function_ast::NodeType::Else:
+    case ast4vx::NodeType::Else:
     {
-        auto s = std::dynamic_pointer_cast<function_ast::Else>(n);
+        auto s = std::dynamic_pointer_cast<ast4vx::Else>(n);
         std::string to_return;
 
         to_return += "else\n";
@@ -484,23 +506,23 @@ std::string CPPVisitor::visit(std::shared_ptr<function_ast::Node> n, int i)
         return to_return;
     }
 
-    case function_ast::NodeType::Image:
+    case ast4vx::NodeType::Image:
     {
-        return generate_image_name(std::dynamic_pointer_cast<function_ast::Image>(n).get());
+        return generate_image_name(std::dynamic_pointer_cast<ast4vx::Image>(n).get());
     }
 
-    case function_ast::NodeType::ForEveryPixel:
+    case ast4vx::NodeType::ForEveryPixel:
     {
-        auto fep = std::dynamic_pointer_cast<function_ast::ForEveryPixel>(n);
-        function_ast::Image *output = (function_ast::Image*) fep->output.get();
+        auto fep = std::dynamic_pointer_cast<ast4vx::ForEveryPixel>(n);
+        ast4vx::Image *output = (ast4vx::Image*) fep->output.get();
 
         std::string definitions = "";
 
         for(auto node: fep->inputs)
         {
-            if (node->type == function_ast::NodeType::Stencil)
+            if (node->type == ast4vx::NodeType::Stencil)
             {
-                auto s = dynamic_cast<function_ast::Stencil*>(node.get());
+                auto s = dynamic_cast<ast4vx::Stencil*>(node.get());
 
                 string name;
                 string type;
@@ -534,43 +556,59 @@ std::string CPPVisitor::visit(std::shared_ptr<function_ast::Node> n, int i)
         return call;
     }
 
-    case function_ast::NodeType::CurrentPixelvalue:
+    case ast4vx::NodeType::CurrentPixelvalue:
     {
-        auto s = std::dynamic_pointer_cast<function_ast::CurrentPixelvalue>(n);
-        std::string name = generate_image_name((function_ast::Image*) s->subnodes[0].get());
-        return name + ".data[xy_matrix_flat]";
+        auto s = std::dynamic_pointer_cast<ast4vx::CurrentPixelvalue>(n);
+        std::string name = generate_image_name((ast4vx::Image*) s->subnodes[0].get());
+
+        // Legacy, only needed to allow current HipaVX implementation
+        if (pixelaccessor_mapping == nullptr)
+        {
+            return name + ".data[xy_matrix_flat]";
+        }
+        else
+        {
+            if (current_output_pixel_index == "")
+            {
+                return name + ".data[pixel_index]";
+            }
+            else
+            {
+                return name + ".data[" + current_output_pixel_index + "]";
+            }
+        }
     }
 
-    case function_ast::NodeType::Stencil:
+    case ast4vx::NodeType::Stencil:
     {
         return "Stencil generate todo";
     }
 
-    case function_ast::NodeType::IterateAroundPixel:
+    case ast4vx::NodeType::IterateAroundPixel:
     {
         return "IterateAroundPixel generate todo";
     }
 
-    case function_ast::NodeType::ReductionOutput:
+    case ast4vx::NodeType::ReductionOutput:
     {
         return "ReductionOutput should not generate";
     }
 
-    case function_ast::NodeType::ReduceAroundPixel:
+    case ast4vx::NodeType::ReduceAroundPixel:
     {
-        auto s = std::dynamic_pointer_cast<function_ast::ReduceAroundPixel>(n);
-        auto stencil = std::dynamic_pointer_cast<function_ast::Stencil>(s->subnodes[1]);
+        auto s = std::dynamic_pointer_cast<ast4vx::ReduceAroundPixel>(n);
+        auto stencil = std::dynamic_pointer_cast<ast4vx::Stencil>(s->subnodes[1]);
         std::string reduction = "@std::string generate(ReduceAroundPixel *s)";
 
         switch(s->reduction_type)
         {
-        case function_ast::ReduceAroundPixel::Type::SUM:
+        case ast4vx::ReduceAroundPixel::Type::SUM:
             reduction = "a + b";
             break;
-        case function_ast::ReduceAroundPixel::Type::MIN:
+        case ast4vx::ReduceAroundPixel::Type::MIN:
             reduction = "(a > b) ? b : a";
             break;
-        case function_ast::ReduceAroundPixel::Type::MAX:
+        case ast4vx::ReduceAroundPixel::Type::MAX:
             reduction = "(a > b) ? a : b";
             break;
         }
@@ -585,84 +623,467 @@ std::string CPPVisitor::visit(std::shared_ptr<function_ast::Node> n, int i)
         t = use_template(t, "REDUCE_DATATYPE", to_string(s->datatype));
         t = use_template(t, "STENCIL_NAME", stencil->name);
         t = use_template(t, "REDUCTION", reduction);
-        t = use_template(t, "IMAGE_NAME", generate_image_name(std::dynamic_pointer_cast<function_ast::Image>(s->subnodes[0]).get()));
+        t = use_template(t, "IMAGE_NAME", generate_image_name(std::dynamic_pointer_cast<ast4vx::Image>(s->subnodes[0]).get()));
         t = use_template(t, "BODY", this->visit(s->subnodes[2], i));
 
         return t;
     }
 
-    case function_ast::NodeType::PixelvalueAtCurrentStencilPos:
+    case ast4vx::NodeType::PixelvalueAtCurrentStencilPos:
     {
         return "value";
     }
 
-    case function_ast::NodeType::StencilvalueAtCurrentStencilPos:
+    case ast4vx::NodeType::StencilvalueAtCurrentStencilPos:
     {
         return "s";
     }
 
-    case function_ast::NodeType::Statements:
+    case ast4vx::NodeType::Statements:
     {
-        auto s = std::dynamic_pointer_cast<function_ast::Statements>(n);
+        auto s = std::dynamic_pointer_cast<ast4vx::Statements>(n);
         std::string to_return;
 
         for(auto statement: s->statements)
         {
             to_return += this->visit(statement, i);
-            if (statement->type != function_ast::NodeType::If && statement->type != function_ast::NodeType::Else)
+            if (statement->type != ast4vx::NodeType::If && statement->type != ast4vx::NodeType::Else)
                 to_return += ";\n";
         }
 
         return to_return;
     }
 
-    case function_ast::NodeType::Pregenerated:
+    case ast4vx::NodeType::Pregenerated:
         break;
-    case function_ast::NodeType::PixelAccessor:
+    case ast4vx::NodeType::PixelAccessor:
     {
-        auto s = std::dynamic_pointer_cast<function_ast::PixelAccessor>(n);
-        if (current_mapping == nullptr)
+        auto s = std::dynamic_pointer_cast<ast4vx::PixelAccessor>(n);
+        if (pixelaccessor_mapping == nullptr)
             return "PixelAccessor_" + std::to_string(s->num);
         else
         {
-            auto image = std::make_shared<function_ast::Image>();
-            image->image = current_mapping->pixel_mappings.at(s->num);
-            auto pixel = std::make_shared<function_ast::CurrentPixelvalue>();
-            pixel->subnodes[0] = image;
-            return visit(pixel, i+1);
+            std::string name = (*pixelaccessor_mapping)[s->num];
+
+            // Legacy, only needed to allow current HipaVX implementation
+            if (pixelaccessor_mapping == nullptr)
+            {
+                return name + ".data[xy_matrix_flat]";
+            }
+            else
+            {
+                if (current_output_pixel_index == "")
+                {
+                    return name + ".data[pixel_index]";
+                }
+                else
+                {
+                    return name + ".get(" + current_output_x + ", " + current_output_y + ")";
+                }
+            }
         }
     }
 
-    case function_ast::NodeType::WindowAccessor:
-        break;
+    case ast4vx::NodeType::PixelAccessorTest:
+    {
+        auto s = std::dynamic_pointer_cast<ast4vx::PixelAccessorTest>(n);
+
+        std::string name = "PixelAccessor_" + std::to_string(s->num);
+        std::string x = "x";
+        std::string y = "y";
+        if (pixelaccessor_mapping)
+            name = pixelaccessor_mapping->at(s->num);
+        if (current_output_x != "")
+            x = current_output_x;
+        if (current_output_y != "")
+            y = current_output_y;
+
+        if (accumulator_string != "" && name == accumulator_string)
+            return name;
+
+        return name + ".get(" + x + ", " + y + ")";
+    }
+
+    case ast4vx::NodeType::MaskAccessor:
+    {
+        auto s = std::dynamic_pointer_cast<ast4vx::MaskAccessor>(n);
+
+        std::string name = maskaccessor_mapping->at(s->num);
+        std::string x = current_output_x;
+        std::string y = current_output_y;
+
+        return name + ".get(" + x + ", " + y + ")";
+    }
+
+    case ast4vx::NodeType::WindowOperation:
+    {
+        auto s = std::dynamic_pointer_cast<ast4vx::WindowOperation>(n);
+
+        if (s->current_state == ast4vx::WindowOperation::State::ToPixel)
+            return visit(s->ltp_statement);
+
+        std::string code = "";
+
+        std::shared_ptr<ast4vx::Variable> accum_var;
+        if (s->current_state == ast4vx::WindowOperation::State::Reduce)
+        {
+            // Setup the accumulator variable
+            accum_var = std::make_shared<ast4vx::Variable>();
+            if (auto c = std::dynamic_pointer_cast<ast4vx::Constant<int>>(s->reduction_statement->initial))
+                accum_var->datatype = ast4vx::Datatype::INT32;
+            else if (auto c = std::dynamic_pointer_cast<ast4vx::Constant<float>>(s->reduction_statement->initial))
+                accum_var->datatype = ast4vx::Datatype::FLOAT;
+            else if (auto c = std::dynamic_pointer_cast<ast4vx::Constant<unsigned char>>(s->reduction_statement->initial))
+                accum_var->datatype = ast4vx::Datatype::UINT8;
+            else if (auto c = std::dynamic_pointer_cast<ast4vx::Constant<unsigned int>>(s->reduction_statement->initial))
+                accum_var->datatype = ast4vx::Datatype::UINT32;
+            else
+                throw std::runtime_error("CPPVisitor: WindowOperation: reduce: could not determine the constants type");
+            accumulator_string = "accumulator_" + std::to_string(s->reduction_statement->id);
+            accum_var->name = accumulator_string;
+
+            code += visit(std::make_shared<ast4vx::VariableDefinition>(accum_var)) + ";\n";
+            code += visit(assign(accum_var, s->reduction_statement->initial)) + ";\n";
+        }
+
+        // TODO check window_inputs if same domain
+        auto domain = s->window_inputs[i].get()->domain;
+
+        for(unsigned int y = 0; y < domain.size(); y++)
+        {
+            for(unsigned int x = 0; x < domain[0].size(); x++)
+            {
+                if (domain[y][x] == 0)
+                    continue;
+                if (s->current_state == ast4vx::WindowOperation::State::At)
+                {
+                    if (s->statements[y][x].get() == nullptr)
+                        continue;
+                    if (s->statements[y][x]->out_pixel_mappings.size() != 1)
+                        throw std::runtime_error("CPPVisitor: WindowOperation: At operations requires exactly one output mapping");
+                }
+                auto old_x = current_output_x;
+                auto old_y = current_output_y;
+                current_output_x = std::to_string(x);
+                current_output_y = std::to_string(y);
+
+                if (s->current_state == ast4vx::WindowOperation::State::At)
+                    code += visit(s->statements[y][x]);
+                else if (s->current_state == ast4vx::WindowOperation::State::Forall)
+                    code += visit(s->forall_statement);
+                else if (s->current_state == ast4vx::WindowOperation::State::Reduce)
+                    code += visit(s->reduction_statement);
+
+                current_output_x = old_x;
+                current_output_y = old_y;
+            }
+        }
+
+        // Write back the Accumulator
+        if (s->current_state == ast4vx::WindowOperation::State::Reduce)
+        {
+            code += visit(assign(std::make_shared<ast4vx::PixelAccessorTest>(0), accum_var));
+        }
+
+        return code;
+    }
+
+    case ast4vx::NodeType::LocalToPixel:
+    {
+        auto s = std::dynamic_pointer_cast<ast4vx::LocalToPixel>(n);
+        std::string to_return;
+        for(auto statement: s->statements)
+        {
+            to_return += this->visit(statement, i);
+            if (statement->type != ast4vx::NodeType::If && statement->type != ast4vx::NodeType::Else)
+                to_return += ";\n";
+        }
+        return to_return;
+    }
+
+    case ast4vx::NodeType::MaskPixelToPixel:
+    {
+        auto s = std::dynamic_pointer_cast<ast4vx::MaskPixelToPixel>(n);
+        std::string to_return;
+        for(auto statement: s->statements)
+        {
+            to_return += this->visit(statement, i);
+            if (statement->type != ast4vx::NodeType::If && statement->type != ast4vx::NodeType::Else)
+                to_return += ";\n";
+        }
+        return to_return;
+    }
+
+    case ast4vx::NodeType::Reduction:
+    {
+        auto s = std::dynamic_pointer_cast<ast4vx::Reduction>(n);
+        std::string to_return;
+
+        std::vector<std::string> mapping;
+
+        mapping.emplace_back(accumulator_string);
+        mapping.emplace_back(accumulator_string);
+        mapping.emplace_back(windowdescriptor_mapping->at(0));
+
+        auto old_pixel_mapping = pixelaccessor_mapping;
+        pixelaccessor_mapping = &mapping;
+
+        for(auto statement: s->statements)
+        {
+            to_return += this->visit(statement, i);
+            if (statement->type != ast4vx::NodeType::If && statement->type != ast4vx::NodeType::Else)
+                to_return += ";\n";
+        }
+
+        pixelaccessor_mapping = old_pixel_mapping;
+
+        return to_return;
+    }
+
+    case ast4vx::NodeType::WindowAccessorPosition:
+    {
+        auto s = std::dynamic_pointer_cast<ast4vx::WindowAccessor::Position>(n);
+        auto parent = s->parent.lock();
+
+        if (windowdescriptor_mapping == nullptr)
+            return "Window" + std::to_string(parent->num) + "(" + std::to_string(s->x)
+                     + ", " + std::to_string(s->y) + ")";
+
+        return windowdescriptor_mapping->at(parent->num) + ".get(" + std::to_string(s->x)
+                 + ", " + std::to_string(s->y) + ")";
+    }
     }
     throw std::runtime_error("CPP Generate: reached end of switch case");
 }
 
+std::string create_matrix_mask_def(std::shared_ptr<DomVX::Mask> mask, std::string name)
+{
+    std::string values = "{";
+    std::string vec;
+    unsigned int i = 0;
+    unsigned long size = mask->mask.size() * mask->mask[0].size();
+    for (auto &line: mask->mask)
+    {
+        for (auto value: line)
+        {
+            if (mask->mask_is_int)
+                values += std::to_string(value.i);
+            else
+                values += std::to_string(value.f);
+            if (i != size - 1)
+                values += ", ";
+            i++;
+        }
+    }
+    values += "}";
+
+    std::string mask_def = "std::matrix<@@@DATATYPE@@@> @@@MASK_NAME@@@(@@@W@@@, @@@H@@@, @@@VALUES@@@);\n";
+    mask_def = use_template(mask_def, "MASK_NAME", name);
+    mask_def = use_template(mask_def, "VALUES", values);
+    mask_def = use_template(mask_def, "DATATYPE", (mask->mask_is_int)?"int":"float");
+    mask_def = use_template(mask_def, "W", std::to_string(mask->mask.size()));
+    mask_def = use_template(mask_def, "H", std::to_string(mask->mask[0].size()));
+
+    return mask_def;
+}
+std::string create_matrix_def(std::string type, std::string name, std::string w, std::string h)
+{
+    std::string matrix_def = "std::matrix<@@@DATATYPE@@@> @@@MATRIXNAME@@@(@@@WIDTH@@@, @@@HEIGHT@@@);\n";
+    matrix_def = use_template(matrix_def, "DATATYPE", type);
+    matrix_def = use_template(matrix_def, "MATRIXNAME", name);
+    matrix_def = use_template(matrix_def, "WIDTH", w);
+    matrix_def = use_template(matrix_def, "HEIGHT", h);
+    return matrix_def;
+}
+std::string create_matrix_def(std::string type, std::string name, unsigned int w, unsigned int h)
+{
+    return create_matrix_def(type, name, std::to_string(w), std::to_string(h));
+}
+
+std::string CPPVisitor::setup_outer_loop(std::shared_ptr<DomVX::Map> m)
+{
+    std::string y_index_name = "y_" + std::to_string(m->id);
+    std::string x_index_name = "x_" + std::to_string(m->id);
+    std::string templ =
+R"END(for(int @@@Y_NAME@@@ = 0; @@@Y_NAME@@@ < @@@HEIGHT@@@; @@@Y_NAME@@@++)
+{
+    for (int @@@X_NAME@@@ = 0; @@@X_NAME@@@ < @@@WIDTH@@@; @@@X_NAME@@@++)
+    {
+        @@@CODE@@@
+    }
+}
+)END";
+    templ = use_template(templ, "HEIGHT", m->output_pixel_mappings[0]->h);
+    templ = use_template(templ, "WIDTH", m->output_pixel_mappings[0]->w);
+    templ = use_template(templ, "Y_NAME", y_index_name);
+    templ = use_template(templ, "X_NAME", x_index_name);
+
+    current_output_y = y_index_name;
+    current_output_x = x_index_name;
+
+    return templ;
+}
+std::string CPPVisitor::setup_outer_loop(std::shared_ptr<DomVX::LocalOperation> l, const std::vector<HipaVX::Image*>& out)
+{
+    std::string y_index_name = "y_" + std::to_string(l->id);
+    std::string x_index_name = "x_" + std::to_string(l->id);
+    std::string templ =
+R"END(for(int @@@Y_NAME@@@ = 0; @@@Y_NAME@@@ < @@@HEIGHT@@@; @@@Y_NAME@@@++)
+{
+    for (int @@@X_NAME@@@ = 0; @@@X_NAME@@@ < @@@WIDTH@@@; @@@X_NAME@@@++)
+    {
+        @@@CODE@@@
+    }
+}
+)END";
+    templ = use_template(templ, "HEIGHT", out[0]->h);
+    templ = use_template(templ, "WIDTH", out[0]->w);
+    templ = use_template(templ, "Y_NAME", y_index_name);
+    templ = use_template(templ, "X_NAME", x_index_name);
+
+    current_output_y = y_index_name;
+    current_output_x = x_index_name;
+
+    return templ;
+}
 
 std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n, int i)
 {
     switch(n->type)
     {
-    case DomVX::AbstractionType::ForEveryPixelTest:
+    case DomVX::AbstractionType::Map:
     {
-        auto s = std::dynamic_pointer_cast<DomVX::ForEveryPixelTest>(n);
-        std::string str = "";
-        for (auto call: s->calls)
-        {
-            str += visit(call, i+1);
-        }
-        return str;
-    }
-    case DomVX::AbstractionType::MapTest:
-    {
-        auto s = std::dynamic_pointer_cast<DomVX::MapTest>(n);
+        auto s = std::dynamic_pointer_cast<DomVX::Map>(n);
 
-        current_mapping = s;
-        std::string str = visit(s->get_statements(), 0);
-        current_mapping = nullptr;
-        return str;
+        std::string outer_loop = setup_outer_loop(s);
+
+        std::vector<std::string> mappings;
+
+        for(auto& im: s->output_pixel_mappings)
+            mappings.emplace_back(generate_image_name(im));
+        for(auto& im: s->input_pixel_mappings)
+            mappings.emplace_back(generate_image_name(im));
+
+        pixelaccessor_mapping = &mappings;
+        std::string code = visit(s->get_statements(), 0);
+        pixelaccessor_mapping = nullptr;
+
+        current_output_y = current_output_x = "";
+
+        outer_loop = use_template(outer_loop, "CODE", code);
+        return outer_loop;
     }
+    case DomVX::AbstractionType::LocalOperation:
+    {
+        auto s = std::dynamic_pointer_cast<DomVX::LocalOperation>(n);
+
+        std::vector<HipaVX::Image *> output_images;
+
+        // Get all the output images
+        for(auto images: s->operation_output_images)
+        {
+            output_images.insert(output_images.end(), images.begin(), images.end());
+        }
+        if (output_images.size() == 0)
+            throw std::runtime_error("CPPVisitor: LocalOperation: At least one output image is expected");
+        std::string outer_loop = setup_outer_loop(s, output_images);
+        std::string code = "";
+
+        // Create the roi from the input images
+        for(unsigned int i = 0; i < s->input_descriptor.size(); i++)
+        {
+            auto& in_image = std::get<0>(s->input_descriptor[i]);
+            auto& in_desc = std::get<1>(s->input_descriptor[i]);
+            std::string input_matrix_name = "temp_window_" + std::to_string(in_desc->id);
+
+            std::string copy = "std::matrix<@@@DATATYPE@@@> @@@COPY_NAME@@@ = @@@IMAGE_NAME@@@.copy_roi<@@@DATATYPE@@@>(@@@X@@@, @@@Y@@@, @@@W@@@, @@@H@@@);\n";
+            copy = use_template(copy, "COPY_NAME", input_matrix_name);
+            copy = use_template(copy, "IMAGE_NAME", generate_image_name(in_image));
+            copy = use_template(copy, "DATATYPE", to_string(in_desc->output_datatype));
+            copy = use_template(copy, "X", current_output_x + "-(" + std::to_string(in_desc->width/2) + ")");
+            copy = use_template(copy, "Y", current_output_y + "-(" + std::to_string(in_desc->height/2) + ")");
+            copy = use_template(copy, "W", std::to_string(in_desc->width));
+            copy = use_template(copy, "H", std::to_string(in_desc->height));
+
+            code += copy;
+            desc_to_name[in_desc] = input_matrix_name;
+        }
+
+        code += "\n";
+
+        for(unsigned int i = 0; i < s->operations.size(); i++)
+        {
+            auto &op = s->operations[i];
+
+            if (op->output != nullptr)
+            {
+                auto& in_desc = op->output;
+                std::string matrix_name = "temp_window_" + std::to_string(in_desc->id);
+
+                std::string copy = "std::matrix<@@@DATATYPE@@@> @@@COPY_NAME@@@ = @@@ORIG_NAME@@@.copy_roi<@@@DATATYPE@@@>(0, 0, @@@W@@@, @@@H@@@);\n";
+                copy = use_template(copy, "COPY_NAME", matrix_name);
+                copy = use_template(copy, "ORIG_NAME", desc_to_name[op->window_inputs[0]]);
+                copy = use_template(copy, "DATATYPE", to_string(in_desc->output_datatype));
+                copy = use_template(copy, "W", std::to_string(in_desc->width));
+                copy = use_template(copy, "H", std::to_string(in_desc->height));
+
+                code += copy;
+                desc_to_name[in_desc] = matrix_name;
+            }
+
+            std::vector<std::string> pixel_mappings;
+            std::vector<std::string> window_mappings;
+            std::vector<std::string> mask_mappings;
+
+            // Create mask definition if there are mask bindings for this operation
+            if (s->mask_bindings.count(op) != 0)
+            {
+                auto mask_bindings = s->mask_bindings[op];
+
+                for (auto &mask : mask_bindings)
+                {
+                    std::string name = "mask_" + std::to_string(op->id);
+                    code += create_matrix_mask_def(mask, name);
+                    mask_mappings.push_back(name);
+                }
+                code += "\n";
+            }
+
+            // Setup all mappings
+            if (op->current_state == ast4vx::WindowOperation::State::ToPixel || op->current_state == ast4vx::WindowOperation::State::Reduce)
+            {
+                // Bind an actual output image is only relevant for ToPixel and Reduce
+                for(auto &out_images: s->operation_output_images[i])
+                    pixel_mappings.emplace_back(generate_image_name(out_images));
+                for(auto &windesc: op->window_inputs)
+                    window_mappings.emplace_back(desc_to_name[windesc]);
+                windowdescriptor_mapping = &window_mappings;
+            }
+            else if (op->current_state == ast4vx::WindowOperation::State::At || op->current_state == ast4vx::WindowOperation::State::Forall)
+            {
+                pixel_mappings.emplace_back(desc_to_name[op->output]);
+                for(auto& map: op->window_inputs)
+                {
+                    pixel_mappings.emplace_back(desc_to_name[map]);
+                }
+            }
+            auto old_mapping = pixelaccessor_mapping;
+            pixelaccessor_mapping = &pixel_mappings;
+            maskaccessor_mapping = &mask_mappings;
+
+            code += visit(op) + "\n";
+
+            maskaccessor_mapping = nullptr;
+            pixelaccessor_mapping = old_mapping;
+            windowdescriptor_mapping = nullptr;
+        }
+
+        current_output_y = current_output_x = "";
+        outer_loop = use_template(outer_loop, "CODE", code);
+        return outer_loop;
+    }
+    default:
+        throw std::runtime_error("CPPVisitor: visited no case for this AbstractionNode");
     }
     return "";
 }

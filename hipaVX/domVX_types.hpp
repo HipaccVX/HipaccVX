@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-function_ast::Datatype convert_type(vx_df_image type);
+ast4vx::Datatype convert_type(vx_df_image type);
 
 namespace HipaVX {
 
@@ -183,7 +183,7 @@ class Node : public Object {
   }
 
   void init() {
-    kernel = std::make_shared<function_ast::ForEveryPixel>();
+    kernel = std::make_shared<ast4vx::ForEveryPixel>();
     type = VX_TYPE_NODE;
     set_task();
   }
@@ -195,7 +195,7 @@ class Node : public Object {
   std::vector<Object *> outputs;
 
   vx_border_e border_mode = VX_BORDER_UNDEFINED;
-  std::shared_ptr<function_ast::ForEveryPixel> kernel;
+  std::shared_ptr<ast4vx::ForEveryPixel> kernel;
 
   virtual void build() {}
 };

@@ -31,11 +31,11 @@ void Sobel3x3Node::build()
     sobel_x.mask.dim[0] = sobel_x.mask.dim[1] = 3;
     sobel_y.mask.dim[0] = sobel_y.mask.dim[1] = 3;
 
-    sobel_x.mask.mask = {-1,  0,  1,
+    sobel_x.mask.matrix = {-1,  0,  1,
                     -2,  0,  2,
                     -1,  0,  1};
 
-    sobel_y.mask.mask = {-1, -2, -1,
+    sobel_y.mask.matrix = {-1, -2, -1,
                      0,  0,  0,
                      1,  2,  1};
 
@@ -69,7 +69,7 @@ void Add3_3::build()
 {
     add.mask.dim[0] = add.mask.dim[1] = 3;
 
-    add.mask.mask = {1, 1, 1,
+    add.mask.matrix = {1, 1, 1,
                 1, 1, 1,
                 1, 1, 1};
 
@@ -221,9 +221,9 @@ void VXConvolveNode::build()
 	lin_mask_node.in = in;
     lin_mask_node.mask.dim[0] = convolution->rows;
     lin_mask_node.mask.dim[1] = convolution->columns;
-	lin_mask_node.mask.mask.resize(lin_mask_node.mask.dim[0] * lin_mask_node.mask.dim[1]);
+	lin_mask_node.mask.matrix.resize(lin_mask_node.mask.dim[0] * lin_mask_node.mask.dim[1]);
     for (unsigned int i = 0; i < lin_mask_node.mask.dim[0] * lin_mask_node.mask.dim[1]; i++)
-        lin_mask_node.mask.mask[i] = convolution->coefficients[i];
+        lin_mask_node.mask.matrix[i] = convolution->coefficients[i];
 
     float one = 1.f / convolution->scale;
     Scalar* normalization = new Scalar(VX_TYPE_FLOAT32, &one);
@@ -427,9 +427,9 @@ AnotherBilateralFilterNode::AnotherBilateralFilterNode()
 void AnotherBilateralFilterNode::build()
 {
     // this is a stencil function
-    stencil = std::make_shared<function_ast::Stencil>();
+    stencil = std::make_shared<ast4vx::Stencil>();
     stencil->dim[0] = stencil->dim[1] = 5;
-    stencil->mask = function_ast::Stencil::from_t<float>({
+    stencil->mask = ast4vx::Stencil::from_t<float>({
         0.018316f, 0.082085f, 0.135335f, 0.082085f, 0.018316f ,
         0.082085f, 0.367879f, 0.606531f, 0.367879f, 0.082085f ,
         0.135335f, 0.606531f, 1.000000f, 0.606531f, 0.135335f ,
@@ -437,30 +437,30 @@ void AnotherBilateralFilterNode::build()
         0.018316f, 0.082085f, 0.135335f, 0.082085f, 0.018316f
     });
     stencil->name = "stencil";
-    stencil->datatype = function_ast::Datatype::FLOAT;
+    stencil->datatype = ast4vx::Datatype::FLOAT;
 
     // this function operates on Images
-    auto in_node = std::make_shared<function_ast::Image>(in);
+    auto in_node = std::make_shared<ast4vx::Image>(in);
     kernel->inputs.push_back(in_node);
     kernel->inputs.push_back(stencil);
-    auto out_node = std::make_shared<function_ast::Image>(out);
+    auto out_node = std::make_shared<ast4vx::Image>(out);
     kernel->output = out_node;
 
-    auto c_r = std::make_shared<function_ast::Variable>("c_r", function_ast::Datatype::FLOAT);
-    auto d = std::make_shared<function_ast::Variable>("d", function_ast::Datatype::FLOAT);
-    auto p = std::make_shared<function_ast::Variable>("p", function_ast::Datatype::FLOAT);
-    auto center = std::make_shared<function_ast::Variable>("center", function_ast::Datatype::FLOAT);
+    auto c_r = std::make_shared<ast4vx::Variable>("c_r", ast4vx::Datatype::FLOAT);
+    auto d = std::make_shared<ast4vx::Variable>("d", ast4vx::Datatype::FLOAT);
+    auto p = std::make_shared<ast4vx::Variable>("p", ast4vx::Datatype::FLOAT);
+    auto center = std::make_shared<ast4vx::Variable>("center", ast4vx::Datatype::FLOAT);
 
     kernel->function << define(c_r)    << assign(c_r, constant(0.5f) / (constant(sigma_r) * constant(sigma_r)))
                      << define(d)      << assign(d, constant(0.f))
                      << define(p)      << assign(p, constant(0.f))
                      << define(center) << assign(center, current_pixel(in_node));
 
-    auto iterate = std::make_shared<function_ast::IterateAroundPixel>();
-    auto iterate_body = std::make_shared<function_ast::Statements>();
+    auto iterate = std::make_shared<ast4vx::IterateAroundPixel>();
+    auto iterate_body = std::make_shared<ast4vx::Statements>();
     {
-        auto diff = std::make_shared<function_ast::Variable>("diff", function_ast::Datatype::FLOAT);
-        auto s = std::make_shared<function_ast::Variable>("s", function_ast::Datatype::FLOAT);
+        auto diff = std::make_shared<ast4vx::Variable>("diff", ast4vx::Datatype::FLOAT);
+        auto s = std::make_shared<ast4vx::Variable>("s", ast4vx::Datatype::FLOAT);
 
         *iterate_body << define(diff) << assign(diff, iterate->pixel_value - center)
                       << define(s)    << assign(s, exp(constant(0.f) - c_r * (diff * diff)) * iterate->stencil_value)
@@ -473,7 +473,7 @@ void AnotherBilateralFilterNode::build()
     iterate->subnodes[2] = iterate_body; //The body
     kernel->function << iterate;
 
-    kernel->function << assign(target_pixel(out_node), convert(p / d + constant(0.5f), function_ast::Datatype::UINT8));
+    kernel->function << assign(target_pixel(out_node), convert(p / d + constant(0.5f), ast4vx::Datatype::UINT8));
 
 
     inputs.emplace_back(in);
