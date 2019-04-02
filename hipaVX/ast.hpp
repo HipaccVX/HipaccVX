@@ -1070,17 +1070,24 @@ public:
     unsigned int width, height;
     Datatype output_datatype;
     std::vector<std::vector<unsigned char>> domain;
+    std::string name;
 
-    WindowDescriptor(unsigned int x, unsigned int y, Datatype datatype = Datatype::INT32)
-    {
+    // todo : add name to parameter list
+    void init(unsigned int x, unsigned int y, Datatype datatype = Datatype::INT32) {
         if (y <= 0 || x <= 0)
             throw std::runtime_error("WindowDescriptor::WindowDescriptor domain size must be > 0");
-
+    
         type = NodeType::WindowDescriptor;
 
         this->output_datatype = datatype;
         width = x;
         height = y;
+        name = "dom" + std::to_string(id);
+    }
+
+    WindowDescriptor(unsigned int x, unsigned int y, Datatype datatype = Datatype::INT32)
+    {
+        init(x, y, datatype);
         domain.resize(y);
         for(auto& line: domain)
         {
@@ -1090,16 +1097,10 @@ public:
 
     WindowDescriptor(unsigned int x, unsigned int y, std::initializer_list<int> dom, Datatype datatype = Datatype::INT32)
     {
-        if (y <= 0 || x <= 0)
-            throw std::runtime_error("WindowDescriptor::WindowDescriptor domain size must be > 0");
         if (dom.size() != y * x)
             throw std::runtime_error("WindowDescriptor::WindowDescriptor dom needs to have x * y elements");
 
-        type = NodeType::WindowDescriptor;
-
-        this->output_datatype = datatype;
-        width = x;
-        height = y;
+        init(x, y, datatype);
 
         auto dom_it = dom.begin();
         y = x = 0;
@@ -1131,6 +1132,8 @@ public:
             }
         }
     }
+
+    std::string get_name() { return name; }
 };
 
 class WindowOperation: public Node

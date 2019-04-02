@@ -30,9 +30,9 @@ namespace DomVX
 enum class AbstractionType
 {
     None,
-    Reduce,
-    Local,
-    LocalOp,
+    //Reduce,
+    //Local,
+    //LocalOp,
     Map,
     LocalOperation,
 
@@ -43,6 +43,7 @@ class AbstractionNode
 {
 public:
     int id;
+    std::string name;
     AbstractionType type = AbstractionType::None;
     AbstractionNode() {
         static int next_id = 0;
@@ -55,6 +56,9 @@ public:
     std::shared_ptr<ast4vx::Node> operator[](unsigned int index) const {
         return subnodes[index]; 
     }
+
+
+    std::string get_name(){ return name; }
 
     virtual ~AbstractionNode() = default;
 };
@@ -72,6 +76,7 @@ public:
 
 class Mask: public AbstractionNode
 {
+//TODO: implement an at function to read coeffs
 public:
     union mask_type
     {
@@ -81,6 +86,10 @@ public:
         mask_type(float f) :f(f){}
     };
 
+    void init() {
+      name = "mask" + std::to_string(id);
+    }
+
     unsigned int width, height;
     std::vector<std::vector<mask_type>> mask;
     bool mask_is_int;
@@ -89,12 +98,14 @@ public:
     {
         type = AbstractionType::Mask;
         set_mask(m);
+        init();
     }
     Mask(unsigned int x, unsigned int y, std::initializer_list<float> m)
         :width(x), height(y)
     {
         type = AbstractionType::Mask;
         set_mask(m);
+        init();
     }
     void set_mask(std::initializer_list<int32_t> m)
     {
@@ -133,22 +144,28 @@ public:
             }
         }
     }
-
 };
 
 class Map: public AbstractionNode
 {
     std::shared_ptr<ast4vx::Statements> function;
+
+    void init() {
+      name = "map" + std::to_string(id);
+    }
+
 public:
     Map()
     {
         type = AbstractionType::Map;
+        init();
     }
 
     Map(std::shared_ptr<ast4vx::Statements> s)
     {
         type = AbstractionType::Map;
         set_statements(s);
+        init();
     }
 
     std::vector<HipaVX::Image *> output_pixel_mappings;
@@ -171,6 +188,8 @@ public:
         register_output_images(out);
         register_input_images(in);
     }
+
+    // TODO: I get an error when I register images before the set_statements 
     void register_input_images(std::initializer_list<HipaVX::Image*> images)
     {
         if (images.size() != input_pixel_mappings.size())
@@ -197,12 +216,18 @@ public:
     std::vector<std::tuple<HipaVX::Image*, std::shared_ptr<ast4vx::WindowDescriptor>>> input_descriptor;
     std::vector<std::shared_ptr<ast4vx::WindowOperation>> operations;
     std::vector<std::vector<HipaVX::Image *>> operation_output_images;
-    std::map<std::shared_ptr<ast4vx::WindowOperation>, std::vector<std::shared_ptr<DomVX::Mask>>> mask_bindings;
+    std::map<std::shared_ptr<ast4vx::WindowOperation>, 
+             std::vector<std::shared_ptr<DomVX::Mask>>> mask_bindings;
+
+    void init() {
+      name = "local" + std::to_string(id);
+    }
 
 public:
     LocalOperation()
     {
         type = AbstractionType::LocalOperation;
+        init();
     }
 
     void set_input_window_desc(std::initializer_list<std::tuple<HipaVX::Image*, std::shared_ptr<ast4vx::WindowDescriptor>>> in_descriptors)
