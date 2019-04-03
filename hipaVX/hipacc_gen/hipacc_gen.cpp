@@ -802,7 +802,7 @@ std::string HipaccVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i)
         {
             return std::to_string(c->value);
         }
-        return "CPP Generate: Constant type fail";
+        return "Hipacc Generate: Constant type fail";
     }
 
     case ast4vx::NodeType::Vect4:
@@ -1126,8 +1126,119 @@ std::string HipaccVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i)
         break;
     case ast4vx::NodeType::PixelAccessor:
         break;
+
+    case ast4vx::NodeType::PixelAccessorTest:
+    {
+        auto s = std::dynamic_pointer_cast<ast4vx::PixelAccessorTest>(n);
+
+        std::string name = "PixelAccessor_" + std::to_string(s->num);
+        if (pixelaccessor_mapping)
+            name = pixelaccessor_mapping->at(s->num);
+
+        return name + "()";
+    }
+
     case ast4vx::NodeType::WindowOperation:
         break;
     }
     throw std::runtime_error("Hipacc Generate: reached end of switch case");
 }
+
+std::string HipaccVisitor::setup_outer_loop(std::shared_ptr<DomVX::Map> m)
+{
+    std::string templ=
+R"END(class @@@KERNEL_NAME@@@ : public Kernel<@@@OUTPUT_DATATYPE@@@>
+{
+private:
+    @@@VARIABLES@@@
+
+public:
+    @@@KERNEL_NAME@@@(IterationSpace<@@@OUTPUT_DATATYPE@@@> &iter@@@VARIABLES_CONSTRUCTOR_PARAMS@@@)
+            : Kernel(iter)@@@VARIABLES_CONSTRUCTOR_INIT_LIST@@@
+        {
+    @@@ADD_ACCESSOR@@@
+        }
+
+        void kernel() {
+    @@@KERNEL@@@
+        }
+    };
+}
+)END";
+
+    std::vector<std::string> input_images;
+
+    int i = 0;
+    std::vector<std::string> variable_definitions;
+    std::vector<std::string> constructor_init_list;
+    std::vector<std::string> add_accessor;
+    for(auto& im: m->input_pixel_mappings)
+    {
+        std::string accessor_name = generate_image_name(im) + "_" + std::to_string(i++);
+        input_images.emplace_back(accessor_name);
+
+        variable_definitions.emplace_back("Accessor<" + VX_DF_IMAGE_to_hipacc[im->col] + ">& " + accessor_name);
+        constructor_init_list.emplace_back(accessor_name + "(" + accessor_name + ")");
+        add_accessor.emplace_back("add_accessor(&" + accessor_name + ")");
+    }
+
+
+    std::string kernel_name = "Map_" + std::to_string(m->id);
+    std::string vars = "";
+    std::string const_def = "";
+    for(auto& var_def: variable_definitions)
+    {
+        vars += var_def + ";\n";
+        const_def += ", " + var_def;
+    }
+    std::string init_list = "";
+    for(auto& const_init: constructor_init_list)
+        init_list += ", " + const_init;
+    std::string add_acc = "";
+    for(auto& acc: add_accessor)
+        add_acc += acc + ";\n";
+
+    templ = use_template(templ, "KERNEL_NAME", kernel_name);
+    templ = use_template(templ, "OUTPUT_DATATYPE", VX_DF_IMAGE_to_hipacc[m->output_pixel_mappings[0]->col]);
+    templ = use_template(templ, "VARIABLES", vars);
+    templ = use_template(templ, "VARIABLES_CONSTRUCTOR_PARAMS", const_def);
+    templ = use_template(templ, "VARIABLES_CONSTRUCTOR_INIT_LIST", init_list);
+    templ = use_template(templ, "ADD_ACCESSOR", add_acc);
+
+    return templ;
+}
+
+std::string HipaccVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n, int i)
+{
+    switch(n->type)
+    {
+    case DomVX::AbstractionType::Map:
+    {
+        auto s = std::dynamic_pointer_cast<DomVX::Map>(n);
+
+        std::string outer_loop = setup_outer_loop(s);
+
+        std::vector<std::string> mappings;
+
+        if (s->output_pixel_mappings.size() != 1)
+            throw std::runtime_error("HipaccVisitor Map: Exactly one output pixel mapping is needed");
+        // output image in hipacc is always output()
+        mappings.emplace_back("output");
+        int i = 0;
+        for(auto& im: s->input_pixel_mappings)
+            mappings.emplace_back(generate_image_name(im) + "_" + std::to_string(i++));
+
+        pixelaccessor_mapping = &mappings;
+        std::string code = visit(s->get_statements(), 0);
+        pixelaccessor_mapping = nullptr;
+
+        outer_loop = use_template(outer_loop, "KERNEL", code);
+        return outer_loop;
+    }
+    case DomVX::AbstractionType::LocalOperation:
+    default:
+        throw std::runtime_error("HipaccVisitor: visited no case for this AbstractionNode");
+    }
+    return "";
+}
+
