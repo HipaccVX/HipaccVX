@@ -503,15 +503,24 @@ void hipacc_writer::def(std::stringstream &ss, HipaccKernel* kern, DefType defty
 
 
 class graph_gen {
-
  public:
-  graph_gen(dag &_g_dag) : g_dag(_g_dag) {};
-
   void init();
+
+  graph_gen(dag &_g_dag) : g_dag(_g_dag) {
+    init();
+  };
 
   std::string dump();
 
-  void traverse_nodes();
+  void print_nodes() {
+    for(auto i : nodes)
+      std::cout << (*_g_opt)[i].get_name() << std::endl;
+  };
+
+  void print_spaces() {
+    for(auto i : spaces)
+      std::cout << (*_g_opt)[i].get_name() << std::endl;
+  };
 
   VertexType& get_vert(VertexDesc& v) { return (*_g_opt)[v]; }
 
@@ -519,7 +528,7 @@ class graph_gen {
 
   ObjectType get_vert_type(VertexDesc& v) { return (*_g_opt)[v].type; }
 
- private:
+ public:
     std::string code;
 
     dag g_dag;
@@ -550,9 +559,8 @@ void graph_gen::init() {
   }
 }
 
-// std::string graph_gen::dump() {
-//   code << initial_includes();
-//   return code; 
-// }
-//
 
+//class hipacc_gen : graph_gen , hipacc_writer {
+// public:
+//  hipacc_gen(dag &_g_dag) : hipacc_gen(_g_dag) {};
+//}; 

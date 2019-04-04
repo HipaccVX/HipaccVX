@@ -41,15 +41,15 @@ enum class NodeType
     Greater,
     Unequals,
 
-	And,
-	Or,
-	Xor,
-	Not,
+	  And,
+	  Or,
+	  Xor,
+	  Not,
 
-	BitwiseAnd,
-	BitwiseOr,
-	BitwiseXor,
-	BitwiseNot,
+	  BitwiseAnd,
+	  BitwiseOr,
+	  BitwiseXor,
+	  BitwiseNot,
 
     Vect4,
     Extract4,
