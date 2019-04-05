@@ -26,6 +26,7 @@
 namespace graphVX {
 
 using VertexType = HipaVX::Object;
+using EdgeType = HipaVX::Acc;
 using HipaVX::VertexTask;
 
 // ------------------- graphviz custom node writer ----------------------------
@@ -100,8 +101,9 @@ inline cycle_detector_with_backedges_dfs<EdgeDesc> make_cycle_dbe(EdgeDesc e) {
 }
 
 typedef boost::adjacency_list<boost::listS, boost::vecS, // VertexList = vecS
-                              boost::directedS,          // boost::bidirectionalS,
-                              VertexType> AppGraphT;
+                              // boost::directedS,          // boost::bidirectionalS,
+                              boost::bidirectionalS,
+                              VertexType, EdgeType> AppGraphT;
 
 //typedef boost::adjacency_list<> _GraphT;
 
@@ -479,7 +481,7 @@ void dag::gen_rand_acyclic_graph(unsigned n, unsigned k) {
     // Create a random graph
     for (unsigned v = 0; v < n; v++ ) {
         auto new_node  = new Node();
-        auto new_image = new Image();
+        auto new_image = new Image(1024, 1024, VX_DF_IMAGE_U8);
         nodes[v] = add_vertex(*new_node);
         images[v] = add_vertex(*new_image);
     }

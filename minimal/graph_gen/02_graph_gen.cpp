@@ -27,6 +27,9 @@ int main() {
   hipacc_gen gen(g);
 
   gen.iterate_nodes();
+  gen.iterate_spaces();
+
+  gen.set_edges();
 
   std::cout << gen.execs.str();
   

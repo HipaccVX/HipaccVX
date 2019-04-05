@@ -16,6 +16,8 @@
 using graphVX::dag;
 using graphVX::VertexDesc;
 using graphVX::VertexType;
+using graphVX::EdgeDesc;
+using graphVX::EdgeType;
 using graphVX::OptGraphT;
 using HipaVX::VertexTask;
 using HipaVX::ObjectType;
@@ -134,8 +136,14 @@ std::string hipacc_writer::dump_code() {
 void hipacc_writer::def(HipaccNode* hn) {
   switch (hn->type) {
     case HipaccImageE: {
-      HipaccImage* n = dynamic_cast<HipaccImage*>(hn);
-      def(ss_im, n);
+      HipaccImage* im = dynamic_cast<HipaccImage*>(hn);
+      if(im) {
+        std::cout << im->get_name() << "\n";
+      } else {
+        ERRORM("def(HipaccNode im), dynamic cast fail for: " + hn->get_name());
+      }
+
+      def(ss_im, im);
       break;
     }
 
@@ -166,6 +174,7 @@ std::string hipacc_writer::_dtype(HipaccDataType type, std::string name) {
     case S32: { return "int"; }
     case U32: { return "uint"; }
     case F32: { return "float"; }
+    case VX_TYPE_DF_IMAGE: { return "undef"; }
     default: { ERRORM("hipac_writer::dtype, unknown dtype for " + name); }
   }
 }
@@ -465,12 +474,14 @@ void hipacc_writer::def(std::stringstream &ss, HipaccKernel* kern, DefType defty
   }
 }
 
+#include <boost/graph/adjacency_list.hpp>
 
 class graph_gen {
  public:
   dag g_dag;
   OptGraphT* _g_opt;
 
+  std::list<EdgeDesc> edges;
   std::list<VertexDesc>* _verts;
   std::list<VertexDesc> nodes;
   std::list<VertexDesc> spaces;
@@ -482,11 +493,34 @@ class graph_gen {
     init();
   };
 
-  VertexType& get_vert(VertexDesc& v) { return (*_g_opt)[v]; }
+  VertexType* get_vert(VertexDesc& v) { return &((*_g_opt)[v]); }
 
-  VertexTask get_vert_task(VertexDesc& v) { return get_vert(v).get_task(); }
+  VertexTask get_vert_task(VertexDesc& v) { return get_vert(v)->get_task(); }
 
-  ObjectType get_vert_type(VertexDesc& v) { return get_vert(v).type; }
+  ObjectType get_vert_type(VertexDesc& v) { return get_vert(v)->get_type(); }
+
+  EdgeType& get_edge(EdgeDesc& e) { return (*_g_opt)[e]; }
+
+  VertexDesc source(EdgeDesc& e) { return boost::source(e, *_g_opt); }
+
+  VertexDesc target(EdgeDesc& e) { return boost::target(e, *_g_opt); }
+
+  ObjectType source_t (EdgeDesc& e) {
+    auto v = source(e);
+    return get_vert_type(v);
+  }
+
+  ObjectType target_t (EdgeDesc& e) {
+    auto v = target(e);
+    return get_vert_type(v);
+  }
+
+  // debugging functions
+  void print_nodes();
+
+  void print_spaces();
+
+  void print_edges();
 
 };
 
@@ -508,22 +542,36 @@ void graph_gen::init() {
         break;
     }
   }
+
+  OptGraphT::edge_iterator beg, end;
+  std::tie(beg, end) = boost::edges(*_g_opt);
+  std::for_each(beg, end, [this](EdgeDesc it) { edges.push_back(it); });
 }
 
+void graph_gen::print_nodes() {
+    for(auto i : nodes)
+      std::cout << get_vert(i)->get_name() << std::endl;
+};
 
-class hipacc_gen : public graph_gen, hipacc_writer {
+void graph_gen::print_spaces() {
+  for(auto i : spaces)
+    std::cout << get_vert(i)->get_name() << std::endl;
+};
+
+void graph_gen::print_edges() {
+  for(auto i : edges)
+    std::cout << get_edge(i).get_name() << std::endl;
+};
+
+
+
+class hipacc_gen : public graph_gen, public hipacc_writer {
+ protected:
+   std::vector<HipaccIterationSpace> is_l;
+   std::vector<HipaccAccessor> acc_l;
+
  public:
   hipacc_gen(dag &_g_dag) :graph_gen(_g_dag) {};
-
-  void print_nodes() {
-    for(auto i : nodes)
-      std::cout << get_vert(i).get_name() << std::endl;
-  };
-
-  void print_spaces() {
-    for(auto i : spaces)
-      std::cout << get_vert(i).get_name() << std::endl;
-  };
 
   std::stringstream kdefs;
   std::stringstream accs;
@@ -534,15 +582,54 @@ class hipacc_gen : public graph_gen, hipacc_writer {
 
   void iterate_nodes();
   void iterate_spaces();
+
+  void set_edges();
 };
+
+void hipacc_gen::set_edges() {
+  // set the edges as accessors and iteration spaces
+  for(auto e : edges) {
+    auto src = source(e);
+    auto dst = target(e);
+    auto edge = get_edge(e);
+
+    HipaccImage* _im = NULL;
+    if(get_vert_type(src) == VX_TYPE_IMAGE &&
+        get_vert_type(dst) == VX_TYPE_NODE) {
+      edge.is_acc = true;
+      _im = static_cast<HipaccImage*>((get_vert(src)));
+      if(_im == NULL)
+        ERRORM("set_edges, dynamic cast fail for: " + get_vert(src)->get_name());
+    } else if (get_vert_type(src) == VX_TYPE_NODE &&
+               get_vert_type(dst) == VX_TYPE_IMAGE) {
+      edge.is_acc = false;
+      _im = static_cast<HipaccImage*>((get_vert(dst)));
+      if(_im == NULL)
+        ERRORM("set_edges, dynamic cast fail for: " + get_vert(dst)->get_name());
+    }
+
+    if(_im) {
+      edge.set_img(_im);
+      edge.set_name();
+    }
+  }
+}
+
 
 void hipacc_gen::iterate_nodes() {
     for(auto v : nodes) {
-      execs << dind << get_vert(v).get_name() << ".execute()" << std::endl;
+      execs << dind << get_vert(v)->get_name() << ".execute()" << std::endl;
+    }
+    for(auto v : spaces) {
+      execs << dind << get_vert(v)->get_name() << std::endl;
     }
 }
 
 void hipacc_gen::iterate_spaces() {
-
+  for(auto v : spaces) {
+      HipaVX::Object *n = get_vert(v);
+      def(n);
+  }
+  std::cout << "images\n" << ss_im.str();
 }
 

@@ -39,6 +39,10 @@ class Object {
     return this->name;
   }
 
+  ObjectType get_type() {
+    return this->type;
+  };
+
  public: // TODO: make these protected
   int my_id;
 
@@ -68,7 +72,6 @@ class Scalar : public Object {
   void init() {
     type = VX_TYPE_SCALAR;
     set_task();
-
   }
 
   void set_value(const void *ptr) {
@@ -136,8 +139,9 @@ class Image : public Object {
   vx_uint32 get_height() { return h;};
 
   virtual ~Image() = default;
+
   vx_uint32 w = 0, h = 0;
-  vx_df_image col;
+  vx_df_image col = VX_TYPE_DF_IMAGE;
 
   vx_df_image get_dtype() { return col; }
 
@@ -287,6 +291,7 @@ class Acc {
   Image* im;
   std::string name;
 
+  bool is_acc; // TODO: change this with type IS or ACC
   bool isRoiSet;
   bool isInterpSet;
 
@@ -294,6 +299,14 @@ class Acc {
   BorderM brdr;
 
  public:
+  void set_name() {
+    std::string _name;
+    if (is_acc == true) { std::string _name = "_acc"; }
+    else { std::string _name = "_is"; };
+
+    name = im->get_name() + _name + std::to_string(my_id);
+  };
+
   void init() {
     isRoiSet = false;
     isInterpSet = false;
