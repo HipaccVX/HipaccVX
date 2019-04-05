@@ -17,8 +17,6 @@ enum class VertexTask { Computation, Buffer, API, Invalid};
 
 VertexTask set_task_from_type(ObjectType type);
 
-
-
 class Object {
  public:
   Object() : my_id(next_id++) {};
@@ -266,6 +264,60 @@ class Context : public Object {
  public:
   std::vector<Image *> images;
   std::vector<Graph *> graphs;
+};
+
+
+// ------------   TODO: fix these acccording to OpenVX definition
+struct ROI {
+  int x;
+  int y;
+  int width;
+  int height;
+};
+
+enum class BorderM {
+  Undef,
+  Mirror,
+  Constant
+};
+
+class Acc {
+ public:
+  int my_id;
+  Image* im;
+  std::string name;
+
+  bool isRoiSet;
+  bool isInterpSet;
+
+  ROI roi;
+  BorderM brdr;
+
+ public:
+  void init() {
+    isRoiSet = false;
+    isInterpSet = false;
+    roi = ROI{ 0, 0, 0, 0};
+    brdr = BorderM::Undef;
+    im = NULL;
+    name = std::to_string(my_id) + "_Acc_undef" ;
+  }
+
+  Acc() : my_id(next_id++) {
+    init();
+  };
+
+  std::string get_name() { return name; };
+
+  bool isImgSet() { return !(im == NULL); };
+
+  void set_img(Image* _im) { im = _im; };
+
+  int width()  { return im->get_width(); };
+
+  int height() { return im->get_height(); };
+
+  static int next_id;
 };
 
 }  // namespace HipaVX

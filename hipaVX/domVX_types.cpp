@@ -44,6 +44,7 @@ VertexTask set_task_from_type(HipaVX::ObjectType _type) {
 }
 
 int Object::next_id = 0;
+int Acc::next_id = 0;
 
 // Graph
 void Graph::build() {

@@ -24,6 +24,7 @@ using HipaccNode = HipaVX::Object;
 using HipaccImage = HipaVX::Image;
 using HipaccDomain = ast4vx::WindowDescriptor;
 using HipaccMask = DomVX::Mask;
+using DomVXAcc = HipaVX::Acc;
 
 using HipaccKernel = DomVX::AbstractionNode;
 using HipaccPointNode = DomVX::Map;
@@ -47,90 +48,37 @@ enum class DefType{
   Param,
 };
 
-struct ROI {
-  int x; 
-  int y; 
-  int width; 
-  int height; 
-};
-
 // TODO: Merge Accessor and IterationSpace
-class HipaccAccessor {
+class HipaccAccessor : public DomVXAcc {
  public:
-  HipaccImage* im;
-  std::string name;
+   void set_name(std::string _name = "_acc"){
+     name = im->get_name() + _name + std::to_string(my_id);
+   };
 
-  bool isRoiSet;
-  bool isInterpSet;
+   HipaccAccessor(){};
 
-  ROI roi;
-
-  void init() {
-    isRoiSet = false;
-    isInterpSet = false;
-    roi = ROI{ 0, 0, 0, 0}; 
-  }
-
-  bool isImgSet() { return !(im == NULL); };
-
-  int width()  { return im->get_width(); };
-
-  int height() { return im->get_height(); };
-
-  std::string get_name() { return name; };
-
-  HipaccAccessor( ) {
-    init();
-    im = NULL;
-  };
-
-  HipaccAccessor( HipaccImage* _im ) : im(_im) {
-    init();
-    // TODO: make sure that this is unique
-    name = im->get_name() + "_acc";
-  };
+   HipaccAccessor(HipaccImage* _im) {
+    set_img(_im);
+    set_name();
+   };
 };
 
-class HipaccIterationSpace {
+class HipaccIterationSpace : public DomVXAcc {
  public:
-  HipaccImage* im;
-  std::string name;
+   void set_name(std::string _name = "_is"){
+     name = im->get_name() + _name + std::to_string(my_id);
+   };
 
-  bool isRoiSet;
-  bool isInterpSet;
+   HipaccIterationSpace(){};
 
-  ROI roi;
-
-  void init() {
-    isRoiSet = false;
-    isInterpSet = false;
-    roi = ROI{ 0, 0, 0, 0}; 
-  }
-
-  bool isImgSet() { return !(im == NULL); };
-
-  int width()  { return im->get_width(); };
-
-  int height() { return im->get_height(); };
-
-  std::string get_name() { return name; };
-
-  HipaccIterationSpace( ) {
-    init();
-    im = NULL;
-  };
-
-  HipaccIterationSpace(HipaccImage* _im ) : im(_im) {
-    init();
-    // TODO: make sure that this is unique
-    name = im->get_name() + "_is";
-  };
-
+   HipaccIterationSpace(HipaccImage* _im){
+    set_img(_im);
+    set_name();
+   };
 };
-
 
 class hipacc_writer {
- private:
+ protected:
   std::string hind = " ";
   std::string ind = hind + hind;
   std::string dind = ind + ind;
@@ -279,7 +227,7 @@ void hipacc_writer::def(std::stringstream &ss, HipaccAccessor* acc, DefType deft
       params << acc->width() << ", " << acc->height();
 
       if(acc->isRoiSet) {
-        params << "," << acc->roi.x << ", "  << acc->roi.y; 
+        params << "," << acc->roi.x << ", "  << acc->roi.y;
       }
 
       if(acc->isInterpSet) {
@@ -308,18 +256,34 @@ void hipacc_writer::def(std::stringstream &ss, HipaccIterationSpace* is, DefType
     ERRORM("hipacc_writer::def(is) : is" + is->get_name() + " has no image");
   }
 
-  std::stringstream params;
-  params << is->width() << ", " << is->height();
+  switch(deftype) {
+    case DefType::Hdecl: {
+      std::stringstream params;
+      params << is->width() << ", " << is->height();
 
-  if(is->isRoiSet) {
-    params << "," << is->roi.x << ", "  << is->roi.y; 
+      if(is->isRoiSet) {
+        params << "," << is->roi.x << ", "  << is->roi.y;
+      }
+
+      if(is->isInterpSet) {
+        params << "more";
+      }
+
+      ss << "IterationSpace" << "<" << dtype(is->im) + "> " << name(is) << "(" << params.str() << ");\n";
+      break;
+    }
+
+    case DefType::Kdecl:
+    case DefType::Param:
+    {
+      ss << "IterationSpace" << "<" << dtype(is->im) + "> &" << name(is);
+      break;
+    }
+
+    default : {
+      ERRORM("Unsupported deftype @ def(image)");
+    }
   }
-
-  if(is->isInterpSet) {
-    params << "more";
-  }
-
-  ss << "IterationSpace" << "<" << dtype(is->im) + "> " << name(is) << "(" << params.str() << ")";
 }
 
 void hipacc_writer::def(std::stringstream &ss, HipaccDomain* dom, DefType deftype) {
@@ -504,39 +468,26 @@ void hipacc_writer::def(std::stringstream &ss, HipaccKernel* kern, DefType defty
 
 class graph_gen {
  public:
+  dag g_dag;
+  OptGraphT* _g_opt;
+
+  std::list<VertexDesc>* _verts;
+  std::list<VertexDesc> nodes;
+  std::list<VertexDesc> spaces;
+
+ public:
   void init();
 
   graph_gen(dag &_g_dag) : g_dag(_g_dag) {
     init();
   };
 
-  std::string dump();
-
-  void print_nodes() {
-    for(auto i : nodes)
-      std::cout << (*_g_opt)[i].get_name() << std::endl;
-  };
-
-  void print_spaces() {
-    for(auto i : spaces)
-      std::cout << (*_g_opt)[i].get_name() << std::endl;
-  };
-
   VertexType& get_vert(VertexDesc& v) { return (*_g_opt)[v]; }
 
-  VertexTask get_vert_task(VertexDesc& v) { return (*_g_opt)[v].get_task(); }
+  VertexTask get_vert_task(VertexDesc& v) { return get_vert(v).get_task(); }
 
-  ObjectType get_vert_type(VertexDesc& v) { return (*_g_opt)[v].type; }
+  ObjectType get_vert_type(VertexDesc& v) { return get_vert(v).type; }
 
- public:
-    std::string code;
-
-    dag g_dag;
-    OptGraphT* _g_opt;
-
-    std::list<VertexDesc>* _verts;
-    std::list<VertexDesc> nodes;
-    std::list<VertexDesc> spaces;
 };
 
 void graph_gen::init() {
@@ -560,7 +511,38 @@ void graph_gen::init() {
 }
 
 
-//class hipacc_gen : graph_gen , hipacc_writer {
-// public:
-//  hipacc_gen(dag &_g_dag) : hipacc_gen(_g_dag) {};
-//}; 
+class hipacc_gen : public graph_gen, hipacc_writer {
+ public:
+  hipacc_gen(dag &_g_dag) :graph_gen(_g_dag) {};
+
+  void print_nodes() {
+    for(auto i : nodes)
+      std::cout << get_vert(i).get_name() << std::endl;
+  };
+
+  void print_spaces() {
+    for(auto i : spaces)
+      std::cout << get_vert(i).get_name() << std::endl;
+  };
+
+  std::stringstream kdefs;
+  std::stringstream accs;
+  std::stringstream iss;
+  std::stringstream masks;
+  std::stringstream domss;
+  std::stringstream execs;
+
+  void iterate_nodes();
+  void iterate_spaces();
+};
+
+void hipacc_gen::iterate_nodes() {
+    for(auto v : nodes) {
+      execs << dind << get_vert(v).get_name() << ".execute()" << std::endl;
+    }
+}
+
+void hipacc_gen::iterate_spaces() {
+
+}
+

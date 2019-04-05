@@ -24,13 +24,11 @@ int main() {
   // g.dump_optimized("optimized");
   // g.print_io_nodes();
 
-  graph_gen gen(g);
+  hipacc_gen gen(g);
 
-  std::cout << "\nnodes according to the order of execution\n";
-  gen.print_nodes();
+  gen.iterate_nodes();
 
-  std::cout << "\nspaces according to the order of execution\n";
-  gen.print_spaces();
+  std::cout << gen.execs.str();
   
   return 0;
 }
