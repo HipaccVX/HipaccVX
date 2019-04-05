@@ -22,7 +22,6 @@ using graphVX::OptGraphT;
 using HipaVX::VertexTask;
 using HipaVX::ObjectType;
 
-using HipaccNode = HipaVX::Object;
 using HipaccImage = HipaVX::Image;
 using HipaccDomain = ast4vx::WindowDescriptor;
 using HipaccMask = DomVX::Mask;
@@ -41,6 +40,7 @@ using HipaccDataType = vx_df_image;
 #define S32 VX_DF_IMAGE_S32
 #define U32 VX_DF_IMAGE_U32
 #define F32 VX_TYPE_FLOAT32
+#define UNDEF VX_TYPE_DF_IMAGE
   
 #define HipaccImageE VX_TYPE_IMAGE
 
@@ -49,6 +49,16 @@ enum class DefType{
   Kdecl,
   Param,
 };
+
+// pointer casts
+HipaccImage* obj2img(VertexType* v) {
+  HipaccImage* _im = dynamic_cast<HipaccImage*>(v->_obj);
+
+  if(_im == NULL)
+    ERRORM("graph_gen obj2img, dynamic cast fail for: " + v->get_name());
+
+  return _im;
+}
 
 // TODO: Merge Accessor and IterationSpace
 class HipaccAccessor : public DomVXAcc {
@@ -87,7 +97,7 @@ class hipacc_writer {
   std::string tind = dind + ind;
   
  public:
-  std::stringstream ss, ss_im;
+  std::stringstream ss;
 
   template<class T> std::string name(T* node);
 
@@ -96,13 +106,15 @@ class hipacc_writer {
   std::string _dtype(HipaccDataType type, std::string name = "");
 
 
-  void def(HipaccNode*);
+  void def(VertexType*);
 
   void def(std::stringstream &ss, HipaccImage* n, DefType deftype = DefType::Hdecl);
 
-  void def(std::stringstream &ss, HipaccAccessor* n, DefType deftype = DefType::Hdecl);
+  void def_acc(std::stringstream &ss, DomVXAcc* n, DefType deftype = DefType::Hdecl);
 
-  void def(std::stringstream &ss, HipaccIterationSpace* is, DefType deftype = DefType::Hdecl);
+  void def_is(std::stringstream &ss, DomVXAcc* is, DefType deftype = DefType::Hdecl);
+
+  void def(std::stringstream &ss, DomVXAcc* n, DefType deftype = DefType::Hdecl);
 
   void def(std::stringstream &ss, HipaccDomain* n, DefType deftype = DefType::Hdecl);
 
@@ -114,55 +126,11 @@ class hipacc_writer {
            std::initializer_list<HipaccMask*> mask_l = {},
            std::initializer_list<HipaccDomain*> dom_l = {});
 
-  std::string param(HipaccNode);
-
  public:
   hipacc_writer() {};
 
-  std::string dump_code();
-
   std::string initial_includes();
 };
-
-
-// ------------------------ public API ---------------------------------------
-std::string hipacc_writer::dump_code() {
-  ss << initial_includes() << std::endl;
-   return ss.str();
-}
-
-
-// ----------------------- VX to Hipacc ---------------------------------------
-void hipacc_writer::def(HipaccNode* hn) {
-  switch (hn->type) {
-    case HipaccImageE: {
-      HipaccImage* im = dynamic_cast<HipaccImage*>(hn);
-      if(im) {
-        std::cout << im->get_name() << "\n";
-      } else {
-        ERRORM("def(HipaccNode im), dynamic cast fail for: " + hn->get_name());
-      }
-
-      def(ss_im, im);
-      break;
-    }
-
-    // case VX_TYPE_INVALID:
-    //   ERRORM("hipacc_writer::def : invalid type");
-    //   break;
-
-    // case VX_TYPE_NODE:
-    // case VX_TYPE_KERNEL:
-    // case VX_TYPE_CONVOLUTION:
-    // case VX_TYPE_SCALAR:
-    // case VX_TYPE_ARRAY:
-    // case VX_TYPE_MATRIX:
-    default: {
-      ERRORM("hipacc_writer::def : type of the HipaccNode" + hn->get_name() + "is not defined");
-      break;
-    }
-  }
-}
 
 
 // ----------------- conversion to string -------------------------------------
@@ -174,7 +142,7 @@ std::string hipacc_writer::_dtype(HipaccDataType type, std::string name) {
     case S32: { return "int"; }
     case U32: { return "uint"; }
     case F32: { return "float"; }
-    case VX_TYPE_DF_IMAGE: { return "undef"; }
+    case UNDEF: { return "undef"; }
     default: { ERRORM("hipac_writer::dtype, unknown dtype for " + name); }
   }
 }
@@ -214,7 +182,7 @@ std::string hipacc_writer::initial_includes() {
 void hipacc_writer::def(std::stringstream &ss, HipaccImage* img, DefType deftype) {
   switch(deftype) {
     case DefType::Hdecl: {
-      ss << "Image" << "<" << dtype(img) + "> " << name(img)
+      ss << dind << "Image" << "<" << dtype(img) + "> " << name(img)
                     << "(" << img->get_width() << ", " << img->get_height() << ");\n";
       break;
     }
@@ -225,7 +193,7 @@ void hipacc_writer::def(std::stringstream &ss, HipaccImage* img, DefType deftype
   }
 }
 
-void hipacc_writer::def(std::stringstream &ss, HipaccAccessor* acc, DefType deftype) {
+void hipacc_writer::def_acc(std::stringstream &ss, DomVXAcc* acc, DefType deftype) {
   if (acc->isImgSet() == false) {
     ERRORM("hipacc_writer::def(acc) : acc " + acc->get_name() + " has no image");
   }
@@ -243,14 +211,14 @@ void hipacc_writer::def(std::stringstream &ss, HipaccAccessor* acc, DefType deft
         params << "more";
       }
 
-      ss << "Accessor" << "<" << dtype(acc->im) + "> " << name(acc) << "(" << params.str() << ");\n";
+      ss << dind << "Accessor" << "<" << dtype(acc->im) + "> " << name(acc) << "(" << params.str() << ");\n";
       break;
     }
 
     case DefType::Kdecl:
     case DefType::Param:
     {
-      ss << "Accessor" << "<" << dtype(acc->im) + "> &" << name(acc);
+      ss << dind << "Accessor" << "<" << dtype(acc->im) + "> &" << name(acc);
       break;
     }
 
@@ -260,7 +228,7 @@ void hipacc_writer::def(std::stringstream &ss, HipaccAccessor* acc, DefType deft
   }
 }
 
-void hipacc_writer::def(std::stringstream &ss, HipaccIterationSpace* is, DefType deftype) {
+void hipacc_writer::def_is(std::stringstream &ss, DomVXAcc* is, DefType deftype) {
   if (is->isImgSet() == false) {
     ERRORM("hipacc_writer::def(is) : is" + is->get_name() + " has no image");
   }
@@ -278,14 +246,14 @@ void hipacc_writer::def(std::stringstream &ss, HipaccIterationSpace* is, DefType
         params << "more";
       }
 
-      ss << "IterationSpace" << "<" << dtype(is->im) + "> " << name(is) << "(" << params.str() << ");\n";
+      ss << dind << "IterationSpace" << "<" << dtype(is->im) + "> " << name(is) << "(" << params.str() << ");\n";
       break;
     }
 
     case DefType::Kdecl:
     case DefType::Param:
     {
-      ss << "IterationSpace" << "<" << dtype(is->im) + "> &" << name(is);
+      ss << dind << "IterationSpace" << "<" << dtype(is->im) + "> &" << name(is);
       break;
     }
 
@@ -293,6 +261,14 @@ void hipacc_writer::def(std::stringstream &ss, HipaccIterationSpace* is, DefType
       ERRORM("Unsupported deftype @ def(image)");
     }
   }
+}
+
+void hipacc_writer::def(std::stringstream &ss, DomVXAcc* in, DefType deftype) {
+  if (in->is_acc) {
+    def_acc(ss, in, deftype); 
+  } else {
+    def_is(ss, in, deftype); 
+  } 
 }
 
 void hipacc_writer::def(std::stringstream &ss, HipaccDomain* dom, DefType deftype) {
@@ -573,17 +549,54 @@ class hipacc_gen : public graph_gen, public hipacc_writer {
  public:
   hipacc_gen(dag &_g_dag) :graph_gen(_g_dag) {};
 
-  std::stringstream kdefs;
-  std::stringstream accs;
-  std::stringstream iss;
-  std::stringstream masks;
-  std::stringstream domss;
-  std::stringstream execs;
+  using hipacc_writer::def;
+
+  std::stringstream ss_mask;
+  std::stringstream ss_dom;
+  std::stringstream ss_im;
+  std::stringstream ss_acc;
+  std::stringstream ss_is;
+  std::stringstream ss_kern;
+  std::stringstream ss_execs;
+
+  std::stringstream ss;
+
+  void def(VertexType* hn);
 
   void iterate_nodes();
   void iterate_spaces();
 
   void set_edges();
+
+  void dump_code() {
+    ss << "int main() {\n";
+
+    ss << dind << "// masks\n";
+    ss << ss_mask.str() << "\n";
+
+    ss << dind << "// domains\n";
+    ss << ss_dom.str() << "\n";
+
+    ss << dind << "// images\n";
+    ss << ss_im.str() << "\n";
+
+    ss << dind << "// accessors\n";
+    ss << ss_acc.str() << "\n";
+
+    ss << dind << "// iteration spaces\n";
+    ss << ss_is.str() << "\n";
+
+    ss << dind << "// kernels\n";
+    ss << ss_kern.str() << "\n";
+
+    ss << dind << "// execution\n";
+    ss << ss_execs.str() << "\n";
+
+    ss << dind << "return 0;\n";
+    ss << "}\n";
+
+    std::cout << ss.str(); 
+  }
 };
 
 void hipacc_gen::set_edges() {
@@ -597,31 +610,36 @@ void hipacc_gen::set_edges() {
     if(get_vert_type(src) == VX_TYPE_IMAGE &&
         get_vert_type(dst) == VX_TYPE_NODE) {
       edge.is_acc = true;
-      _im = static_cast<HipaccImage*>((get_vert(src)));
-      if(_im == NULL)
-        ERRORM("set_edges, dynamic cast fail for: " + get_vert(src)->get_name());
+      _im = obj2img(get_vert(src));
     } else if (get_vert_type(src) == VX_TYPE_NODE &&
                get_vert_type(dst) == VX_TYPE_IMAGE) {
       edge.is_acc = false;
-      _im = static_cast<HipaccImage*>((get_vert(dst)));
-      if(_im == NULL)
-        ERRORM("set_edges, dynamic cast fail for: " + get_vert(dst)->get_name());
+      _im = obj2img(get_vert(dst));
     }
 
     if(_im) {
       edge.set_img(_im);
       edge.set_name();
+
+      if( edge.is_acc == true ) {
+        def_acc(ss_acc, &edge, DefType::Hdecl);
+      } else {
+        def_is(ss_is, &edge, DefType::Hdecl);
+      }
     }
   }
 }
 
-
 void hipacc_gen::iterate_nodes() {
     for(auto v : nodes) {
-      execs << dind << get_vert(v)->get_name() << ".execute()" << std::endl;
-    }
-    for(auto v : spaces) {
-      execs << dind << get_vert(v)->get_name() << std::endl;
+      ss_execs << dind << get_vert(v)->get_name() << ".execute()" << std::endl;
+
+      // TODO: kernel defs and calls
+      //def(ss_kern, v, DefType deftype,
+      //std::initializer_list<HipaccAccessor*> acc_l,
+      //std::initializer_list<HipaccIterationSpace*> is_l,
+      //std::initializer_list<HipaccMask*> mask_l,
+      //std::initializer_list<HipaccDomain*> dom_l) {
     }
 }
 
@@ -630,6 +648,29 @@ void hipacc_gen::iterate_spaces() {
       HipaVX::Object *n = get_vert(v);
       def(n);
   }
-  std::cout << "images\n" << ss_im.str();
 }
 
+void hipacc_gen::def(VertexType* hn) {
+  switch (hn->type) {
+    case HipaccImageE: {
+      auto _im = obj2img(hn);
+      def(ss_im, _im);
+      break;
+    }
+
+    // case VX_TYPE_INVALID:
+    //   ERRORM("hipacc_writer::def : invalid type");
+    //   break;
+
+    // case VX_TYPE_NODE:
+    // case VX_TYPE_KERNEL:
+    // case VX_TYPE_CONVOLUTION:
+    // case VX_TYPE_SCALAR:
+    // case VX_TYPE_ARRAY:
+    // case VX_TYPE_MATRIX:
+    default: {
+      ERRORM("hipacc_writer::def : type of the VertexType" + hn->get_name() + "is not defined");
+      break;
+    }
+  }
+}

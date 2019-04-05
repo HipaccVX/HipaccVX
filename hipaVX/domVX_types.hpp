@@ -48,6 +48,8 @@ class Object {
 
   ObjectType type;
 
+  Object* _obj;
+
   bool virt;
 
   bool alive = false; // after optimizations
@@ -72,6 +74,7 @@ class Scalar : public Object {
   void init() {
     type = VX_TYPE_SCALAR;
     set_task();
+    _obj = this;
   }
 
   void set_value(const void *ptr) {
@@ -119,20 +122,25 @@ class Image : public Object {
     init();
   }
 
-  Image(vx_uint32 width, vx_uint32 height, vx_df_image color) :
-      w(width), h(height), col(color) {
+  Image(vx_uint32 width, vx_uint32 height) : w(width), h(height) {
     init();
+    w = width;
+    h = height;
   }
 
-  Image(vx_uint32 width, vx_uint32 height) :
-      w(width), h(height), col(VX_TYPE_DF_IMAGE) {
+  Image(vx_uint32 width, vx_uint32 height, vx_df_image color) {
     init();
+    w = width;
+    h = height;
+    col = color;
   }
 
   void init() {
     type = VX_TYPE_IMAGE;
+    col = VX_TYPE_DF_IMAGE;
     set_task();
     set_name("Img");
+    _obj = this;
   }
 
   vx_uint32 get_width()  { return w;};
@@ -140,8 +148,8 @@ class Image : public Object {
 
   virtual ~Image() = default;
 
-  vx_uint32 w = 0, h = 0;
-  vx_df_image col = VX_TYPE_DF_IMAGE;
+  vx_uint32 w, h;
+  vx_df_image col;
 
   vx_df_image get_dtype() { return col; }
 
@@ -188,6 +196,7 @@ class Node : public Object {
     kernel = std::make_shared<ast4vx::ForEveryPixel>();
     type = VX_TYPE_NODE;
     set_task();
+    _obj = this;
   }
 
   virtual ~Node() = default;
@@ -209,6 +218,7 @@ class Convolution : public Object {
     type = VX_TYPE_CONVOLUTION; 
     set_name("Convolve");
     set_task();
+    _obj = this;
   }
 
   std::vector<vx_int16> coefficients;
@@ -224,6 +234,7 @@ class Threshold : public Object {
     type = VX_TYPE_THRESHOLD; 
     set_name("Threshold");
     set_task();
+    _obj = this;
   }
 
   vx_threshold_type_e threshold_type;
@@ -246,6 +257,7 @@ class VX_Matrix : public Object {
     type = VX_TYPE_MATRIX; 
     set_name("Matrix");
     set_task();
+    _obj = this;
   }
 
   vx_enum data_type;
@@ -301,8 +313,8 @@ class Acc {
  public:
   void set_name() {
     std::string _name;
-    if (is_acc == true) { std::string _name = "_acc"; }
-    else { std::string _name = "_is"; };
+    if (is_acc == true) { _name = "_acc_"; }
+    else { _name = "_is_"; };
 
     name = im->get_name() + _name + std::to_string(my_id);
   };

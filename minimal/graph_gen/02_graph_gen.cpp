@@ -25,13 +25,12 @@ int main() {
   // g.print_io_nodes();
 
   hipacc_gen gen(g);
+  gen.set_edges();
 
   gen.iterate_nodes();
   gen.iterate_spaces();
 
-  gen.set_edges();
-
-  std::cout << gen.execs.str();
+  gen.dump_code();
   
   return 0;
 }
