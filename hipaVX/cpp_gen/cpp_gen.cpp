@@ -747,13 +747,13 @@ std::string CPPVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i)
         }
 
         // TODO check window_inputs if same domain
-        auto domain = s->window_inputs[i].get()->domain;
+        auto domain = desc_to_dom[s->window_inputs[i]];
 
-        for(unsigned int y = 0; y < domain.size(); y++)
+        for(unsigned int y = 0; y < domain->height; y++)
         {
-            for(unsigned int x = 0; x < domain[0].size(); x++)
+            for(unsigned int x = 0; x < domain->width; x++)
             {
-                if (domain[y][x] == 0)
+                if (domain->domain[y][x] == 0)
                     continue;
                 if (s->current_state == ast4vx::WindowOperation::State::At)
                 {
@@ -1011,6 +1011,11 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n, int i)
 
         code += "\n";
 
+        desc_to_dom.clear();
+        // Add the manual set domains to the map
+        for (auto binding: s->domain_bindings)
+            desc_to_dom[binding.first] = binding.second;
+
         for(unsigned int i = 0; i < s->operations.size(); i++)
         {
             auto &op = s->operations[i];
@@ -1076,7 +1081,17 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n, int i)
             maskaccessor_mapping = nullptr;
             pixelaccessor_mapping = old_mapping;
             windowdescriptor_mapping = nullptr;
+
+            // If the output window has no domain set, copy it from the input window descriptor
+            if (op->output != nullptr && desc_to_dom.find(op->output) == desc_to_dom.end())
+            {
+                if (op->window_inputs.size() == 0)
+                    throw std::runtime_error("CPPVisitor: if operation output window has no domain set explicitly and should inherit the domain from the input, an input window has to be given");
+                desc_to_dom[op->output] = desc_to_dom[op->window_inputs[0]];
+            }
         }
+
+        desc_to_dom.clear();
 
         current_output_y = current_output_x = "";
         outer_loop = use_template(outer_loop, "CODE", code);

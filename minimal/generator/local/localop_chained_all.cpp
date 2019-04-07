@@ -48,68 +48,31 @@ int main()
 
     // Assigning the WindowOperations to functions and descriptors...
     auto window_in = std::make_shared<ast4vx::WindowDescriptor>(3, 5);
-    window_in->set_domain({0, 1, 1,
-                           0, 0, 0,
-                           1, 1, 0,
-                           0, 0, 0,
-                           0, 1, 1});
 
-    auto window_op_forall = std::make_shared<ast4vx::WindowOperation>(3, 5);
-    window_op_forall->set_window_inputs({window_in});
-    window_op_forall->forall(ast_forall);
-
-    auto window_desc_1 = window_op_forall->get_window_output();
-    window_desc_1->set_domain({0, 0, 1,
-                               0, 0, 0,
-                               1, 0, 0,
-                               0, 0, 0,
-                               0, 0, 1});
+    auto window_op_forall = forall(window_in, ast_forall);
 
     auto window_1_op_1 = std::make_shared<ast4vx::WindowOperation>(3, 5);
-    window_1_op_1->set_window_inputs({window_desc_1});
+    window_1_op_1->set_window_inputs({window_op_forall->get_window_output()});
     window_1_op_1->compute_at(2, 0, ast_fun_1);
     window_1_op_1->compute_at(0, 2, ast_fun_2);
     window_1_op_1->compute_at(2, 4, ast_fun_2);
 
     auto window_1_op_2 = std::make_shared<ast4vx::WindowOperation>(3, 5);
-    window_1_op_2->set_window_inputs({window_desc_1});
+    window_1_op_2->set_window_inputs({window_op_forall->get_window_output()});
     window_1_op_2->compute_at(2, 0, ast_fun_1);
     window_1_op_2->compute_at(0, 2, ast_fun_1);
     window_1_op_2->compute_at(2, 4, ast_fun_1);
 
 
-    auto window_1_op_1_desc = window_1_op_1->get_window_output();
-    window_1_op_1_desc->set_domain({0, 0, 0,
-                                    0, 0, 0,
-                                    0, 0, 0,
-                                    0, 0, 0,
-                                    0, 0, 1});
-    auto window_1_op_2_desc = window_1_op_2->get_window_output();
-    window_1_op_2_desc->set_domain({0, 0, 0,
-                                    0, 0, 0,
-                                    1, 0, 0,
-                                    0, 0, 0,
-                                    0, 0, 0});
-
     auto window_1_op_2_op_1 = std::make_shared<ast4vx::WindowOperation>(3, 5);
-    window_1_op_2_op_1->set_window_inputs({window_1_op_2_desc});
+    window_1_op_2_op_1->set_window_inputs({window_1_op_2->get_window_output()});
     window_1_op_2_op_1->compute_at(0, 2, ast_fun_1);
 
-    auto window_1_op_2_op1_desc = window_1_op_2_op_1->get_window_output();
-    window_1_op_2_op1_desc->set_domain({0, 0, 0,
-                                        0, 0, 0,
-                                        1, 0, 0,
-                                        0, 0, 0,
-                                        0, 0, 0});
-
     auto local_to_pixel_op = std::make_shared<ast4vx::WindowOperation>(3, 5);
-    local_to_pixel_op->set_window_inputs({window_1_op_1_desc, window_1_op_2_op1_desc});
+    local_to_pixel_op->set_window_inputs({window_1_op_1->get_window_output(), window_1_op_2_op_1->get_window_output()});
     local_to_pixel_op->to_pixel(l_to_p);
 
-
-    auto reduction_op = std::make_shared<ast4vx::WindowOperation>(3, 5);
-    reduction_op->set_window_inputs({window_in});
-    reduction_op->reduce(ast_reduction);
+    auto reduction_op = reduce(window_in, ast_reduction);
 
     //---------------------------- DomVX --------------------------------------
 
@@ -120,7 +83,29 @@ int main()
 
     auto local_op = std::shared_ptr<DomVX::LocalOperation>(new DomVX::LocalOperation());
 
+    auto dom_in = std::shared_ptr<DomVX::Domain>(new DomVX::Domain(3, 5, {0, 1, 1,
+                                                                          0, 0, 0,
+                                                                          1, 1, 0,
+                                                                          0, 0, 0,
+                                                                          0, 1, 1}));
+    auto dom_desc_1 = std::shared_ptr<DomVX::Domain>(new DomVX::Domain(3, 5, {0, 0, 1,
+                                                                              0, 0, 0,
+                                                                              1, 0, 0,
+                                                                              0, 0, 0,
+                                                                              0, 0, 1}));
+    auto dom_1_op_1_desc = std::shared_ptr<DomVX::Domain>(new DomVX::Domain(3, 5, {0, 0, 0,
+                                                                                   0, 0, 0,
+                                                                                   0, 0, 0,
+                                                                                   0, 0, 0,
+                                                                                   0, 0, 1}));
+    auto dom_1_op_2_desc = std::shared_ptr<DomVX::Domain>(new DomVX::Domain(3, 5, {0, 0, 0,
+                                                                                   0, 0, 0,
+                                                                                   1, 0, 0,
+                                                                                   0, 0, 0,
+                                                                                   0, 0, 0}));
+
     local_op->set_input_window_desc({{image_i, window_in}});
+    local_op->set_domains({{window_in, dom_in}, {window_op_forall->get_window_output(), dom_desc_1}, {window_1_op_1->get_window_output(), dom_1_op_1_desc}, {window_1_op_2->get_window_output(), dom_1_op_2_desc}});
 
     local_op->add_operation(window_op_forall);
     local_op->add_operation(window_1_op_1);

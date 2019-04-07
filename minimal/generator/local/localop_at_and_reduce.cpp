@@ -20,11 +20,6 @@ int main()
 
     // Create dummy input window and set its domain
     auto window_in = std::make_shared<ast4vx::WindowDescriptor>(3, 5);
-    window_in->set_domain({0, 0, 1,
-                           0, 0, 0,
-                           1, 0, 0,
-                           0, 0, 0,
-                           0, 0, 1});
 
     // Associate pixel to pixel functions with the domain coordinates via compute_at
     // these pixel to pixel functions must have one output pixel accessor
@@ -48,8 +43,18 @@ int main()
     // Create the local operation
     auto local_op = std::shared_ptr<DomVX::LocalOperation>(new DomVX::LocalOperation());
 
+    // Create the domain
+    auto dom = std::shared_ptr<DomVX::Domain>(new DomVX::Domain(3, 5, {0, 0, 1,
+                                                                       0, 1, 0,
+                                                                       1, 0, 0,
+                                                                       0, 1, 0,
+                                                                       0, 0, 1}));
+
     // Bind the dummy window accessors to the input images
     local_op->set_input_window_desc({{image_i, window_in}});
+
+    // Bind the window accessors to the domains, if a window descriptor is not set, it will inherit the domain from the predecessor
+    local_op->set_domains({{window_in, dom}});
 
     // Add the Pixel to Pixel compute_at operation
     local_op->add_operation(window_op_1);

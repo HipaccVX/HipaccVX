@@ -17,11 +17,6 @@ int main()
 
     // Create dummy input window and set its domain
     auto window_in = std::make_shared<ast4vx::WindowDescriptor>(3, 5);
-    window_in->set_domain({1, 1, 1,
-                           1, 0, 1,
-                           1, 0, 1,
-                           1, 0, 1,
-                           1, 1, 1});
 
     // There are handy functions for "forall" and "reduce", which reduces the mundane calls
     auto forall_op = forall(window_in, ast_forall);
@@ -37,8 +32,15 @@ int main()
                                                                     -1,  0,  1,
                                                                     -1,  0,  1,
                                                                     -1,  1,  1}));
+    auto dom = std::shared_ptr<DomVX::Domain>(new DomVX::Domain(3, 5, {1, 1, 1,
+                                                                       1, 0, 1,
+                                                                       1, 0, 1,
+                                                                       1, 0, 1,
+                                                                       1, 1, 1}));
     // Create the local operation
     auto local_op = std::shared_ptr<DomVX::LocalOperation>(new DomVX::LocalOperation());
+
+    local_op->set_domains({{window_in, dom}});
 
     // Bind the dummy window accessors to the input images
     local_op->set_input_window_desc({{image_i, window_in}});

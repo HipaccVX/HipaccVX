@@ -46,6 +46,7 @@ class CPPVisitor: public ASTVisitor<std::string, int>, public AbstractionsVisito
     std::string current_output_x = "";
 
     std::map<std::shared_ptr<ast4vx::WindowDescriptor>, std::string> desc_to_name;
+    std::map<std::shared_ptr<ast4vx::WindowDescriptor>, std::shared_ptr<DomVX::Domain>> desc_to_dom;
 
 public:
     virtual std::string visit(std::shared_ptr<ast4vx::Node> n, int i = 0) override;

@@ -1067,7 +1067,6 @@ class WindowDescriptor: public Node
 public:
     unsigned int width, height;
     Datatype output_datatype;
-    std::vector<std::vector<unsigned char>> domain;
 
     WindowDescriptor(unsigned int x, unsigned int y, Datatype datatype = Datatype::INT32)
     {
@@ -1079,55 +1078,6 @@ public:
         this->output_datatype = datatype;
         width = x;
         height = y;
-        domain.resize(y);
-        for(auto& line: domain)
-        {
-            line.resize(x);
-        }
-    }
-
-    WindowDescriptor(unsigned int x, unsigned int y, std::initializer_list<int> dom, Datatype datatype = Datatype::INT32)
-    {
-        if (y <= 0 || x <= 0)
-            throw std::runtime_error("WindowDescriptor::WindowDescriptor domain size must be > 0");
-        if (dom.size() != y * x)
-            throw std::runtime_error("WindowDescriptor::WindowDescriptor dom needs to have x * y elements");
-
-        type = NodeType::WindowDescriptor;
-
-        this->output_datatype = datatype;
-        width = x;
-        height = y;
-
-        auto dom_it = dom.begin();
-        y = x = 0;
-        for(y = 0; y < height; y++)
-        {
-            domain.push_back(std::vector<unsigned char>());
-            for(x = 0; x < width; x++)
-            {
-                domain[y].push_back((*dom_it != 0)?1:0);
-                dom_it++;
-            }
-        }
-    }
-
-    void set_domain(std::initializer_list<int> dom)
-    {
-        if (dom.size() != height * width)
-            throw std::runtime_error("WindowDescriptor::set_domain: dom needs to have x * y elements");
-
-        domain.clear();
-        auto dom_it = dom.begin();
-        for(unsigned int y = 0; y < height; y++)
-        {
-            domain.push_back(std::vector<unsigned char>());
-            for(unsigned x = 0; x < width; x++)
-            {
-                domain[y].push_back((*dom_it != 0)?1:0);
-                dom_it++;
-            }
-        }
     }
 };
 
@@ -1246,10 +1196,7 @@ public:
         if (current_state != State::At && current_state != State::Forall)
             throw std::runtime_error("WindowOperation::get_window_output(): Window not in the right state");
         if (output.get() == nullptr)
-        {
             output = std::make_shared<WindowDescriptor>(statements[0].size(), statements.size());
-            output->domain = window_inputs[0]->domain;
-        }
 
         return output;
     }

@@ -17,22 +17,13 @@ int main()
 
     // Create dummy input window and set its domain
     auto window_in = std::make_shared<ast4vx::WindowDescriptor>(3, 5);
-    window_in->set_domain({0, 0, 1,
-                           0, 1, 0,
-                           1, 0, 0,
-                           0, 1, 0,
-                           0, 0, 1});
 
     // Set the Pixel to Pixel function which should be done for all pixels in the domain
-    auto window_op_1 = std::make_shared<ast4vx::WindowOperation>(3, 5);
-    window_op_1->set_window_inputs({window_in});
-    window_op_1->forall(ast_forall);
+    auto window_op_1 = forall(window_in,ast_forall);
 
     // Chain a reduce function
     // This is done via setting the window_op_1's output to this operations input
-    auto reduction_op = std::make_shared<ast4vx::WindowOperation>(3, 5);
-    reduction_op->set_window_inputs({window_op_1->get_window_output()});
-    reduction_op->reduce(ast_reduction);
+    auto reduction_op = reduce(window_op_1, ast_reduction);
 
     //---------------------------- DomVX --------------------------------------
 
@@ -42,8 +33,18 @@ int main()
     // Create the local operation
     auto local_op = std::shared_ptr<DomVX::LocalOperation>(new DomVX::LocalOperation());
 
+    // Create the domain
+    auto dom = std::shared_ptr<DomVX::Domain>(new DomVX::Domain(3, 5, {0, 0, 1,
+                                                                       0, 1, 0,
+                                                                       1, 0, 0,
+                                                                       0, 1, 0,
+                                                                       0, 0, 1}));
+
     // Bind the dummy window accessors to the input images
     local_op->set_input_window_desc({{image_i, window_in}});
+
+    // Bind the window accessors to the domains, if a window descriptor is not set, it will inherit the domain from the predecessor
+    local_op->set_domains({{window_in, dom}});
 
     // Add the Pixel to Pixel compute_at operation
     local_op->add_operation(window_op_1);

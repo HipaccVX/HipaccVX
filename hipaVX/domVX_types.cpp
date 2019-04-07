@@ -63,9 +63,9 @@ Image::Image(vx_uint32 width, vx_uint32 height, vx_df_image color)
 
 // Array
 Array::Array(vx_enum item_type, vx_size cap, vx_size rows)
-    :Image(rows, cap, VX_DF_IMAGE_S32), type(item_type), capacity(cap)
+    :Image(rows, cap, VX_DF_IMAGE_S32), item_type(item_type), capacity(cap)
 {
-    type = VX_TYPE_ARRAY;
+    item_type = VX_TYPE_ARRAY;
 }
 
 // Graph

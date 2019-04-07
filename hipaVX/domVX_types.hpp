@@ -51,7 +51,7 @@ class Image: public Object
 {
 public:
 	Image(vx_uint32 width, vx_uint32 height, vx_df_image color);
-	Image() {};
+    Image() {}
 	virtual ~Image() = default;
 	vx_uint32 w=0, h=0;
 	vx_df_image col;
@@ -62,7 +62,7 @@ class Array: public Image
 public:
 	Array(vx_enum item_type, vx_size cap, vx_size rows);
 	virtual ~Array() = default;
-	vx_enum type;
+    vx_enum item_type;
 	vx_size capacity;
 };
 

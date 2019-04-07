@@ -33,6 +33,7 @@ enum class AbstractionType
     Reduce,
     Local,
     LocalOp,
+    Domain,
     Map,
     LocalOperation,
 
@@ -68,6 +69,38 @@ public:
     Datum(HipaVX::Image *image, int X, int Y)
         :im(image), x(X), y(Y)
     {}
+};
+
+class Domain: public AbstractionNode
+{
+public:
+
+    unsigned int width, height;
+    std::vector<std::vector<unsigned char>> domain;
+    Domain(unsigned int x, unsigned int y, std::initializer_list<int> dom)
+        :width(x), height(y)
+    {
+        type = AbstractionType::Domain;
+        set_domain(dom);
+    }
+
+    void set_domain(std::initializer_list<int> dom)
+    {
+        if (dom.size() != height * width)
+            throw std::runtime_error("Domain::set_domain: dom needs to have x * y elements");
+
+        domain.clear();
+        auto dom_it = dom.begin();
+        for(unsigned int y = 0; y < height; y++)
+        {
+            domain.push_back(std::vector<unsigned char>());
+            for(unsigned x = 0; x < width; x++)
+            {
+                domain[y].push_back((*dom_it != 0)?1:0);
+                dom_it++;
+            }
+        }
+    }
 };
 
 class Mask: public AbstractionNode
@@ -198,6 +231,7 @@ public:
     std::vector<std::shared_ptr<ast4vx::WindowOperation>> operations;
     std::vector<std::vector<HipaVX::Image *>> operation_output_images;
     std::map<std::shared_ptr<ast4vx::WindowOperation>, std::vector<std::shared_ptr<DomVX::Mask>>> mask_bindings;
+    std::map<std::shared_ptr<ast4vx::WindowDescriptor>, std::shared_ptr<DomVX::Domain>> domain_bindings;
 
 public:
     LocalOperation()
@@ -234,6 +268,13 @@ public:
     {
         operations.emplace_back(op);
         operation_output_images.emplace_back(out);
+    }
+
+    void set_domains(std::initializer_list<std::tuple<std::shared_ptr<ast4vx::WindowDescriptor>, std::shared_ptr<DomVX::Domain>>> desc_domain_binding)
+    {
+        domain_bindings.clear();
+        for (auto desc: desc_domain_binding)
+            domain_bindings[std::get<0>(desc)] = std::get<1>(desc);
     }
 };
 

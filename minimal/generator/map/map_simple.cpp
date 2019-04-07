@@ -1,7 +1,7 @@
 #include "../../../VX/vx.h"
 #include "../../../hipaVX/domVX_types.hpp"
 #include "../../../hipaVX/abstractions.hpp"
-#include "../../../hipaVX/cpp_gen/cpp_gen.hpp"
+#include "../../../hipaVX/hipacc_gen/hipacc_gen.hpp"
 #include <string>
 #include <iostream>
 
@@ -20,7 +20,7 @@ int main(int argc, const char *argv[])
     // Bind the images to the correct pixel accessors
     map->register_images({image_o}, {image_i});
 
-    CPPVisitor v;
+    HipaccVisitor v;
     std::cout << v.visit(map);
 
     return 0;
