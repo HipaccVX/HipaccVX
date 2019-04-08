@@ -10,34 +10,26 @@
 #include <algorithm>
 #include <memory>
 #include <map>
+#pragma once
 
 #include "../VX/vx.h"
 #include "domVX_types.hpp"
 #include "kernels/domVX_kernels.hpp"
 #include "ast.hpp"
-//#include "hipacc_gen/ast_gen.hpp"
-
-#pragma once
-
-using std::string;
 
 namespace DomVX
 {
 
-// TODO: This header should be independent from the vx_types
+// TODO: This header should be independent from the vx_types - sure?
 //        move Image definition to here, and rename to Acc2D
 
 enum class AbstractionType
 {
     None,
-    Reduce,
-    Local,
-    LocalOp,
     Domain,
+    Mask,
     Map,
     LocalOperation,
-
-    Mask,
 };
 
 class AbstractionNode
@@ -58,17 +50,6 @@ public:
     }
 
     virtual ~AbstractionNode() = default;
-};
-
-class Datum
-{
-public:
-    HipaVX::Image *im;
-    int x, y;
-
-    Datum(HipaVX::Image *image, int X, int Y)
-        :im(image), x(X), y(Y)
-    {}
 };
 
 class Domain: public AbstractionNode

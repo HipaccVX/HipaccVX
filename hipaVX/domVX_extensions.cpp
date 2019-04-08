@@ -3,69 +3,22 @@
 
 vx_node vxHipaccNode(vx_graph graph, std::string filename, vx_reference *parameters, vx_size count, vx_image out)
 {
-    HipaVX::HipaccNode *hipaccNode = new HipaVX::HipaccNode();
-	auto vx = new _vx_node();
-	vx->o = hipaccNode;
-
-    hipaccNode->filename = filename;
-	hipaccNode->out = ((HipaVX::Image*)(out->o));
-    for(vx_size i = 0; i < count; i++)
-		hipaccNode->parameters.push_back(parameters[i]->o);
-
-	((HipaVX::Graph*)(graph->o))->graph.emplace_back(hipaccNode);
-	((HipaVX::Graph*)(graph->o))->built = false;
-
-	return vx;
+    return nullptr;
 }
 
 vx_image vxCreateImageFromFile(vx_context context, vx_uint32 width, vx_uint32 height, vx_df_image color, std::string filename)
 {
-	HipaVX::FileinputImage *image = new HipaVX::FileinputImage(width, height, color, filename);
-	auto vx = new _vx_image();
-	vx->o = image;
-	((HipaVX::Context*)(context->o))->images.emplace_back(image);
-	return vx;
+    return nullptr;
 }
 
 vx_node vxFWriteImageNode(vx_graph graph, vx_image image, std::string file)
 {
-    HipaVX::WriteImageNode *win = new HipaVX::WriteImageNode();
-	auto vx = new _vx_node();
-	vx->o = win;
-	win->in = ((HipaVX::Image*)(image->o));
-    win->out_file = file;
-	((HipaVX::Graph*)(graph->o))->graph.emplace_back(win);
-	((HipaVX::Graph*)(graph->o))->built = false;
-	return vx;
+    return nullptr;
 }
 
 static std::string get_object_name(HipaVX::Object *object)
 {
-    std::string type;
-
-    switch(object->type)
-    {
-    case VX_TYPE_IMAGE:
-        type = "Image";
-        break;
-    case VX_TYPE_SCALAR:
-        type = "Scalar";
-        break;
-    case VX_TYPE_MATRIX:
-    case VX_TYPE_HIPAVX_MATRIX:
-        type = "Matrix";
-        break;
-    case VX_TYPE_THRESHOLD:
-        type = "Threshold";
-        break;
-    case VX_TYPE_CONVOLUTION:
-        type = "Convolution";
-        break;
-    default:
-        throw std::runtime_error("static std::string generate_object_name(HipaVX::Object *object):\n\tUnsupported objecttype");
-    }
-
-    return type + "_" + std::to_string(object->my_id);
+    return nullptr;
 }
 
 void vxDrawDotGraph(vx_graph graph, std::string filename, vx_uint32 node_depth)

@@ -1124,8 +1124,6 @@ std::string HipaccVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i)
 
     case ast4vx::NodeType::Pregenerated:
         break;
-    case ast4vx::NodeType::PixelAccessor:
-        break;
     case ast4vx::NodeType::WindowOperation:
         break;
     }

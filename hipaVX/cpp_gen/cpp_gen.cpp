@@ -8,9 +8,6 @@ string generate_image_name(HipaVX::Image *image)
 
 namespace generator
 {
-
-
-
 string node_generator(HipaVX::WriteImageNode* n, Type t)
 {
     if (t == Type::Definition)
@@ -47,24 +44,11 @@ string node_generator(HipaVX::WriteImageNode* n, Type t)
     return "SOMETHING IS WRONG";
 }
 
-
-string node_generator(HipaVX::HipaccNode* n, Type t)
-{
-    return "string node_generator(HipaVX::HipaccNode* n, Type t) not supported for CppGen";
-}
-
 }
 
 namespace ast4vx
 {
 
-// !!! get rid of this use tuples
-std::string generate_image_name(Image *i)
-{
-    //std::string hipavx_part = string("Image_") + std::to_string(i->my_id); // same with hipacc_gen.hpp
-    std::string hipavx_part = ::generate_image_name(i->image);
-    return hipavx_part;
-}
 
 std::string to_string(Datatype d)
 {
@@ -90,10 +74,6 @@ std::string to_string(Datatype d)
     return datatype;
 }
 
-std::string generate(ForEveryPixel *s)
-{
-    return "";
-}
 }
 
 // move this to domVX_main.cpp
@@ -145,9 +125,8 @@ std::string generate_source_recursive(std::vector<HipaVX::Node*> nodes, const ge
         auto subnodes = node->subnodes;
         if (subnodes.empty()) //we are at a fundamental node
         {
-            //sources += function_ast::generate_call(&node->kernel) + '\n';
             CPPVisitor v;
-            sources += v.visit(node->kernel, 0) + '\n';
+            // VISIT the NODE "node"
         }
         else
         {
@@ -441,14 +420,9 @@ std::string CPPVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i)
     {
         auto s = std::dynamic_pointer_cast<ast4vx::Assignment>(n);
 
-        if (s->subnodes[0]->type == ast4vx::NodeType::ReductionOutput)
+        if(s->subnodes[0]->type == ast4vx::NodeType::PixelAccessor)
         {
-            auto right = this->visit(s->subnodes[1], 0);
-            return "return " + right + ";";
-        }
-        else if(s->subnodes[0]->type == ast4vx::NodeType::PixelAccessorTest)
-        {
-            auto accessor = std::dynamic_pointer_cast<ast4vx::PixelAccessorTest>(s->subnodes[0]);
+            auto accessor = std::dynamic_pointer_cast<ast4vx::PixelAccessor>(s->subnodes[0]);
 
             std::string name = "PixelAccessor_" + std::to_string(accessor->num);
             std::string x = "x";
@@ -471,13 +445,6 @@ std::string CPPVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i)
         auto right = this->visit(s->subnodes[1], 0);
 
         return left + " = " + right;
-    }
-
-    case ast4vx::NodeType::TargetPixel:
-    {
-        auto s = std::dynamic_pointer_cast<ast4vx::TargetPixel>(n);
-        std::string name = generate_image_name((ast4vx::Image*) s->subnodes[0].get());
-        return name + ".data[xy_matrix_flat]";
     }
 
     case ast4vx::NodeType::If:
@@ -506,139 +473,6 @@ std::string CPPVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i)
         return to_return;
     }
 
-    case ast4vx::NodeType::Image:
-    {
-        return generate_image_name(std::dynamic_pointer_cast<ast4vx::Image>(n).get());
-    }
-
-    case ast4vx::NodeType::ForEveryPixel:
-    {
-        auto fep = std::dynamic_pointer_cast<ast4vx::ForEveryPixel>(n);
-        ast4vx::Image *output = (ast4vx::Image*) fep->output.get();
-
-        std::string definitions = "";
-
-        for(auto node: fep->inputs)
-        {
-            if (node->type == ast4vx::NodeType::Stencil)
-            {
-                auto s = dynamic_cast<ast4vx::Stencil*>(node.get());
-
-                string name;
-                string type;
-                std::string constructor;
-
-                name = s->name;
-                type = "matrix<" + to_string(s->datatype) + ">";
-                constructor = "(" + std::to_string(s->dim[0]) + ", " + std::to_string(s->dim[1]) + ", {" ;
-                for (int i = 0; i < s->mask.size(); i++)
-                {
-                    constructor += s->mask[i];
-                    if (i != s->mask.size() - 1)
-                        constructor += ", ";
-                }
-                constructor += "});";
-                definitions += type + " " + name + constructor + "\n";
-            }
-        }
-
-        std::string code = this->visit(fep->function, i);
-
-
-
-
-        string call = read_file(hipaVX_folder + "/templates/cpp_rasterscan.templ");
-
-        call = use_template(call, "HEIGHT", generate_image_name(output->image) + ".h");
-        call = use_template(call, "WIDTH", generate_image_name(output->image) + ".w");
-        call = use_template(call, "DEFINITIONS", definitions);
-        call = use_template(call, "CODE", code);
-        return call;
-    }
-
-    case ast4vx::NodeType::CurrentPixelvalue:
-    {
-        auto s = std::dynamic_pointer_cast<ast4vx::CurrentPixelvalue>(n);
-        std::string name = generate_image_name((ast4vx::Image*) s->subnodes[0].get());
-
-        // Legacy, only needed to allow current HipaVX implementation
-        if (pixelaccessor_mapping == nullptr)
-        {
-            return name + ".data[xy_matrix_flat]";
-        }
-        else
-        {
-            if (current_output_pixel_index == "")
-            {
-                return name + ".data[pixel_index]";
-            }
-            else
-            {
-                return name + ".data[" + current_output_pixel_index + "]";
-            }
-        }
-    }
-
-    case ast4vx::NodeType::Stencil:
-    {
-        return "Stencil generate todo";
-    }
-
-    case ast4vx::NodeType::IterateAroundPixel:
-    {
-        return "IterateAroundPixel generate todo";
-    }
-
-    case ast4vx::NodeType::ReductionOutput:
-    {
-        return "ReductionOutput should not generate";
-    }
-
-    case ast4vx::NodeType::ReduceAroundPixel:
-    {
-        auto s = std::dynamic_pointer_cast<ast4vx::ReduceAroundPixel>(n);
-        auto stencil = std::dynamic_pointer_cast<ast4vx::Stencil>(s->subnodes[1]);
-        std::string reduction = "@std::string generate(ReduceAroundPixel *s)";
-
-        switch(s->reduction_type)
-        {
-        case ast4vx::ReduceAroundPixel::Type::SUM:
-            reduction = "a + b";
-            break;
-        case ast4vx::ReduceAroundPixel::Type::MIN:
-            reduction = "(a > b) ? b : a";
-            break;
-        case ast4vx::ReduceAroundPixel::Type::MAX:
-            reduction = "(a > b) ? a : b";
-            break;
-        }
-
-        std::string t = "local_reduce<@@@REDUCE_DATATYPE@@@>(@@@IMAGE_NAME@@@, y_matrix, x_matrix, @@@STENCIL_NAME@@@, [&] (short s, int value) -> @@@REDUCE_DATATYPE@@@ {\n"
-                        "@@@BODY@@@\n"
-                        "},\n"
-                        "[](@@@REDUCE_DATATYPE@@@ a, @@@REDUCE_DATATYPE@@@ b)\n"
-                        "{\n"
-                        "    return @@@REDUCTION@@@;\n"
-                        "})\n";
-        t = use_template(t, "REDUCE_DATATYPE", to_string(s->datatype));
-        t = use_template(t, "STENCIL_NAME", stencil->name);
-        t = use_template(t, "REDUCTION", reduction);
-        t = use_template(t, "IMAGE_NAME", generate_image_name(std::dynamic_pointer_cast<ast4vx::Image>(s->subnodes[0]).get()));
-        t = use_template(t, "BODY", this->visit(s->subnodes[2], i));
-
-        return t;
-    }
-
-    case ast4vx::NodeType::PixelvalueAtCurrentStencilPos:
-    {
-        return "value";
-    }
-
-    case ast4vx::NodeType::StencilvalueAtCurrentStencilPos:
-    {
-        return "s";
-    }
-
     case ast4vx::NodeType::Statements:
     {
         auto s = std::dynamic_pointer_cast<ast4vx::Statements>(n);
@@ -654,39 +488,9 @@ std::string CPPVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i)
         return to_return;
     }
 
-    case ast4vx::NodeType::Pregenerated:
-        break;
     case ast4vx::NodeType::PixelAccessor:
     {
         auto s = std::dynamic_pointer_cast<ast4vx::PixelAccessor>(n);
-        if (pixelaccessor_mapping == nullptr)
-            return "PixelAccessor_" + std::to_string(s->num);
-        else
-        {
-            std::string name = (*pixelaccessor_mapping)[s->num];
-
-            // Legacy, only needed to allow current HipaVX implementation
-            if (pixelaccessor_mapping == nullptr)
-            {
-                return name + ".data[xy_matrix_flat]";
-            }
-            else
-            {
-                if (current_output_pixel_index == "")
-                {
-                    return name + ".data[pixel_index]";
-                }
-                else
-                {
-                    return name + ".get(" + current_output_x + ", " + current_output_y + ")";
-                }
-            }
-        }
-    }
-
-    case ast4vx::NodeType::PixelAccessorTest:
-    {
-        auto s = std::dynamic_pointer_cast<ast4vx::PixelAccessorTest>(n);
 
         std::string name = "PixelAccessor_" + std::to_string(s->num);
         std::string x = "x";
@@ -782,7 +586,7 @@ std::string CPPVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i)
         // Write back the Accumulator
         if (s->current_state == ast4vx::WindowOperation::State::Reduce)
         {
-            code += visit(assign(std::make_shared<ast4vx::PixelAccessorTest>(0), accum_var));
+            code += visit(assign(std::make_shared<ast4vx::PixelAccessor>(0), accum_var));
         }
 
         return code;

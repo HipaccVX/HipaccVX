@@ -62,30 +62,15 @@ enum class NodeType
     Variable,
     VariableDefinition,
     Assignment,
-    TargetPixel,
 
     If,
     Else,
-
-    Image,
-    ForEveryPixel,
-    CurrentPixelvalue,
-
-    Stencil,
-    IterateAroundPixel,
-    ReductionOutput,
-    ReduceAroundPixel,
-    PixelvalueAtCurrentStencilPos,
-    StencilvalueAtCurrentStencilPos,
 
     Statements,
     LocalToPixel,
     PixelToPixel,
 
-    Pregenerated,
     PixelAccessor,
-    PixelAccessorTest,
-    PixelAccessorWindow,
     WindowAccessor,
     WindowDescriptor,
     WindowAccessorPosition,
@@ -161,34 +146,6 @@ public:
         :num(number)
     {
         type = NodeType::PixelAccessor;
-    }
-};
-class PixelAccessorTest: public Node
-{
-public:
-    int num;
-    PixelAccessorTest()
-    {
-        type = NodeType::PixelAccessorTest;
-    }
-    PixelAccessorTest(int number)
-        :num(number)
-    {
-        type = NodeType::PixelAccessorTest;
-    }
-};
-class PixelAccessorWindow: public Node
-{
-public:
-    int num;
-    PixelAccessorWindow()
-    {
-        type = NodeType::PixelAccessorWindow;
-    }
-    PixelAccessorWindow(int number)
-        :num(number)
-    {
-        type = NodeType::PixelAccessorWindow;
     }
 };
 
@@ -670,107 +627,6 @@ public:
 	virtual ~Extract4() = default;
 };
 
-class PixelvalueAtCurrentStencilPos: public Node
-{
-public:
-    PixelvalueAtCurrentStencilPos()
-    {
-        type = NodeType::PixelvalueAtCurrentStencilPos;
-    }
-    PixelvalueAtCurrentStencilPos(Node *n1)
-    {
-        type = NodeType::PixelvalueAtCurrentStencilPos;
-        parent = n1;
-    }
-    Node *parent;
-};
-
-class StencilvalueAtCurrentStencilPos: public Node
-{
-public:
-    StencilvalueAtCurrentStencilPos()
-    {
-        type = NodeType::StencilvalueAtCurrentStencilPos;
-        subnodes.resize(1);
-    }
-    StencilvalueAtCurrentStencilPos(Node *n1)
-    {
-        type = NodeType::StencilvalueAtCurrentStencilPos;
-        parent = n1;
-    }
-    Node *parent;
-};
-
-class ReductionOutput: public Node
-{
-public:
-    ReductionOutput()
-    {
-        type = NodeType::ReductionOutput;
-        subnodes.resize(1);
-    }
-    ReductionOutput(Node *n1)
-    {
-        type = NodeType::ReductionOutput;
-        parent = n1;
-    }
-    Node *parent;
-};
-
-class IterateAroundPixel: public Node
-{
-public:
-    IterateAroundPixel()
-        :pixel_value(new PixelvalueAtCurrentStencilPos(this)),
-          stencil_value(new StencilvalueAtCurrentStencilPos(this))
-    {
-        type = NodeType::IterateAroundPixel;
-        subnodes.resize(3);
-    }
-    IterateAroundPixel(std::shared_ptr<Node> n1, std::shared_ptr<Node> n2, std::shared_ptr<Node> n3)
-        :pixel_value(new PixelvalueAtCurrentStencilPos(this)),
-          stencil_value(new StencilvalueAtCurrentStencilPos(this))
-    {
-        type = NodeType::IterateAroundPixel;
-        subnodes = {n1, n2, n3};
-    }
-    std::shared_ptr<PixelvalueAtCurrentStencilPos> pixel_value;
-    std::shared_ptr<StencilvalueAtCurrentStencilPos> stencil_value;
-};
-
-class ReduceAroundPixel: public Node
-{
-public:
-    enum class Type
-    {
-        SUM,
-        MIN,
-        MAX
-    };
-    ReduceAroundPixel()
-        :pixel_value(new PixelvalueAtCurrentStencilPos(this)),
-          stencil_value(new StencilvalueAtCurrentStencilPos(this)),
-          reduction_output(new ReductionOutput())
-    {
-        type = NodeType::ReduceAroundPixel;
-        subnodes.resize(3);
-    }
-    ReduceAroundPixel(std::shared_ptr<Node> n1, std::shared_ptr<Node> n2, std::shared_ptr<Node>n3, Type reduction_type)
-        :pixel_value(new PixelvalueAtCurrentStencilPos(this)),
-          stencil_value(new StencilvalueAtCurrentStencilPos(this)),
-          reduction_output(new ReductionOutput()),
-          reduction_type(reduction_type)
-    {
-        type = NodeType::ReduceAroundPixel;
-        subnodes = {n1, n2, n3};
-    }
-    std::shared_ptr<PixelvalueAtCurrentStencilPos> pixel_value;
-    std::shared_ptr<StencilvalueAtCurrentStencilPos> stencil_value;
-    std::shared_ptr<ReductionOutput> reduction_output;
-    Type reduction_type;
-    Datatype datatype;
-};
-
 template<typename T>
 class Constant: public Node
 {
@@ -834,36 +690,6 @@ public:
     }
 };
 
-class TargetPixel: public Node
-{
-public:
-    TargetPixel()
-    {
-        type = NodeType::TargetPixel;
-        subnodes.resize(1);
-    }
-    TargetPixel(std::shared_ptr<Node> n1)
-    {
-        type = NodeType::TargetPixel;
-        subnodes = {n1};
-    }
-};
-
-class Image: public Node
-{
-public:
-    Image()
-    {
-        type = NodeType::Image;
-    }
-    Image(HipaVX::Image *image)
-    {
-        type = NodeType::Image;
-        this->image = image;
-    }
-    HipaVX::Image *image;
-};
-
 class WindowAccessor: public Node, public std::enable_shared_from_this<WindowAccessor>
 {
 
@@ -916,16 +742,16 @@ public:
 class Statements: public Node
 {
 public:
-    std::vector<std::shared_ptr<PixelAccessorTest>> out_pixel_mappings;
-    std::vector<std::shared_ptr<PixelAccessorTest>> in_pixel_mappings;
+    std::vector<std::shared_ptr<PixelAccessor>> out_pixel_mappings;
+    std::vector<std::shared_ptr<PixelAccessor>> in_pixel_mappings;
 
-    std::shared_ptr<PixelAccessorTest> d_in(unsigned int index)
+    std::shared_ptr<PixelAccessor> d_in(unsigned int index)
     {
         if (index >= in_pixel_mappings.size())
             throw std::runtime_error("PixelAccessor* Statements::d_in(unsigned int index): Index out of bounds");
         return in_pixel_mappings[index];
     }
-    std::shared_ptr<PixelAccessorTest> d_out(unsigned int index)
+    std::shared_ptr<PixelAccessor> d_out(unsigned int index)
     {
         if (index >= out_pixel_mappings.size())
             throw std::runtime_error("PixelAccessor* Statements::d_in(unsigned int index): Index out of bounds");
@@ -943,10 +769,10 @@ public:
         in_pixel_mappings.resize(in);
         unsigned int i = 0;
         for(; i < out; i++)
-            out_pixel_mappings[i].reset(new PixelAccessorTest(i));
+            out_pixel_mappings[i].reset(new PixelAccessor(i));
 
         for(; i < out + in; i++)
-            in_pixel_mappings[i-out].reset(new PixelAccessorTest(i));
+            in_pixel_mappings[i-out].reset(new PixelAccessor(i));
     }
     std::vector<std::shared_ptr<Node>> statements;
     virtual ~Statements() override = default;
@@ -1034,7 +860,6 @@ public:
     }
 };
 
-
 class Reduction: public Statements
 {
 public:
@@ -1048,15 +873,15 @@ public:
         initial = std::make_shared<Constant<T>>(c);
     }
 
-    std::shared_ptr<PixelAccessorTest> left()
+    std::shared_ptr<PixelAccessor> left()
     {
         return d_in(0);
     }
-    std::shared_ptr<PixelAccessorTest> right()
+    std::shared_ptr<PixelAccessor> right()
     {
         return d_in(1);
     }
-    std::shared_ptr<PixelAccessorTest> out()
+    std::shared_ptr<PixelAccessor> out()
     {
         return d_out(0);
     }
@@ -1231,58 +1056,6 @@ public:
 	}
 	std::shared_ptr<Statements> body;
 };
-
-class CurrentPixelvalue: public Node
-{
-public:
-    CurrentPixelvalue()
-    {
-        type = NodeType::CurrentPixelvalue;
-        subnodes.resize(1);
-    }
-    CurrentPixelvalue(std::shared_ptr<Node> n1)
-    {
-        type = NodeType::CurrentPixelvalue;
-        subnodes = {n1};
-    }
-};
-
-class ForEveryPixel: public Node
-{
-public:
-    ForEveryPixel()
-    {
-        type = NodeType::ForEveryPixel;
-        function = std::make_shared<Statements>();
-    }
-    std::vector<std::shared_ptr<Node>> inputs;
-    std::shared_ptr<Node> output;
-	std::shared_ptr<Statements> function;
-};
-
-class Stencil: public Node
-{
-public:
-    Stencil()
-    {
-        type = NodeType::Stencil;
-    }
-    std::string name;
-    std::vector<std::string> mask;
-    int dim[2]; //dim[0] = x, dim[1] = y
-    Datatype datatype;
-
-    template<typename T>
-    static std::vector<std::string> from_t(std::vector<T> v)
-    {
-        std::vector<std::string> to_return;
-        to_return.reserve(v.size());
-        for(auto e: v)
-            to_return.emplace_back(std::to_string(e));
-        return to_return;
-    }
-};
-
 
 }
 

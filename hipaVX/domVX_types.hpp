@@ -73,8 +73,7 @@ protected:
 public:
 	Node()
 	{
-		type = VX_TYPE_NODE;
-        kernel = std::make_shared<ast4vx::ForEveryPixel>();
+        type = VX_TYPE_NODE;
 	}
 	virtual ~Node() = default;
 	std::string get_name() {return node_name;}
@@ -84,7 +83,6 @@ public:
     std::vector<Object*> outputs;
 
     vx_border_e border_mode = VX_BORDER_UNDEFINED;
-    std::shared_ptr<ast4vx::ForEveryPixel> kernel;
 
     virtual void build(){}
 };

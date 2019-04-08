@@ -80,16 +80,6 @@ std::shared_ptr<ast4vx::Node> assign(std::shared_ptr<ast4vx::Node> a, std::share
     return std::make_shared<ast4vx::Assignment>(a, b);
 }
 
-std::shared_ptr<ast4vx::Node> target_pixel(std::shared_ptr<ast4vx::Node> a)
-{
-    return std::make_shared<ast4vx::TargetPixel>(a);
-}
-
-std::shared_ptr<ast4vx::Node> current_pixel(std::shared_ptr<ast4vx::Node> a)
-{
-    return std::make_shared<ast4vx::CurrentPixelvalue>(a);
-}
-
 std::shared_ptr<ast4vx::Node> convert(std::shared_ptr<ast4vx::Node> a,
                                             ast4vx::Datatype type)
 {
