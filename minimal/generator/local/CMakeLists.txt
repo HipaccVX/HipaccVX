@@ -19,3 +19,6 @@ add_executable (localop_mask_forall localop_mask_forall.cpp)
 target_include_directories (localop_mask_forall PUBLIC ${VX_DIR} ${HIPAVX_DIR})
 target_link_libraries (localop_mask_forall HipaVX_Cpp)
 
+add_executable (localop_mean localop_mean.cpp)
+target_include_directories (localop_mean PUBLIC ${VX_DIR} ${HIPAVX_DIR})
+target_link_libraries (localop_mean HipaVX_Cpp)

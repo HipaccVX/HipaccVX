@@ -805,8 +805,8 @@ public:
 
     void set_variable_inout_count(unsigned int out, unsigned int in)
     {
-        out_variable_mappings.clear();
-        in_variable_mappings.clear();
+        out_variable_mappings.resize(out);
+        in_variable_mappings.resize(in);
 
         unsigned int i = 0;
         for(; i < out; i++)

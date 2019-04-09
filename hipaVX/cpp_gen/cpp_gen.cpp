@@ -807,9 +807,18 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n, int i)
         for(auto& im: s->input_pixel_mappings)
             mappings.emplace_back(generate_image_name(im));
 
+        std::vector<std::string> variable_mappings;
+        for(auto& im: s->output_variable_mappings)
+            variable_mappings.emplace_back(generate_scalar_name(im));
+        for(auto& im: s->input_variable_mappings)
+            variable_mappings.emplace_back(generate_scalar_name(im));
+        auto old_variable_mapping = variableaccessor_mapping;
+        variableaccessor_mapping = &variable_mappings;
+
         pixelaccessor_mapping = &mappings;
         std::string code = visit(s->get_statements(), 0);
         pixelaccessor_mapping = nullptr;
+        variableaccessor_mapping = old_variable_mapping;
 
         current_output_y = current_output_x = "";
 
@@ -915,6 +924,13 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n, int i)
                     pixel_mappings.emplace_back(desc_to_name[map]);
                 }
             }
+
+            std::vector<std::string> variable_mappings;
+            for(auto& im: s->operation_variables[i])
+                variable_mappings.emplace_back(generate_scalar_name(im));
+            auto old_variable_mapping = variableaccessor_mapping;
+            variableaccessor_mapping = &variable_mappings;
+
             auto old_mapping = pixelaccessor_mapping;
             pixelaccessor_mapping = &pixel_mappings;
             maskaccessor_mapping = &mask_mappings;
@@ -924,6 +940,7 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n, int i)
             maskaccessor_mapping = nullptr;
             pixelaccessor_mapping = old_mapping;
             windowdescriptor_mapping = nullptr;
+            variableaccessor_mapping = old_variable_mapping;
 
             // If the output window has no domain set, copy it from the input window descriptor
             if (op->output != nullptr && desc_to_dom.find(op->output) == desc_to_dom.end())

@@ -6,3 +6,7 @@ target_link_libraries (map_simple HipaVX_Cpp)
 add_executable (map_change_in_out map_change_in_out.cpp)
 target_include_directories (map_change_in_out PUBLIC ${VX_DIR} ${HIPAVX_DIR})
 target_link_libraries (map_change_in_out HipaVX_Cpp)
+
+add_executable (map_with_variable map_with_variable.cpp)
+target_include_directories (map_with_variable PUBLIC ${VX_DIR} ${HIPAVX_DIR})
+target_link_libraries (map_with_variable HipaVX_Cpp)

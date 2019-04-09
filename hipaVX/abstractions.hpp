@@ -174,12 +174,16 @@ public:
 
     std::vector<HipaVX::Image *> output_pixel_mappings;
     std::vector<HipaVX::Image *> input_pixel_mappings;
+    std::vector<HipaVX::Scalar *> output_variable_mappings;
+    std::vector<HipaVX::Scalar *> input_variable_mappings;
 
     void set_statements(std::shared_ptr<ast4vx::Statements> s)
     {
         function = s;
         output_pixel_mappings.resize(s->out_pixel_mappings.size());
         input_pixel_mappings.resize(s->in_pixel_mappings.size());
+        output_variable_mappings.resize(s->out_variable_mappings.size());
+        input_variable_mappings.resize(s->in_variable_mappings.size());
     }
 
     std::shared_ptr<ast4vx::Statements> get_statements()
@@ -187,6 +191,29 @@ public:
         return function;
     }
 
+    void register_variables(std::initializer_list<HipaVX::Scalar*> out, std::initializer_list<HipaVX::Scalar*> in)
+    {
+        register_output_variables(out);
+        register_input_variables(in);
+    }
+    void register_input_variables(std::initializer_list<HipaVX::Scalar*> variables)
+    {
+        if (variables.size() != input_variable_mappings.size())
+            throw std::runtime_error("void Map::register_input_variables(): Initializer list has to be the same size as the input_accessors of the underlying statemens");
+
+        input_variable_mappings.clear();
+        for(auto image: variables)
+            input_variable_mappings.emplace_back(image);
+    }
+    void register_output_variables(std::initializer_list<HipaVX::Scalar*> variables)
+    {
+        if (variables.size() != output_variable_mappings.size())
+            throw std::runtime_error("void Map::register_output_variables(): Initializer list has to be the same size as the output_accessors of the underlying statemens");
+
+        output_variable_mappings.clear();
+        for(auto image: variables)
+            output_variable_mappings.emplace_back(image);
+    }
     void register_images(std::initializer_list<HipaVX::Image*> out, std::initializer_list<HipaVX::Image*> in)
     {
         register_output_images(out);
@@ -218,6 +245,7 @@ public:
     std::vector<std::tuple<HipaVX::Image*, std::shared_ptr<ast4vx::WindowDescriptor>>> input_descriptor;
     std::vector<std::shared_ptr<ast4vx::WindowOperation>> operations;
     std::vector<std::vector<HipaVX::Image *>> operation_output_images;
+    std::vector<std::vector<HipaVX::Scalar *>> operation_variables;
     std::map<std::shared_ptr<ast4vx::WindowOperation>, std::vector<std::shared_ptr<DomVX::Mask>>> mask_bindings;
     std::map<std::shared_ptr<ast4vx::WindowDescriptor>, std::shared_ptr<DomVX::Domain>> domain_bindings;
 
@@ -252,10 +280,11 @@ public:
         }
     }
 
-    void add_operation(std::shared_ptr<ast4vx::WindowOperation> op, std::initializer_list<HipaVX::Image*> out = {})
+    void add_operation(std::shared_ptr<ast4vx::WindowOperation> op, std::initializer_list<HipaVX::Image*> out = {}, std::initializer_list<HipaVX::Scalar*> var_bindings = {})
     {
         operations.emplace_back(op);
         operation_output_images.emplace_back(out);
+        operation_variables.emplace_back(var_bindings);
     }
 
     void set_domains(std::initializer_list<std::tuple<std::shared_ptr<ast4vx::WindowDescriptor>, std::shared_ptr<DomVX::Domain>>> desc_domain_binding)
