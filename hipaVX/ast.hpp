@@ -70,6 +70,7 @@ enum class NodeType
     LocalToPixel,
     PixelToPixel,
 
+    VariableAccessor,
     PixelAccessor,
     WindowAccessor,
     WindowDescriptor,
@@ -103,13 +104,6 @@ enum class VectChannelType
     CHANNEL3
 };
 
-enum class ReductionType
-{
-    SUM,
-    MIN,
-    MAX
-};
-
 // TODO: Rename to AST Node
 class Node
 {
@@ -132,6 +126,21 @@ public:
     }
 
     virtual ~Node() = default;
+};
+
+class VariableAccessor: public Node
+{
+public:
+    int num;
+    VariableAccessor()
+    {
+        type = NodeType::VariableAccessor;
+    }
+    VariableAccessor(int number)
+        :num(number)
+    {
+        type = NodeType::VariableAccessor;
+    }
 };
 
 class PixelAccessor: public Node
@@ -745,17 +754,34 @@ public:
     std::vector<std::shared_ptr<PixelAccessor>> out_pixel_mappings;
     std::vector<std::shared_ptr<PixelAccessor>> in_pixel_mappings;
 
+    std::vector<std::shared_ptr<VariableAccessor>> out_variable_mappings;
+    std::vector<std::shared_ptr<VariableAccessor>> in_variable_mappings;
+
+public:
     std::shared_ptr<PixelAccessor> d_in(unsigned int index)
     {
         if (index >= in_pixel_mappings.size())
-            throw std::runtime_error("PixelAccessor* Statements::d_in(unsigned int index): Index out of bounds");
+            throw std::runtime_error("std::shared_ptr<PixelAccessor> Statements::d_in(unsigned int index): Index out of bounds");
         return in_pixel_mappings[index];
     }
     std::shared_ptr<PixelAccessor> d_out(unsigned int index)
     {
         if (index >= out_pixel_mappings.size())
-            throw std::runtime_error("PixelAccessor* Statements::d_in(unsigned int index): Index out of bounds");
+            throw std::runtime_error("std::shared_ptr<PixelAccessor> Statements::d_in(unsigned int index): Index out of bounds");
         return out_pixel_mappings[index];
+    }
+
+    std::shared_ptr<VariableAccessor> v_in(unsigned int index)
+    {
+        if (index >= in_variable_mappings.size())
+            throw std::runtime_error("std::shared_ptr<VariableAccessor> Statements::v_in(unsigned int index): Index out of bounds");
+        return in_variable_mappings[index];
+    }
+    std::shared_ptr<VariableAccessor> v_out(unsigned int index)
+    {
+        if (index >= out_variable_mappings.size())
+            throw std::runtime_error("std::shared_ptr<VariableAccessor> Statements::v_in(unsigned int index): Index out of bounds");
+        return out_variable_mappings[index];
     }
 
     Statements()
@@ -777,6 +803,18 @@ public:
     std::vector<std::shared_ptr<Node>> statements;
     virtual ~Statements() override = default;
 
+    void set_variable_inout_count(unsigned int out, unsigned int in)
+    {
+        out_variable_mappings.clear();
+        in_variable_mappings.clear();
+
+        unsigned int i = 0;
+        for(; i < out; i++)
+            out_variable_mappings[i].reset(new VariableAccessor(i));
+
+        for(; i < out + in; i++)
+            in_variable_mappings[i-out].reset(new VariableAccessor(i));
+    }
 
     Statements& operator <<(std::shared_ptr<Node> n)
     {
@@ -1026,7 +1064,6 @@ public:
         return output;
     }
 };
-
 
 class If: public Node
 {

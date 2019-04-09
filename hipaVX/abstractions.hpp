@@ -30,6 +30,7 @@ enum class AbstractionType
     Mask,
     Map,
     LocalOperation,
+    GlobalOperation,
 };
 
 class AbstractionNode
@@ -50,6 +51,12 @@ public:
     }
 
     virtual ~AbstractionNode() = default;
+};
+
+class Variable: public AbstractionNode
+{
+public:
+
 };
 
 class Domain: public AbstractionNode
@@ -259,6 +266,32 @@ public:
     }
 };
 
+class GlobalOperation: public AbstractionNode
+{
+public:
+    std::shared_ptr<ast4vx::Reduction> reduction;
+    HipaVX::Scalar* reduction_out;
+    std::vector<HipaVX::Image *> input_pixel_mappings;
+
+public:
+    GlobalOperation()
+    {
+        type = AbstractionType::GlobalOperation;
+    }
+
+    void register_input_images(std::initializer_list<HipaVX::Image*> images)
+    {
+        input_pixel_mappings.clear();
+        for(auto image: images)
+            input_pixel_mappings.emplace_back(image);
+    }
+
+    void set_reduction_function(std::shared_ptr<ast4vx::Reduction> red, HipaVX::Scalar* out)
+    {
+        reduction = red;
+        reduction_out = out;
+    }
+};
 }
 
 

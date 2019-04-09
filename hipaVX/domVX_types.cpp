@@ -37,17 +37,25 @@ Object::Object()
 }
 
 // Scalar
+Scalar::Scalar(vx_type_e t)
+    :data_type(t)
+{
+    type = VX_TYPE_SCALAR;
+}
 Scalar::Scalar(vx_type_e t, const void *ptr)
     :data_type(t)
 {
     type = VX_TYPE_SCALAR;
     switch(data_type)
     {
+    case VX_TYPE_UINT8:
+        ui8 = *((const vx_uint8*) ptr);
+        break;
     case VX_TYPE_INT32:
-        i32 = *((vx_int32*) ptr);
+        i32 = *((const vx_int32*) ptr);
         break;
     case VX_TYPE_FLOAT32:
-        f32 = *((vx_float32*) ptr);
+        f32 = *((const vx_float32*) ptr);
         break;
     default:
         throw std::runtime_error("Unsupported vx_type_e in Scalar constructor");

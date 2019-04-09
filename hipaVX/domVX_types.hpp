@@ -23,6 +23,7 @@ public:
 class Scalar: public Object
 {
 public:
+    Scalar(vx_type_e t);
 	Scalar(vx_type_e t, const void *ptr);
 
 	vx_type_e data_type;

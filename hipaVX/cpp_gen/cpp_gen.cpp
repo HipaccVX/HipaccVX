@@ -5,6 +5,10 @@ string generate_image_name(HipaVX::Image *image)
 {
     return string("Image_") + std::to_string(image->my_id);
 }
+string generate_scalar_name(HipaVX::Scalar *scalar)
+{
+    return string("Scalar_") + std::to_string(scalar->my_id);
+}
 
 namespace generator
 {
@@ -488,6 +492,15 @@ std::string CPPVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i)
         return to_return;
     }
 
+    case ast4vx::NodeType::VariableAccessor:
+    {
+        auto s = std::dynamic_pointer_cast<ast4vx::VariableAccessor>(n);
+
+        if (variableaccessor_mapping == nullptr)
+            return "Variable_Accessor_" + std::to_string(s->id);
+        return variableaccessor_mapping->at(s->num);
+    }
+
     case ast4vx::NodeType::PixelAccessor:
     {
         auto s = std::dynamic_pointer_cast<ast4vx::PixelAccessor>(n);
@@ -627,7 +640,10 @@ std::string CPPVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i)
 
         mapping.emplace_back(accumulator_string);
         mapping.emplace_back(accumulator_string);
-        mapping.emplace_back(windowdescriptor_mapping->at(0));
+        if (windowdescriptor_mapping != nullptr)
+            mapping.emplace_back(windowdescriptor_mapping->at(0));
+        else
+            mapping.emplace_back(pixelaccessor_mapping->at(0));
 
         auto old_pixel_mapping = pixelaccessor_mapping;
         pixelaccessor_mapping = &mapping;
@@ -742,6 +758,29 @@ R"END(for(int @@@Y_NAME@@@ = 0; @@@Y_NAME@@@ < @@@HEIGHT@@@; @@@Y_NAME@@@++)
 )END";
     templ = use_template(templ, "HEIGHT", out[0]->h);
     templ = use_template(templ, "WIDTH", out[0]->w);
+    templ = use_template(templ, "Y_NAME", y_index_name);
+    templ = use_template(templ, "X_NAME", x_index_name);
+
+    current_output_y = y_index_name;
+    current_output_x = x_index_name;
+
+    return templ;
+}
+std::string CPPVisitor::setup_outer_loop(std::shared_ptr<DomVX::GlobalOperation> g, const std::vector<HipaVX::Image *> &in)
+{
+    std::string y_index_name = "y_" + std::to_string(g->id);
+    std::string x_index_name = "x_" + std::to_string(g->id);
+    std::string templ =
+R"END(for(int @@@Y_NAME@@@ = 0; @@@Y_NAME@@@ < @@@HEIGHT@@@; @@@Y_NAME@@@++)
+{
+    for (int @@@X_NAME@@@ = 0; @@@X_NAME@@@ < @@@WIDTH@@@; @@@X_NAME@@@++)
+    {
+        @@@CODE@@@
+    }
+}
+)END";
+    templ = use_template(templ, "HEIGHT", in[0]->h);
+    templ = use_template(templ, "WIDTH", in[0]->w);
     templ = use_template(templ, "Y_NAME", y_index_name);
     templ = use_template(templ, "X_NAME", x_index_name);
 
@@ -900,6 +939,60 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n, int i)
         current_output_y = current_output_x = "";
         outer_loop = use_template(outer_loop, "CODE", code);
         return outer_loop;
+    }
+    case DomVX::AbstractionType::GlobalOperation:
+    {
+        auto s = std::dynamic_pointer_cast<DomVX::GlobalOperation>(n);
+
+        if (s->input_pixel_mappings.size() == 0)
+            throw std::runtime_error("CPPVisitor: GlobalOperation: At least one input image is expected");
+
+        std::string pre_loop = "";
+
+        std::string accum_var_name = "accum_" + std::to_string(n->id);
+
+        // Setup the accumulator variable
+        auto accum_var = std::make_shared<ast4vx::Variable>();
+        if (auto c = std::dynamic_pointer_cast<ast4vx::Constant<int>>(s->reduction->initial))
+            accum_var->datatype = ast4vx::Datatype::INT32;
+        else if (auto c = std::dynamic_pointer_cast<ast4vx::Constant<float>>(s->reduction->initial))
+            accum_var->datatype = ast4vx::Datatype::FLOAT;
+        else if (auto c = std::dynamic_pointer_cast<ast4vx::Constant<unsigned char>>(s->reduction->initial))
+            accum_var->datatype = ast4vx::Datatype::UINT8;
+        else if (auto c = std::dynamic_pointer_cast<ast4vx::Constant<unsigned int>>(s->reduction->initial))
+            accum_var->datatype = ast4vx::Datatype::UINT32;
+        else
+            throw std::runtime_error("CPPVisitor: GlobalOperation: reduce: could not determine the constants type");
+        accum_var->name = accum_var_name;
+
+        pre_loop += visit(std::make_shared<ast4vx::VariableDefinition>(accum_var)) + ";\n";
+        pre_loop += visit(assign(accum_var, s->reduction->initial)) + ";\n";
+
+        accumulator_string = accum_var_name;
+
+
+        std::vector<std::string> pixel_mappings;
+        pixel_mappings.emplace_back(generate_image_name(s->input_pixel_mappings[0]));
+        auto old_pixel_mapping = pixelaccessor_mapping;
+        pixelaccessor_mapping = &pixel_mappings;
+
+        std::string reduction_body = visit(s->reduction);
+
+        pixelaccessor_mapping = old_pixel_mapping;
+
+
+        std::string outer_loop = setup_outer_loop(s, s->input_pixel_mappings);
+
+        std::vector<std::string> variable_mappings;
+        variable_mappings.emplace_back(generate_scalar_name(s->reduction_out));
+        auto old_variable_mapping = variableaccessor_mapping;
+        variableaccessor_mapping = &variable_mappings;
+        auto statements = std::make_shared<ast4vx::Statements>();
+        std::string post_loop = visit(statements << assign(std::make_shared<ast4vx::VariableAccessor>(0), accum_var));
+        variableaccessor_mapping = old_variable_mapping;
+
+        outer_loop = use_template(outer_loop, "CODE", reduction_body);
+        return pre_loop + "\n" + outer_loop + "\n" + post_loop + "\n";
     }
     default:
         throw std::runtime_error("CPPVisitor: visited no case for this AbstractionNode");
