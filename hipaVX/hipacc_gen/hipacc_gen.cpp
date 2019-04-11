@@ -854,7 +854,8 @@ std::string HipaccVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i)
         }
 
         std::string func = "";
-        switch(s->from_dtype)
+        auto vect4 = std::dynamic_pointer_cast<ast4vx::Vect4>(s->subnodes[0]);
+        switch(vect4->to_dtype)
         {
         case ast4vx::Datatype::UCHAR4:
             func = "convert_uchar4";
@@ -877,9 +878,9 @@ std::string HipaccVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i)
         return std::dynamic_pointer_cast<ast4vx::Variable>(n)->name;
     }
 
-    case ast4vx::NodeType::VariableDefinition:
+    case ast4vx::NodeType::VariableDeclaration:
     {
-        auto s = std::dynamic_pointer_cast<ast4vx::VariableDefinition>(n);
+        auto s = std::dynamic_pointer_cast<ast4vx::VariableDeclaration>(n);
         std::string datatype = to_string(std::dynamic_pointer_cast<ast4vx::Variable>(s->subnodes[0])->datatype);
         return datatype + " " + this->visit(s->subnodes[0], 0);
     }

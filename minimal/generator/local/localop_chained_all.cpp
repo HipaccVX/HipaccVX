@@ -41,8 +41,8 @@ int main()
     ast_reduction << assign(ast_reduction->out(), ast_reduction->left() + ast_reduction->right());
 
     auto l_to_p = std::make_shared<ast4vx::LocalToPixel>(1, 2);
-    auto win_1 = l_to_p->window(0);
-    auto win_2 = l_to_p->window(1);
+    auto win_1 = l_to_p->w_in(0);
+    auto win_2 = l_to_p->w_in(1);
     l_to_p << assign(l_to_p->d_out(0), win_1->pixel_at(0, 2) + win_2->pixel_at(2, 4));
 
 

@@ -413,9 +413,9 @@ std::string CPPVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i)
         return std::dynamic_pointer_cast<ast4vx::Variable>(n)->name;
     }
 
-    case ast4vx::NodeType::VariableDefinition:
+    case ast4vx::NodeType::VariableDeclaration:
     {
-        auto s = std::dynamic_pointer_cast<ast4vx::VariableDefinition>(n);
+        auto s = std::dynamic_pointer_cast<ast4vx::VariableDeclaration>(n);
         std::string datatype = to_string(std::dynamic_pointer_cast<ast4vx::Variable>(s->subnodes[0])->datatype);
         return datatype + " " + this->visit(s->subnodes[0], 0);
     }
@@ -559,7 +559,7 @@ std::string CPPVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i)
             accumulator_string = "accumulator_" + std::to_string(s->reduction_statement->id);
             accum_var->name = accumulator_string;
 
-            code += visit(std::make_shared<ast4vx::VariableDefinition>(accum_var)) + ";\n";
+            code += visit(std::make_shared<ast4vx::VariableDeclaration>(accum_var)) + ";\n";
             code += visit(assign(accum_var, s->reduction_statement->initial)) + ";\n";
         }
 
@@ -982,7 +982,7 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n, int i)
             throw std::runtime_error("CPPVisitor: GlobalOperation: reduce: could not determine the constants type");
         accum_var->name = accum_var_name;
 
-        pre_loop += visit(std::make_shared<ast4vx::VariableDefinition>(accum_var)) + ";\n";
+        pre_loop += visit(std::make_shared<ast4vx::VariableDeclaration>(accum_var)) + ";\n";
         pre_loop += visit(assign(accum_var, s->reduction->initial)) + ";\n";
 
         accumulator_string = accum_var_name;
