@@ -293,8 +293,8 @@ struct ROI {
 
 enum class BorderM {
   Undef,
-  Mirror,
-  Constant
+  Constant,
+  Replicate
 };
 
 class Acc {

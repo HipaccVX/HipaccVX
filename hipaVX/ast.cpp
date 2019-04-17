@@ -80,16 +80,6 @@ std::shared_ptr<ast4vx::Node> assign(std::shared_ptr<ast4vx::Node> a, std::share
     return std::make_shared<ast4vx::Assignment>(a, b);
 }
 
-std::shared_ptr<ast4vx::Node> target_pixel(std::shared_ptr<ast4vx::Node> a)
-{
-    return std::make_shared<ast4vx::TargetPixel>(a);
-}
-
-std::shared_ptr<ast4vx::Node> current_pixel(std::shared_ptr<ast4vx::Node> a)
-{
-    return std::make_shared<ast4vx::CurrentPixelvalue>(a);
-}
-
 std::shared_ptr<ast4vx::Node> convert(std::shared_ptr<ast4vx::Node> a,
                                             ast4vx::Datatype type)
 {
@@ -102,14 +92,14 @@ std::shared_ptr<ast4vx::Node> vect4(std::shared_ptr<ast4vx::Node> a, std::shared
     return std::make_shared<ast4vx::Vect4>(a, b, c, d, type);
 }
 
-std::shared_ptr<ast4vx::Node> extract4(std::shared_ptr<ast4vx::Node> a, ast4vx::Datatype type, ast4vx::VectChannelType chn)
+std::shared_ptr<ast4vx::Node> extract4(std::shared_ptr<ast4vx::Node> a, ast4vx::VectChannelType chn)
 {
-    return std::make_shared<ast4vx::Extract4>(a, type, chn);
+    return std::make_shared<ast4vx::Extract4>(a, chn);
 }
 
 std::shared_ptr<ast4vx::Node> define(std::shared_ptr<ast4vx::Node> n)
 {
-    return std::make_shared<ast4vx::VariableDefinition>(n);
+    return std::make_shared<ast4vx::VariableDeclaration>(n);
 }
 
 std::shared_ptr<ast4vx::Node> operator&(std::shared_ptr<ast4vx::Node> a, std::shared_ptr<ast4vx::Node> b)

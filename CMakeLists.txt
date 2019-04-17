@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.4.3)
 
+project(HipaVX)
+set(VERSION_MAJOR   0   CACHE STRING "Project major version number.")
+set(VERSION_MINOR   1   CACHE STRING "Project minor version number.")
+set(VERSION_PATCH   0   CACHE STRING "Project patch version number.")
+
 set (CMAKE_CXX_STANDARD 11)
 
 set(VX_DIR ${CMAKE_CURRENT_SOURCE_DIR}/VX/)
@@ -26,3 +31,4 @@ target_include_directories (main_cpp PUBLIC ${VX_DIR} ${HIPAVX_DIR})
 target_link_libraries (main_cpp HipaVX_Cpp)
 
 add_subdirectory(minimal)
+add_subdirectory(doc)
