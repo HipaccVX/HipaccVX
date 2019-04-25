@@ -7,15 +7,15 @@
 int main()
 {
     // Create a LocalToPixel function
-    auto l_to_p = std::make_shared<ast4vx::LocalToPixel>(1, 1);
-    auto win_1 = l_to_p->window(0);
+    auto l_to_p = create_l2p(1, 1);
+    auto win_1 = l_to_p->w_in(0);
     l_to_p << assign(l_to_p->d_out(0), win_1->pixel_at(0, 2) + win_1->pixel_at(0, 4) * constant(3.14f));
 
 
     // Create dummy input window and set its domain
-    auto window_in = std::make_shared<ast4vx::WindowDescriptor>(3, 5);
+    auto window_in = create_window_desc(3, 5);
 
-    auto local_to_pixel = std::make_shared<ast4vx::WindowOperation>();
+    auto local_to_pixel = create_window_op();
     local_to_pixel->set_window_inputs({window_in});
     local_to_pixel->to_pixel(l_to_p);
 
@@ -25,14 +25,14 @@ int main()
     auto image_i = new HipaVX::Image(1024, 512, VX_DF_IMAGE_U8);
 
     // Create the local operation
-    auto local_op = std::shared_ptr<DomVX::LocalOperation>(new DomVX::LocalOperation());
+    auto local_op = create_local_op();
 
     // Create the domain
-    auto dom = std::shared_ptr<DomVX::Domain>(new DomVX::Domain(3, 5, {0, 0, 1,
-                                                                       0, 0, 0,
-                                                                       0, 0, 0,
-                                                                       0, 0, 0,
-                                                                       1, 0, 0}));
+    auto dom = create_dom(3, 5, {0, 0, 1,
+                                 0, 0, 0,
+                                 0, 0, 0,
+                                 0, 0, 0,
+                                 1, 0, 0});
 
     // Bind the dummy window accessors to the input images
     local_op->set_input_window_desc({{image_i, window_in}});

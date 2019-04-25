@@ -50,6 +50,18 @@ std::shared_ptr<ast4vx::MaskPixelToPixel> operator<<(std::shared_ptr<ast4vx::Mas
     return a;
 }
 
+std::shared_ptr<ast4vx::If> operator<<(std::shared_ptr<ast4vx::If> a, std::shared_ptr<ast4vx::Node> statement)
+{
+    (*a).body << statement;
+    return a;
+}
+
+std::shared_ptr<ast4vx::Else> operator<<(std::shared_ptr<ast4vx::Else> a, std::shared_ptr<ast4vx::Node> statement)
+{
+    (*a).body << statement;
+    return a;
+}
+
 std::shared_ptr<ast4vx::Node> operator>>(std::shared_ptr<ast4vx::Node> a, std::shared_ptr<ast4vx::Node> shift)
 {
     return std::make_shared<ast4vx::ShiftRight>(a, shift);
@@ -219,3 +231,33 @@ std::shared_ptr<ast4vx::WindowOperation> forall(std::initializer_list<std::share
 
 
 
+
+std::shared_ptr<ast4vx::Statements> create_p2p(unsigned int d_out, unsigned int d_in)
+{
+    return std::make_shared<ast4vx::Statements>(d_out, d_in);
+}
+
+std::shared_ptr<ast4vx::MaskPixelToPixel> create_p2p_mask(unsigned int d_out, unsigned int d_in, unsigned int m_in)
+{
+    return std::make_shared<ast4vx::MaskPixelToPixel>(d_out, d_in, m_in);
+}
+
+std::shared_ptr<ast4vx::LocalToPixel> create_l2p(unsigned int d_out, unsigned int w_in)
+{
+    return std::make_shared<ast4vx::LocalToPixel>(d_out, w_in);
+}
+
+std::shared_ptr<ast4vx::WindowDescriptor> create_window_desc(unsigned int w, unsigned int h)
+{
+    return std::make_shared<ast4vx::WindowDescriptor>(w, h);
+}
+
+std::shared_ptr<ast4vx::WindowOperation> create_window_op(unsigned int w, unsigned int h)
+{
+    return std::make_shared<ast4vx::WindowOperation>(w, h);
+}
+
+std::shared_ptr<ast4vx::WindowOperation> create_window_op()
+{
+    return std::make_shared<ast4vx::WindowOperation>();
+}

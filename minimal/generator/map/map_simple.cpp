@@ -11,10 +11,10 @@ int main(int argc, const char *argv[])
     auto image_o = new HipaVX::Image(1024, 1024, VX_DF_IMAGE_U8);
 
     // Create a Statement with 1 output pixel accessor and 1 input pixel accessor
-    auto ast_fun = std::make_shared<ast4vx::Statements>(1, 1);
+    auto ast_fun = create_p2p(1, 1);
     ast_fun << assign(ast_fun->d_out(0), sqrt(ast_fun->d_in(0)));
 
-    auto map = std::make_shared<DomVX::Map>();
+    auto map = create_point_op();
     // Set the map statement
     map->set_statements(ast_fun);
     // Bind the images to the correct pixel accessors

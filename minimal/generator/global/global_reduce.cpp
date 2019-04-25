@@ -6,10 +6,12 @@
 
 int main()
 {
-    auto ast_reduction = std::make_shared<ast4vx::Reduction>(ast4vx::Constant<int>(255));
-    auto accum_greater_if = IF(greater(ast_reduction->left(), ast_reduction->right()));
-    accum_greater_if->body << assign(ast_reduction->out(), ast_reduction->right());
-    ast_reduction << accum_greater_if;
+    auto ast_reduction = create_reduction(ast4vx::Constant<int>(255));
+    auto left_greater = IF(greater(ast_reduction->left(), ast_reduction->right()));
+    left_greater << assign(ast_reduction->out(), ast_reduction->right());
+    auto right_greater = ELSE();
+    right_greater << assign(ast_reduction->out(), ast_reduction->left());
+    ast_reduction << left_greater << right_greater;
 
 
     //---------------------------- DomVX --------------------------------------
@@ -18,7 +20,7 @@ int main()
     auto var_out = new HipaVX::Scalar(VX_TYPE_UINT8);
 
     // Create the local operation
-    auto global_op = std::shared_ptr<DomVX::GlobalOperation>(new DomVX::GlobalOperation());
+    auto global_op = create_global_op();
 
     global_op->register_input_images({image_i});
     global_op->set_reduction_function(ast_reduction, var_out);

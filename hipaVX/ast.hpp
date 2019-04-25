@@ -1543,6 +1543,16 @@ std::shared_ptr<ast4vx::Reduction> operator<<(std::shared_ptr<ast4vx::Reduction>
 std::shared_ptr<ast4vx::MaskPixelToPixel> operator<<(std::shared_ptr<ast4vx::MaskPixelToPixel> a, std::shared_ptr<ast4vx::Node> statement);
 
 /**
+ * @brief Adds the \p statement to the statements of \p a
+ */
+std::shared_ptr<ast4vx::If> operator<<(std::shared_ptr<ast4vx::If> a, std::shared_ptr<ast4vx::Node> statement);
+
+/**
+ * @brief Adds the \p statement to the statements of \p a
+ */
+std::shared_ptr<ast4vx::Else> operator<<(std::shared_ptr<ast4vx::Else> a, std::shared_ptr<ast4vx::Node> statement);
+
+/**
  * @brief Creates a new ast4vx::ShiftRight Node with \p a and \p b as the parameters and returns it
  */
 std::shared_ptr<ast4vx::Node> operator>>(std::shared_ptr<ast4vx::Node> a, std::shared_ptr<ast4vx::Node> shift);
@@ -1691,6 +1701,64 @@ std::shared_ptr<ast4vx::WindowOperation> forall(std::shared_ptr<ast4vx::WindowOp
  */
 std::shared_ptr<ast4vx::WindowOperation> forall(std::initializer_list<std::shared_ptr<ast4vx::WindowDescriptor>> in_win,
                                                 std::shared_ptr<ast4vx::Statements> forall_function);
+
+/**
+ * @brief Returns a new PixelToPixel instance and initializes it
+ * @param d_out Number of output pixel accessors
+ * @param d_in Number of input pixel accessors
+ * @return A newly created PixelToPixel instance
+ */
+std::shared_ptr<ast4vx::Statements> create_p2p(unsigned int d_out, unsigned int d_in);
+
+/**
+ * @brief Returns a new MaskPixelToPixel instance and initializes it
+ * @param d_out Number of output pixel accessors
+ * @param d_in Number of input pixel accessors
+ * @param m_in Number of input mask accessors
+ * @return A newly created MaskPixelToPixel instance
+ */
+std::shared_ptr<ast4vx::MaskPixelToPixel> create_p2p_mask(unsigned int d_out, unsigned int d_in, unsigned int m_in);
+
+/**
+ * @brief Returns a new LocalToPixel instance and initializes it
+ * @param d_out Number of output pixel accessors
+ * @param w_in Number of input window accessors
+ * @return A newly created LocalToPixel instance
+ */
+std::shared_ptr<ast4vx::LocalToPixel> create_l2p(unsigned int d_out, unsigned int w_in);
+
+/**
+ * @brief Returns a new WindowDescriptor instance and initializes it
+ * @param w Width of the window
+ * @param h Height of the window
+ * @return A newly created WindowDescriptor instance
+ */
+std::shared_ptr<ast4vx::WindowDescriptor> create_window_desc(unsigned int w, unsigned int h);
+
+/**
+ * @brief Returns a new WindowOperation instance and initializes it
+ * @param w Width of the window
+ * @param h Height of the window
+ * @return A newly created WindowOperation instance
+ */
+std::shared_ptr<ast4vx::WindowOperation> create_window_op(unsigned int w, unsigned int h);
+
+/**
+ * @brief Returns a new WindowOperation instance and initializes it
+ * @return A newly created WindowOperation instance
+ */
+std::shared_ptr<ast4vx::WindowOperation> create_window_op();
+
+/**
+ * @brief Returns a new Reduction instance and initializes it
+ * @param c Intial value of this reduction instance
+ * @return A newly created Reduction instance
+ */
+template <class T>
+std::shared_ptr<ast4vx::Reduction> create_reduction(ast4vx::Constant<T> c = ast4vx::Constant<T>())
+{
+    return std::make_shared<ast4vx::Reduction>(c);
+}
 
 
 

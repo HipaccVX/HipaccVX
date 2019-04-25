@@ -7,23 +7,23 @@
 int main()
 {
     // Created two sample pixel to pixel functions for later use
-    auto ast_fun_1 = std::make_shared<ast4vx::Statements>(1, 1);
+    auto ast_fun_1 = create_p2p(1, 1);
     ast_fun_1 << assign(ast_fun_1->d_out(0), ast_fun_1->d_in(0) * constant(3.4f));
 
-    auto ast_fun_2 = std::make_shared<ast4vx::Statements>(1, 0);
+    auto ast_fun_2 = create_p2p(1, 0);
     ast_fun_2 << assign(ast_fun_2->d_out(0), sqrt(constant(2.f)));
 
     // Reduction AST expects an initial value for the accumulator
-    auto ast_reduction = std::make_shared<ast4vx::Reduction>(ast4vx::Constant<int>(0));
+    auto ast_reduction = create_reduction(ast4vx::Constant<int>(0));
     ast_reduction << assign(ast_reduction->out(), ast_reduction->left() + ast_reduction->right());
 
 
     // Create dummy input window and set its domain
-    auto window_in = std::make_shared<ast4vx::WindowDescriptor>(3, 5);
+    auto window_in = create_window_desc(3, 5);
 
     // Associate pixel to pixel functions with the domain coordinates via compute_at
     // these pixel to pixel functions must have one output pixel accessor
-    auto window_op_1 = std::make_shared<ast4vx::WindowOperation>();
+    auto window_op_1 = create_window_op();
     window_op_1->set_window_inputs({window_in});
     window_op_1->compute_at(2, 0, ast_fun_1);
     window_op_1->compute_at(0, 2, ast_fun_2);
@@ -31,7 +31,7 @@ int main()
 
     // Chain a reduce function
     // This is done via setting the window_op_1's output to this operations input
-    auto reduction_op = std::make_shared<ast4vx::WindowOperation>();
+    auto reduction_op = create_window_op();
     reduction_op->set_window_inputs({window_op_1->get_window_output()});
     reduction_op->reduce(ast_reduction);
 
@@ -41,14 +41,14 @@ int main()
     auto image_o = new HipaVX::Image(1024, 512, VX_DF_IMAGE_U8);
 
     // Create the local operation
-    auto local_op = std::shared_ptr<DomVX::LocalOperation>(new DomVX::LocalOperation());
+    auto local_op = create_local_op();
 
     // Create the domain
-    auto dom = std::shared_ptr<DomVX::Domain>(new DomVX::Domain(3, 5, {0, 0, 1,
-                                                                       0, 1, 0,
-                                                                       1, 0, 0,
-                                                                       0, 1, 0,
-                                                                       0, 0, 1}));
+    auto dom = create_dom(3, 5, {0, 0, 1,
+                                 0, 1, 0,
+                                 1, 0, 0,
+                                 0, 1, 0,
+                                 0, 0, 1});
 
     // Bind the dummy window accessors to the input images
     local_op->set_input_window_desc({{image_i, window_in}});
