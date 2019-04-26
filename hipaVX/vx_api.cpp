@@ -206,7 +206,7 @@ VX_API_ENTRY vx_scalar VX_API_CALL vxCreateScalar(vx_context context, vx_enum da
 {
     if (data_type <= VX_TYPE_INVALID || data_type >= VX_TYPE_SCALAR)
         return nullptr;
-	auto scalar = new HipaVX::Scalar((vx_type_e) data_type, ptr);
+	auto scalar = new HipaVX::Scalar((HipaVX::ObjectType) data_type, ptr);
 	auto vx = new _vx_scalar();
 	vx->o = scalar;
 	return vx;
