@@ -14,7 +14,6 @@
 #include <map>
 
 #include "../VX/vx.h"
-#include "domVX_types.hpp"
 #include "kernels/domVX_kernels.hpp"
 #include "ast.hpp"
 
@@ -25,34 +24,7 @@ namespace DomVX
 //        move Image definition to here, and rename to Acc2D
 
 
-/**
- * @brief The different types of Abstractio Nodes in DomVX
- */
-enum class AbstractionType
-{
-    None,
-    Domain,
-    Mask,
-    Map,
-    LocalOperation,
-    GlobalOperation,
-};
 
-/**
- * @brief The fundamental DomVX AbstractionNode class
- */
-class AbstractionNode
-{
-public:
-    int id; /**< This gets set when constructing a new Node Instance. This is read only */
-    AbstractionType type = AbstractionType::None;
-    AbstractionNode() {
-        static int next_id = 0;
-        id = next_id++;
-    }
-
-    virtual ~AbstractionNode() = default;
-};
 
 /**
  * @brief Represents an actual Domain for the virtual ast4vx::WindowDescriptor

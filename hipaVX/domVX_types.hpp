@@ -9,6 +9,36 @@
 
 ast4vx::Datatype convert_type(vx_df_image type);
 
+namespace DomVX {
+/**
+ * @brief The different types of Abstractio Nodes in DomVX
+ */
+enum class AbstractionType
+{
+    None,
+    Domain,
+    Mask,
+    Map,
+    LocalOperation,
+    GlobalOperation,
+};
+
+/**
+ * @brief The fundamental DomVX AbstractionNode class
+ */
+class AbstractionNode
+{
+public:
+    int id; /**< This gets set when constructing a new Node Instance. This is read only */
+    AbstractionType type = AbstractionType::None;
+    AbstractionNode() {
+        static int next_id = 0;
+        id = next_id++;
+    }
+
+    virtual ~AbstractionNode() = default;
+};
+}
 namespace HipaVX {
 
 using ObjectType = vx_type_e;
@@ -193,7 +223,7 @@ class Node : public Object {
   }
 
   void init() {
-    kernel = std::make_shared<ast4vx::ForEveryPixel>();
+    kernel = std::make_shared<DomVX::AbstractionNode>();
     type = VX_TYPE_NODE;
     set_task();
     _obj = this;
@@ -206,7 +236,7 @@ class Node : public Object {
   std::vector<Object *> outputs;
 
   vx_border_e border_mode = VX_BORDER_UNDEFINED;
-  std::shared_ptr<ast4vx::ForEveryPixel> kernel;
+  std::shared_ptr<DomVX::AbstractionNode> kernel;
 
   virtual void build() {}
 };
