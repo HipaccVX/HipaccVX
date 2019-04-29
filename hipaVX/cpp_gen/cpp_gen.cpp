@@ -792,9 +792,9 @@ R"END(for(int @@@Y_NAME@@@ = 0; @@@Y_NAME@@@ < @@@HEIGHT@@@; @@@Y_NAME@@@++)
 
 std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n, int i)
 {
-    switch(n->type)
+    switch(n->operator_type)
     {
-    case DomVX::AbstractionType::Map:
+    case DomVX::OperatorType::Map:
     {
         auto s = std::dynamic_pointer_cast<DomVX::Map>(n);
 
@@ -825,7 +825,7 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n, int i)
         outer_loop = use_template(outer_loop, "CODE", code);
         return outer_loop;
     }
-    case DomVX::AbstractionType::LocalOperation:
+    case DomVX::OperatorType::LocalOperation:
     {
         auto s = std::dynamic_pointer_cast<DomVX::LocalOperation>(n);
 
@@ -957,7 +957,7 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n, int i)
         outer_loop = use_template(outer_loop, "CODE", code);
         return outer_loop;
     }
-    case DomVX::AbstractionType::GlobalOperation:
+    case DomVX::OperatorType::GlobalOperation:
     {
         auto s = std::dynamic_pointer_cast<DomVX::GlobalOperation>(n);
 

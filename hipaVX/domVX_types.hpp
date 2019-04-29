@@ -13,11 +13,9 @@ namespace DomVX {
 /**
  * @brief The different types of Abstractio Nodes in DomVX
  */
-enum class AbstractionType
+enum class OperatorType
 {
     None,
-    Domain,
-    Mask,
     Map,
     LocalOperation,
     GlobalOperation,
@@ -30,7 +28,7 @@ class AbstractionNode
 {
 public:
     int id; /**< This gets set when constructing a new Node Instance. This is read only */
-    AbstractionType type = AbstractionType::None;
+    OperatorType operator_type = OperatorType::None;
     AbstractionNode() {
         static int next_id = 0;
         id = next_id++;
@@ -39,6 +37,9 @@ public:
     virtual ~AbstractionNode() = default;
 };
 }
+
+
+
 namespace HipaVX {
 
 using ObjectType = vx_type_e;
@@ -211,6 +212,7 @@ class Node : public Object {
 
  public:
   std::string node_name; //remove me
+  DomVX::OperatorType operator_type = DomVX::OperatorType::None;
 
   Node() {
     set_name("Node");
@@ -244,8 +246,8 @@ class Node : public Object {
 
 class Convolution : public Object {
  public:
-  Convolution() { 
-    type = VX_TYPE_CONVOLUTION; 
+  Convolution() {
+    type = VX_TYPE_CONVOLUTION;
     set_name("Convolve");
     set_task();
     _obj = this;
@@ -260,8 +262,8 @@ class Convolution : public Object {
 
 class Threshold : public Object {
  public:
-  Threshold() { 
-    type = VX_TYPE_THRESHOLD; 
+  Threshold() {
+    type = VX_TYPE_THRESHOLD;
     set_name("Threshold");
     set_task();
     _obj = this;
@@ -283,8 +285,8 @@ class Threshold : public Object {
 
 class VX_Matrix : public Object {
  public:
-  VX_Matrix() { 
-    type = VX_TYPE_MATRIX; 
+  VX_Matrix() {
+    type = VX_TYPE_MATRIX;
     set_name("Matrix");
     set_task();
     _obj = this;

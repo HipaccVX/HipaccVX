@@ -14,8 +14,8 @@
 #include <map>
 
 #include "../VX/vx.h"
-#include "kernels/domVX_kernels.hpp"
 #include "ast.hpp"
+#include "domVX_types.hpp"
 
 namespace DomVX
 {
@@ -24,12 +24,10 @@ namespace DomVX
 //        move Image definition to here, and rename to Acc2D
 
 
-
-
 /**
  * @brief Represents an actual Domain for the virtual ast4vx::WindowDescriptor
  */
-class Domain: public AbstractionNode
+class Domain
 {
 public:
 
@@ -48,7 +46,6 @@ public:
     Domain(unsigned int x, unsigned int y, std::vector<int> dom)
         :width(x), height(y)
     {
-        type = AbstractionType::Domain;
         set_domain(dom);
     }
 
@@ -78,7 +75,7 @@ public:
 /**
  * @brief Represents an actual Mask for the virtual ast4vx::MaskPixelToPixel statements
  */
-class Mask: public AbstractionNode
+class Mask
 {
 public:
     union mask_type
@@ -105,7 +102,6 @@ public:
     Mask(unsigned int x, unsigned int y, std::vector<int32_t> m)
         :width(x), height(y)
     {
-        type = AbstractionType::Mask;
         set_mask(m);
     }
     /**
@@ -117,7 +113,6 @@ public:
     Mask(unsigned int x, unsigned int y, std::vector<float> m)
         :width(x), height(y)
     {
-        type = AbstractionType::Mask;
         set_mask(m);
     }
 
@@ -180,7 +175,7 @@ public:
      */
     Map()
     {
-        type = AbstractionType::Map;
+        operator_type = OperatorType::Map;
     }
 
     /**
@@ -189,7 +184,7 @@ public:
      */
     Map(std::shared_ptr<ast4vx::Statements> s)
     {
-        type = AbstractionType::Map;
+        operator_type = OperatorType::Map;
         set_statements(s);
     }
 
@@ -320,7 +315,7 @@ public:
 public:
     LocalOperation()
     {
-        type = AbstractionType::LocalOperation;
+        operator_type = OperatorType::LocalOperation;
     }
 
     /**
@@ -400,7 +395,7 @@ public:
 public:
     GlobalOperation()
     {
-        type = AbstractionType::GlobalOperation;
+        operator_type = OperatorType::GlobalOperation;
     }
 
     /**
