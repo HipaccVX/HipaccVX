@@ -19,12 +19,12 @@ list(APPEND HipaVX_SRC ${GLOB_RESULT})
 file(GLOB_RECURSE HipaccGen_SRC ${HIPAVX_DIR}/hipacc_gen/*)
 file(GLOB_RECURSE CppGen_SRC ${HIPAVX_DIR}/cpp_gen/*)
 
-add_library (HipaVX_Hipacc ${HipaVX_SRC} ${HipaccGen_SRC})
+#add_library (HipaVX_Hipacc ${HipaVX_SRC} ${HipaccGen_SRC})
 add_library (HipaVX_Cpp ${HipaVX_SRC} ${CppGen_SRC})
 
-add_executable (main_hipacc main.cpp)
-target_include_directories (main_hipacc PUBLIC ${VX_DIR} ${HIPAVX_DIR})
-target_link_libraries (main_hipacc HipaVX_Hipacc)
+#add_executable (main_hipacc main.cpp)
+#target_include_directories (main_hipacc PUBLIC ${VX_DIR} ${HIPAVX_DIR})
+#target_link_libraries (main_hipacc HipaVX_Hipacc)
 
 add_executable (main_cpp main.cpp)
 target_include_directories (main_cpp PUBLIC ${VX_DIR} ${HIPAVX_DIR})
