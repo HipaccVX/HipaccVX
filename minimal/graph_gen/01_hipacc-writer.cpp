@@ -18,8 +18,8 @@ using HipaVX::Scalar;
 
 
 int main() {
-//  hipacc_writer gen;
-//  std::cout << gen.dump_code();
+  hipacc_writer gen;
+  std::cout << gen.initial_includes();
 
   // image
   HipaVX::Image im0(1024, 1024, VX_DF_IMAGE_U8);
@@ -46,39 +46,41 @@ int main() {
   map->set_statements(ast_fun);
   map->register_images({&im0}, {&im1});
 
-//   // local
-//   auto l_to_p = std::make_shared<ast4vx::LocalToPixel>(1, 1);
-//   auto win_1 = l_to_p->window(0);
-//   l_to_p << assign(l_to_p->d_out(0), win_1->pixel_at(0, 2) + win_1->pixel_at(0, 4));
-//
-//   auto local = ast4vx::WindowOperation();
-//   local.set_window_inputs({std::make_shared<ast4vx::WindowDescriptor>(dom)});
-//   local.to_pixel(l_to_p);
-//
-//   auto local_op = DomVX::LocalOperation();
-//   local_op.set_input_window_desc({{&im0, std::make_shared<ast4vx::WindowDescriptor>(dom)}});
-//   local_op.add_operation(std::make_shared<ast4vx::WindowOperation>(local), {&im1});
+   // local
+    auto l_to_p = create_l2p(1, 1);
+    auto win_1 = l_to_p->w_in(0);
+    l_to_p << assign(l_to_p->d_out(0), win_1->pixel_at(0, 2) + win_1->pixel_at(0, 4) * constant(3.14f));
 
-  // generator functions
-  std::stringstream ss;
+    auto window_in = create_window_desc(3, 5);
 
-//  // accessor
-//  //HipaccAccessor acc;
-//  HipaccAccessor acc(&im0);
-//  HipaccIterationSpace is(&im1);
+    auto local_to_pixel = create_window_op();
+    local_to_pixel->set_window_inputs({window_in});
+    local_to_pixel->to_pixel(l_to_p);
 
-//  // kernels: class declarations
-//  gen.def(ss, &map, DefType::Kdecl, {&acc, &acc, &acc}, {&is});
-//  gen.def(ss, &local_op, DefType::Kdecl, {&acc}, {&is}, {&mask}, {&dom});
-//
-//  // host declarations
-//  gen.def(ss, &im0);
-//  gen.def(ss, &acc);
-//  gen.def(ss, &is);
-//  gen.def(ss, &dom);
-//  gen.def(ss, &mask);
-//  ss << "\n\n";
-//
+    auto local_op = create_local_op();
+    local_op->set_input_window_desc({{&im0, window_in}});
+    local_op->add_operation(local_to_pixel, {&im1});
+
+    // generator functions
+    std::stringstream ss;
+
+    // accessor
+    //HipaccAccessor acc;
+    HipaccAccessor acc(&im0);
+    HipaccIterationSpace is(&im1);
+
+    // kernels: class declarations
+//    gen.def(ss, &map, DefType::Kdecl, {&acc, &acc, &acc}, {&is});
+//    gen.def(ss, &local_op, DefType::Kdecl, {&acc}, {&is}, {&mask}, {&dom});
+
+    // host declarations
+    gen.def(ss, &im0);
+    gen.def(ss, &acc);
+    gen.def(ss, &is);
+    //gen.def(ss, &dom);
+    //gen.def(ss, &mask);
+    ss << "\n\n";
+
 //  // kernels: host declarations
 //  gen.def(ss, &map, DefType::Hdecl, {&acc}, {&is});
 //  gen.def(ss, &local_op, DefType::Hdecl, {&acc}, {&is});

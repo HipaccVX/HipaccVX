@@ -5,13 +5,13 @@
 #include "../abstractions.hpp"
 #include "../../VX/vx.h"
 #include "cassert"
-//#include <iterator> 
+//#include <iterator>
 //#include "infix_iterator.h"
 
 //#define ERROR(cond, msg) std::assert((cond) && (msg));
 //#define ERRORM(msg) static_assert(true, msg);
 #define ERRORM(msg) throw std::runtime_error((msg));
-  
+
 
 using graphVX::dag;
 using graphVX::VertexDesc;
@@ -23,7 +23,7 @@ using HipaVX::VertexTask;
 using HipaVX::ObjectType;
 
 using HipaccImage = HipaVX::Image;
-using HipaccDomain = ast4vx::WindowDescriptor;
+using HipaccDomain = DomVX::Domain;
 using HipaccMask = DomVX::Mask;
 using DomVXAcc = HipaVX::Acc;
 
@@ -31,7 +31,7 @@ using HipaccKernel = DomVX::AbstractionNode;
 using HipaccPointNode = DomVX::Map;
 using HipaccLocalNode = DomVX::LocalOperation;
 
-using HipaccDataType = vx_df_image; 
+using HipaccDataType = vx_df_image;
 
 // vx_df_image to HipaccWriter
 #define U8  VX_DF_IMAGE_U8
@@ -41,7 +41,7 @@ using HipaccDataType = vx_df_image;
 #define U32 VX_DF_IMAGE_U32
 #define F32 VX_TYPE_FLOAT32
 #define UNDEF VX_TYPE_DF_IMAGE
-  
+
 #define HipaccImageE VX_TYPE_IMAGE
 
 enum class DefType{
@@ -95,7 +95,7 @@ class hipacc_writer {
   std::string ind = hind + hind;
   std::string dind = ind + ind;
   std::string tind = dind + ind;
-  
+
  public:
   std::stringstream ss;
 
@@ -265,20 +265,20 @@ void hipacc_writer::def_is(std::stringstream &ss, DomVXAcc* is, DefType deftype)
 
 void hipacc_writer::def(std::stringstream &ss, DomVXAcc* in, DefType deftype) {
   if (in->is_acc) {
-    def_acc(ss, in, deftype); 
+    def_acc(ss, in, deftype);
   } else {
-    def_is(ss, in, deftype); 
-  } 
+    def_is(ss, in, deftype);
+  }
 }
 
 void hipacc_writer::def(std::stringstream &ss, HipaccDomain* dom, DefType deftype) {
   std::string dtype = "uchar";
 
   switch(deftype) {
-    case DefType::Hdecl:  { 
+    case DefType::Hdecl:  {
       std::string val_name = name(dom) + "_val";
       ss << dtype << " " <<  val_name << "[" << dom->height * dom->width << "] = {";
-    
+
       //for(auto &ity : dom->domain) {
       //  std::copy(ity.begin(), ity.end() - 1, std::ostream_iterator<int>(ss, ", "));
       //  ss << int(ity.back());
@@ -291,7 +291,7 @@ void hipacc_writer::def(std::stringstream &ss, HipaccDomain* dom, DefType deftyp
         ss << int(dom->domain[y].back());
         if(y != dom->height - 1) { ss << ", "; };
       }
-    
+
       ss << "};\n";
       ss << "Domain " << name(dom) << "<" << dom->width << ", " << dom->height << ">(" << val_name << ");\n";
       break;
@@ -311,7 +311,7 @@ void hipacc_writer::def(std::stringstream &ss, HipaccDomain* dom, DefType deftyp
 
 void hipacc_writer::def(std::stringstream &ss, HipaccMask* mask, DefType deftype) {
   // fix this, use OpenVX data types similar to Image
-  // also union access to mask coefficients should be improved 
+  // also union access to mask coefficients should be improved
   std::string dtype = "";
   if(mask->mask_is_int == false) {
     dtype = "float";
@@ -320,7 +320,7 @@ void hipacc_writer::def(std::stringstream &ss, HipaccMask* mask, DefType deftype
   }
 
   switch(deftype) {
-    case DefType::Hdecl:  { 
+    case DefType::Hdecl:  {
       std::string val_name = name(mask) + "_val";
 
       // define an array for the values
@@ -341,7 +341,7 @@ void hipacc_writer::def(std::stringstream &ss, HipaccMask* mask, DefType deftype
     }
 
     case DefType::Param:
-    case DefType::Kdecl:  { 
+    case DefType::Kdecl:  {
       ss << name(mask) << "<" << dtype << "> &" << name(mask);
       break;
     }
@@ -352,7 +352,7 @@ void hipacc_writer::def(std::stringstream &ss, HipaccMask* mask, DefType deftype
   }
 }
 
-// TODO: can have a base class for the parameter types, thus one initializer list 
+// TODO: can have a base class for the parameter types, thus one initializer list
 //       , which shortens the code significantly
 void hipacc_writer::def(std::stringstream &ss, HipaccKernel* kern, DefType deftype,
       std::initializer_list<HipaccAccessor*> acc_l,
@@ -368,7 +368,7 @@ void hipacc_writer::def(std::stringstream &ss, HipaccKernel* kern, DefType defty
   }
 
   switch(deftype) {
-    case DefType::Hdecl:  { 
+    case DefType::Hdecl:  {
       ss << name(kern) << "(";
       ss << name(*is_l.begin());
 
@@ -435,7 +435,7 @@ void hipacc_writer::def(std::stringstream &ss, HipaccKernel* kern, DefType defty
 
       ss << ind << "}\n";
 
-      // Kernel 
+      // Kernel
       ss << ind << "\n\n";
       ss << ind << "void kernel() {\n";
       ss << dind << "visit(" << name(kern) << ");\n";
@@ -595,7 +595,7 @@ class hipacc_gen : public graph_gen, public hipacc_writer {
     ss << dind << "return 0;\n";
     ss << "}\n";
 
-    std::cout << ss.str(); 
+    std::cout << ss.str();
   }
 };
 
