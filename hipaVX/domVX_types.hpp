@@ -27,15 +27,32 @@ enum class OperatorType
 class AbstractionNode
 {
 public:
-    int id; /**< This gets set when constructing a new Node Instance. This is read only */
-    OperatorType operator_type = OperatorType::None;
-    AbstractionNode() {
-        static int next_id = 0;
-        id = next_id++;
-    }
+  int my_id; /**< This gets set when constructing a new Node Instance. This is read only */
+  AbstractionNode() {
+      static int next_id = 0;
+      my_id = next_id++;
+  }
 
-    virtual ~AbstractionNode() = default;
+  std::string name;
+
+  void set_name(std::string _name = "Object") {
+    name = _name + std::to_string(my_id);
+  }
+
+  std::string get_name() {
+    return this->name;
+  }
+
+  virtual ~AbstractionNode() = default;
 };
+
+class OperatorNode : AbstractionNode {
+  public:
+  OperatorType operator_type = OperatorType::None;
+
+  OperatorNode(){};
+};
+
 }
 
 

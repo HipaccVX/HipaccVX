@@ -27,7 +27,7 @@ namespace DomVX
 /**
  * @brief Represents an actual Domain for the virtual ast4vx::WindowDescriptor
  */
-class Domain
+class Domain : public AbstractionNode
 {
 public:
 
@@ -75,7 +75,7 @@ public:
 /**
  * @brief Represents an actual Mask for the virtual ast4vx::MaskPixelToPixel statements
  */
-class Mask
+class Mask : public AbstractionNode
 {
 public:
     union mask_type
@@ -166,7 +166,7 @@ public:
 /**
  * @brief Calculates every output pixel from the input image pixels from the same pixel coordinates
  */
-class Map: public AbstractionNode
+class Map: public OperatorNode
 {
     std::shared_ptr<ast4vx::Statements> function;
 public:
@@ -302,7 +302,7 @@ public:
  *
  * It supports multiple input and output images - input domains and masks - and multiple ast4vx::WindowOperation
  */
-class LocalOperation: public AbstractionNode
+class LocalOperation: public OperatorNode
 {
 public:
     std::vector<std::tuple<HipaVX::Image*, std::shared_ptr<ast4vx::WindowDescriptor>>> input_descriptor;
@@ -385,7 +385,7 @@ public:
  *
  * Currently only global reduction of an image is supported
  */
-class GlobalOperation: public AbstractionNode
+class GlobalOperation: public OperatorNode
 {
 public:
     std::shared_ptr<ast4vx::Reduction> reduction;
