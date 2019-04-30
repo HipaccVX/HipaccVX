@@ -34,6 +34,8 @@ using HipaccLocalNode = DomVX::LocalOperation;
 using HipaccDataType = vx_df_image;
 
 
+
+
 // vx_df_image to HipaccWriter
 #define U8  VX_DF_IMAGE_U8
 #define S16 VX_DF_IMAGE_S16
@@ -59,6 +61,25 @@ HipaccImage* obj2img(VertexType* v) {
     ERRORM("graph_gen obj2img, dynamic cast fail for: " + v->get_name());
 
   return _im;
+}
+
+// TODO: simplify this after fixing the data structures
+HipaccKernel* obj2kernel(VertexType* v) {
+  auto _node = dynamic_cast<HipaVX::Node*>(v->_obj);
+
+  if(_node == NULL)
+    ERRORM("graph_gen obj2kernel, dynamic cast fail for: " + v->get_name());
+
+  return _node->kernel.get();
+}
+
+HipaccLocalNode* kernel2local(HipaccKernel* v) {
+  auto _kern = dynamic_cast<HipaccLocalNode*>(v);
+
+  if(_kern == NULL)
+    ERRORM("graph_gen kernel2local, dynamic cast fail for: " + v->get_name());
+
+  return _kern;
 }
 
 // TODO: Merge Accessor and IterationSpace
@@ -635,8 +656,17 @@ void hipacc_gen::set_edges() {
 }
 
 void hipacc_gen::iterate_nodes() {
-    for(auto v : nodes) {
-      ss_execs << dind << get_vert(v)->get_name() << ".execute()" << std::endl;
+    for(auto vert : nodes) {
+      auto v = get_vert(vert);
+      ss_execs << dind << v->get_name() << ".execute()" << std::endl;
+
+      // get domains
+      auto kern_ = obj2kernel(v);
+      if(kern_->operator_type == DomVX::OperatorType::LocalOperation) {
+        auto local_ = kernel2local(kern_);
+
+        auto doms = local_->domain_bindings;
+      }
 
       // TODO: kernel defs and calls
       //def(ss_kern, v, DefType deftype,

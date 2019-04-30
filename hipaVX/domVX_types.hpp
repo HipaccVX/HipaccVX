@@ -49,7 +49,7 @@ public:
 
 class OperatorNode : public AbstractionNode {
   public:
-  OperatorType operator_type = OperatorType::None;
+  DomVX::OperatorType operator_type = DomVX::OperatorType::None;
 
   void init() {
     set_name("operator");
@@ -236,7 +236,6 @@ class Node : public Object {
 
  public:
   std::string node_name; //remove me
-  DomVX::OperatorType operator_type = DomVX::OperatorType::None;
 
   Node() {
     set_name("Node");
@@ -249,7 +248,7 @@ class Node : public Object {
   }
 
   void init() {
-    kernel = std::make_shared<DomVX::AbstractionNode>();
+    kernel = std::make_shared<DomVX::OperatorNode>();
     type = VX_TYPE_NODE;
     set_task();
     _obj = this;
@@ -262,7 +261,7 @@ class Node : public Object {
   std::vector<Object *> outputs;
 
   vx_border_e border_mode = VX_BORDER_UNDEFINED;
-  std::shared_ptr<DomVX::AbstractionNode> kernel;
+  std::shared_ptr<DomVX::OperatorNode> kernel;
 
   virtual void build() {}
 };
