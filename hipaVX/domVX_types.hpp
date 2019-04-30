@@ -31,6 +31,7 @@ public:
   AbstractionNode() {
       static int next_id = 0;
       my_id = next_id++;
+      set_name();
   }
 
   std::string name;
@@ -46,11 +47,17 @@ public:
   virtual ~AbstractionNode() = default;
 };
 
-class OperatorNode : AbstractionNode {
+class OperatorNode : public AbstractionNode {
   public:
   OperatorType operator_type = OperatorType::None;
 
-  OperatorNode(){};
+  void init() {
+    set_name("operator");
+  }
+
+  OperatorNode() {
+    init();
+  };
 };
 
 }

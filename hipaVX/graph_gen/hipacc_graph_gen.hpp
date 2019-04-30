@@ -27,11 +27,12 @@ using HipaccDomain = DomVX::Domain;
 using HipaccMask = DomVX::Mask;
 using DomVXAcc = HipaVX::Acc;
 
-using HipaccKernel = DomVX::AbstractionNode;
+using HipaccKernel = DomVX::OperatorNode;
 using HipaccPointNode = DomVX::Map;
 using HipaccLocalNode = DomVX::LocalOperation;
 
 using HipaccDataType = vx_df_image;
+
 
 // vx_df_image to HipaccWriter
 #define U8  VX_DF_IMAGE_U8
@@ -92,9 +93,9 @@ class HipaccIterationSpace : public DomVXAcc {
 class hipacc_writer {
  protected:
   std::string hind = " ";
-  std::string ind = hind + hind;
-  std::string dind = ind + ind;
-  std::string tind = dind + ind;
+  std::string sind = hind + hind;
+  std::string dind = sind + sind;
+  std::string tind = dind + sind;
 
  public:
   std::stringstream ss;
@@ -218,7 +219,7 @@ void hipacc_writer::def_acc(std::stringstream &ss, DomVXAcc* acc, DefType deftyp
     case DefType::Kdecl:
     case DefType::Param:
     {
-      ss << dind << "Accessor" << "<" << dtype(acc->im) + "> &" << name(acc);
+      ss << "Accessor" << "<" << dtype(acc->im) + "> &" << name(acc);
       break;
     }
 
@@ -253,7 +254,7 @@ void hipacc_writer::def_is(std::stringstream &ss, DomVXAcc* is, DefType deftype)
     case DefType::Kdecl:
     case DefType::Param:
     {
-      ss << dind << "IterationSpace" << "<" << dtype(is->im) + "> &" << name(is);
+      ss << "IterationSpace" << "<" << dtype(is->im) + "> &" << name(is);
       break;
     }
 
@@ -277,7 +278,7 @@ void hipacc_writer::def(std::stringstream &ss, HipaccDomain* dom, DefType deftyp
   switch(deftype) {
     case DefType::Hdecl:  {
       std::string val_name = name(dom) + "_val";
-      ss << dtype << " " <<  val_name << "[" << dom->height * dom->width << "] = {";
+      ss << dind << dtype << " " <<  val_name << "[" << dom->height * dom->width << "] = {";
 
       //for(auto &ity : dom->domain) {
       //  std::copy(ity.begin(), ity.end() - 1, std::ostream_iterator<int>(ss, ", "));
@@ -293,7 +294,7 @@ void hipacc_writer::def(std::stringstream &ss, HipaccDomain* dom, DefType deftyp
       }
 
       ss << "};\n";
-      ss << "Domain " << name(dom) << "<" << dom->width << ", " << dom->height << ">(" << val_name << ");\n";
+      ss << dind << "Domain " << name(dom) << "<" << dom->width << ", " << dom->height << ">(" << val_name << ");\n";
       break;
     }
     case DefType::Kdecl:
@@ -323,10 +324,12 @@ void hipacc_writer::def(std::stringstream &ss, HipaccMask* mask, DefType deftype
     case DefType::Hdecl:  {
       std::string val_name = name(mask) + "_val";
 
+      std::string ind = dind;
+
       // define an array for the values
-      ss << dtype << " " << val_name << "[" << mask->height << "][" <<  mask->width << "]" << " = {\n";
+      ss << ind << dtype << " " << val_name << "[" << mask->height << "][" <<  mask->width << "]" << " = {\n";
       for(unsigned y = 0; y < mask->height; y++) {
-        ss << "  {";
+        ss << ind << sind << "{";
         for(unsigned x = 0; x < mask->width - 1; x++) {
           ss << mask->mask[y].at(x).i << ", ";
         }
@@ -336,7 +339,7 @@ void hipacc_writer::def(std::stringstream &ss, HipaccMask* mask, DefType deftype
       ss << "};\n";
 
       // define mask
-      ss << "Mask<" << dtype << "> " << name(mask) << "(" << val_name << ");\n";
+      ss << ind << "Mask<" << dtype << "> " << name(mask) << "(" << val_name << ");\n";
       break;
     }
 
@@ -369,6 +372,7 @@ void hipacc_writer::def(std::stringstream &ss, HipaccKernel* kern, DefType defty
 
   switch(deftype) {
     case DefType::Hdecl:  {
+      ss << dind;
       ss << name(kern) << "(";
       ss << name(*is_l.begin());
 
@@ -400,20 +404,20 @@ void hipacc_writer::def(std::stringstream &ss, HipaccKernel* kern, DefType defty
       kinits << dind << "Kernel(" << name(is) << ")\n";
 
       for(auto par : acc_l) {
-        kdecls << ind; def(kdecls, par, DefType::Kdecl); kdecls << ";\n";
+        kdecls << sind; def(kdecls, par, DefType::Kdecl); kdecls << ";\n";
         kparams << "\n" << dind << ","; def(kparams, par, DefType::Param);
         kinits << dind << "," << name(par) << "(" << name(par) << ")\n";
         kconstb << dind << "add_accessor(" << name(par)  << ");\n";
       }
 
       for(auto par : mask_l) {
-        kdecls << ind; def(kdecls, par, DefType::Kdecl); kdecls << ";\n";
+        kdecls << sind; def(kdecls, par, DefType::Kdecl); kdecls << ";\n";
         kparams << "\n" << dind << ","; def(kparams, par, DefType::Param);
         kinits << dind << "," << name(par) << "(" << name(par) << ")\n";
       }
 
       for(auto par : dom_l) {
-        kdecls << ind; def(kdecls, par, DefType::Kdecl); kdecls << ";\n";
+        kdecls << sind; def(kdecls, par, DefType::Kdecl); kdecls << ";\n";
         kparams << "\n" << dind << ","; def(kparams, par, DefType::Param);
         kinits << dind << "," << name(par) << "(" << name(par) << ")\n";
       }
@@ -424,22 +428,22 @@ void hipacc_writer::def(std::stringstream &ss, HipaccKernel* kern, DefType defty
 
       // Constructor
       ss << "\n" << hind << "public:\n";
-      ss << ind << name(kern) << "(\n";
+      ss << sind << name(kern) << "(\n";
       ss << kparams.str();
 
-      ss << "\n" << ind << ") : \n";
+      ss << "\n" << sind << ") : \n";
       ss << kinits.str();
 
-      ss << ind << "{ \n";
+      ss << sind << "{ \n";
       ss << kconstb.str();
 
-      ss << ind << "}\n";
+      ss << sind << "}\n";
 
       // Kernel
-      ss << ind << "\n\n";
-      ss << ind << "void kernel() {\n";
+      ss << sind << "\n\n";
+      ss << sind << "void kernel() {\n";
       ss << dind << "visit(" << name(kern) << ");\n";
-      ss << ind << "}\n";
+      ss << sind << "}\n";
 
       ss << "};\n\n";
       break;
