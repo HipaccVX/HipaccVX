@@ -665,7 +665,21 @@ void hipacc_gen::iterate_nodes() {
       if(kern_->operator_type == DomVX::OperatorType::LocalOperation) {
         auto local_ = kernel2local(kern_);
 
+        ss_dom << "akif";
         auto doms = local_->domain_bindings;
+        for(auto const& domb : doms){
+          // TODO: have better APIs for these type of operations
+          def(ss_dom, domb.second.get());
+          ss_dom << "akif";
+        }
+
+        auto masks = local_->mask_bindings;
+        for(auto const& maskbv : masks){
+          // TODO: have better APIs for these type of operations
+          auto maskb = maskbv.second;
+          for(auto const& mask : maskb)
+            def(ss_mask, mask.get());
+        }
       }
 
       // TODO: kernel defs and calls

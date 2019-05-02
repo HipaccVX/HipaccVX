@@ -23,6 +23,9 @@ namespace DomVX
 // TODO: This header should be independent from the vx_types - sure?
 //        move Image definition to here, and rename to Acc2D
 
+using AbstractionNode = HipaVX::Object;
+using OperatorNode = HipaVX::Node;
+
 
 /**
  * @brief Represents an actual Domain for the virtual ast4vx::WindowDescriptor
@@ -468,6 +471,8 @@ std::shared_ptr<DomVX::Mask> create_mask(unsigned int x, unsigned int y, std::in
  */
 std::shared_ptr<DomVX::Mask> create_mask(unsigned int x, unsigned int y, std::initializer_list<float> mask);
 
+
+// TODO: What is the motivation behinf having this here?
 
 /**
  * @brief Abstract Visitor class for DomVX::AbstractionNode

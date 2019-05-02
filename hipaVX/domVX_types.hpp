@@ -20,49 +20,7 @@ enum class OperatorType
     LocalOperation,
     GlobalOperation,
 };
-
-/**
- * @brief The fundamental DomVX AbstractionNode class
- */
-class AbstractionNode
-{
-public:
-  int my_id; /**< This gets set when constructing a new Node Instance. This is read only */
-  AbstractionNode() {
-      static int next_id = 0;
-      my_id = next_id++;
-      set_name();
-  }
-
-  std::string name;
-
-  void set_name(std::string _name = "Object") {
-    name = _name + std::to_string(my_id);
-  }
-
-  std::string get_name() {
-    return this->name;
-  }
-
-  virtual ~AbstractionNode() = default;
-};
-
-class OperatorNode : public AbstractionNode {
-  public:
-  DomVX::OperatorType operator_type = DomVX::OperatorType::None;
-
-  void init() {
-    set_name("operator");
-  }
-
-  OperatorNode() {
-    init();
-  };
-};
-
 }
-
-
 
 namespace HipaVX {
 
@@ -94,9 +52,16 @@ class Object {
     return this->name;
   }
 
+  std::string id() {
+    return std::to_string(my_id);
+  }
+
   ObjectType get_type() {
     return this->type;
   };
+
+  // TODO: only temporary
+  DomVX::OperatorType operator_type = DomVX::OperatorType::None;
 
  public: // TODO: make these protected
   int my_id;
@@ -117,6 +82,10 @@ class Object {
   static int next_id;
 };
 
+}  // namespace HipaVX
+
+
+namespace HipaVX {
 
 class Scalar : public Object {
  public:
@@ -248,7 +217,7 @@ class Node : public Object {
   }
 
   void init() {
-    kernel = std::make_shared<DomVX::OperatorNode>();
+    kernel = NULL;
     type = VX_TYPE_NODE;
     set_task();
     _obj = this;
@@ -261,7 +230,7 @@ class Node : public Object {
   std::vector<Object *> outputs;
 
   vx_border_e border_mode = VX_BORDER_UNDEFINED;
-  std::shared_ptr<DomVX::OperatorNode> kernel;
+  std::shared_ptr<HipaVX::Node> kernel;
 
   virtual void build() {}
 };

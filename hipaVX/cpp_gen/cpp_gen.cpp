@@ -722,8 +722,8 @@ std::string create_matrix_def(std::string type, std::string name, unsigned int w
 
 std::string CPPVisitor::setup_outer_loop(std::shared_ptr<DomVX::Map> m)
 {
-    std::string y_index_name = "y_" + std::to_string(m->id);
-    std::string x_index_name = "x_" + std::to_string(m->id);
+    std::string y_index_name = "y_" + m->id();
+    std::string x_index_name = "x_" + m->id();
     std::string templ =
 R"END(for(int @@@Y_NAME@@@ = 0; @@@Y_NAME@@@ < @@@HEIGHT@@@; @@@Y_NAME@@@++)
 {
@@ -745,8 +745,8 @@ R"END(for(int @@@Y_NAME@@@ = 0; @@@Y_NAME@@@ < @@@HEIGHT@@@; @@@Y_NAME@@@++)
 }
 std::string CPPVisitor::setup_outer_loop(std::shared_ptr<DomVX::LocalOperation> l, const std::vector<HipaVX::Image*>& out)
 {
-    std::string y_index_name = "y_" + std::to_string(l->id);
-    std::string x_index_name = "x_" + std::to_string(l->id);
+    std::string y_index_name = "y_" + l->id();
+    std::string x_index_name = "x_" + l->id();
     std::string templ =
 R"END(for(int @@@Y_NAME@@@ = 0; @@@Y_NAME@@@ < @@@HEIGHT@@@; @@@Y_NAME@@@++)
 {
@@ -768,8 +768,8 @@ R"END(for(int @@@Y_NAME@@@ = 0; @@@Y_NAME@@@ < @@@HEIGHT@@@; @@@Y_NAME@@@++)
 }
 std::string CPPVisitor::setup_outer_loop(std::shared_ptr<DomVX::GlobalOperation> g, const std::vector<HipaVX::Image *> &in)
 {
-    std::string y_index_name = "y_" + std::to_string(g->id);
-    std::string x_index_name = "x_" + std::to_string(g->id);
+    std::string y_index_name = "y_" + g->id();
+    std::string x_index_name = "x_" + g->id();
     std::string templ =
 R"END(for(int @@@Y_NAME@@@ = 0; @@@Y_NAME@@@ < @@@HEIGHT@@@; @@@Y_NAME@@@++)
 {
@@ -966,7 +966,7 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n, int i)
 
         std::string pre_loop = "";
 
-        std::string accum_var_name = "accum_" + std::to_string(n->id);
+        std::string accum_var_name = "accum_" + n->id();
 
         // Setup the accumulator variable
         auto accum_var = std::make_shared<ast4vx::Variable>();
