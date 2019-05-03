@@ -70,7 +70,7 @@ class Object {
 
   Object* _obj;
 
-  bool virt;
+  bool virt = false;
 
   bool alive = false; // after optimizations
 
@@ -328,6 +328,7 @@ class Acc {
   std::string name;
 
   bool is_acc; // TODO: change this with type IS or ACC
+  bool is_is;
   bool isRoiSet;
   bool isInterpSet;
 
@@ -338,7 +339,8 @@ class Acc {
   void set_name() {
     std::string _name;
     if (is_acc == true) { _name = "_acc_"; }
-    else { _name = "_is_"; };
+    else if  (is_is == true) { _name = "_is_"; }
+    else { _name = "_undef_"; };
 
     name = im->get_name() + _name + std::to_string(my_id);
   };
@@ -354,6 +356,13 @@ class Acc {
 
   Acc() : my_id(next_id++) {
     init();
+  };
+
+  Acc(Image* _im, bool _is_acc) : my_id(next_id++) {
+    init();
+    set_img(_im);
+    is_acc = _is_acc;
+    is_is = !_is_acc;
   };
 
   std::string get_name() { return name; };

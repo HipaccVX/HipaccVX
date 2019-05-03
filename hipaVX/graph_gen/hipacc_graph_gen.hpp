@@ -27,6 +27,9 @@ using HipaccDomain = DomVX::Domain;
 using HipaccMask = DomVX::Mask;
 using DomVXAcc = HipaVX::Acc;
 
+using HipaccAccessor = DomVXAcc;
+using HipaccIterationSpace = DomVXAcc;
+
 using HipaccKernel = DomVX::OperatorNode;
 using HipaccPointNode = DomVX::Map;
 using HipaccLocalNode = DomVX::LocalOperation;
@@ -64,13 +67,14 @@ HipaccImage* obj2img(VertexType* v) {
 }
 
 // TODO: simplify this after fixing the data structures
-HipaccKernel* obj2kernel(VertexType* v) {
-  auto _node = dynamic_cast<HipaVX::Node*>(v->_obj);
+HipaccKernel* obj2node(VertexType* v) {
+  // TODO: catch exception to avoid segmentation fault
+  HipaccKernel* _node = dynamic_cast<HipaVX::Node*>(v->_obj);
 
   if(_node == NULL)
-    ERRORM("graph_gen obj2kernel, dynamic cast fail for: " + v->get_name());
+    ERRORM("graph_gen obj2node, dynamic cast fail for: " + v->get_name());
 
-  return _node->kernel.get();
+  return _node;
 }
 
 HipaccLocalNode* kernel2local(HipaccKernel* v) {
@@ -81,35 +85,6 @@ HipaccLocalNode* kernel2local(HipaccKernel* v) {
 
   return _kern;
 }
-
-// TODO: Merge Accessor and IterationSpace
-class HipaccAccessor : public DomVXAcc {
- public:
-   void set_name(std::string _name = "_acc"){
-     name = im->get_name() + _name + std::to_string(my_id);
-   };
-
-   HipaccAccessor(){};
-
-   HipaccAccessor(HipaccImage* _im) {
-    set_img(_im);
-    set_name();
-   };
-};
-
-class HipaccIterationSpace : public DomVXAcc {
- public:
-   void set_name(std::string _name = "_is"){
-     name = im->get_name() + _name + std::to_string(my_id);
-   };
-
-   HipaccIterationSpace(){};
-
-   HipaccIterationSpace(HipaccImage* _im){
-    set_img(_im);
-    set_name();
-   };
-};
 
 class hipacc_writer {
  protected:
@@ -143,10 +118,22 @@ class hipacc_writer {
   void def(std::stringstream &ss, HipaccMask* mask, DefType deftype = DefType::Hdecl);
 
   void def(std::stringstream &ss, HipaccKernel* kern, DefType deftype = DefType::Hdecl,
+           std::vector<HipaccAccessor*> acc_l = {},
+           std::vector<HipaccIterationSpace*> is_l = {},
+           std::vector<HipaccMask*> mask_l = {},
+           std::vector<HipaccDomain*> dom_l = {});
+
+  void def(std::stringstream &ss, HipaccKernel* kern, DefType deftype = DefType::Hdecl,
            std::initializer_list<HipaccAccessor*> acc_l = {},
            std::initializer_list<HipaccIterationSpace*> is_l = {},
            std::initializer_list<HipaccMask*> mask_l = {},
-           std::initializer_list<HipaccDomain*> dom_l = {});
+           std::initializer_list<HipaccDomain*> dom_l = {}) {
+    def(ss, kern, deftype,
+        std::vector<HipaccAccessor*>(acc_l),
+        std::vector<HipaccIterationSpace*>(is_l),
+        std::vector<HipaccMask*>(mask_l),
+        std::vector<HipaccDomain*>(dom_l));
+  };
 
  public:
   hipacc_writer() {};
@@ -379,10 +366,10 @@ void hipacc_writer::def(std::stringstream &ss, HipaccMask* mask, DefType deftype
 // TODO: can have a base class for the parameter types, thus one initializer list
 //       , which shortens the code significantly
 void hipacc_writer::def(std::stringstream &ss, HipaccKernel* kern, DefType deftype,
-      std::initializer_list<HipaccAccessor*> acc_l,
-      std::initializer_list<HipaccIterationSpace*> is_l,
-      std::initializer_list<HipaccMask*> mask_l,
-      std::initializer_list<HipaccDomain*> dom_l) {
+      std::vector<HipaccAccessor*> acc_l,
+      std::vector<HipaccIterationSpace*> is_l,
+      std::vector<HipaccMask*> mask_l,
+      std::vector<HipaccDomain*> dom_l) {
   if (is_l.size() != 1) {
     ERRORM("Hipacc Kernel" + name(kern) + " has " + std::to_string(is_l.size()) + " iteration spaces");
   }
@@ -475,8 +462,6 @@ void hipacc_writer::def(std::stringstream &ss, HipaccKernel* kern, DefType defty
   }
 }
 
-#include <boost/graph/adjacency_list.hpp>
-
 class graph_gen {
  public:
   dag g_dag;
@@ -500,7 +485,7 @@ class graph_gen {
 
   ObjectType get_vert_type(VertexDesc& v) { return get_vert(v)->get_type(); }
 
-  EdgeType& get_edge(EdgeDesc& e) { return (*_g_opt)[e]; }
+  EdgeType* get_edge(EdgeDesc& e) { return &(*_g_opt)[e]; }
 
   VertexDesc source(EdgeDesc& e) { return boost::source(e, *_g_opt); }
 
@@ -529,6 +514,7 @@ void graph_gen::init() {
   _g_opt = g_dag._g_opt;
 
   _verts = g_dag.set_order_of_exec();
+  //g_dag.print_order_of_exec();
 
   for( auto i : *_verts) {
     switch ((*_g_opt)[i].get_task()) {
@@ -561,7 +547,7 @@ void graph_gen::print_spaces() {
 
 void graph_gen::print_edges() {
   for(auto i : edges)
-    std::cout << get_edge(i).get_name() << std::endl;
+    std::cout << get_edge(i)->get_name() << std::endl;
 };
 
 
@@ -582,6 +568,7 @@ class hipacc_gen : public graph_gen, public hipacc_writer {
   std::stringstream ss_acc;
   std::stringstream ss_is;
   std::stringstream ss_kern;
+  std::stringstream ss_kern_host;
   std::stringstream ss_execs;
 
   std::stringstream ss;
@@ -594,6 +581,11 @@ class hipacc_gen : public graph_gen, public hipacc_writer {
   void set_edges();
 
   void dump_code() {
+    ss << initial_includes() << "\n\n";
+
+    ss << "// kernel declarations\n";
+    ss << ss_kern.str() << "\n";
+
     ss << "int main() {\n";
 
     ss << dind << "// masks\n";
@@ -612,7 +604,7 @@ class hipacc_gen : public graph_gen, public hipacc_writer {
     ss << ss_is.str() << "\n";
 
     ss << dind << "// kernels\n";
-    ss << ss_kern.str() << "\n";
+    ss << ss_kern_host.str() << "\n";
 
     ss << dind << "// execution\n";
     ss << ss_execs.str() << "\n";
@@ -634,23 +626,24 @@ void hipacc_gen::set_edges() {
     HipaccImage* _im = NULL;
     if(get_vert_type(src) == VX_TYPE_IMAGE &&
         get_vert_type(dst) == VX_TYPE_NODE) {
-      edge.is_acc = true;
+      edge->is_acc = true;
       _im = obj2img(get_vert(src));
     } else if (get_vert_type(src) == VX_TYPE_NODE &&
                get_vert_type(dst) == VX_TYPE_IMAGE) {
-      edge.is_acc = false;
+      edge->is_is = true;
       _im = obj2img(get_vert(dst));
     }
 
     if(_im) {
-      edge.set_img(_im);
-      edge.set_name();
+      edge->set_img(_im);
+      edge->set_name();
 
-      if( edge.is_acc == true ) {
-        def_acc(ss_acc, &edge, DefType::Hdecl);
-      } else {
-        def_is(ss_is, &edge, DefType::Hdecl);
-      }
+      // moved to iterate nodes
+      //if(edge->is_acc == true) {
+      //  def_acc(ss_acc, edge, DefType::Hdecl);
+      //} else if(edge->is_is == true ) {
+      //  def_is(ss_is, edge, DefType::Hdecl);
+      //}
     }
   }
 }
@@ -660,34 +653,58 @@ void hipacc_gen::iterate_nodes() {
       auto v = get_vert(vert);
       ss_execs << dind << v->get_name() << ".execute()" << std::endl;
 
-      // get domains
-      auto kern_ = obj2kernel(v);
+      std::vector<HipaccDomain*> dom_l;
+      std::vector<HipaccMask*> mask_l;
+      std::vector<DomVXAcc*> acc_l;
+      std::vector<DomVXAcc*> is_l;
+
+      auto kern_ = obj2node(v);
       if(kern_->operator_type == DomVX::OperatorType::LocalOperation) {
         auto local_ = kernel2local(kern_);
 
-        ss_dom << "akif";
-        auto doms = local_->domain_bindings;
-        for(auto const& domb : doms){
+        // get domains
+        auto dom_binds = local_->domain_bindings;
+        for(auto const& domb : dom_binds){
           // TODO: have better APIs for these type of operations
+          dom_l.push_back(domb.second.get());
           def(ss_dom, domb.second.get());
-          ss_dom << "akif";
         }
 
-        auto masks = local_->mask_bindings;
-        for(auto const& maskbv : masks){
+        // get masks
+        auto mask_binds = local_->mask_bindings;
+        for(auto const& maskbv : mask_binds){
           // TODO: have better APIs for these type of operations
           auto maskb = maskbv.second;
-          for(auto const& mask : maskb)
+          for(auto const& mask : maskb) {
+            mask_l.push_back(mask.get());
             def(ss_mask, mask.get());
+          }
         }
       }
 
-      // TODO: kernel defs and calls
-      //def(ss_kern, v, DefType deftype,
-      //std::initializer_list<HipaccAccessor*> acc_l,
-      //std::initializer_list<HipaccIterationSpace*> is_l,
-      //std::initializer_list<HipaccMask*> mask_l,
-      //std::initializer_list<HipaccDomain*> dom_l) {
+      // iteration spaces
+      graphVX::OptGraphOutEdgeIter beg, end;
+      std::tie(beg, end) = boost::out_edges(vert, *_g_opt);
+      for(auto it = beg; it != end; it++) {
+        auto edge = &(*_g_opt)[*it];
+        if(edge->isImgSet()){
+          def_is(ss_is, edge, DefType::Hdecl);
+        }
+        is_l.push_back(edge);
+      };
+
+      // accessors
+      graphVX::OptGraphInEdgeIter ie, ie_end;
+      for(std::tie(ie, ie_end) = boost::in_edges(vert, *_g_opt); ie != ie_end; ie ++) {
+        auto edge = &(*_g_opt)[*ie];
+        if(edge->isImgSet()){
+          def_acc(ss_acc, edge, DefType::Hdecl);
+        }
+        acc_l.push_back(edge);
+      };
+
+      def(ss_kern, kern_, DefType::Kdecl, acc_l, is_l, mask_l, dom_l);
+      def(ss_kern_host, kern_, DefType::Hdecl, acc_l, is_l, mask_l, dom_l);
     }
 }
 

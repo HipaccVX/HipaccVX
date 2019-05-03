@@ -31,6 +31,6 @@ int main() {
   gen.iterate_spaces();
 
   gen.dump_code();
-  
+
   return 0;
 }

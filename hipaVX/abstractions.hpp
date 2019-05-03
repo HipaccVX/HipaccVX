@@ -50,6 +50,7 @@ public:
         :width(x), height(y)
     {
         set_domain(dom);
+        set_name("dom");
     }
 
     /**
@@ -106,6 +107,7 @@ public:
         :width(x), height(y)
     {
         set_mask(m);
+        set_name("mask");
     }
     /**
      * @brief Constructs a new Mask with initialized values
@@ -117,6 +119,7 @@ public:
         :width(x), height(y)
     {
         set_mask(m);
+        set_name("mask");
     }
 
     /**
@@ -310,7 +313,7 @@ class LocalOperation: public OperatorNode
 public:
     std::vector<std::tuple<HipaVX::Image*, std::shared_ptr<ast4vx::WindowDescriptor>>> input_descriptor;
     std::vector<std::shared_ptr<ast4vx::WindowOperation>> operations;
-    std::vector<std::vector<HipaVX::Image *>> operation_output_images;
+    std::vector<std::vector<HipaVX::Image *>> operation_output_images; //TODO: Maybe strore IS
     std::vector<std::vector<HipaVX::Scalar *>> operation_variables;
     std::map<std::shared_ptr<ast4vx::WindowOperation>, std::vector<std::shared_ptr<DomVX::Mask>>> mask_bindings;
     std::map<std::shared_ptr<ast4vx::WindowDescriptor>, std::shared_ptr<DomVX::Domain>> domain_bindings;

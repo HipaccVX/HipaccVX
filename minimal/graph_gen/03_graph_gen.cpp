@@ -18,9 +18,6 @@ using HipaVX::Scalar;
 
 
 int main() {
-  hipacc_writer gen;
-  std::cout << gen.initial_includes();
-
   // image
   HipaVX::Image im0(1024, 1024, VX_DF_IMAGE_U8);
   HipaVX::Image im1(1024, 1024);
@@ -59,38 +56,35 @@ int main() {
 
   auto local_op = create_local_op();
   local_op->set_input_window_desc({{&im0, window_in}});
+  local_op->set_domains({{window_in, dom}});
+  local_op->set_masks({{local_to_pixel, mask}});
   local_op->add_operation(local_to_pixel, {&im1});
 
+  // graph
+  dag g;
+  auto v_im0 = g.add_vertex(im0);
+  auto v_im1 = g.add_vertex(im1);
+  auto v_n0  = g.add_vertex(*(local_op.get()));
+
+  g.inputs.push_back(v_im0);
+  g.outputs.push_back(v_im1);
+
+
+  g.add_edge(v_im0, v_n0);
+  g.add_edge(v_n0, v_im1);
+
+  g.eliminate_dead_nodes(); // TODO: this must be before the code gen, change this
+  g.dump_graph();
+
   // generator functions
-  std::stringstream ss;
+  hipacc_gen gen(g);
+  gen.set_edges();
 
-  // accessor
-  //HipaccAccessor acc;
-  HipaccAccessor acc(&im0, true);
-  HipaccIterationSpace is(&im1, false);
+  // code generation, these will be implicit
+  gen.iterate_spaces();
+  gen.iterate_nodes();
 
-  // kernels: class declarations
-  gen.def(ss, map.get(), DefType::Kdecl, {&acc, &acc, &acc}, {&is});
-  gen.def(ss, local_op.get(), DefType::Kdecl, {&acc}, {&is}, {mask.get()}, {dom.get()});
+  gen.dump_code();
 
-//  // host declarations
-  gen.def(ss, &im0);
-  gen.def(ss, &acc);
-  gen.def(ss, &is);
-  gen.def(ss, dom.get());
-  gen.def(ss, mask.get());
-  ss << "\n\n";
-
-  // kernels: host declarations
-  gen.def(ss, map.get(), DefType::Hdecl, {&acc}, {&is});
-  gen.def(ss, local_op.get(), DefType::Hdecl, {&acc}, {&is});
-  gen.def(ss, local_op.get(), DefType::Hdecl, {&acc}, {&is}, {mask.get()});
-  gen.def(ss, local_op.get(), DefType::Hdecl, {&acc}, {&is}, {mask.get()}, {dom.get()});
-  ss << "\n\n";
-
-  std::cout << ss.str();
-  // Or
-  // gen.def(&im);
-  // std::cout << gen.ss_im.str();
   return 0;
 }

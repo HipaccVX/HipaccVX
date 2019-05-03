@@ -231,6 +231,10 @@ using VertPredicate = std::function<bool(VertexDesc)>;
 
 using OptGraphT = boost::filtered_graph<AppGraphT, boost::keep_all, VertPredicate>;
 
+typedef boost::graph_traits<OptGraphT>::out_edge_iterator OptGraphOutEdgeIter;
+typedef boost::graph_traits<OptGraphT>::in_edge_iterator OptGraphInEdgeIter;
+typedef boost::graph_traits<OptGraphT>::adjacency_iterator OptGraphAdjIter;
+
 
 class dag {
  using OrderedList = std::list<VertexDesc>;
