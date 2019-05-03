@@ -626,11 +626,11 @@ void hipacc_gen::set_edges() {
     HipaccImage* _im = NULL;
     if(get_vert_type(src) == VX_TYPE_IMAGE &&
         get_vert_type(dst) == VX_TYPE_NODE) {
-      edge->is_acc = true;
+      edge->set_as_acc();
       _im = obj2img(get_vert(src));
     } else if (get_vert_type(src) == VX_TYPE_NODE &&
                get_vert_type(dst) == VX_TYPE_IMAGE) {
-      edge->is_is = true;
+      edge->set_as_is();
       _im = obj2img(get_vert(dst));
     }
 

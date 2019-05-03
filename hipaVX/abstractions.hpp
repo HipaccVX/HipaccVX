@@ -313,8 +313,12 @@ class LocalOperation: public OperatorNode
 public:
     std::vector<std::tuple<HipaVX::Image*, std::shared_ptr<ast4vx::WindowDescriptor>>> input_descriptor;
     std::vector<std::shared_ptr<ast4vx::WindowOperation>> operations;
+
+    // TODO: Have one parameter type
     std::vector<std::vector<HipaVX::Image *>> operation_output_images; //TODO: Maybe strore IS
     std::vector<std::vector<HipaVX::Scalar *>> operation_variables;
+
+    // TODO: Do we really need these bindings, makes the code description tedious
     std::map<std::shared_ptr<ast4vx::WindowOperation>, std::vector<std::shared_ptr<DomVX::Mask>>> mask_bindings;
     std::map<std::shared_ptr<ast4vx::WindowDescriptor>, std::shared_ptr<DomVX::Domain>> domain_bindings;
 

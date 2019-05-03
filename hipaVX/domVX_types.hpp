@@ -371,6 +371,16 @@ class Acc {
 
   void set_img(Image* _im) { im = _im; };
 
+  void set_as_is() {
+    is_is = true;
+    is_acc = false;
+  }
+
+  void set_as_acc() {
+    is_is = false;
+    is_acc = true;
+  }
+
   int width()  { return im->get_width(); };
 
   int height() { return im->get_height(); };
