@@ -13,11 +13,6 @@
 #include <algorithm>
 #include <memory>
 
-namespace DomVX
-{
-class Image;
-}
-
 namespace ast4vx
 {
 
@@ -107,7 +102,7 @@ enum class Datatype
 /**
  * @brief The VectChannelType enum describes the channels for a vectorlike datatype
  */
-enum class VectChannelType 
+enum class VectChannelType
 {
     CHANNEL0,
     CHANNEL1,
