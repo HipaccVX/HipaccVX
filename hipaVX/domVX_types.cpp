@@ -4,26 +4,26 @@
 #include <iostream>
 
 ast4vx::Datatype convert_type(vx_df_image type) {
-    switch (type) {
+  switch (type) {
     case VX_DF_IMAGE_U8:
-		return ast4vx::Datatype::UINT8;
+      return ast4vx::Datatype::UINT8;
     case VX_DF_IMAGE_S16:
-		return ast4vx::Datatype::INT16;
+      return ast4vx::Datatype::INT16;
     case VX_DF_IMAGE_U16:
-		return ast4vx::Datatype::UINT16;
+      return ast4vx::Datatype::UINT16;
     case VX_DF_IMAGE_S32:
-		return ast4vx::Datatype::INT32;
+      return ast4vx::Datatype::INT32;
     case VX_DF_IMAGE_U32:
-		return ast4vx::Datatype::UINT32;
+      return ast4vx::Datatype::UINT32;
     case VX_TYPE_FLOAT32:
-		return ast4vx::Datatype::FLOAT;
+      return ast4vx::Datatype::FLOAT;
   }
   throw std::runtime_error("Unknown type in function_ast::Datatype convert");
 }
 
 namespace DomVX {
 
-  // TOOD: extend this
+// TOOD: extend this
 VertexTask set_task_from_type(DomVX::ObjectType _type) {
   switch (_type) {
     case VX_TYPE_NODE:
@@ -40,7 +40,6 @@ VertexTask set_task_from_type(DomVX::ObjectType _type) {
     default:
       return VertexTask::API;
   }
-
 }
 
 int Object::next_id = 0;
@@ -55,4 +54,4 @@ void Graph::build() {
   built = true;
 }
 
-}  // namespace HipaVX
+}  // namespace DomVX

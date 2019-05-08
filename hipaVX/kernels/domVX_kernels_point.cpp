@@ -5,7 +5,4 @@
 //#include "domVX_kernels.hpp"
 #include "domVX_kernels_point.hpp"
 
-namespace DomVX
-{
-
-}
+namespace DomVX {}

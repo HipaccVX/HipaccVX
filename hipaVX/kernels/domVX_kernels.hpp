@@ -22,32 +22,25 @@
 // }
 //
 
-namespace generator
-{
-enum class Type
-{
-    Definition = 0,
-    Call
-};
+namespace generator {
+enum class Type { Definition = 0, Call };
 }
 
-namespace DomVX
-{
-class FileinputImage: public Image
-{
-public:
-    FileinputImage(vx_uint32 width, vx_uint32 height, vx_df_image color, std::string filename);
-    virtual ~FileinputImage() = default;
-    std::string file;
+namespace DomVX {
+class FileinputImage : public Image {
+ public:
+  FileinputImage(vx_uint32 width, vx_uint32 height, vx_df_image color,
+                 std::string filename);
+  virtual ~FileinputImage() = default;
+  std::string file;
 };
 
-class WriteImageNode: public Node
-{
-public:
-    WriteImageNode();
-    virtual ~WriteImageNode() override = default;
-    Image *in;
-    std::string out_file;
-    virtual void build() override;
+class WriteImageNode : public Node {
+ public:
+  WriteImageNode();
+  virtual ~WriteImageNode() override = default;
+  Image *in;
+  std::string out_file;
+  virtual void build() override;
 };
-}
+}  // namespace DomVX

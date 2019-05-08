@@ -13,26 +13,25 @@ namespace DomVX {
 /**
  * @brief The different types of Abstractio Nodes in DomVX
  */
-enum class OperatorType
-{
-    None,
-    Map,
-    LocalOperation,
-    GlobalOperation,
+enum class OperatorType {
+  None,
+  Map,
+  LocalOperation,
+  GlobalOperation,
 };
-}
+}  // namespace DomVX
 
 namespace DomVX {
 
 using ObjectType = vx_type_e;
 
-enum class VertexTask { Computation, Buffer, API, Invalid};
+enum class VertexTask { Computation, Buffer, API, Invalid };
 
 VertexTask set_task_from_type(ObjectType type);
 
 class Object {
  public:
-  Object() : my_id(next_id++) {};
+  Object() : my_id(next_id++){};
 
   virtual ~Object() = default;
 
@@ -48,31 +47,25 @@ class Object {
     name = _name + std::to_string(my_id);
   }
 
-  std::string get_name() {
-    return this->name;
-  }
+  std::string get_name() { return this->name; }
 
-  std::string id() {
-    return std::to_string(my_id);
-  }
+  std::string id() { return std::to_string(my_id); }
 
-  ObjectType get_type() {
-    return this->type;
-  };
+  ObjectType get_type() { return this->type; };
 
   // TODO: only temporary
   DomVX::OperatorType operator_type = DomVX::OperatorType::None;
 
- public: // TODO: make these protected
+ public:  // TODO: make these protected
   int my_id;
 
   ObjectType type;
 
-  Object* _obj;
+  Object *_obj;
 
   bool virt = false;
 
-  bool alive = false; // after optimizations
+  bool alive = false;  // after optimizations
 
   std::string name;
 
@@ -82,8 +75,7 @@ class Object {
   static int next_id;
 };
 
-}  // namespace HipaVX
-
+}  // namespace DomVX
 
 namespace DomVX {
 
@@ -134,12 +126,9 @@ class Scalar : public Object {
   };
 };
 
-
 class Image : public Object {
  public:
-  Image(){
-    init();
-  };
+  Image() { init(); };
 
   Image(std::string _name) {
     set_name(_name);
@@ -167,8 +156,8 @@ class Image : public Object {
     _obj = this;
   }
 
-  vx_uint32 get_width()  { return w;};
-  vx_uint32 get_height() { return h;};
+  vx_uint32 get_width() { return w; };
+  vx_uint32 get_height() { return h; };
 
   virtual ~Image() = default;
 
@@ -180,11 +169,10 @@ class Image : public Object {
   void set_dtype(vx_df_image type) { col = type; }
 };
 
-
 class Array : public Image {
  public:
-  Array(vx_enum item_type, vx_size cap, vx_size rows) :
-      Image(rows, cap, VX_DF_IMAGE_S32), type(item_type), capacity(cap) {
+  Array(vx_enum item_type, vx_size cap, vx_size rows)
+      : Image(rows, cap, VX_DF_IMAGE_S32), type(item_type), capacity(cap) {
     init();
     set_name("Arr");
   }
@@ -199,12 +187,10 @@ class Array : public Image {
   vx_size capacity;
 };
 
-
 class Node : public Object {
  protected:
-
  public:
-  std::string node_name; //remove me
+  std::string node_name;  // remove me
 
   Node() {
     set_name("Node");
@@ -235,7 +221,6 @@ class Node : public Object {
   virtual void build() {}
 };
 
-
 class Convolution : public Object {
  public:
   Convolution() {
@@ -250,7 +235,6 @@ class Convolution : public Object {
   vx_size columns;
   vx_uint32 scale;
 };
-
 
 class Threshold : public Object {
  public:
@@ -274,7 +258,6 @@ class Threshold : public Object {
   vx_df_image output_format;
 };
 
-
 class VX_Matrix : public Object {
  public:
   VX_Matrix() {
@@ -290,7 +273,6 @@ class VX_Matrix : public Object {
   std::vector<u_char> mat;
 };
 
-
 class Graph : public Object {
  public:
   std::vector<Node *> graph;
@@ -299,13 +281,11 @@ class Graph : public Object {
   void build();
 };
 
-
 class Context : public Object {
  public:
   std::vector<Image *> images;
   std::vector<Graph *> graphs;
 };
-
 
 // ------------   TODO: fix these acccording to OpenVX definition
 struct ROI {
@@ -315,19 +295,15 @@ struct ROI {
   int height;
 };
 
-enum class BorderM {
-  Undef,
-  Constant,
-  Replicate
-};
+enum class BorderM { Undef, Constant, Replicate };
 
 class Acc {
  public:
   int my_id;
-  Image* im;
+  Image *im;
   std::string name;
 
-  bool is_acc; // TODO: change this with type IS or ACC
+  bool is_acc;  // TODO: change this with type IS or ACC
   bool is_is;
   bool isRoiSet;
   bool isInterpSet;
@@ -338,9 +314,13 @@ class Acc {
  public:
   void set_name() {
     std::string _name;
-    if (is_acc == true) { _name = "_acc_"; }
-    else if  (is_is == true) { _name = "_is_"; }
-    else { _name = "_undef_"; };
+    if (is_acc == true) {
+      _name = "_acc_";
+    } else if (is_is == true) {
+      _name = "_is_";
+    } else {
+      _name = "_undef_";
+    };
 
     name = im->get_name() + _name + std::to_string(my_id);
   };
@@ -348,17 +328,15 @@ class Acc {
   void init() {
     isRoiSet = false;
     isInterpSet = false;
-    roi = ROI{ 0, 0, 0, 0};
+    roi = ROI{0, 0, 0, 0};
     brdr = BorderM::Undef;
     im = NULL;
-    name = std::to_string(my_id) + "_Acc_undef" ;
+    name = std::to_string(my_id) + "_Acc_undef";
   }
 
-  Acc() : my_id(next_id++) {
-    init();
-  };
+  Acc() : my_id(next_id++) { init(); };
 
-  Acc(Image* _im, bool _is_acc) : my_id(next_id++) {
+  Acc(Image *_im, bool _is_acc) : my_id(next_id++) {
     init();
     set_img(_im);
     is_acc = _is_acc;
@@ -369,7 +347,7 @@ class Acc {
 
   bool isImgSet() { return !(im == NULL); };
 
-  void set_img(Image* _im) { im = _im; };
+  void set_img(Image *_im) { im = _im; };
 
   void set_as_is() {
     is_is = true;
@@ -381,16 +359,14 @@ class Acc {
     is_acc = true;
   }
 
-  int width()  { return im->get_width(); };
+  int width() { return im->get_width(); };
 
   int height() { return im->get_height(); };
 
   static int next_id;
 };
 
-}  // namespace HipaVX
-
-
+}  // namespace DomVX
 
 struct _vx_reference {
   DomVX::Object *o;

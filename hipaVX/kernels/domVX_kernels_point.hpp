@@ -7,7 +7,6 @@
 
 #pragma once
 
-
 // TODO: IMPORTANT: Do not have multiple node classes
 
 // namespace HipaVX
@@ -50,7 +49,4 @@
 // class VXCopy
 // }
 
-namespace DomVX
-{
-
-}
+namespace DomVX {}

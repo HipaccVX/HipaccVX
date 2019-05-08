@@ -1,7 +1,7 @@
 #pragma once
 #include "abstractions.hpp"
 
-//typedef domVX_image
+// typedef domVX_image
 
 typedef std::shared_ptr<DomVX::Map> domVX_point;
 typedef std::shared_ptr<DomVX::LocalOperation> domVX_local;
@@ -31,12 +31,11 @@ domVX_local create_local_op();
  */
 domVX_global create_global_op();
 
-
 //******************************************************************************
 // Image
 //******************************************************************************
-domVX_image create_image(unsigned int width, unsigned int height, vx_df_image type);
-
+domVX_image create_image(unsigned int width, unsigned int height,
+                         vx_df_image type);
 
 //******************************************************************************
 // DOMAIN  (TODO: Consider renaming as Window)
@@ -46,7 +45,8 @@ domVX_image create_image(unsigned int width, unsigned int height, vx_df_image ty
  * @brief Returns a new Domain and initializes it
  * @param x width of the domain
  * @param y height of the domain
- * @param dom row major flat matrix of the domain values. Has to have x*y entries
+ * @param dom row major flat matrix of the domain values. Has to have x*y
+ * entries
  */
 domVX_domain create_dom(unsigned int x, unsigned int y, std::vector<int> dom);
 
@@ -55,7 +55,6 @@ domVX_domain create_dom(unsigned int x, unsigned int y, std::vector<int> dom);
  * @param mask The mask where the values should get read from
  */
 domVX_domain create_dom(std::shared_ptr<DomVX::Mask> mask);
-
 
 //******************************************************************************
 // MASK
@@ -67,7 +66,8 @@ domVX_domain create_dom(std::shared_ptr<DomVX::Mask> mask);
  * @param y height of the mask
  * @param mask row major flat matrix of the mask values. Has to have x*y entries
  */
-domVX_mask create_mask(unsigned int x, unsigned int y, std::initializer_list<int32_t> mask);
+domVX_mask create_mask(unsigned int x, unsigned int y,
+                       std::initializer_list<int32_t> mask);
 
 /**
  * @brief Returns a new Mask and initializes it
@@ -75,4 +75,5 @@ domVX_mask create_mask(unsigned int x, unsigned int y, std::initializer_list<int
  * @param y height of the mask
  * @param mask row major flat matrix of the mask values. Has to have x*y entries
  */
-domVX_mask create_mask(unsigned int x, unsigned int y, std::initializer_list<float> mask);
+domVX_mask create_mask(unsigned int x, unsigned int y,
+                       std::initializer_list<float> mask);
