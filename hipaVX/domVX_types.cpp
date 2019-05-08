@@ -21,10 +21,10 @@ ast4vx::Datatype convert_type(vx_df_image type) {
   throw std::runtime_error("Unknown type in function_ast::Datatype convert");
 }
 
-namespace HipaVX {
+namespace DomVX {
 
   // TOOD: extend this
-VertexTask set_task_from_type(HipaVX::ObjectType _type) {
+VertexTask set_task_from_type(DomVX::ObjectType _type) {
   switch (_type) {
     case VX_TYPE_NODE:
     case VX_TYPE_KERNEL:

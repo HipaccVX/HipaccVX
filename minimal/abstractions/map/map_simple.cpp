@@ -8,8 +8,8 @@
 
 int main(int argc, const char *argv[])
 {
-    auto image_i = new HipaVX::Image(1024, 1024, VX_DF_IMAGE_U8);
-    auto image_o = new HipaVX::Image(1024, 1024, VX_DF_IMAGE_U8);
+    auto image_i = new DomVX::Image(1024, 1024, VX_DF_IMAGE_U8);
+    auto image_o = new DomVX::Image(1024, 1024, VX_DF_IMAGE_U8);
 
     // Create a Statement with 1 output pixel accessor and 1 input pixel accessor
     auto ast_fun = create_p2p(1, 1);

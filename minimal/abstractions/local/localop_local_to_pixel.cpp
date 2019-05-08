@@ -22,8 +22,8 @@ int main()
 
     //---------------------------- HipaVX -------------------------------------
 
-    auto image_o = new HipaVX::Image(1024, 512, VX_DF_IMAGE_U8);
-    auto image_i = new HipaVX::Image(1024, 512, VX_DF_IMAGE_U8);
+    auto image_o = new DomVX::Image(1024, 512, VX_DF_IMAGE_U8);
+    auto image_i = new DomVX::Image(1024, 512, VX_DF_IMAGE_U8);
 
     // Create the local operation
     auto local_op = create_local_op();

@@ -23,8 +23,8 @@ namespace DomVX
 // TODO: This header should be independent from the vx_types - sure?
 //        move Image definition to here, and rename to Acc2D
 
-using AbstractionNode = HipaVX::Object;
-using OperatorNode = HipaVX::Node;
+using AbstractionNode = DomVX::Object;
+using OperatorNode = DomVX::Node;
 
 
 /**
@@ -194,10 +194,10 @@ public:
         set_statements(s);
     }
 
-    std::vector<HipaVX::Image *> output_pixel_mappings;
-    std::vector<HipaVX::Image *> input_pixel_mappings;
-    std::vector<HipaVX::Scalar *> output_variable_mappings;
-    std::vector<HipaVX::Scalar *> input_variable_mappings;
+    std::vector<DomVX::Image *> output_pixel_mappings;
+    std::vector<DomVX::Image *> input_pixel_mappings;
+    std::vector<DomVX::Scalar *> output_variable_mappings;
+    std::vector<DomVX::Scalar *> input_variable_mappings;
 
     /**
      * @brief Sets the statement as the mapping function
@@ -227,7 +227,7 @@ public:
      * @throws std::runtime_error when the length of the out std::vector is not the same es the size of the output placeholders of the underlying statements set via Map::set_statements
      * @throws std::runtime_error when the length of the in std::vector is not the same es the size of the input placeholders of the underlying statements set via Map::set_statements
      */
-    void register_variables(std::vector<HipaVX::Scalar*> out, std::vector<HipaVX::Scalar*> in)
+    void register_variables(std::vector<DomVX::Scalar*> out, std::vector<DomVX::Scalar*> in)
     {
         register_output_variables(out);
         register_input_variables(in);
@@ -237,7 +237,7 @@ public:
      * @param variables std::vector of the input variable bindings
      * @throws std::runtime_error when the length of the std::vector is not the same es the size of the input placeholders of the underlying statements set via Map::set_statements
      */
-    void register_input_variables(std::vector<HipaVX::Scalar*> variables)
+    void register_input_variables(std::vector<DomVX::Scalar*> variables)
     {
         if (variables.size() != input_variable_mappings.size())
             throw std::runtime_error("void Map::register_input_variables(): Vector has to be the same size as the input_accessors of the underlying statemens");
@@ -251,7 +251,7 @@ public:
      * @param variables std::vector of the output variable bindings
      * @throws std::runtime_error when the length of the std::vector is not the same es the size of the output placeholders of the underlying statements set via Map::set_statements
      */
-    void register_output_variables(std::vector<HipaVX::Scalar*> variables)
+    void register_output_variables(std::vector<DomVX::Scalar*> variables)
     {
         if (variables.size() != output_variable_mappings.size())
             throw std::runtime_error("void Map::register_output_variables(): Vector has to be the same size as the output_accessors of the underlying statemens");
@@ -268,7 +268,7 @@ public:
      * @throws std::runtime_error when the length of the out std::vector is not the same es the size of the output placeholders of the underlying statements set via Map::set_statements
      * @throws std::runtime_error when the length of the in std::vector is not the same es the size of the input placeholders of the underlying statements set via Map::set_statements
      */
-    void register_images(std::vector<HipaVX::Image*> out, std::vector<HipaVX::Image*> in)
+    void register_images(std::vector<DomVX::Image*> out, std::vector<DomVX::Image*> in)
     {
         register_output_images(out);
         register_input_images(in);
@@ -278,7 +278,7 @@ public:
      * @param images std::vector of the input image bindings
      * @throws std::runtime_error when the length of the std::vector is not the same es the size of the input placeholders of the underlying statements set via Map::set_statements
      */
-    void register_input_images(std::vector<HipaVX::Image*> images)
+    void register_input_images(std::vector<DomVX::Image*> images)
     {
         if (images.size() != input_pixel_mappings.size())
             throw std::runtime_error("void Map::register_input_images(): Vector list has to be the same size as the input_accessors of the underlying statemens");
@@ -292,7 +292,7 @@ public:
      * @param images std::vector of the output image bindings
      * @throws std::runtime_error when the length of the std::vector is not the same es the size of the output placeholders of the underlying statements set via Map::set_statements
      */
-    void register_output_images(std::vector<HipaVX::Image*> images)
+    void register_output_images(std::vector<DomVX::Image*> images)
     {
         if (images.size() != output_pixel_mappings.size())
             throw std::runtime_error("void Map::register_output_images(): Vector list has to be the same size as the output_accessors of the underlying statemens");
@@ -311,12 +311,12 @@ public:
 class LocalOperation: public OperatorNode
 {
 public:
-    std::vector<std::tuple<HipaVX::Image*, std::shared_ptr<ast4vx::WindowDescriptor>>> input_descriptor;
+    std::vector<std::tuple<DomVX::Image*, std::shared_ptr<ast4vx::WindowDescriptor>>> input_descriptor;
     std::vector<std::shared_ptr<ast4vx::WindowOperation>> operations;
 
     // TODO: Have one parameter type
-    std::vector<std::vector<HipaVX::Image *>> operation_output_images; //TODO: Maybe strore IS
-    std::vector<std::vector<HipaVX::Scalar *>> operation_variables;
+    std::vector<std::vector<DomVX::Image *>> operation_output_images; //TODO: Maybe strore IS
+    std::vector<std::vector<DomVX::Scalar *>> operation_variables;
 
     // TODO: Do we really need these bindings, makes the code description tedious
     std::map<std::shared_ptr<ast4vx::WindowOperation>, std::vector<std::shared_ptr<DomVX::Mask>>> mask_bindings;
@@ -332,7 +332,7 @@ public:
      * @brief Maps the ast4vx::WindowDescriptor to actual HipaVX::Image. This operation clears the previous values set by this operation.
      * @param in_descriptors std::vector of std::tuple with an HipaVX::Image pointer which should be mapped to the ast4vx::WindowDescriptor and the ast4vx::WindowDescriptor itself
      */
-    void set_input_window_desc(std::vector<std::tuple<HipaVX::Image*, std::shared_ptr<ast4vx::WindowDescriptor>>> in_descriptors)
+    void set_input_window_desc(std::vector<std::tuple<DomVX::Image*, std::shared_ptr<ast4vx::WindowDescriptor>>> in_descriptors)
     {
         input_descriptor.clear();
         for (auto desc: in_descriptors)
@@ -382,7 +382,7 @@ public:
      * @param out Optional std::vector of HipaVX::Image pointers to be bound to the operations output ast4vx::PixelAccessor if it has some
      * @param var_bindings std::vector of HipaVX::Scalar pointers to be bound to the operations output and input ast4vx::VariableAccessor if it has some
      */
-    void add_operation(std::shared_ptr<ast4vx::WindowOperation> op, std::vector<HipaVX::Image*> out = {}, std::vector<HipaVX::Scalar*> var_bindings = {})
+    void add_operation(std::shared_ptr<ast4vx::WindowOperation> op, std::vector<DomVX::Image*> out = {}, std::vector<DomVX::Scalar*> var_bindings = {})
     {
         operations.emplace_back(op);
         operation_output_images.emplace_back(out);
@@ -399,8 +399,8 @@ class GlobalOperation: public OperatorNode
 {
 public:
     std::shared_ptr<ast4vx::Reduction> reduction;
-    HipaVX::Scalar* reduction_out;
-    std::vector<HipaVX::Image *> input_pixel_mappings;
+    DomVX::Scalar* reduction_out;
+    std::vector<DomVX::Image *> input_pixel_mappings;
 
 public:
     GlobalOperation()
@@ -413,7 +413,7 @@ public:
      * Currently only the first input image is used, since currently reduction only works on one Image
      * @param images std::vector of the input image bindings
      */
-    void register_input_images(std::vector<HipaVX::Image*> images)
+    void register_input_images(std::vector<DomVX::Image*> images)
     {
         input_pixel_mappings.clear();
         for(auto image: images)
@@ -425,7 +425,7 @@ public:
      * @param red The ast4vx::Reduction statement which should be used for this computation
      * @param out The output HipaVX::Scalar pointer, which gets mapped to the output of the ast4vx::Reduction
      */
-    void set_reduction_function(std::shared_ptr<ast4vx::Reduction> red, HipaVX::Scalar* out)
+    void set_reduction_function(std::shared_ptr<ast4vx::Reduction> red, DomVX::Scalar* out)
     {
         reduction = red;
         reduction_out = out;

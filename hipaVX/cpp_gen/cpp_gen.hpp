@@ -27,9 +27,9 @@ static std::map<vx_df_image, string> VX_DF_IMAGE_to_cpp = {
     {VX_TYPE_INT32, "int"} //Not really a vx_df_image type
 };
 
-string generate_image_name(HipaVX::Image *image);
+string generate_image_name(DomVX::Image *image);
 
-void process_graph(HipaVX::Graph *graph);
+void process_graph(DomVX::Graph *graph);
 
 
 
@@ -55,7 +55,7 @@ public:
     virtual std::string visit(std::shared_ptr<DomVX::AbstractionNode> n, int i = 0) override;
 
     std::string setup_outer_loop(std::shared_ptr<DomVX::Map> m);
-    std::string setup_outer_loop(std::shared_ptr<DomVX::LocalOperation> m, const std::vector<HipaVX::Image *> &out);
-    std::string setup_outer_loop(std::shared_ptr<DomVX::GlobalOperation> m, const std::vector<HipaVX::Image *> &in);
+    std::string setup_outer_loop(std::shared_ptr<DomVX::LocalOperation> m, const std::vector<DomVX::Image *> &out);
+    std::string setup_outer_loop(std::shared_ptr<DomVX::GlobalOperation> m, const std::vector<DomVX::Image *> &in);
 };
 

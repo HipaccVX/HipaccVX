@@ -16,7 +16,7 @@ vx_node vxFWriteImageNode(vx_graph graph, vx_image image, std::string file)
     return nullptr;
 }
 
-static std::string get_object_name(HipaVX::Object *object)
+static std::string get_object_name(DomVX::Object *object)
 {
     return nullptr;
 }
@@ -25,8 +25,8 @@ void vxDrawDotGraph(vx_graph graph, std::string filename, vx_uint32 node_depth)
 {
     if (node_depth != 0)
         throw std::runtime_error("Currently only node_depth of 0 is supported");
-	std::vector<HipaVX::Node*> nodes = ((HipaVX::Graph*)(graph->o))->graph;
-    std::vector<HipaVX::Object*> objects;
+	std::vector<DomVX::Node*> nodes = ((DomVX::Graph*)(graph->o))->graph;
+    std::vector<DomVX::Object*> objects;
 
     std::string content;
 

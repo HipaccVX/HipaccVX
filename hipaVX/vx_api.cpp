@@ -39,7 +39,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxGetStatus(vx_reference reference)
 VX_API_ENTRY vx_context VX_API_CALL vxCreateContext(void)
 {
 	auto vx = new _vx_context();
-	vx->o = new HipaVX::Context();
+	vx->o = new DomVX::Context();
 	return vx;
 }
 
@@ -51,16 +51,16 @@ VX_API_ENTRY vx_status VX_API_CALL vxReleaseContext(vx_context *context)
 // Object: Graph
 VX_API_ENTRY vx_graph VX_API_CALL vxCreateGraph(vx_context context)
 {
-    auto graph = new HipaVX::Graph();
+    auto graph = new DomVX::Graph();
 	auto vx = new _vx_graph();
 	vx->o = graph;
-	((HipaVX::Context*)(context->o))->graphs.emplace_back(graph);
+	((DomVX::Context*)(context->o))->graphs.emplace_back(graph);
 	return vx;
 }
 
 VX_API_ENTRY vx_status VX_API_CALL vxVerifyGraph(vx_graph graph)
 {
-	((HipaVX::Graph*)(graph->o))->build();
+	((DomVX::Graph*)(graph->o))->build();
     return VX_SUCCESS;
 }
 
@@ -70,7 +70,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxProcessGraph(vx_graph graph)
     //First, declare the images
 
     // TODO: Consider having a generator class for every backend
-	process_graph(((HipaVX::Graph*)(graph->o)));
+	process_graph(((DomVX::Graph*)(graph->o)));
     return 0;
 }
 
@@ -84,7 +84,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxSetNodeAttribute (vx_node node, vx_enum att
 {
     if (attribute == VX_NODE_BORDER)
     {
-		((HipaVX::Node*)(node->o))->border_mode = *((vx_border_e*) ptr);
+		((DomVX::Node*)(node->o))->border_mode = *((vx_border_e*) ptr);
         return VX_SUCCESS;
     }
     return VX_ERROR_NOT_IMPLEMENTED;
@@ -101,17 +101,17 @@ VX_API_ENTRY vx_array VX_API_CALL vxCreateArray(vx_context context, vx_enum item
     if (item_type != VX_TYPE_KEYPOINT)
         throw std::runtime_error("vx_array: Only VX_TYPE_KEYPOINT is currently supported");
 
-    HipaVX::Array *arr = new HipaVX::Array(item_type, capacity, 7); // vx_keypoint_t has 7 32bit members
+    DomVX::Array *arr = new DomVX::Array(item_type, capacity, 7); // vx_keypoint_t has 7 32bit members
 	auto vx = new _vx_array();
 	vx->o = arr;
-	((HipaVX::Context*)(context->o))->images.emplace_back(arr);
+	((DomVX::Context*)(context->o))->images.emplace_back(arr);
 	return vx;
 }
 
 // Object: Convolution
 VX_API_ENTRY vx_convolution VX_API_CALL vxCreateConvolution (vx_context context, vx_size columns, vx_size rows)
 {
-    HipaVX::Convolution *conv = new HipaVX::Convolution();
+    DomVX::Convolution *conv = new DomVX::Convolution();
 	auto vx = new _vx_convolution();
 	vx->o = conv;
     conv->columns = columns;
@@ -126,9 +126,9 @@ VX_API_ENTRY vx_status VX_API_CALL vxCopyConvolutionCoefficients (vx_convolution
         return VX_FAILURE;
 
     vx_int16 *int16_ptr = (vx_int16*) user_ptr;
-	for(unsigned int i = 0; i < ((HipaVX::Convolution*)(conv->o))->coefficients.size(); i++)
+	for(unsigned int i = 0; i < ((DomVX::Convolution*)(conv->o))->coefficients.size(); i++)
     {
-		((HipaVX::Convolution*)(conv->o))->coefficients[i] = int16_ptr[i];
+		((DomVX::Convolution*)(conv->o))->coefficients[i] = int16_ptr[i];
     }
 
     return VX_SUCCESS;
@@ -139,7 +139,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxSetConvolutionAttribute (vx_convolution con
     if (attribute != VX_CONVOLUTION_SCALE)
         return VX_FAILURE;
 
-	((HipaVX::Convolution*)(conv->o))->scale = *((vx_uint32*) ptr);
+	((DomVX::Convolution*)(conv->o))->scale = *((vx_uint32*) ptr);
 
     return VX_SUCCESS;
 }
@@ -147,10 +147,10 @@ VX_API_ENTRY vx_status VX_API_CALL vxSetConvolutionAttribute (vx_convolution con
 // Object: Image 
 VX_API_ENTRY vx_image VX_API_CALL vxCreateImage(vx_context context, vx_uint32 width, vx_uint32 height, vx_df_image color)
 {
-	HipaVX::Image *image = new HipaVX::Image(width, height, color);
+	DomVX::Image *image = new DomVX::Image(width, height, color);
 	auto vx = new _vx_image();
 	vx->o = image;
-	((HipaVX::Context*)(context->o))->images.emplace_back(image);
+	((DomVX::Context*)(context->o))->images.emplace_back(image);
 	return vx;
 }
 
@@ -166,7 +166,7 @@ VX_API_ENTRY vx_matrix VX_API_CALL vxCreateMatrix (vx_context c, vx_enum data_ty
         return nullptr;
 
 
-    HipaVX::VX_Matrix *mat = new HipaVX::VX_Matrix();
+    DomVX::VX_Matrix *mat = new DomVX::VX_Matrix();
 	auto vx = new _vx_matrix();
 	vx->o = mat;
 
@@ -185,7 +185,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxCopyMatrix (vx_matrix mat, void *user_ptr, 
     if (user_mem_type != VX_MEMORY_TYPE_HOST)
         return VX_FAILURE;
 
-	HipaVX::VX_Matrix* matrix = ((HipaVX::VX_Matrix*)(mat->o));
+	DomVX::VX_Matrix* matrix = ((DomVX::VX_Matrix*)(mat->o));
 
 	switch(matrix->data_type)
     {
@@ -206,7 +206,7 @@ VX_API_ENTRY vx_scalar VX_API_CALL vxCreateScalar(vx_context context, vx_enum da
 {
     if (data_type <= VX_TYPE_INVALID || data_type >= VX_TYPE_SCALAR)
         return nullptr;
-	auto scalar = new HipaVX::Scalar((HipaVX::ObjectType) data_type, ptr);
+	auto scalar = new DomVX::Scalar((DomVX::ObjectType) data_type, ptr);
 	auto vx = new _vx_scalar();
 	vx->o = scalar;
 	return vx;
@@ -220,7 +220,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxReleaseScalar(vx_scalar *scalar)
 // Object: Threshold
 VX_API_ENTRY vx_threshold VX_API_CALL vxCreateThresholdForImage (vx_context context,vx_enum thresh_type, vx_df_image input_format, vx_df_image output_format)
 {
-    HipaVX::Threshold *t = new HipaVX::Threshold;
+    DomVX::Threshold *t = new DomVX::Threshold;
 	auto vx = new _vx_threshold();
 	vx->o = t;
 
@@ -235,7 +235,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxSetThresholdAttribute (vx_threshold th, vx_
 {
     vx_int32 *int32_ptr = (vx_int32 *)ptr;
 
-	auto thresh = (HipaVX::Threshold*)th->o;
+	auto thresh = (DomVX::Threshold*)th->o;
     switch (attribute)
     {
     case VX_THRESHOLD_THRESHOLD_VALUE:

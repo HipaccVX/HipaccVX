@@ -50,7 +50,7 @@
 // class VXCopy
 // }
 
-namespace HipaVX
+namespace DomVX
 {
 
 }

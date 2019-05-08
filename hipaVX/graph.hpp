@@ -25,9 +25,9 @@
 
 namespace graphVX {
 
-using VertexType = HipaVX::Object;
-using EdgeType = HipaVX::Acc;
-using HipaVX::VertexTask;
+using VertexType = DomVX::Object;
+using EdgeType = DomVX::Acc;
+using DomVX::VertexTask;
 
 // ------------------- graphviz custom node writer ----------------------------
 template <class NameMap, class TaskMap>

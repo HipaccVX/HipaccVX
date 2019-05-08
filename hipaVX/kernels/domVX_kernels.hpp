@@ -31,7 +31,7 @@ enum class Type
 };
 }
 
-namespace HipaVX
+namespace DomVX
 {
 class FileinputImage: public Image
 {

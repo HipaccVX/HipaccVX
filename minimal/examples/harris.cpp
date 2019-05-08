@@ -9,25 +9,25 @@ int main()
 {
     std::vector<std::shared_ptr<DomVX::AbstractionNode>> nodes;
 
-    auto image_i = new HipaVX::Image(1024, 512, VX_DF_IMAGE_U8);
+    auto image_i = new DomVX::Image(1024, 512, VX_DF_IMAGE_U8);
 
-    auto image_sob_x_unnorm = new HipaVX::Image(1024, 512, VX_TYPE_FLOAT32);
-    auto image_sob_x = new HipaVX::Image(1024, 512, VX_TYPE_FLOAT32);
-    auto image_sob_y_unnorm = new HipaVX::Image(1024, 512, VX_TYPE_FLOAT32);
-    auto image_sob_y = new HipaVX::Image(1024, 512, VX_TYPE_FLOAT32);
+    auto image_sob_x_unnorm = new DomVX::Image(1024, 512, VX_TYPE_FLOAT32);
+    auto image_sob_x = new DomVX::Image(1024, 512, VX_TYPE_FLOAT32);
+    auto image_sob_y_unnorm = new DomVX::Image(1024, 512, VX_TYPE_FLOAT32);
+    auto image_sob_y = new DomVX::Image(1024, 512, VX_TYPE_FLOAT32);
 
-    auto image_trace_x = new HipaVX::Image(1024, 512, VX_TYPE_FLOAT32);
-    auto image_trace_y = new HipaVX::Image(1024, 512, VX_TYPE_FLOAT32);
-    auto image_trace = new HipaVX::Image(1024, 512, VX_TYPE_FLOAT32);
+    auto image_trace_x = new DomVX::Image(1024, 512, VX_TYPE_FLOAT32);
+    auto image_trace_y = new DomVX::Image(1024, 512, VX_TYPE_FLOAT32);
+    auto image_trace = new DomVX::Image(1024, 512, VX_TYPE_FLOAT32);
 
-    auto image_det_x = new HipaVX::Image(1024, 512, VX_TYPE_FLOAT32);
-    auto image_det_y = new HipaVX::Image(1024, 512, VX_TYPE_FLOAT32);
-    auto image_det_xy = new HipaVX::Image(1024, 512, VX_TYPE_FLOAT32);
-    auto image_det = new HipaVX::Image(1024, 512, VX_TYPE_FLOAT32);
+    auto image_det_x = new DomVX::Image(1024, 512, VX_TYPE_FLOAT32);
+    auto image_det_y = new DomVX::Image(1024, 512, VX_TYPE_FLOAT32);
+    auto image_det_xy = new DomVX::Image(1024, 512, VX_TYPE_FLOAT32);
+    auto image_det = new DomVX::Image(1024, 512, VX_TYPE_FLOAT32);
 
-    auto image_mc = new HipaVX::Image(1024, 512, VX_TYPE_FLOAT32);
+    auto image_mc = new DomVX::Image(1024, 512, VX_TYPE_FLOAT32);
 
-    auto image_vc = new HipaVX::Image(1024, 512, VX_TYPE_FLOAT32);
+    auto image_vc = new DomVX::Image(1024, 512, VX_TYPE_FLOAT32);
 
 
     auto mask_x = create_mask(3, 3, {-1,  0,  1,
@@ -43,9 +43,9 @@ int main()
                                    1, 1, 1});
 
     float k = 1.f; //Don't know what value to give
-    auto scalar_k = new HipaVX::Scalar(HipaVX::ObjectType::VX_TYPE_FLOAT32, &k);
+    auto scalar_k = new DomVX::Scalar(DomVX::ObjectType::VX_TYPE_FLOAT32, &k);
     float tc = 200.f; //Don't know what value to give
-    auto scalar_tc = new HipaVX::Scalar(HipaVX::ObjectType::VX_TYPE_FLOAT32, &tc);
+    auto scalar_tc = new DomVX::Scalar(DomVX::ObjectType::VX_TYPE_FLOAT32, &tc);
 
 
     // Sobel

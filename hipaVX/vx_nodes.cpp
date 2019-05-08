@@ -74,33 +74,33 @@
 */
 
 // TODO: maybe move convert to domVX_types.hpp ???
-static HipaVX::Node* convert(vx_node n)
+static DomVX::Node* convert(vx_node n)
 {
-	return (HipaVX::Node*)(n->o);
+	return (DomVX::Node*)(n->o);
 }
-static HipaVX::Graph* convert(vx_graph n)
+static DomVX::Graph* convert(vx_graph n)
 {
-	return (HipaVX::Graph*)(n->o);
+	return (DomVX::Graph*)(n->o);
 }
-static HipaVX::Image* convert(vx_image n)
+static DomVX::Image* convert(vx_image n)
 {
-	return (HipaVX::Image*)(n->o);
+	return (DomVX::Image*)(n->o);
 }
-static HipaVX::Scalar* convert(vx_scalar n)
+static DomVX::Scalar* convert(vx_scalar n)
 {
-	return (HipaVX::Scalar*)(n->o);
+	return (DomVX::Scalar*)(n->o);
 }
-static HipaVX::Array* convert(vx_array n)
+static DomVX::Array* convert(vx_array n)
 {
-	return (HipaVX::Array*)(n->o);
+	return (DomVX::Array*)(n->o);
 }
-static HipaVX::Threshold* convert(vx_threshold n)
+static DomVX::Threshold* convert(vx_threshold n)
 {
-	return (HipaVX::Threshold*)(n->o);
+	return (DomVX::Threshold*)(n->o);
 }
-static HipaVX::Convolution* convert(vx_convolution n)
+static DomVX::Convolution* convert(vx_convolution n)
 {
-	return (HipaVX::Convolution*)(n->o);
+	return (DomVX::Convolution*)(n->o);
 }
 
 VX_API_ENTRY vx_node VX_API_CALL vxChannelExtractNode (vx_graph graph, vx_image input, vx_enum channel, vx_image output)

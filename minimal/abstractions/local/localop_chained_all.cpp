@@ -77,9 +77,9 @@ int main()
 
     //---------------------------- DomVX --------------------------------------
 
-    auto image_o_1 = new HipaVX::Image(1024, 512, VX_DF_IMAGE_U8);
-    auto image_o_2 = new HipaVX::Image(1024, 512, VX_DF_IMAGE_U8);
-    auto image_i = new HipaVX::Image(1024, 512, VX_DF_IMAGE_U8);
+    auto image_o_1 = new DomVX::Image(1024, 512, VX_DF_IMAGE_U8);
+    auto image_o_2 = new DomVX::Image(1024, 512, VX_DF_IMAGE_U8);
+    auto image_i = new DomVX::Image(1024, 512, VX_DF_IMAGE_U8);
 
 
     auto local_op = create_local_op();

@@ -1,18 +1,18 @@
 #include "cpp_gen.hpp"
 
 // TODO: use tuples
-string generate_image_name(HipaVX::Image *image)
+string generate_image_name(DomVX::Image *image)
 {
     return string("Image_") + std::to_string(image->my_id);
 }
-string generate_scalar_name(HipaVX::Scalar *scalar)
+string generate_scalar_name(DomVX::Scalar *scalar)
 {
     return string("Scalar_") + std::to_string(scalar->my_id);
 }
 
 namespace generator
 {
-string node_generator(HipaVX::WriteImageNode* n, Type t)
+string node_generator(DomVX::WriteImageNode* n, Type t)
 {
     if (t == Type::Definition)
     {
@@ -81,10 +81,10 @@ std::string to_string(Datatype d)
 }
 
 // move this to domVX_main.cpp
-std::vector<HipaVX::Image*> get_all_images(HipaVX::Graph *g)
+std::vector<DomVX::Image*> get_all_images(DomVX::Graph *g)
 {
-    std::vector<HipaVX::Image*> images;
-    std::vector<HipaVX::Node*> nodes = g->graph;
+    std::vector<DomVX::Image*> images;
+    std::vector<DomVX::Node*> nodes = g->graph;
 
     while(!nodes.empty())
     {
@@ -94,12 +94,12 @@ std::vector<HipaVX::Image*> get_all_images(HipaVX::Graph *g)
         for(auto ref: node->inputs)
         {
             if (ref->type == VX_TYPE_IMAGE)
-                images.push_back((HipaVX::Image*) ref);
+                images.push_back((DomVX::Image*) ref);
         }
         for(auto ref: node->outputs)
         {
             if (ref->type == VX_TYPE_IMAGE)
-                images.push_back((HipaVX::Image*) ref);
+                images.push_back((DomVX::Image*) ref);
         }
 
         auto subnodes = node->subnodes;
@@ -112,7 +112,7 @@ std::vector<HipaVX::Image*> get_all_images(HipaVX::Graph *g)
     return images;
 }
 
-std::string generate_source_recursive(std::vector<HipaVX::Node*> nodes, const generator::Type t)
+std::string generate_source_recursive(std::vector<DomVX::Node*> nodes, const generator::Type t)
 {
     if (t == generator::Type::Definition)
         return "";
@@ -120,10 +120,10 @@ std::string generate_source_recursive(std::vector<HipaVX::Node*> nodes, const ge
     string sources = "";
     for (auto node: nodes)
     {
-        if (dynamic_cast<HipaVX::WriteImageNode*>(node) != nullptr)
+        if (dynamic_cast<DomVX::WriteImageNode*>(node) != nullptr)
         {
             if (t == generator::Type::Call)
-                sources += generator::node_generator(dynamic_cast<HipaVX::WriteImageNode*>(node), t);
+                sources += generator::node_generator(dynamic_cast<DomVX::WriteImageNode*>(node), t);
             continue;
         }
         auto subnodes = node->subnodes;
@@ -140,7 +140,7 @@ std::string generate_source_recursive(std::vector<HipaVX::Node*> nodes, const ge
     return sources;
 }
 
-void process_graph(HipaVX::Graph *graph)
+void process_graph(DomVX::Graph *graph)
 {
     string main = read_file(hipaVX_folder + "/templates/cpp_main.templ");
 
@@ -155,8 +155,8 @@ void process_graph(HipaVX::Graph *graph)
         string temp = image_decl_template;
 
         // BAD HACKs
-        const HipaVX::FileinputImage* fim = dynamic_cast<const HipaVX::FileinputImage*>(image);
-        const HipaVX::Array* arr = dynamic_cast<const HipaVX::Array*>(image);
+        const DomVX::FileinputImage* fim = dynamic_cast<const DomVX::FileinputImage*>(image);
+        const DomVX::Array* arr = dynamic_cast<const DomVX::Array*>(image);
         if(fim)
         {
             string fim_decl_template;
@@ -743,7 +743,7 @@ R"END(for(int @@@Y_NAME@@@ = 0; @@@Y_NAME@@@ < @@@HEIGHT@@@; @@@Y_NAME@@@++)
 
     return templ;
 }
-std::string CPPVisitor::setup_outer_loop(std::shared_ptr<DomVX::LocalOperation> l, const std::vector<HipaVX::Image*>& out)
+std::string CPPVisitor::setup_outer_loop(std::shared_ptr<DomVX::LocalOperation> l, const std::vector<DomVX::Image*>& out)
 {
     std::string y_index_name = "y_" + l->id();
     std::string x_index_name = "x_" + l->id();
@@ -766,7 +766,7 @@ R"END(for(int @@@Y_NAME@@@ = 0; @@@Y_NAME@@@ < @@@HEIGHT@@@; @@@Y_NAME@@@++)
 
     return templ;
 }
-std::string CPPVisitor::setup_outer_loop(std::shared_ptr<DomVX::GlobalOperation> g, const std::vector<HipaVX::Image *> &in)
+std::string CPPVisitor::setup_outer_loop(std::shared_ptr<DomVX::GlobalOperation> g, const std::vector<DomVX::Image *> &in)
 {
     std::string y_index_name = "y_" + g->id();
     std::string x_index_name = "x_" + g->id();
@@ -829,7 +829,7 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n, int i)
     {
         auto s = std::dynamic_pointer_cast<DomVX::LocalOperation>(n);
 
-        std::vector<HipaVX::Image *> output_images;
+        std::vector<DomVX::Image *> output_images;
 
         // Get all the output images
         for(auto images: s->operation_output_images)

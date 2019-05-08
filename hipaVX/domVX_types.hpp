@@ -22,7 +22,7 @@ enum class OperatorType
 };
 }
 
-namespace HipaVX {
+namespace DomVX {
 
 using ObjectType = vx_type_e;
 
@@ -85,7 +85,7 @@ class Object {
 }  // namespace HipaVX
 
 
-namespace HipaVX {
+namespace DomVX {
 
 class Scalar : public Object {
  public:
@@ -230,7 +230,7 @@ class Node : public Object {
   std::vector<Object *> outputs;
 
   vx_border_e border_mode = VX_BORDER_UNDEFINED;
-  std::shared_ptr<HipaVX::Node> kernel;
+  std::shared_ptr<DomVX::Node> kernel;
 
   virtual void build() {}
 };
@@ -393,45 +393,45 @@ class Acc {
 
 
 struct _vx_reference {
-  HipaVX::Object *o;
+  DomVX::Object *o;
 };
 
 struct _vx_scalar {
-  HipaVX::Object *o;
+  DomVX::Object *o;
 };
 
 struct _vx_kernel {
-  HipaVX::Object *o;
+  DomVX::Object *o;
 };
 
 struct _vx_node {
-  HipaVX::Object *o;
+  DomVX::Object *o;
 };
 
 struct _vx_graph {
-  HipaVX::Object *o;
+  DomVX::Object *o;
 };
 
 struct _vx_context {
-  HipaVX::Object *o;
+  DomVX::Object *o;
 };
 
 struct _vx_matrix {
-  HipaVX::Object *o;
+  DomVX::Object *o;
 };
 
 struct _vx_threshold {
-  HipaVX::Object *o;
+  DomVX::Object *o;
 };
 
 struct _vx_convolution {
-  HipaVX::Object *o;
+  DomVX::Object *o;
 };
 
 struct _vx_array {
-  HipaVX::Object *o;
+  DomVX::Object *o;
 };
 
 struct _vx_image {
-  HipaVX::Object *o;
+  DomVX::Object *o;
 };

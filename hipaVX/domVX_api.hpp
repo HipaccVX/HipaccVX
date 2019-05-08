@@ -10,7 +10,7 @@ typedef std::shared_ptr<DomVX::GlobalOperation> domVX_global;
 typedef std::shared_ptr<DomVX::Domain> domVX_domain;
 typedef std::shared_ptr<DomVX::Mask> domVX_mask;
 
-typedef HipaVX::Image* domVX_image;
+typedef DomVX::Image* domVX_image;
 
 //******************************************************************************
 // OPERATORS

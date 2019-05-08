@@ -13,7 +13,7 @@
 #include <algorithm>
 #include <memory>
 
-namespace HipaVX
+namespace DomVX
 {
 class Image;
 }

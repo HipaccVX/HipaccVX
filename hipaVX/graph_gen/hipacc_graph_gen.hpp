@@ -19,13 +19,13 @@ using graphVX::VertexType;
 using graphVX::EdgeDesc;
 using graphVX::EdgeType;
 using graphVX::OptGraphT;
-using HipaVX::VertexTask;
-using HipaVX::ObjectType;
+using DomVX::VertexTask;
+using DomVX::ObjectType;
 
-using HipaccImage = HipaVX::Image;
+using HipaccImage = DomVX::Image;
 using HipaccDomain = DomVX::Domain;
 using HipaccMask = DomVX::Mask;
-using DomVXAcc = HipaVX::Acc;
+using DomVXAcc = DomVX::Acc;
 
 using HipaccAccessor = DomVXAcc;
 using HipaccIterationSpace = DomVXAcc;
@@ -69,7 +69,7 @@ HipaccImage* obj2img(VertexType* v) {
 // TODO: simplify this after fixing the data structures
 HipaccKernel* obj2node(VertexType* v) {
   // TODO: catch exception to avoid segmentation fault
-  HipaccKernel* _node = dynamic_cast<HipaVX::Node*>(v->_obj);
+  HipaccKernel* _node = dynamic_cast<DomVX::Node*>(v->_obj);
 
   if(_node == NULL)
     ERRORM("graph_gen obj2node, dynamic cast fail for: " + v->get_name());
@@ -710,7 +710,7 @@ void hipacc_gen::iterate_nodes() {
 
 void hipacc_gen::iterate_spaces() {
   for(auto v : spaces) {
-      HipaVX::Object *n = get_vert(v);
+      DomVX::Object *n = get_vert(v);
       def(n);
   }
 }
