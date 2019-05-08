@@ -10,12 +10,12 @@ int main()
 {
   std::vector<std::shared_ptr<DomVX::AbstractionNode>> nodes;
 
-  auto image_i = new HipaVX::Image(1024, 512, VX_DF_IMAGE_U8);
+  auto image_i = create_image(1024, 512, VX_DF_IMAGE_U8);
 
-  auto image_sob_x_unnorm = new HipaVX::Image(1024, 512, VX_TYPE_FLOAT32);
-  auto image_sob_x = new HipaVX::Image(1024, 512, VX_TYPE_FLOAT32);
-  auto image_sob_y_unnorm = new HipaVX::Image(1024, 512, VX_TYPE_FLOAT32);
-  auto image_sob_y = new HipaVX::Image(1024, 512, VX_TYPE_FLOAT32);
+  auto image_sob_x_unnorm = create_image(1024, 512, VX_TYPE_FLOAT32);
+  auto image_sob_x = create_image(1024, 512, VX_TYPE_FLOAT32);
+  auto image_sob_y_unnorm = create_image(1024, 512, VX_TYPE_FLOAT32);
+  auto image_sob_y = create_image(1024, 512, VX_TYPE_FLOAT32);
 
   auto mask_x = create_mask(3, 3, {-1,  0,  1,
                                    -2,  0,  2,
