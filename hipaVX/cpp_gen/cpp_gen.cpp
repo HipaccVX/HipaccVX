@@ -794,10 +794,57 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n,
     case DomVX::OperatorType::LocalOperation: {
       auto s = std::dynamic_pointer_cast<DomVX::LocalOperation>(n);
 
+      std::vector<std::shared_ptr<ast4vx::WindowOperation>> w_ops;
+      std::vector<
+          std::tuple<DomVX::Image*, std::shared_ptr<ast4vx::WindowDescriptor>>>
+          in_images;
+
+      std::vector<std::shared_ptr<ast4vx::WindowOperation>> work_list =
+          s->operations;
+
+      desc_to_dom.clear();
+      while (!work_list.empty()) {
+        auto op = work_list.back();
+        work_list.pop_back();
+        w_ops.insert(w_ops.begin(), op);
+
+        std::vector<std::shared_ptr<ast4vx::WindowDescriptor>> in_win =
+            op->window_inputs;
+
+        for (auto win : in_win) {
+          // Check if it originates from a WindowOperation
+          if (win->parent.use_count() > 0) {
+            auto parent_op = win->parent.lock();
+            bool already_in = std::find(w_ops.cbegin(), w_ops.cend(),
+                                        parent_op) != w_ops.cend();
+            already_in |= std::find(work_list.cbegin(), work_list.cend(),
+                                    parent_op) != work_list.cend();
+            if (!already_in) work_list.push_back(parent_op);
+          } else if (win->bounded.use_count() > 0) {
+            auto image = win->bounded.lock()->im;
+            bool already_in =
+                std::find_if(
+                    in_images.cbegin(), in_images.cend(),
+                    [=](const std::tuple<
+                        DomVX::Image*,
+                        std::shared_ptr<ast4vx::WindowDescriptor>>& a) {
+                      return std::get<0>(a) == image;
+                    }) != in_images.cend();
+            if (!already_in) {
+              in_images.push_back({image, win});
+              desc_to_dom[win] = win->bounded.lock()->dom;
+            }
+          }
+        }
+      }
+      for (auto& pair : s->domain_bindings)
+        desc_to_dom[pair.first] = pair.second;
+
       std::vector<DomVX::Image*> output_images;
 
       // Get all the output images
-      for (auto images : s->operation_output_images) {
+      for (auto images_map : s->operation_output_images) {
+        auto images = std::get<1>(images_map);
         output_images.insert(output_images.end(), images.begin(), images.end());
       }
       if (output_images.size() == 0)
@@ -808,9 +855,9 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n,
       std::string code = "";
 
       // Create the roi from the input images
-      for (unsigned int i = 0; i < s->input_descriptor.size(); i++) {
-        auto& in_image = std::get<0>(s->input_descriptor[i]);
-        auto& in_desc = std::get<1>(s->input_descriptor[i]);
+      for (unsigned int i = 0; i < in_images.size(); i++) {
+        auto& in_image = std::get<0>(in_images[i]);
+        auto& in_desc = std::get<1>(in_images[i]);
         std::string input_matrix_name =
             "temp_window_" + std::to_string(in_desc->id);
 
@@ -837,13 +884,8 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n,
 
       code += "\n";
 
-      desc_to_dom.clear();
-      // Add the manual set domains to the map
-      for (auto binding : s->domain_bindings)
-        desc_to_dom[binding.first] = binding.second;
-
-      for (unsigned int i = 0; i < s->operations.size(); i++) {
-        auto& op = s->operations[i];
+      for (unsigned int i = 0; i < w_ops.size(); i++) {
+        auto& op = w_ops[i];
 
         if (op->output != nullptr) {
           auto& in_desc = op->output;
@@ -886,7 +928,7 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n,
         if (op->current_state == ast4vx::WindowOperation::State::ToPixel ||
             op->current_state == ast4vx::WindowOperation::State::Reduce) {
           // Bind an actual output image is only relevant for ToPixel and Reduce
-          for (auto& out_images : s->operation_output_images[i])
+          for (auto& out_images : s->operation_output_images[op])
             pixel_mappings.emplace_back(generate_image_name(out_images));
           for (auto& windesc : op->window_inputs)
             window_mappings.emplace_back(desc_to_name[windesc]);
@@ -901,7 +943,7 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n,
         }
 
         std::vector<std::string> variable_mappings;
-        for (auto& im : s->operation_variables[i])
+        for (auto& im : s->operation_variables[op])
           variable_mappings.emplace_back(generate_scalar_name(im));
         auto old_variable_mapping = variableaccessor_mapping;
         variableaccessor_mapping = &variable_mappings;

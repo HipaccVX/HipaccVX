@@ -210,6 +210,11 @@ std::shared_ptr<ast4vx::WindowOperation> forall(
   return forall({in_win}, forall_function);
 }
 std::shared_ptr<ast4vx::WindowOperation> forall(
+    std::shared_ptr<BoundedWindowDescriptor> in_win,
+    std::shared_ptr<ast4vx::Statements> forall_function) {
+  return forall({in_win->w_desc}, forall_function);
+}
+std::shared_ptr<ast4vx::WindowOperation> forall(
     std::shared_ptr<ast4vx::WindowOperation> predecessor,
     std::shared_ptr<ast4vx::Statements> forall_function) {
   return forall({predecessor->get_window_output()}, forall_function);

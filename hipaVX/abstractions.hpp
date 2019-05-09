@@ -323,9 +323,12 @@ class LocalOperation : public OperatorNode {
   std::vector<std::shared_ptr<ast4vx::WindowOperation>> operations;
 
   // TODO: Have one parameter type
-  std::vector<std::vector<DomVX::Image *>>
+  std::map<std::shared_ptr<ast4vx::WindowOperation>,
+           std::vector<DomVX::Image *>>
       operation_output_images;  // TODO: Maybe strore IS
-  std::vector<std::vector<DomVX::Scalar *>> operation_variables;
+  std::map<std::shared_ptr<ast4vx::WindowOperation>,
+           std::vector<DomVX::Scalar *>>
+      operation_variables;  // TODO: Maybe strore IS
 
   // TODO: Do we really need these bindings, makes the code description tedious
   std::map<std::shared_ptr<ast4vx::WindowOperation>,
@@ -420,8 +423,8 @@ class LocalOperation : public OperatorNode {
                      std::vector<DomVX::Image *> out = {},
                      std::vector<DomVX::Scalar *> var_bindings = {}) {
     operations.emplace_back(op);
-    operation_output_images.emplace_back(out);
-    operation_variables.emplace_back(var_bindings);
+    operation_output_images[op] = out;
+    operation_variables[op] = var_bindings;
   }
 };
 
