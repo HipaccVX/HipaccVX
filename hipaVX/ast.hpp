@@ -1175,10 +1175,8 @@ class WindowOperation : public Node,
    * @brief Sets the WindowDescriptors as inputs to this Operation
    * @param in The whole input list for this WindowOperation
    */
-  void set_window_inputs(
-      std::initializer_list<std::shared_ptr<WindowDescriptor>> in) {
-    window_inputs.clear();
-    for (auto wd : in) window_inputs.emplace_back(wd);
+  void set_window_inputs(std::vector<std::shared_ptr<WindowDescriptor>> in) {
+    window_inputs = in;
 
     if (!explicit_x_y) {
       if (window_inputs.size() == 0)
@@ -1603,12 +1601,36 @@ std::shared_ptr<ast4vx::Node> extract4(std::shared_ptr<ast4vx::Node> a,
 /**
  * @brief Creates a new ast4vx::WindowOperation
  * @param in_win The input ast4vx::WindowDescriptor
+ * @param in_bwin The BoundedWindowDescriptor which contains the input
+ * ast4vx::WindowDescriptor
  * @param reduction_function The ast4vx::Reduction function of this
  * ast4vx::WindowOperation
  * @return The new ast4vx::WindowOperation
  */
 std::shared_ptr<ast4vx::WindowOperation> reduce(
     std::shared_ptr<ast4vx::WindowDescriptor> in_win,
+    std::shared_ptr<ast4vx::Reduction> reduction_function);
+/**
+ * @brief Creates a new ast4vx::WindowOperation
+ * @param in_bwin The BoundedWindowDescriptor which contains the input
+ * ast4vx::WindowDescriptor
+ * @param reduction_function The ast4vx::Reduction function of this
+ * ast4vx::WindowOperation
+ * @return The new ast4vx::WindowOperation
+ */
+std::shared_ptr<ast4vx::WindowOperation> reduce(
+    std::shared_ptr<BoundedWindowDescriptor> in_bwin,
+    std::shared_ptr<ast4vx::Reduction> reduction_function);
+/**
+ * @brief Creates a new ast4vx::WindowOperation
+ * @param in_bwins Vector of BoundedWindowDescriptor which contains the input
+ * ast4vx::WindowDescriptor
+ * @param reduction_function The ast4vx::Reduction function of this
+ * ast4vx::WindowOperation
+ * @return The new ast4vx::WindowOperation
+ */
+std::shared_ptr<ast4vx::WindowOperation> reduce(
+    std::vector<std::shared_ptr<BoundedWindowDescriptor>> in_bwins,
     std::shared_ptr<ast4vx::Reduction> reduction_function);
 /**
  * @brief Creates a new ast4vx::WindowOperation
@@ -1623,7 +1645,7 @@ std::shared_ptr<ast4vx::WindowOperation> reduce(
     std::shared_ptr<ast4vx::Reduction> reduction_function);
 /**
  * @brief Creates a new ast4vx::WindowOperation
- * @param in_win An std::initializer_list of ast4vx::WindowDescriptor that are
+ * @param in_win A vector of ast4vx::WindowDescriptor that are
  * the inputs of this reduction operation. Be aware that a reducing
  * ast4vx::WindowOperation only supports one ast4vx::WindowDescriptor
  * @param reduction_function The ast4vx::Reduction function of this
@@ -1631,7 +1653,7 @@ std::shared_ptr<ast4vx::WindowOperation> reduce(
  * @return The new ast4vx::WindowOperation
  */
 std::shared_ptr<ast4vx::WindowOperation> reduce(
-    std::initializer_list<std::shared_ptr<ast4vx::WindowDescriptor>> in_win,
+    std::vector<std::shared_ptr<ast4vx::WindowDescriptor>> in_win,
     std::shared_ptr<ast4vx::Reduction> reduction_function);
 
 /**
@@ -1646,14 +1668,25 @@ std::shared_ptr<ast4vx::WindowOperation> forall(
     std::shared_ptr<ast4vx::Statements> forall_function);
 /**
  * @brief Creates a new ast4vx::WindowOperation
- * @param in_win The BoundedWindowDescriptor which contains the input
+ * @param in_bwin The BoundedWindowDescriptor which contains the input
  * ast4vx::WindowDescriptor
  * @param forall_function The ast4vx::Statements function of this
  * ast4vx::WindowOperation that should be applied to the whole domain
  * @return The new ast4vx::WindowOperation
  */
 std::shared_ptr<ast4vx::WindowOperation> forall(
-    std::shared_ptr<BoundedWindowDescriptor> in_win,
+    std::shared_ptr<BoundedWindowDescriptor> in_bwin,
+    std::shared_ptr<ast4vx::Statements> forall_function);
+/**
+ * @brief Creates a new ast4vx::WindowOperation
+ * @param in_bwins Vector of BoundedWindowDescriptor which contains the input
+ * ast4vx::WindowDescriptor
+ * @param forall_function The ast4vx::Statements function of this
+ * ast4vx::WindowOperation that should be applied to the whole domain
+ * @return The new ast4vx::WindowOperation
+ */
+std::shared_ptr<ast4vx::WindowOperation> forall(
+    std::vector<std::shared_ptr<BoundedWindowDescriptor>> in_bwins,
     std::shared_ptr<ast4vx::Statements> forall_function);
 /**
  * @brief Creates a new ast4vx::WindowOperation
@@ -1668,7 +1701,7 @@ std::shared_ptr<ast4vx::WindowOperation> forall(
     std::shared_ptr<ast4vx::Statements> forall_function);
 /**
  * @brief Creates a new ast4vx::WindowOperation
- * @param in_win An std::initializer_list of ast4vx::WindowDescriptor that are
+ * @param in_win A vector of ast4vx::WindowDescriptor that are
  * the inputs of this reduction operation. Be aware that a forall
  * ast4vx::WindowOperation only supports one ast4vx::WindowDescriptor
  * @param forall_function The ast4vx::Statements function of this
@@ -1676,7 +1709,7 @@ std::shared_ptr<ast4vx::WindowOperation> forall(
  * @return The new ast4vx::WindowOperation
  */
 std::shared_ptr<ast4vx::WindowOperation> forall(
-    std::initializer_list<std::shared_ptr<ast4vx::WindowDescriptor>> in_win,
+    std::vector<std::shared_ptr<ast4vx::WindowDescriptor>> in_win,
     std::shared_ptr<ast4vx::Statements> forall_function);
 
 /**

@@ -188,7 +188,21 @@ std::shared_ptr<ast4vx::Node> unequal(std::shared_ptr<ast4vx::Node> a,
 std::shared_ptr<ast4vx::WindowOperation> reduce(
     std::shared_ptr<ast4vx::WindowDescriptor> in_win,
     std::shared_ptr<ast4vx::Reduction> reduction_function) {
-  return reduce({in_win}, reduction_function);
+  return reduce(
+      std::vector<std::shared_ptr<ast4vx::WindowDescriptor>>({in_win}),
+      reduction_function);
+}
+std::shared_ptr<ast4vx::WindowOperation> reduce(
+    std::shared_ptr<BoundedWindowDescriptor> in_bwin,
+    std::shared_ptr<ast4vx::Reduction> reduction_function) {
+  return reduce({in_bwin->w_desc}, reduction_function);
+}
+std::shared_ptr<ast4vx::WindowOperation> reduce(
+    std::vector<std::shared_ptr<BoundedWindowDescriptor>> in_bwins,
+    std::shared_ptr<ast4vx::Reduction> reduction_function) {
+  std::vector<std::shared_ptr<ast4vx::WindowDescriptor>> descriptors;
+  for (auto& bwin : in_bwins) descriptors.push_back(bwin->w_desc);
+  return reduce(descriptors, reduction_function);
 }
 std::shared_ptr<ast4vx::WindowOperation> reduce(
     std::shared_ptr<ast4vx::WindowOperation> predecessor,
@@ -196,7 +210,7 @@ std::shared_ptr<ast4vx::WindowOperation> reduce(
   return reduce({predecessor->get_window_output()}, reduction_function);
 }
 std::shared_ptr<ast4vx::WindowOperation> reduce(
-    std::initializer_list<std::shared_ptr<ast4vx::WindowDescriptor>> in_win,
+    std::vector<std::shared_ptr<ast4vx::WindowDescriptor>> in_win,
     std::shared_ptr<ast4vx::Reduction> reduction_function) {
   auto win = std::make_shared<ast4vx::WindowOperation>();
   win->set_window_inputs(in_win);
@@ -207,12 +221,21 @@ std::shared_ptr<ast4vx::WindowOperation> reduce(
 std::shared_ptr<ast4vx::WindowOperation> forall(
     std::shared_ptr<ast4vx::WindowDescriptor> in_win,
     std::shared_ptr<ast4vx::Statements> forall_function) {
-  return forall({in_win}, forall_function);
+  return forall(
+      std::vector<std::shared_ptr<ast4vx::WindowDescriptor>>({in_win}),
+      forall_function);
 }
 std::shared_ptr<ast4vx::WindowOperation> forall(
-    std::shared_ptr<BoundedWindowDescriptor> in_win,
+    std::shared_ptr<BoundedWindowDescriptor> in_bwin,
     std::shared_ptr<ast4vx::Statements> forall_function) {
-  return forall({in_win->w_desc}, forall_function);
+  return forall({in_bwin->w_desc}, forall_function);
+}
+std::shared_ptr<ast4vx::WindowOperation> forall(
+    std::vector<std::shared_ptr<BoundedWindowDescriptor>> in_bwins,
+    std::shared_ptr<ast4vx::Statements> forall_function) {
+  std::vector<std::shared_ptr<ast4vx::WindowDescriptor>> descriptors;
+  for (auto& bwin : in_bwins) descriptors.push_back(bwin->w_desc);
+  return forall(descriptors, forall_function);
 }
 std::shared_ptr<ast4vx::WindowOperation> forall(
     std::shared_ptr<ast4vx::WindowOperation> predecessor,
@@ -220,7 +243,7 @@ std::shared_ptr<ast4vx::WindowOperation> forall(
   return forall({predecessor->get_window_output()}, forall_function);
 }
 std::shared_ptr<ast4vx::WindowOperation> forall(
-    std::initializer_list<std::shared_ptr<ast4vx::WindowDescriptor>> in_win,
+    std::vector<std::shared_ptr<ast4vx::WindowDescriptor>> in_win,
     std::shared_ptr<ast4vx::Statements> forall_function) {
   auto win = std::make_shared<ast4vx::WindowOperation>();
   win->set_window_inputs(in_win);
