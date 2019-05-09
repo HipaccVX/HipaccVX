@@ -758,8 +758,9 @@ std::string CPPVisitor::setup_outer_loop(
   return templ;
 }
 
-std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n,
+std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> _n,
                               int i) {
+  auto n = std::dynamic_pointer_cast<DomVX::OperatorNode>(_n);
   switch (n->operator_type) {
     case DomVX::OperatorType::PointOperator: {
       auto s = std::dynamic_pointer_cast<DomVX::Map>(n);

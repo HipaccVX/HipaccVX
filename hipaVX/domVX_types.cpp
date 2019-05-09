@@ -24,21 +24,21 @@ ast4vx::Datatype convert_type(vx_df_image type) {
 namespace DomVX {
 
 // TOOD: extend this
-VertexTask set_task_from_type(DomVX::ObjectType _type) {
+ObjectTask set_task_from_type(DomVX::ObjectType _type) {
   switch (_type) {
     case VX_TYPE_NODE:
     case VX_TYPE_KERNEL:
     case VX_TYPE_CONVOLUTION:
-      return VertexTask::Computation;
+      return ObjectTask::Computation;
     case VX_TYPE_IMAGE:
     case VX_TYPE_SCALAR:
     case VX_TYPE_ARRAY:
     case VX_TYPE_MATRIX:
-      return VertexTask::Buffer;
+      return ObjectTask::Buffer;
     case VX_TYPE_INVALID:
       throw std::runtime_error("set task: an object has a VX_TYPE_INVALID");
     default:
-      return VertexTask::API;
+      return ObjectTask::API;
   }
 }
 

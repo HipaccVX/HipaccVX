@@ -19,7 +19,7 @@ using graphVX::VertexType;
 using graphVX::EdgeDesc;
 using graphVX::EdgeType;
 using graphVX::OptGraphT;
-using DomVX::VertexTask;
+using DomVX::ObjectTask;
 using DomVX::ObjectType;
 
 using HipaccImage = DomVX::Image;
@@ -58,7 +58,7 @@ enum class DefType{
 
 // pointer casts
 HipaccImage* obj2img(VertexType* v) {
-  HipaccImage* _im = dynamic_cast<HipaccImage*>(v->_obj);
+  HipaccImage* _im = dynamic_cast<HipaccImage*>(v->get());
 
   if(_im == NULL)
     ERRORM("graph_gen obj2img, dynamic cast fail for: " + v->get_name());
@@ -69,7 +69,7 @@ HipaccImage* obj2img(VertexType* v) {
 // TODO: simplify this after fixing the data structures
 HipaccKernel* obj2node(VertexType* v) {
   // TODO: catch exception to avoid segmentation fault
-  HipaccKernel* _node = dynamic_cast<DomVX::Node*>(v->_obj);
+  HipaccKernel* _node = dynamic_cast<DomVX::Node*>(v->get());
 
   if(_node == NULL)
     ERRORM("graph_gen obj2node, dynamic cast fail for: " + v->get_name());
@@ -481,7 +481,7 @@ class graph_gen {
 
   VertexType* get_vert(VertexDesc& v) { return &((*_g_opt)[v]); }
 
-  VertexTask get_vert_task(VertexDesc& v) { return get_vert(v)->get_task(); }
+  ObjectTask get_vert_task(VertexDesc& v) { return get_vert(v)->task(); }
 
   ObjectType get_vert_type(VertexDesc& v) { return get_vert(v)->type(); }
 
@@ -517,11 +517,11 @@ void graph_gen::init() {
   //g_dag.print_order_of_exec();
 
   for( auto i : *_verts) {
-    switch ((*_g_opt)[i].get_task()) {
-      case VertexTask::Buffer:
+    switch ((*_g_opt)[i].task()) {
+      case ObjectTask::Buffer:
         spaces.push_back(i);
         break;
-      case VertexTask::Computation:
+      case ObjectTask::Computation:
         nodes.push_back(i);
         break;
       default:

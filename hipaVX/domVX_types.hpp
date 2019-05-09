@@ -10,9 +10,7 @@
 ast4vx::Datatype convert_type(vx_df_image type);
 
 namespace DomVX {
-/**
- * @brief The different types of Abstractio Nodes in DomVX
- */
+/// @brief Operator Types
 enum class OperatorType {
   None,
   PointOperator,
@@ -20,11 +18,16 @@ enum class OperatorType {
   GlobalOperator,
 };
 
+enum class ObjectTask {
+  Computation,
+  Buffer,
+  API,
+  Invalid
+};
+
 using ObjectType = vx_type_e;
 
-enum class VertexTask { Computation, Buffer, API, Invalid };
-
-VertexTask set_task_from_type(ObjectType type);
+ObjectTask set_task_from_type(ObjectType type);
 
 class Object {
  public:
@@ -32,48 +35,50 @@ class Object {
 
   virtual ~Object() = default;
 
+  Object* get() { return _obj; }
+
+  std::string id() { return std::to_string(my_id); }
+
+  std::string get_name() { return this->name; }
+
+  ObjectType type() { return this->obj_type; }
+
+  ObjectTask task() { return obj_task; }
+
   bool is_virtual() { return virt; }
 
-  VertexTask get_task() { return task; }
+  bool is_alive() { return alive; }
 
-  void set_task(VertexTask _task) { task = _task; }
+  void is_virtual(bool _virt) { virt = _virt; }
 
-  void set_task() { task = set_task_from_type(type()); }
+  void is_alive(bool _alive) { alive = _alive; }
 
   void set_name(std::string _name = "Object") {
     name = _name + std::to_string(my_id);
   }
 
-  std::string get_name() { return this->name; }
+ protected:
+  Object* _obj;
 
-  std::string id() { return std::to_string(my_id); }
+  static int next_id;
 
-  ObjectType type() { return this->obj_type; }
-
-  void set_type(ObjectType _obj_type) { obj_type = _obj_type; }
-
-  // TODO: only temporary
-  DomVX::OperatorType operator_type = DomVX::OperatorType::None;
-
- public:  // TODO: make these protected
-
-
-  Object *_obj;
-
-  bool virt = false;
-
-  bool alive = false;  // after optimizations
+  int my_id;
 
   std::string name;
 
-  VertexTask task = VertexTask::Invalid;
+  bool virt = false;
 
- protected:
-  static int next_id;
+  bool alive = false;
 
   ObjectType obj_type;
 
-  int my_id;
+  ObjectTask obj_task = ObjectTask::Invalid;
+
+  void set_type(ObjectType _obj_type) { obj_type = _obj_type; }
+
+  void set_task() { obj_task = set_task_from_type(type()); }
+
+  void bind(Object* _ptr) { _obj = _ptr; }
 };
 
 
@@ -88,7 +93,7 @@ class Scalar : public Object {
   void init() {
     set_type(VX_TYPE_SCALAR);
     set_task();
-    _obj = this;
+    bind(this);
   }
 
   void set_value(const void *ptr) {
@@ -151,7 +156,7 @@ class Image : public Object {
     col = VX_TYPE_DF_IMAGE;
     set_task();
     set_name("Img");
-    _obj = this;
+    bind(this);
   }
 
   vx_uint32 get_width() { return w; }
@@ -205,7 +210,7 @@ class Node : public Object {
     kernel = nullptr;
     set_type(VX_TYPE_NODE);
     set_task();
-    _obj = this;
+    bind(this);
   }
 
   virtual ~Node() = default;
@@ -217,6 +222,8 @@ class Node : public Object {
   vx_border_e border_mode = VX_BORDER_UNDEFINED;
   std::shared_ptr<DomVX::Node> kernel;
 
+  DomVX::OperatorType operator_type = DomVX::OperatorType::None;
+
   virtual void build() {}
 };
 
@@ -226,7 +233,7 @@ class Convolution : public Object {
     set_type(VX_TYPE_CONVOLUTION);
     set_name("Convolve");
     set_task();
-    _obj = this;
+    bind(this);
   }
 
   std::vector<vx_int16> coefficients;
@@ -241,7 +248,7 @@ class Threshold : public Object {
     set_type(VX_TYPE_THRESHOLD);
     set_name("Threshold");
     set_task();
-    _obj = this;
+    bind(this);
   }
 
   vx_threshold_type_e threshold_type;
@@ -263,7 +270,7 @@ class VX_Matrix : public Object {
     set_type(VX_TYPE_MATRIX);
     set_name("Matrix");
     set_task();
-    _obj = this;
+    bind(this);
   }
 
   vx_enum data_type;
