@@ -32,7 +32,7 @@ using HipaccIterationSpace = DomVXAcc;
 
 using HipaccKernel = DomVX::OperatorNode;
 using HipaccPointNode = DomVX::Map;
-using HipaccLocalNode = DomVX::LocalOperation;
+using HipaccLocalNode = DomVX::LocalOperator;
 
 using HipaccDataType = vx_df_image;
 
@@ -659,7 +659,7 @@ void hipacc_gen::iterate_nodes() {
       std::vector<DomVXAcc*> is_l;
 
       auto kern_ = obj2node(v);
-      if(kern_->operator_type == DomVX::OperatorType::LocalOperation) {
+      if(kern_->operator_type == DomVX::OperatorType::LocalOperator) {
         auto local_ = kernel2local(kern_);
 
         // get domains

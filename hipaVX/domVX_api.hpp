@@ -2,8 +2,8 @@
 #include "abstractions.hpp"
 
 typedef std::shared_ptr<DomVX::Map> domVX_point;
-typedef std::shared_ptr<DomVX::LocalOperation> domVX_local;
-typedef std::shared_ptr<DomVX::GlobalOperation> domVX_global;
+typedef std::shared_ptr<DomVX::LocalOperator> domVX_local;
+typedef std::shared_ptr<DomVX::GlobalOperator> domVX_global;
 
 typedef std::shared_ptr<DomVX::Domain> domVX_domain;
 typedef std::shared_ptr<DomVX::Mask> domVX_mask;

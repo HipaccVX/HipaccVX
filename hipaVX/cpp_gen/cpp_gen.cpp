@@ -710,7 +710,7 @@ std::string CPPVisitor::setup_outer_loop(std::shared_ptr<DomVX::Map> m) {
   return templ;
 }
 std::string CPPVisitor::setup_outer_loop(
-    std::shared_ptr<DomVX::LocalOperation> l,
+    std::shared_ptr<DomVX::LocalOperator> l,
     const std::vector<DomVX::Image*>& out) {
   std::string y_index_name = "y_" + l->id();
   std::string x_index_name = "x_" + l->id();
@@ -734,7 +734,7 @@ std::string CPPVisitor::setup_outer_loop(
   return templ;
 }
 std::string CPPVisitor::setup_outer_loop(
-    std::shared_ptr<DomVX::GlobalOperation> g,
+    std::shared_ptr<DomVX::GlobalOperator> g,
     const std::vector<DomVX::Image*>& in) {
   std::string y_index_name = "y_" + g->id();
   std::string x_index_name = "x_" + g->id();
@@ -761,7 +761,7 @@ std::string CPPVisitor::setup_outer_loop(
 std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n,
                               int i) {
   switch (n->operator_type) {
-    case DomVX::OperatorType::Map: {
+    case DomVX::OperatorType::PointOperator: {
       auto s = std::dynamic_pointer_cast<DomVX::Map>(n);
 
       std::string outer_loop = setup_outer_loop(s);
@@ -791,8 +791,8 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n,
       outer_loop = use_template(outer_loop, "CODE", code);
       return outer_loop;
     }
-    case DomVX::OperatorType::LocalOperation: {
-      auto s = std::dynamic_pointer_cast<DomVX::LocalOperation>(n);
+    case DomVX::OperatorType::LocalOperator: {
+      auto s = std::dynamic_pointer_cast<DomVX::LocalOperator>(n);
 
       std::vector<DomVX::Image*> output_images;
 
@@ -936,8 +936,8 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n,
       outer_loop = use_template(outer_loop, "CODE", code);
       return outer_loop;
     }
-    case DomVX::OperatorType::GlobalOperation: {
-      auto s = std::dynamic_pointer_cast<DomVX::GlobalOperation>(n);
+    case DomVX::OperatorType::GlobalOperator: {
+      auto s = std::dynamic_pointer_cast<DomVX::GlobalOperator>(n);
 
       if (s->input_pixel_mappings.size() == 0)
         throw std::runtime_error(

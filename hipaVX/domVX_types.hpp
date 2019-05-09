@@ -15,9 +15,9 @@ namespace DomVX {
  */
 enum class OperatorType {
   None,
-  Map,
-  LocalOperation,
-  GlobalOperation,
+  PointOperator,
+  LocalOperator,
+  GlobalOperator,
 };
 
 using ObjectType = vx_type_e;

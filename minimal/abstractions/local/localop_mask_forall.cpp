@@ -35,7 +35,7 @@ int main() {
 
   // Create the local operation
   auto local_op =
-      std::shared_ptr<DomVX::LocalOperation>(new DomVX::LocalOperation());
+      std::shared_ptr<DomVX::LocalOperator>(new DomVX::LocalOperator());
 
   local_op->set_domains({{window_in, dom}});
 

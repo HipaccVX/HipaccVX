@@ -8,11 +8,11 @@ domVX_point create_point_op() {
 }
 
 domVX_local create_local_op() {
-  return std::shared_ptr<DomVX::LocalOperation>(new DomVX::LocalOperation());
+  return std::shared_ptr<DomVX::LocalOperator>(new DomVX::LocalOperator());
 }
 
 domVX_global create_global_op() {
-  return std::shared_ptr<DomVX::GlobalOperation>(new DomVX::GlobalOperation());
+  return std::shared_ptr<DomVX::GlobalOperator>(new DomVX::GlobalOperator());
 }
 
 //*********************************************************************

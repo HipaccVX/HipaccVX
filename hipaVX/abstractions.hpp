@@ -172,14 +172,14 @@ class Map : public OperatorNode {
   /**
    * @brief Default constructor
    */
-  Map() { operator_type = OperatorType::Map; }
+  Map() { operator_type = OperatorType::PointOperator; }
 
   /**
    * @brief Constructor which sets the statement as the mapping function
    * @param s The PixelToPixel mapping function
    */
   Map(std::shared_ptr<ast4vx::Statements> s) {
-    operator_type = OperatorType::Map;
+    operator_type = OperatorType::PointOperator;
     set_statements(s);
   }
 
@@ -316,7 +316,7 @@ class Map : public OperatorNode {
  * It supports multiple input and output images - input domains and masks - and
  * multiple ast4vx::WindowOperation
  */
-class LocalOperation : public OperatorNode {
+class LocalOperator : public OperatorNode {
  public:
   std::vector<
       std::tuple<DomVX::Image *, std::shared_ptr<ast4vx::WindowDescriptor>>>
@@ -337,7 +337,7 @@ class LocalOperation : public OperatorNode {
       domain_bindings;
 
  public:
-  LocalOperation() { operator_type = OperatorType::LocalOperation; }
+  LocalOperator() { operator_type = OperatorType::LocalOperator; }
 
   /**
    * @brief Maps the ast4vx::WindowDescriptor to actual HipaVX::Image. This
@@ -431,14 +431,14 @@ class LocalOperation : public OperatorNode {
  *
  * Currently only global reduction of an image is supported
  */
-class GlobalOperation : public OperatorNode {
+class GlobalOperator : public OperatorNode {
  public:
   std::shared_ptr<ast4vx::Reduction> reduction;
   DomVX::Scalar *reduction_out;
   std::vector<DomVX::Image *> input_pixel_mappings;
 
  public:
-  GlobalOperation() { operator_type = OperatorType::GlobalOperation; }
+  GlobalOperator() { operator_type = OperatorType::GlobalOperator; }
 
   /**
    * @brief Binds the input iamges of the statements to the actual HipaVX::Image
