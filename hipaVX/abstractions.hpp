@@ -42,6 +42,7 @@ class Domain : public AbstractionNode {
    * @param dom row major flat matrix of the domain values. Has to have x*y
    * entries
    */
+  // TODO: why is the dom int, just holds 1 and 0
   Domain(unsigned int x, unsigned int y, std::vector<int> dom)
       : width(x), height(y) {
     set_domain(dom);

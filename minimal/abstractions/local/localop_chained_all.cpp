@@ -88,13 +88,13 @@ int main() {
 
   auto local_op = create_local_op();
 
-  auto dom_in = create_dom(3, 5, {0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1});
+  auto dom_in = create_domain(3, 5, {0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1});
   auto dom_desc_1 =
-      create_dom(3, 5, {0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1});
+      create_domain(3, 5, {0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1});
   auto dom_1_op_1_desc =
-      create_dom(3, 5, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1});
+      create_domain(3, 5, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1});
   auto dom_1_op_2_desc =
-      create_dom(3, 5, {0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0});
+      create_domain(3, 5, {0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0});
 
   local_op->set_input_window_desc({{image_i, window_in}});
   local_op->set_domains(

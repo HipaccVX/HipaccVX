@@ -36,9 +36,9 @@ int main()
     auto mask_y = create_mask(3, 3, {-1, -2, -1,
                                       0,  0,  0,
                                       1,  2,  1});
-    auto dom_x = create_dom(mask_x);
-    auto dom_y = create_dom(mask_y);
-    auto dom_a = create_dom(3, 3, {1, 1, 1,
+    auto dom_x = create_domain(mask_x);
+    auto dom_y = create_domain(mask_y);
+    auto dom_a = create_domain(3, 3, {1, 1, 1,
                                    1, 1, 1,
                                    1, 1, 1});
 

@@ -29,7 +29,7 @@ int main() {
   auto local_op = create_local_op();
 
   // Create the domain
-  auto dom = create_dom(3, 5, {0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0});
+  auto dom = create_domain(3, 5, {0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0});
 
   // Bind the dummy window accessors to the input images
   local_op->set_input_window_desc({{image_i, window_in}});

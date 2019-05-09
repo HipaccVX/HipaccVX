@@ -19,9 +19,6 @@ enum class OperatorType {
   LocalOperation,
   GlobalOperation,
 };
-}  // namespace DomVX
-
-namespace DomVX {
 
 using ObjectType = vx_type_e;
 
@@ -75,9 +72,6 @@ class Object {
   static int next_id;
 };
 
-}  // namespace DomVX
-
-namespace DomVX {
 
 class Scalar : public Object {
  public:
