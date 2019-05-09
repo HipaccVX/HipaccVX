@@ -1,7 +1,7 @@
 #pragma once
 #include "abstractions.hpp"
 
-typedef std::shared_ptr<DomVX::Map> domVX_point;
+typedef std::shared_ptr<DomVX::PointOperator> domVX_point;
 typedef std::shared_ptr<DomVX::LocalOperator> domVX_local;
 typedef std::shared_ptr<DomVX::GlobalOperator> domVX_global;
 

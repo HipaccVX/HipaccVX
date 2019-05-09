@@ -54,7 +54,7 @@ class CPPVisitor : public ASTVisitor<std::string, int>,
   virtual std::string visit(std::shared_ptr<DomVX::AbstractionNode> n,
                             int i = 0) override;
 
-  std::string setup_outer_loop(std::shared_ptr<DomVX::Map> m);
+  std::string setup_outer_loop(std::shared_ptr<DomVX::PointOperator> m);
   std::string setup_outer_loop(std::shared_ptr<DomVX::LocalOperator> m,
                                const std::vector<DomVX::Image *> &out);
   std::string setup_outer_loop(std::shared_ptr<DomVX::GlobalOperator> m,

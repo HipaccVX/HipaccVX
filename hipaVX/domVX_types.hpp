@@ -29,6 +29,7 @@ using ObjectType = vx_type_e;
 
 ObjectTask set_task_from_type(ObjectType type);
 
+
 class Object {
  public:
   Object() : my_id(next_id++){}
@@ -82,6 +83,102 @@ class Object {
 };
 
 
+class Node : public Object {
+ protected:
+ public:
+  std::string node_name;  // remove me
+
+  Node() {
+    set_name("Node");
+    init();
+  }
+
+  Node(std::string _name) {
+    set_name(_name);
+    init();
+  }
+
+  void init() {
+    set_type(VX_TYPE_NODE);
+    set_task();
+    bind(this);
+  }
+
+  virtual ~Node() = default;
+
+  std::vector<Node *> subnodes;
+  std::vector<Object *> inputs;
+  std::vector<Object *> outputs;
+
+  vx_border_e border_mode = VX_BORDER_UNDEFINED;
+  std::shared_ptr<DomVX::Node> kernel = nullptr;
+
+  DomVX::OperatorType operator_type = DomVX::OperatorType::None;
+
+  virtual void build() {}
+};
+
+
+class Convolution : public Object {
+ public:
+  Convolution() {
+    set_type(VX_TYPE_CONVOLUTION);
+    set_name("Convolve");
+    set_task();
+    bind(this);
+  }
+
+  std::vector<vx_int16> coefficients;
+  vx_size rows;
+  vx_size columns;
+  vx_uint32 scale;
+};
+
+
+class Image : public Object {
+ public:
+  Image() { init(); }
+
+  Image(std::string _name) {
+    set_name(_name);
+    init();
+  }
+
+  Image(vx_uint32 width, vx_uint32 height) : w(width), h(height) {
+    init();
+    w = width;
+    h = height;
+  }
+
+  Image(vx_uint32 width, vx_uint32 height, vx_df_image color) {
+    init();
+    w = width;
+    h = height;
+    col = color;
+  }
+
+  void init() {
+    set_type(VX_TYPE_IMAGE);
+    col = VX_TYPE_DF_IMAGE;
+    set_task();
+    set_name("Img");
+    bind(this);
+  }
+
+  vx_uint32 get_width() { return w; }
+  vx_uint32 get_height() { return h; }
+
+  virtual ~Image() = default;
+
+  vx_uint32 w, h;
+  vx_df_image col;
+
+  vx_df_image get_dtype() { return col; }
+
+  void set_dtype(vx_df_image type) { col = type; }
+};
+
+
 class Scalar : public Object {
  public:
   Scalar(ObjectType t, const void *ptr) : data_type(t) {
@@ -129,48 +226,6 @@ class Scalar : public Object {
   };
 };
 
-class Image : public Object {
- public:
-  Image() { init(); }
-
-  Image(std::string _name) {
-    set_name(_name);
-    init();
-  }
-
-  Image(vx_uint32 width, vx_uint32 height) : w(width), h(height) {
-    init();
-    w = width;
-    h = height;
-  }
-
-  Image(vx_uint32 width, vx_uint32 height, vx_df_image color) {
-    init();
-    w = width;
-    h = height;
-    col = color;
-  }
-
-  void init() {
-    set_type(VX_TYPE_IMAGE);
-    col = VX_TYPE_DF_IMAGE;
-    set_task();
-    set_name("Img");
-    bind(this);
-  }
-
-  vx_uint32 get_width() { return w; }
-  vx_uint32 get_height() { return h; }
-
-  virtual ~Image() = default;
-
-  vx_uint32 w, h;
-  vx_df_image col;
-
-  vx_df_image get_dtype() { return col; }
-
-  void set_dtype(vx_df_image type) { col = type; }
-};
 
 class Array : public Object {
  public:
@@ -191,56 +246,6 @@ class Array : public Object {
   vx_size rows;
 };
 
-class Node : public Object {
- protected:
- public:
-  std::string node_name;  // remove me
-
-  Node() {
-    set_name("Node");
-    init();
-  }
-
-  Node(std::string _name) {
-    set_name(_name);
-    init();
-  }
-
-  void init() {
-    kernel = nullptr;
-    set_type(VX_TYPE_NODE);
-    set_task();
-    bind(this);
-  }
-
-  virtual ~Node() = default;
-
-  std::vector<Node *> subnodes;
-  std::vector<Object *> inputs;
-  std::vector<Object *> outputs;
-
-  vx_border_e border_mode = VX_BORDER_UNDEFINED;
-  std::shared_ptr<DomVX::Node> kernel;
-
-  DomVX::OperatorType operator_type = DomVX::OperatorType::None;
-
-  virtual void build() {}
-};
-
-class Convolution : public Object {
- public:
-  Convolution() {
-    set_type(VX_TYPE_CONVOLUTION);
-    set_name("Convolve");
-    set_task();
-    bind(this);
-  }
-
-  std::vector<vx_int16> coefficients;
-  vx_size rows;
-  vx_size columns;
-  vx_uint32 scale;
-};
 
 class Threshold : public Object {
  public:
@@ -264,6 +269,7 @@ class Threshold : public Object {
   vx_df_image output_format;
 };
 
+
 class VX_Matrix : public Object {
  public:
   VX_Matrix() {
@@ -279,6 +285,7 @@ class VX_Matrix : public Object {
   std::vector<u_char> mat;
 };
 
+
 class Graph : public Object {
  public:
   std::vector<Node *> graph;
@@ -286,6 +293,7 @@ class Graph : public Object {
 
   void build();
 };
+
 
 class Context : public Object {
  public:

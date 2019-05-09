@@ -4,7 +4,7 @@
 // OPERATORS
 //*********************************************************************
 domVX_point create_point_op() {
-  return std::shared_ptr<DomVX::Map>(new DomVX::Map());
+  return std::shared_ptr<DomVX::PointOperator>(new DomVX::PointOperator());
 }
 
 domVX_local create_local_op() {

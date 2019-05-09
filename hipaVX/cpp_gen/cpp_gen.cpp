@@ -687,7 +687,7 @@ std::string create_matrix_def(std::string type, std::string name,
   return create_matrix_def(type, name, std::to_string(w), std::to_string(h));
 }
 
-std::string CPPVisitor::setup_outer_loop(std::shared_ptr<DomVX::Map> m) {
+std::string CPPVisitor::setup_outer_loop(std::shared_ptr<DomVX::PointOperator> m) {
   std::string y_index_name = "y_" + m->id();
   std::string x_index_name = "x_" + m->id();
   std::string templ =
@@ -763,7 +763,7 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> _n,
   auto n = std::dynamic_pointer_cast<DomVX::OperatorNode>(_n);
   switch (n->operator_type) {
     case DomVX::OperatorType::PointOperator: {
-      auto s = std::dynamic_pointer_cast<DomVX::Map>(n);
+      auto s = std::dynamic_pointer_cast<DomVX::PointOperator>(n);
 
       std::string outer_loop = setup_outer_loop(s);
 

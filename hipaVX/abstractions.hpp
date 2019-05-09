@@ -165,20 +165,20 @@ class Mask : public AbstractionNode {
  * @brief Calculates every output pixel from the input image pixels from the
  * same pixel coordinates
  */
-class Map : public OperatorNode {
+class PointOperator : public OperatorNode {
   std::shared_ptr<ast4vx::Statements> function;
 
  public:
   /**
    * @brief Default constructor
    */
-  Map() { operator_type = OperatorType::PointOperator; }
+  PointOperator() { operator_type = OperatorType::PointOperator; }
 
   /**
    * @brief Constructor which sets the statement as the mapping function
    * @param s The PixelToPixel mapping function
    */
-  Map(std::shared_ptr<ast4vx::Statements> s) {
+  PointOperator(std::shared_ptr<ast4vx::Statements> s) {
     operator_type = OperatorType::PointOperator;
     set_statements(s);
   }

@@ -31,7 +31,7 @@ using HipaccAccessor = DomVXAcc;
 using HipaccIterationSpace = DomVXAcc;
 
 using HipaccKernel = DomVX::OperatorNode;
-using HipaccPointNode = DomVX::Map;
+using HipaccPointNode = DomVX::PointOperator;
 using HipaccLocalNode = DomVX::LocalOperator;
 
 using HipaccDataType = vx_df_image;
