@@ -2,10 +2,10 @@
 
 // TODO: use tuples
 string generate_image_name(DomVX::Image* image) {
-  return string("Image_") + std::to_string(image->my_id);
+  return string("Image_") + image->id();
 }
 string generate_scalar_name(DomVX::Scalar* scalar) {
-  return string("Scalar_") + std::to_string(scalar->my_id);
+  return string("Scalar_") + scalar->id();
 }
 
 namespace generator {
@@ -21,7 +21,7 @@ string node_generator(DomVX::WriteImageNode* n, Type t) {
          "\"@@@FILENAME@@@\");\n";
     s += "\n";
 
-    s = use_template(s, "ID", n->my_id);
+    s = use_template(s, "ID", n->id());
     s = use_template(s, "IMAGE", generate_image_name(n->in));
     s = use_template(s, "IMAGE_DATATYPE", VX_DF_IMAGE_to_cpp[n->in->col]);
 

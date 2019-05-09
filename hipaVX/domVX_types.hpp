@@ -28,11 +28,11 @@ VertexTask set_task_from_type(ObjectType type);
 
 class Object {
  public:
-  Object() : my_id(next_id++){};
+  Object() : my_id(next_id++){}
 
   virtual ~Object() = default;
 
-  bool is_virtual() { return virt; };
+  bool is_virtual() { return virt; }
 
   VertexTask get_task() { return task; }
 
@@ -48,13 +48,12 @@ class Object {
 
   std::string id() { return std::to_string(my_id); }
 
-  ObjectType get_type() { return this->type; };
+  ObjectType get_type() { return this->type; }
 
   // TODO: only temporary
   DomVX::OperatorType operator_type = DomVX::OperatorType::None;
 
  public:  // TODO: make these protected
-  int my_id;
 
   ObjectType type;
 
@@ -70,6 +69,8 @@ class Object {
 
  protected:
   static int next_id;
+
+  int my_id;
 };
 
 
@@ -122,7 +123,7 @@ class Scalar : public Object {
 
 class Image : public Object {
  public:
-  Image() { init(); };
+  Image() { init(); }
 
   Image(std::string _name) {
     set_name(_name);
@@ -150,8 +151,8 @@ class Image : public Object {
     _obj = this;
   }
 
-  vx_uint32 get_width() { return w; };
-  vx_uint32 get_height() { return h; };
+  vx_uint32 get_width() { return w; }
+  vx_uint32 get_height() { return h; }
 
   virtual ~Image() = default;
 
@@ -317,7 +318,7 @@ class Acc {
     };
 
     name = im->get_name() + _name + std::to_string(my_id);
-  };
+  }
 
   void init() {
     isRoiSet = false;
@@ -328,20 +329,20 @@ class Acc {
     name = std::to_string(my_id) + "_Acc_undef";
   }
 
-  Acc() : my_id(next_id++) { init(); };
+  Acc() : my_id(next_id++) { init(); }
 
   Acc(Image *_im, bool _is_acc) : my_id(next_id++) {
     init();
     set_img(_im);
     is_acc = _is_acc;
     is_is = !_is_acc;
-  };
+  }
 
-  std::string get_name() { return name; };
+  std::string get_name() { return name; }
 
-  bool isImgSet() { return !(im == NULL); };
+  bool isImgSet() { return !(im == NULL); }
 
-  void set_img(Image *_im) { im = _im; };
+  void set_img(Image *_im) { im = _im; }
 
   void set_as_is() {
     is_is = true;
@@ -353,9 +354,9 @@ class Acc {
     is_acc = true;
   }
 
-  int width() { return im->get_width(); };
+  unsigned width() { return im->get_width(); }
 
-  int height() { return im->get_height(); };
+  unsigned height() { return im->get_height(); }
 
   static int next_id;
 };
