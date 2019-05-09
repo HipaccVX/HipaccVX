@@ -483,7 +483,7 @@ class graph_gen {
 
   VertexTask get_vert_task(VertexDesc& v) { return get_vert(v)->get_task(); }
 
-  ObjectType get_vert_type(VertexDesc& v) { return get_vert(v)->get_type(); }
+  ObjectType get_vert_type(VertexDesc& v) { return get_vert(v)->type(); }
 
   EdgeType* get_edge(EdgeDesc& e) { return &(*_g_opt)[e]; }
 
@@ -716,7 +716,7 @@ void hipacc_gen::iterate_spaces() {
 }
 
 void hipacc_gen::def(VertexType* hn) {
-  switch (hn->type) {
+  switch (hn->type()) {
     case HipaccImageE: {
       auto _im = obj2img(hn);
       def(ss_im, _im);

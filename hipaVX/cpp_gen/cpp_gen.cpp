@@ -79,10 +79,10 @@ std::vector<DomVX::Image*> get_all_images(DomVX::Graph* g) {
     nodes.pop_back();
 
     for (auto ref : node->inputs) {
-      if (ref->type == VX_TYPE_IMAGE) images.push_back((DomVX::Image*)ref);
+      if (ref->type() == VX_TYPE_IMAGE) images.push_back((DomVX::Image*)ref);
     }
     for (auto ref : node->outputs) {
-      if (ref->type == VX_TYPE_IMAGE) images.push_back((DomVX::Image*)ref);
+      if (ref->type() == VX_TYPE_IMAGE) images.push_back((DomVX::Image*)ref);
     }
 
     auto subnodes = node->subnodes;

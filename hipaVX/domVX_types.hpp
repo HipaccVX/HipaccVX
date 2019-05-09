@@ -38,7 +38,7 @@ class Object {
 
   void set_task(VertexTask _task) { task = _task; }
 
-  void set_task() { task = set_task_from_type(type); }
+  void set_task() { task = set_task_from_type(type()); }
 
   void set_name(std::string _name = "Object") {
     name = _name + std::to_string(my_id);
@@ -48,14 +48,15 @@ class Object {
 
   std::string id() { return std::to_string(my_id); }
 
-  ObjectType get_type() { return this->type; }
+  ObjectType type() { return this->obj_type; }
+
+  void set_type(ObjectType _obj_type) { obj_type = _obj_type; }
 
   // TODO: only temporary
   DomVX::OperatorType operator_type = DomVX::OperatorType::None;
 
  public:  // TODO: make these protected
 
-  ObjectType type;
 
   Object *_obj;
 
@@ -70,6 +71,8 @@ class Object {
  protected:
   static int next_id;
 
+  ObjectType obj_type;
+
   int my_id;
 };
 
@@ -83,7 +86,7 @@ class Scalar : public Object {
   }
 
   void init() {
-    type = VX_TYPE_SCALAR;
+    set_type(VX_TYPE_SCALAR);
     set_task();
     _obj = this;
   }
@@ -144,7 +147,7 @@ class Image : public Object {
   }
 
   void init() {
-    type = VX_TYPE_IMAGE;
+    set_type(VX_TYPE_IMAGE);
     col = VX_TYPE_DF_IMAGE;
     set_task();
     set_name("Img");
@@ -164,22 +167,23 @@ class Image : public Object {
   void set_dtype(vx_df_image type) { col = type; }
 };
 
-class Array : public Image {
+class Array : public Object {
  public:
-  Array(vx_enum item_type, vx_size cap, vx_size rows)
-      : Image(rows, cap, VX_DF_IMAGE_S32), type(item_type), capacity(cap) {
+  Array(vx_enum _dtype, vx_size _size, vx_size _rows)
+      : data_type(_dtype), size(_size), rows(_rows) {
     init();
     set_name("Arr");
   }
 
   void init() {
-    type = VX_TYPE_ARRAY;
+    set_type(VX_TYPE_ARRAY);
     set_task();
   }
 
   virtual ~Array() = default;
-  vx_enum type;
-  vx_size capacity;
+  vx_enum data_type;
+  vx_size size;
+  vx_size rows;
 };
 
 class Node : public Object {
@@ -198,8 +202,8 @@ class Node : public Object {
   }
 
   void init() {
-    kernel = NULL;
-    type = VX_TYPE_NODE;
+    kernel = nullptr;
+    set_type(VX_TYPE_NODE);
     set_task();
     _obj = this;
   }
@@ -219,7 +223,7 @@ class Node : public Object {
 class Convolution : public Object {
  public:
   Convolution() {
-    type = VX_TYPE_CONVOLUTION;
+    set_type(VX_TYPE_CONVOLUTION);
     set_name("Convolve");
     set_task();
     _obj = this;
@@ -234,7 +238,7 @@ class Convolution : public Object {
 class Threshold : public Object {
  public:
   Threshold() {
-    type = VX_TYPE_THRESHOLD;
+    set_type(VX_TYPE_THRESHOLD);
     set_name("Threshold");
     set_task();
     _obj = this;
@@ -256,7 +260,7 @@ class Threshold : public Object {
 class VX_Matrix : public Object {
  public:
   VX_Matrix() {
-    type = VX_TYPE_MATRIX;
+    set_type(VX_TYPE_MATRIX);
     set_name("Matrix");
     set_task();
     _obj = this;
@@ -278,8 +282,9 @@ class Graph : public Object {
 
 class Context : public Object {
  public:
-  std::vector<Image *> images;
-  std::vector<Graph *> graphs;
+  std::vector<Image*> images;
+  std::vector<Array*> arrays;
+  std::vector<Graph*> graphs;
 };
 
 // ------------   TODO: fix these acccording to OpenVX definition
