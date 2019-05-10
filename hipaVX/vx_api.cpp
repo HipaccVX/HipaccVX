@@ -85,17 +85,16 @@ VX_API_ENTRY vx_status VX_API_CALL vxReleaseNode(vx_node *node) { return 0; }
 
 // Object: Array
 VX_API_ENTRY vx_array VX_API_CALL vxCreateArray(vx_context context,
-                                                vx_enum item_type,
-                                                vx_size capacity) {
-  if (item_type != VX_TYPE_KEYPOINT)
-    throw std::runtime_error(
-        "vx_array: Only VX_TYPE_KEYPOINT is currently supported");
+                                                vx_enum data_type,
+                                                vx_size size) {
+  if (data_type != VX_TYPE_KEYPOINT)
+    throw std::runtime_error( "vx_array: Only VX_TYPE_KEYPOINT is currently supported");
 
-  DomVX::Array *arr = new DomVX::Array(item_type, capacity,
-                                       7);  // vx_keypoint_t has 7 32bit members
+  // vx_keypoint_t has 7 32bit members
+  DomVX::Array *arr = new DomVX::Array(data_type, size, 7);
   auto vx = new _vx_array();
   vx->o = arr;
-  ((DomVX::Context *)(context->o))->images.emplace_back(arr);
+  ((DomVX::Context *)(context->o))->arrays.emplace_back(arr);
   return vx;
 }
 

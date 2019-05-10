@@ -1,37 +1,37 @@
 #include "domVX_api.hpp"
 
-//******************************************************************************
+//*********************************************************************
 // OPERATORS
-//******************************************************************************
-std::shared_ptr<DomVX::Map> create_point_op() {
-  return std::shared_ptr<DomVX::Map>(new DomVX::Map());
+//*********************************************************************
+domVX_point create_point_op() {
+  return std::shared_ptr<DomVX::PointOperator>(new DomVX::PointOperator());
 }
 
-std::shared_ptr<DomVX::LocalOperation> create_local_op() {
-  return std::shared_ptr<DomVX::LocalOperation>(new DomVX::LocalOperation());
+domVX_local create_local_op() {
+  return std::shared_ptr<DomVX::LocalOperator>(new DomVX::LocalOperator());
 }
 
-std::shared_ptr<DomVX::GlobalOperation> create_global_op() {
-  return std::shared_ptr<DomVX::GlobalOperation>(new DomVX::GlobalOperation());
+domVX_global create_global_op() {
+  return std::shared_ptr<DomVX::GlobalOperator>(new DomVX::GlobalOperator());
 }
 
-//******************************************************************************
+//*********************************************************************
 // Image
-//******************************************************************************
+//*********************************************************************
 domVX_image create_image(unsigned int width, unsigned int height,
                          vx_df_image type) {
   return (new DomVX::Image(1024, 512, VX_DF_IMAGE_U8));
 }
 
-//******************************************************************************
+//*********************************************************************
 // DOMAIN  (TODO: Consider renaming as Window)
-//******************************************************************************
-std::shared_ptr<DomVX::Domain> create_dom(unsigned int x, unsigned int y,
-                                          std::vector<int> dom) {
+//*********************************************************************
+domVX_domain create_domain(unsigned int x, unsigned int y,
+                           std::vector<int> dom) {
   return std::shared_ptr<DomVX::Domain>(new DomVX::Domain(x, y, dom));
 }
 
-std::shared_ptr<DomVX::Domain> create_dom(std::shared_ptr<DomVX::Mask> mask) {
+domVX_domain create_domain(domVX_mask mask) {
   std::vector<int> values;
   for (auto& row : mask->mask) {
     for (auto cell : row) {
@@ -45,15 +45,15 @@ std::shared_ptr<DomVX::Domain> create_dom(std::shared_ptr<DomVX::Mask> mask) {
       new DomVX::Domain(mask->width, mask->height, values));
 }
 
-//******************************************************************************
+//*********************************************************************
 // MASK
-//******************************************************************************
-std::shared_ptr<DomVX::Mask> create_mask(unsigned int x, unsigned int y,
+//*********************************************************************
+domVX_mask create_mask(unsigned int w, unsigned int h,
                                          std::initializer_list<int32_t> mask) {
-  return std::shared_ptr<DomVX::Mask>(new DomVX::Mask(x, y, mask));
+  return std::shared_ptr<DomVX::Mask>(new DomVX::Mask(w, h, mask));
 }
 
-std::shared_ptr<DomVX::Mask> create_mask(unsigned int x, unsigned int y,
+domVX_mask create_mask(unsigned int w, unsigned int h,
                                          std::initializer_list<float> mask) {
-  return std::shared_ptr<DomVX::Mask>(new DomVX::Mask(x, y, mask));
+  return std::shared_ptr<DomVX::Mask>(new DomVX::Mask(w, h, mask));
 }

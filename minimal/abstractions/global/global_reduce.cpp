@@ -3,6 +3,7 @@
 #include "../../../hipaVX/abstractions.hpp"
 #include "../../../hipaVX/cpp_gen/cpp_gen.hpp"
 #include "../../../hipaVX/domVX_types.hpp"
+#include "../../../hipaVX/domVX_api.hpp"
 
 int main() {
   auto ast_reduction = create_reduction(ast4vx::Constant<int>(255));
@@ -15,8 +16,9 @@ int main() {
 
   //---------------------------- DomVX --------------------------------------
 
-  auto image_i = new HipaVX::Image(1024, 512, VX_DF_IMAGE_U8);
-  auto var_out = new HipaVX::Scalar(VX_TYPE_UINT8);
+  auto image_i = create_image(1024, 512, VX_DF_IMAGE_U8);
+  int var = 0;
+  auto var_out = new DomVX::Scalar(VX_TYPE_INT32, &var);
 
   // Create the local operation
   auto global_op = create_global_op();

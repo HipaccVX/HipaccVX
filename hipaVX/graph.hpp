@@ -27,7 +27,7 @@ namespace graphVX {
 
 using VertexType = DomVX::Object;
 using EdgeType = DomVX::Acc;
-using DomVX::VertexTask;
+using DomVX::ObjectTask;
 
 // ------------------- graphviz custom node writer ----------------------------
 template <class NameMap, class TaskMap>
@@ -41,10 +41,10 @@ class vertex_writer {
     auto task = task_m[v];
     out << " [label = " << name_m[v] << ", style = filled, ";
     switch (task) {
-      case VertexTask::Buffer:
+      case ObjectTask::Buffer:
         out << "shape = box, fillcolor = grey]";
         break;
-      case VertexTask::Computation:
+      case ObjectTask::Computation:
         out << "shape = circle, fillcolor = orange]";
         break;
       default:
@@ -149,7 +149,7 @@ struct mark_as_alive : public boost::dfs_visitor<> {
 
   template <class Vertex, class Graph>
   void discover_vertex(Vertex v, Graph&) {
-    g[v].alive = true;
+    g[v].is_alive(true);
   };
 
   //  template <class Vertex, class Graph>
@@ -173,7 +173,7 @@ void _write_graphviz(GraphT _g, std::string name) {
   std::ofstream file_out(name + ".dot");
   boost::write_graphviz(file_out, _g,
                         make_vertex_writer(boost::get(&VertexType::name, _g),
-                                           boost::get(&VertexType::task, _g)));
+                                           boost::get(&VertexType::obj_task, _g)));
 }
 
 template <class GraphT>
@@ -413,7 +413,7 @@ OptGraphT* dag::eliminate_dead_nodes() {
     _depth_first_visit(root, g_trans, vis, terminator(inputs));
   }
 
-  auto is_alive = [this](VertexDesc vd) { return this->g_trans[vd].alive; };
+  auto is_alive = [this](VertexDesc vd) { return this->g_trans[vd].is_alive(); };
 
   _g_opt = new OptGraphT(g, boost::keep_all{}, is_alive);
 
@@ -514,7 +514,7 @@ void dag::gen_rand_acyclic_graph(unsigned n, unsigned k) {
   for (auto v : *ordered) {
     // make sure that initial nodes are images
     // if (boost::in_degree(v, g) == 1) break;
-    if (g[v].get_task() != VertexTask::Buffer) {
+    if (g[v].task() != ObjectTask::Buffer) {
       clear_vertex(v, g);
       // remove_vertex(v, g);
     } else {
@@ -536,7 +536,7 @@ void dag::gen_rand_acyclic_graph(unsigned n, unsigned k) {
     // std:: cout << "------ " <<  g[v].get_name() << "
     //              , degree" << boost::out_degree(v, g) << std::endl;
     if (boost::out_degree(v, g) == 0) {
-      if (g[v].get_task() == VertexTask::Buffer) {
+      if (g[v].task() == ObjectTask::Buffer) {
         // if(boost::in_degree(v, g) > 0 && cntr < n_out) {
         if (cntr < n_out) {
           g[v].virt = false;

@@ -42,6 +42,7 @@ class Domain : public AbstractionNode {
    * @param dom row major flat matrix of the domain values. Has to have x*y
    * entries
    */
+  // TODO: why is the dom int, just holds 1 and 0
   Domain(unsigned int x, unsigned int y, std::vector<int> dom)
       : width(x), height(y) {
     set_domain(dom);
@@ -164,21 +165,21 @@ class Mask : public AbstractionNode {
  * @brief Calculates every output pixel from the input image pixels from the
  * same pixel coordinates
  */
-class Map : public OperatorNode {
+class PointOperator : public OperatorNode {
   std::shared_ptr<ast4vx::Statements> function;
 
  public:
   /**
    * @brief Default constructor
    */
-  Map() { operator_type = OperatorType::Map; }
+  PointOperator() { operator_type = OperatorType::PointOperator; }
 
   /**
    * @brief Constructor which sets the statement as the mapping function
    * @param s The PixelToPixel mapping function
    */
-  Map(std::shared_ptr<ast4vx::Statements> s) {
-    operator_type = OperatorType::Map;
+  PointOperator(std::shared_ptr<ast4vx::Statements> s) {
+    operator_type = OperatorType::PointOperator;
     set_statements(s);
   }
 
@@ -315,7 +316,7 @@ class Map : public OperatorNode {
  * It supports multiple input and output images - input domains and masks - and
  * multiple ast4vx::WindowOperation
  */
-class LocalOperation : public OperatorNode {
+class LocalOperator : public OperatorNode {
  public:
   std::vector<
       std::tuple<DomVX::Image *, std::shared_ptr<ast4vx::WindowDescriptor>>>
@@ -339,7 +340,7 @@ class LocalOperation : public OperatorNode {
       domain_bindings;
 
  public:
-  LocalOperation() { operator_type = OperatorType::LocalOperation; }
+  LocalOperator() { operator_type = OperatorType::LocalOperator; }
 
   /**
    * @brief Maps the ast4vx::WindowDescriptor to actual HipaVX::Image. This
@@ -433,14 +434,14 @@ class LocalOperation : public OperatorNode {
  *
  * Currently only global reduction of an image is supported
  */
-class GlobalOperation : public OperatorNode {
+class GlobalOperator : public OperatorNode {
  public:
   std::shared_ptr<ast4vx::Reduction> reduction;
   DomVX::Scalar *reduction_out;
   std::vector<DomVX::Image *> input_pixel_mappings;
 
  public:
-  GlobalOperation() { operator_type = OperatorType::GlobalOperation; }
+  GlobalOperator() { operator_type = OperatorType::GlobalOperator; }
 
   /**
    * @brief Binds the input iamges of the statements to the actual HipaVX::Image

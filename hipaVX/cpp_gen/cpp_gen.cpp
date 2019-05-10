@@ -2,10 +2,10 @@
 
 // TODO: use tuples
 string generate_image_name(DomVX::Image* image) {
-  return string("Image_") + std::to_string(image->my_id);
+  return string("Image_") + image->id();
 }
 string generate_scalar_name(DomVX::Scalar* scalar) {
-  return string("Scalar_") + std::to_string(scalar->my_id);
+  return string("Scalar_") + scalar->id();
 }
 
 namespace generator {
@@ -21,7 +21,7 @@ string node_generator(DomVX::WriteImageNode* n, Type t) {
          "\"@@@FILENAME@@@\");\n";
     s += "\n";
 
-    s = use_template(s, "ID", n->my_id);
+    s = use_template(s, "ID", n->id());
     s = use_template(s, "IMAGE", generate_image_name(n->in));
     s = use_template(s, "IMAGE_DATATYPE", VX_DF_IMAGE_to_cpp[n->in->col]);
 
@@ -79,10 +79,10 @@ std::vector<DomVX::Image*> get_all_images(DomVX::Graph* g) {
     nodes.pop_back();
 
     for (auto ref : node->inputs) {
-      if (ref->type == VX_TYPE_IMAGE) images.push_back((DomVX::Image*)ref);
+      if (ref->type() == VX_TYPE_IMAGE) images.push_back((DomVX::Image*)ref);
     }
     for (auto ref : node->outputs) {
-      if (ref->type == VX_TYPE_IMAGE) images.push_back((DomVX::Image*)ref);
+      if (ref->type() == VX_TYPE_IMAGE) images.push_back((DomVX::Image*)ref);
     }
 
     auto subnodes = node->subnodes;
@@ -687,7 +687,7 @@ std::string create_matrix_def(std::string type, std::string name,
   return create_matrix_def(type, name, std::to_string(w), std::to_string(h));
 }
 
-std::string CPPVisitor::setup_outer_loop(std::shared_ptr<DomVX::Map> m) {
+std::string CPPVisitor::setup_outer_loop(std::shared_ptr<DomVX::PointOperator> m) {
   std::string y_index_name = "y_" + m->id();
   std::string x_index_name = "x_" + m->id();
   std::string templ =
@@ -710,7 +710,7 @@ std::string CPPVisitor::setup_outer_loop(std::shared_ptr<DomVX::Map> m) {
   return templ;
 }
 std::string CPPVisitor::setup_outer_loop(
-    std::shared_ptr<DomVX::LocalOperation> l,
+    std::shared_ptr<DomVX::LocalOperator> l,
     const std::vector<DomVX::Image*>& out) {
   std::string y_index_name = "y_" + l->id();
   std::string x_index_name = "x_" + l->id();
@@ -734,7 +734,7 @@ std::string CPPVisitor::setup_outer_loop(
   return templ;
 }
 std::string CPPVisitor::setup_outer_loop(
-    std::shared_ptr<DomVX::GlobalOperation> g,
+    std::shared_ptr<DomVX::GlobalOperator> g,
     const std::vector<DomVX::Image*>& in) {
   std::string y_index_name = "y_" + g->id();
   std::string x_index_name = "x_" + g->id();
@@ -758,11 +758,12 @@ std::string CPPVisitor::setup_outer_loop(
   return templ;
 }
 
-std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n,
+std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> _n,
                               int i) {
+  auto n = std::dynamic_pointer_cast<DomVX::OperatorNode>(_n);
   switch (n->operator_type) {
-    case DomVX::OperatorType::Map: {
-      auto s = std::dynamic_pointer_cast<DomVX::Map>(n);
+    case DomVX::OperatorType::PointOperator: {
+      auto s = std::dynamic_pointer_cast<DomVX::PointOperator>(n);
 
       std::string outer_loop = setup_outer_loop(s);
 
@@ -791,8 +792,8 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n,
       outer_loop = use_template(outer_loop, "CODE", code);
       return outer_loop;
     }
-    case DomVX::OperatorType::LocalOperation: {
-      auto s = std::dynamic_pointer_cast<DomVX::LocalOperation>(n);
+    case DomVX::OperatorType::LocalOperator: {
+      auto s = std::dynamic_pointer_cast<DomVX::LocalOperator>(n);
 
       std::vector<std::shared_ptr<ast4vx::WindowOperation>> w_ops;
       std::vector<
@@ -978,8 +979,8 @@ std::string CPPVisitor::visit(std::shared_ptr<DomVX::AbstractionNode> n,
       outer_loop = use_template(outer_loop, "CODE", code);
       return outer_loop;
     }
-    case DomVX::OperatorType::GlobalOperation: {
-      auto s = std::dynamic_pointer_cast<DomVX::GlobalOperation>(n);
+    case DomVX::OperatorType::GlobalOperator: {
+      auto s = std::dynamic_pointer_cast<DomVX::GlobalOperator>(n);
 
       if (s->input_pixel_mappings.size() == 0)
         throw std::runtime_error(
