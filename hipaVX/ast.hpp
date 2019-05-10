@@ -114,9 +114,8 @@ class Node {
     id = next_id++;
   }
   NodeType type = NodeType::None; /**< Denotes which type this AST Node is */
-  std::vector<std::shared_ptr<Node>>
-      subnodes; /**< Many of the AST Nodes parameters and subnodes are stored in
-                   here */
+  std::vector<std::shared_ptr<Node>> subnodes; /**< Many of the AST Nodes
+                                  parameters and subnodes are stored in here */
 
   /**
    * @brief operator []
@@ -1254,9 +1253,9 @@ class WindowOperation : public Node,
    * @brief Computes a reduction statement for the values in the domain
    * @param s The Reduction Statement that computes the final value
    * @throws std::runtime_error will be thrown when this WindowOperation is
-   * already in another state. See brief description of this class
+   *         already in another state. See brief description of this class
    * @throws std::runtime_error will be thrown when a Reduction Statement
-   * already is bound for this WindowOperation
+   *         already is bound for this WindowOperation
    */
   void reduce(std::shared_ptr<Reduction> s) {
     if (current_state != State::None && current_state != State::Reduce)
