@@ -11,7 +11,7 @@ int main() {
   auto image_i = new DomVX::Image(1024, 512, VX_DF_IMAGE_U8);
   auto image_o = new DomVX::Image(1024, 512, VX_DF_IMAGE_U8);
   // Create the domain
-  auto dom = create_dom(3, 5, {0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1});
+  auto dom = create_domain(3, 5, {0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1});
 
   auto win_in = get_window(image_i, dom);
 

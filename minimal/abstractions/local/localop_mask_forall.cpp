@@ -14,7 +14,7 @@ int main() {
   auto mask = create_mask(3, 5, {-1, -1, 1, -1, 0,
                                   1, -1, 0, 1, -1,
                                   0, 1, -1, 1, 1});
-  auto dom = create_dom(mask);
+  auto dom = create_domain(mask);
 
   auto win_in = get_window(image_i, dom);
 
