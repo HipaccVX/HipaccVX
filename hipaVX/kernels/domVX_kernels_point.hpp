@@ -1,8 +1,9 @@
 // TODO: Would be nice to briefly comment on AST build
 
 #include "../../VX/vx.h"
-#include "../ast.hpp"
-#include "../domVX_types.hpp"
+//#include "../dsl/ast.hpp"
+//#include "../dsl/types.hpp"
+#include "../vx_adaptor.hpp"
 //#include "../hipacc_gen/ast_gen.hpp" //TODO: only for now
 
 #pragma once

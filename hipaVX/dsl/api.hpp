@@ -1,4 +1,6 @@
 #pragma once
+#include "ast.hpp"
+#include "types.hpp"
 #include "abstractions.hpp"
 
 typedef std::shared_ptr<DomVX::PointOperator> domVX_point;
@@ -41,7 +43,7 @@ domVX_image create_image(unsigned int width, unsigned int height,
 domVX_domain create_domain(unsigned int w, unsigned int h, std::vector<int> dom);
 
 /**
- * @brief Returns a new Domain and initializes its values from the mask
+ * @brief Creates a Domain from a given mask
  * @param mask The mask where the values should get read from
  */
 domVX_domain create_domain(domVX_mask mask);
@@ -50,19 +52,19 @@ domVX_domain create_domain(domVX_mask mask);
 // MASK
 //*********************************************************************
 /**
- * @brief Returns a new Mask and initializes it
- * @param x width of the mask
- * @param y height of the mask
- * @param mask row major flat matrix of the mask values. Has to have x*y entries
+ * @brief Creates an int32_t Mask from an initializer list
+ * @param w width of the mask
+ * @param h height of the mask
+ * @param mask (w * h) coefficients as a row major flat matrix
  */
 domVX_mask create_mask(unsigned int w, unsigned int h,
                        std::initializer_list<int32_t> mask);
 
 /**
- * @brief Returns a new Mask and initializes it
- * @param x width of the mask
- * @param y height of the mask
- * @param mask row major flat matrix of the mask values. Has to have x*y entries
+ * @brief Creates a float Mask from an initializer list
+ * @param w width of the mask
+ * @param h height of the mask
+ * @param mask (w * h) coefficients as a row major flat matrix
  */
 domVX_mask create_mask(unsigned int w, unsigned int h,
                        std::initializer_list<float> mask);

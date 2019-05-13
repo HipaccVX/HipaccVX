@@ -4,6 +4,7 @@
 #include <string>
 
 #include "../VX/vx.h"
+#include "vx_adaptor.hpp"
 
 // TODO: vxCreateImageFromFile, vxFWriteImageNode, vxDrawDotGraph are not
 // extensions.

@@ -1,6 +1,6 @@
 #include "../VX/vx.h"
 #include "../VX/vx_compatibility.h"
-#include "domVX_types.hpp"
+#include "vx_adaptor.hpp"
 
 //#define HIPACC_GEN
 #ifdef HIPACC_GEN

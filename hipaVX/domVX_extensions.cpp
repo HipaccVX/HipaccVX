@@ -49,7 +49,7 @@ void vxDrawDotGraph(vx_graph graph, std::string filename,
   std::string node_definitions;
   for (auto node : nodes)
     node_definitions += "\tID_" + node->id() + " [label=\"" +
-                        node->get_name() + "\", color=green];\n";
+                        node->name() + "\", color=green];\n";
   for (auto object : objects)
     node_definitions += "\tID_" + object->id() + " [label=\"" +
                         get_object_name(object) +

@@ -10,6 +10,6 @@ FileinputImage::FileinputImage(vx_uint32 width, vx_uint32 height,
                                vx_df_image color, std::string filename)
     : Image(width, height, color), file(filename) {}
 
-WriteImageNode::WriteImageNode() { node_name = "Image Writer"; }
+WriteImageNode::WriteImageNode() { set_name("Image Writer"); }
 void WriteImageNode::build() { inputs.emplace_back(in); }
 }  // namespace DomVX

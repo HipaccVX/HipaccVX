@@ -1,9 +1,8 @@
 #pragma once
 
-#include "../graph.hpp"
-#include "../domVX_types.hpp"
-#include "../abstractions.hpp"
-#include "../../VX/vx.h"
+#include "../dsl/types.hpp"
+#include "../dsl/abstractions.hpp"
+#include "../graph/graph.hpp"
 #include "cassert"
 //#include <iterator>
 //#include "infix_iterator.h"
@@ -61,7 +60,7 @@ HipaccImage* obj2img(VertexType* v) {
   HipaccImage* _im = dynamic_cast<HipaccImage*>(v->get());
 
   if(_im == NULL)
-    ERRORM("graph_gen obj2img, dynamic cast fail for: " + v->get_name());
+    ERRORM("graph_gen obj2img, dynamic cast fail for: " + v->name());
 
   return _im;
 }
@@ -72,7 +71,7 @@ HipaccKernel* obj2node(VertexType* v) {
   HipaccKernel* _node = dynamic_cast<DomVX::Node*>(v->get());
 
   if(_node == NULL)
-    ERRORM("graph_gen obj2node, dynamic cast fail for: " + v->get_name());
+    ERRORM("graph_gen obj2node, dynamic cast fail for: " + v->name());
 
   return _node;
 }
@@ -81,7 +80,7 @@ HipaccLocalNode* kernel2local(HipaccKernel* v) {
   auto _kern = dynamic_cast<HipaccLocalNode*>(v);
 
   if(_kern == NULL)
-    ERRORM("graph_gen kernel2local, dynamic cast fail for: " + v->get_name());
+    ERRORM("graph_gen kernel2local, dynamic cast fail for: " + v->name());
 
   return _kern;
 }
@@ -158,12 +157,12 @@ std::string hipacc_writer::_dtype(HipaccDataType type, std::string name) {
 
 template<class T>
 std::string hipacc_writer::dtype(T* n) {
-  return _dtype(n->get_dtype(), n->get_name());
+  return _dtype(n->get_dtype(), n->name());
 }
 
 template<class T>
 std::string hipacc_writer::name(T* n) {
-  std::string ss = n->get_name();
+  std::string ss = n->name();
 
   if (ss.empty()) ERRORM("hipacc_writer::name : returns an empty string");
 
@@ -204,7 +203,7 @@ void hipacc_writer::def(std::stringstream &ss, HipaccImage* img, DefType deftype
 
 void hipacc_writer::def_acc(std::stringstream &ss, DomVXAcc* acc, DefType deftype) {
   if (acc->isImgSet() == false) {
-    ERRORM("hipacc_writer::def(acc) : acc " + acc->get_name() + " has no image");
+    ERRORM("hipacc_writer::def(acc) : acc " + acc->name() + " has no image");
   }
 
   switch(deftype) {
@@ -239,7 +238,7 @@ void hipacc_writer::def_acc(std::stringstream &ss, DomVXAcc* acc, DefType deftyp
 
 void hipacc_writer::def_is(std::stringstream &ss, DomVXAcc* is, DefType deftype) {
   if (is->isImgSet() == false) {
-    ERRORM("hipacc_writer::def(is) : is" + is->get_name() + " has no image");
+    ERRORM("hipacc_writer::def(is) : is" + is->name() + " has no image");
   }
 
   switch(deftype) {
@@ -537,17 +536,17 @@ void graph_gen::init() {
 
 void graph_gen::print_nodes() {
     for(auto i : nodes)
-      std::cout << get_vert(i)->get_name() << std::endl;
+      std::cout << get_vert(i)->name() << std::endl;
 };
 
 void graph_gen::print_spaces() {
   for(auto i : spaces)
-    std::cout << get_vert(i)->get_name() << std::endl;
+    std::cout << get_vert(i)->name() << std::endl;
 };
 
 void graph_gen::print_edges() {
   for(auto i : edges)
-    std::cout << get_edge(i)->get_name() << std::endl;
+    std::cout << get_edge(i)->name() << std::endl;
 };
 
 
@@ -651,7 +650,7 @@ void hipacc_gen::set_edges() {
 void hipacc_gen::iterate_nodes() {
     for(auto vert : nodes) {
       auto v = get_vert(vert);
-      ss_execs << dind << v->get_name() << ".execute()" << std::endl;
+      ss_execs << dind << v->name() << ".execute()" << std::endl;
 
       std::vector<HipaccDomain*> dom_l;
       std::vector<HipaccMask*> mask_l;
@@ -734,7 +733,7 @@ void hipacc_gen::def(VertexType* hn) {
     // case VX_TYPE_ARRAY:
     // case VX_TYPE_MATRIX:
     default: {
-      ERRORM("hipacc_writer::def : type of the VertexType" + hn->get_name() + "is not defined");
+      ERRORM("hipacc_writer::def : type of the VertexType" + hn->name() + "is not defined");
       break;
     }
   }
