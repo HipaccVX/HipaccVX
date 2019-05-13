@@ -1,4 +1,6 @@
 #pragma once
+#include "ast.hpp"
+#include "types.hpp"
 #include "abstractions.hpp"
 
 typedef std::shared_ptr<DomVX::PointOperator> domVX_point;

@@ -1,5 +1,4 @@
-#include "domVX_types.hpp"
-#include "../VX/vx.h"
+#include "types.hpp"
 
 #include <iostream>
 

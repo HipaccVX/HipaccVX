@@ -11,7 +11,7 @@
 #include <iterator>
 #include <random>
 
-#include "domVX_types.hpp"
+#include "dsl/types.hpp"
 
 #include <cstdarg>
 #include <iostream>

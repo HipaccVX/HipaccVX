@@ -1,9 +1,8 @@
 #pragma once
 
+#include "../dsl/types.hpp"
+#include "../dsl/abstractions.hpp"
 #include "../graph.hpp"
-#include "../domVX_types.hpp"
-#include "../abstractions.hpp"
-#include "../../VX/vx.h"
 #include "cassert"
 //#include <iterator>
 //#include "infix_iterator.h"

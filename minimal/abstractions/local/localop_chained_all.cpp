@@ -1,9 +1,9 @@
 #include <string>
 #include "../../../VX/vx.h"
-#include "../../../hipaVX/abstractions.hpp"
 #include "../../../hipaVX/cpp_gen/cpp_gen.hpp"
-#include "../../../hipaVX/domVX_api.hpp"
-#include "../../../hipaVX/domVX_types.hpp"
+#include "../../../hipaVX/dsl/types.hpp"
+#include "../../../hipaVX/dsl/abstractions.hpp"
+#include "../../../hipaVX/dsl/api.hpp"
 
 /*
                                                         +-------------+

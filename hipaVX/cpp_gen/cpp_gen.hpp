@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../abstractions.hpp"
-#include "../ast.hpp"
+#include "../dsl/abstractions.hpp"
+#include "../dsl/ast.hpp"
 #include "../gen_template.hpp"
 #include "../kernels/domVX_kernels.hpp"
 

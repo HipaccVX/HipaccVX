@@ -1,10 +1,9 @@
-#include <iostream>
 #include <string>
 #include "../../../VX/vx.h"
-#include "../../../hipaVX/abstractions.hpp"
 #include "../../../hipaVX/cpp_gen/cpp_gen.hpp"
-#include "../../../hipaVX/domVX_api.hpp"
-#include "../../../hipaVX/domVX_types.hpp"
+#include "../../../hipaVX/dsl/types.hpp"
+#include "../../../hipaVX/dsl/abstractions.hpp"
+#include "../../../hipaVX/dsl/api.hpp"
 
 int main(int argc, const char *argv[]) {
   auto image_0 = new DomVX::Image(1024, 1024, VX_DF_IMAGE_U8);
