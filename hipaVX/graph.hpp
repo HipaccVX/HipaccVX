@@ -165,14 +165,14 @@ struct mark_as_alive : public boost::dfs_visitor<> {
 // --------------------- independent functions -------------------------------
 template <class GraphT>
 void _print_graph(GraphT _g) {
-  boost::print_graph(_g, get(&VertexType::name, _g));
+  boost::print_graph(_g, get(&VertexType::obj_name, _g));
 }
 
 template <class GraphT>
 void _write_graphviz(GraphT _g, std::string name) {
   std::ofstream file_out(name + ".dot");
   boost::write_graphviz(file_out, _g,
-                        make_vertex_writer(boost::get(&VertexType::name, _g),
+                        make_vertex_writer(boost::get(&VertexType::obj_name, _g),
                                            boost::get(&VertexType::obj_task, _g)));
 }
 
@@ -211,7 +211,7 @@ void _print_list(std::list<VertexOrEdgeDesc> list, GraphT g,
                  std::string message = "") {
   std::cout << message << std::endl;
   for (auto i = list.begin(); i != list.end(); ++i)
-    std::cout << g[*i].get_name() << " ";
+    std::cout << g[*i].name() << " ";
   std::cout << std::endl << std::endl;
 }
 
@@ -354,9 +354,9 @@ void dag::dump_optimized(std::string _name) {
 
 void dag::print_io_nodes() {
   std::cout << "inputs" << std::endl;
-  for (auto i : inputs) std::cout << g[i].get_name() << " ";
+  for (auto i : inputs) std::cout << g[i].name() << " ";
   std::cout << "\noutputs" << std::endl;
-  for (auto i : outputs) std::cout << g[i].get_name() << " ";
+  for (auto i : outputs) std::cout << g[i].name() << " ";
   std::cout << std::endl;
 }
 
@@ -388,8 +388,8 @@ void dag::print_back_edges() {
   if (cycle_exist) {
     std::cout << "Edges at the cycles" << std::endl;
     for (auto it = begin(back_edges); it != end(back_edges); it++) {
-      std::cout << g[source(*it, g)].get_name() << " --> "
-                << g[target(*it, g)].get_name() << std::endl;
+      std::cout << g[source(*it, g)].name() << " --> "
+                << g[target(*it, g)].name() << std::endl;
     }
     std::cout << "\n";
   }
@@ -533,7 +533,7 @@ void dag::gen_rand_acyclic_graph(unsigned n, unsigned k) {
   cntr = 0;
   for (auto v_it = ordered->rbegin(); v_it != ordered->rend(); ++v_it) {
     auto v = *v_it;
-    // std:: cout << "------ " <<  g[v].get_name() << "
+    // std:: cout << "------ " <<  g[v].name() << "
     //              , degree" << boost::out_degree(v, g) << std::endl;
     if (boost::out_degree(v, g) == 0) {
       if (g[v].task() == ObjectTask::Buffer) {

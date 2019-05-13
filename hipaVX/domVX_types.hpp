@@ -10,6 +10,9 @@
 ast4vx::Datatype convert_type(vx_df_image type);
 
 namespace DomVX {
+
+using ObjectType = vx_type_e;
+
 /// @brief Operator Types
 enum class OperatorType {
   None,
@@ -25,10 +28,7 @@ enum class ObjectTask {
   Invalid
 };
 
-using ObjectType = vx_type_e;
-
 ObjectTask set_task_from_type(ObjectType type);
-
 
 class Object {
  public:
@@ -40,7 +40,7 @@ class Object {
 
   std::string id() { return std::to_string(my_id); }
 
-  std::string get_name() { return this->name; }
+  std::string name() { return this->obj_name; }
 
   ObjectType type() { return this->obj_type; }
 
@@ -55,8 +55,14 @@ class Object {
   void is_alive(bool _alive) { alive = _alive; }
 
   void set_name(std::string _name = "Object") {
-    name = _name + std::to_string(my_id);
+    obj_name = _name + std::to_string(my_id);
   }
+
+ public:
+  // These are public because of the bgl property maps
+  std::string obj_name;
+
+  ObjectTask obj_task = ObjectTask::Invalid;
 
  protected:
   Object* _obj;
@@ -65,15 +71,11 @@ class Object {
 
   int my_id;
 
-  std::string name;
-
   bool virt = false;
 
   bool alive = false;
 
   ObjectType obj_type;
-
-  ObjectTask obj_task = ObjectTask::Invalid;
 
   void set_type(ObjectType _obj_type) { obj_type = _obj_type; }
 
@@ -86,8 +88,6 @@ class Object {
 class Node : public Object {
  protected:
  public:
-  std::string node_name;  // remove me
-
   Node() {
     set_name("Node");
     init();
@@ -316,7 +316,7 @@ class Acc {
  public:
   int my_id;
   Image *im;
-  std::string name;
+  std::string _name;
 
   bool is_acc;  // TODO: change this with type IS or ACC
   bool is_is;
@@ -337,7 +337,7 @@ class Acc {
       _name = "_undef_";
     };
 
-    name = im->get_name() + _name + std::to_string(my_id);
+    _name = im->name() + _name + std::to_string(my_id);
   }
 
   void init() {
@@ -346,7 +346,7 @@ class Acc {
     roi = ROI{0, 0, 0, 0};
     brdr = BorderM::Undef;
     im = NULL;
-    name = std::to_string(my_id) + "_Acc_undef";
+    _name = std::to_string(my_id) + "_Acc_undef";
   }
 
   Acc() : my_id(next_id++) { init(); }
@@ -358,7 +358,7 @@ class Acc {
     is_is = !_is_acc;
   }
 
-  std::string get_name() { return name; }
+  std::string name() { return _name; }
 
   bool isImgSet() { return !(im == NULL); }
 
