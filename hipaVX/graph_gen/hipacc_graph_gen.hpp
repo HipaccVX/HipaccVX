@@ -2,7 +2,7 @@
 
 #include "../dsl/types.hpp"
 #include "../dsl/abstractions.hpp"
-#include "../graph.hpp"
+#include "../graph/graph.hpp"
 #include "cassert"
 //#include <iterator>
 //#include "infix_iterator.h"

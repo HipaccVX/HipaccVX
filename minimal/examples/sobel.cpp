@@ -3,6 +3,7 @@
 #include "../../hipaVX/dsl/abstractions.hpp"
 #include "../../hipaVX/dsl/api.hpp"
 #include "../../hipaVX/cpp_gen/cpp_gen.hpp"
+#include "../../hipaVX/graph/graph.hpp"
 #include "../../hipaVX/graph_gen/hipacc_graph_gen.hpp"
 #include <string>
 
