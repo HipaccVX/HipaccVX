@@ -209,6 +209,7 @@ void hipacc_writer::def_acc(std::stringstream &ss, DomVXAcc* acc, DefType deftyp
   switch(deftype) {
     case DefType::Hdecl: {
       std::stringstream params;
+      params << acc->im->name() << ", ";
       params << acc->width() << ", " << acc->height();
 
       if(acc->isRoiSet) {
@@ -244,6 +245,7 @@ void hipacc_writer::def_is(std::stringstream &ss, DomVXAcc* is, DefType deftype)
   switch(deftype) {
     case DefType::Hdecl: {
       std::stringstream params;
+      params << is->im->name() << ", ";
       params << is->width() << ", " << is->height();
 
       if(is->isRoiSet) {
