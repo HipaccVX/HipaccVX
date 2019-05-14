@@ -2,15 +2,15 @@
 // g++ -Wall -Werror 07*.cpp ../../hipaVX/domVX_types.cpp
 
 #include <iostream>
-#include "../../hipaVX/domVX_types.hpp"
-#include "../../hipaVX/graph.hpp"
-
+#include "../../hipaVX/dsl/types.hpp"
+#include "../../hipaVX/graph/graph.hpp"
 
 using graphVX::AppGraphT;
 using graphVX::dag;
-using HipaVX::Image;
-using HipaVX::Node;
-using HipaVX::Scalar;
+using DomVX::Image;
+using DomVX::Node;
+using DomVX::Scalar;
+
 
 int main() {
   dag g;

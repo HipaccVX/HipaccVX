@@ -2,10 +2,10 @@
 // g_dag++ -Wall -Werror 07*.cpp ../../hipaVX/domVX_types.cpp
 
 #include <iostream>
-#include "../../hipaVX/domVX_types.hpp"
-#include "../../hipaVX/abstractions.hpp"
-#include "../../hipaVX/graph.hpp"
-#include "../../hipaVX/ast.hpp"
+#include "../../hipaVX/dsl/types.hpp"
+#include "../../hipaVX/dsl/ast.hpp"
+#include "../../hipaVX/dsl/abstractions.hpp"
+#include "../../hipaVX/graph/graph.hpp"
 #include "../../hipaVX/graph_gen/hipacc_graph_gen.hpp"
 
 

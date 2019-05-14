@@ -2,20 +2,18 @@
 #include <boost/graph/graph_utility.hpp>  // print_graph
 #include <boost/graph/graphviz.hpp>
 #include "graph_visitors.hpp"
-#include "../dsl/types.hpp"
 
 namespace graphVX {
 
 using VertexType = DomVX::Object;
-using DomVX::ObjectTask;
 
 // create an .dot file for the graphviz
 template <class GraphT>
 void _write_graphviz(GraphT _g, std::string name) {
   std::ofstream file_out(name + ".dot");
   boost::write_graphviz(file_out, _g,
-                        make_vertex_writer(boost::get(&VertexType::obj_name, _g),
-                                           boost::get(&VertexType::obj_task, _g)));
+      make_vertex_writer(boost::get(&VertexType::obj_name, _g),
+                         boost::get(&VertexType::obj_task, _g)));
 }
 
 
