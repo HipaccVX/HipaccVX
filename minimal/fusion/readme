@@ -1,0 +1,7 @@
+Here contains the source code for the Hipacc benchmarks.
+Both folders contains the Hipacc code that is supposed to be generated
+from DomVX, fuse and unfused version respectively.
+
+benchmark.ods (Libreoffice calc used) shows the benchmark result from the above
+code. We intend to compare Visionworks, Hipacc, and Domvx(namely fused version of
+Hipacc). 
