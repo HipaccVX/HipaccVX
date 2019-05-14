@@ -1,6 +1,37 @@
 #include "api.hpp"
 
 //*********************************************************************
+// Image
+//*********************************************************************
+domVX_image create_image(unsigned int width, unsigned int height,
+                         vx_df_image type) {
+  return (new DomVX::Image(1024, 512, VX_DF_IMAGE_U8));
+}
+
+//*********************************************************************
+// Descriptors
+//*********************************************************************
+domVX_window get_window(DomVX::Image* im, int width, int height) {
+  auto bwd = std::make_shared<WindowDesc>();
+  bwd->w_desc = std::make_shared<ast4vx::WindowDescriptor>(width, height);
+  bwd->w_desc->bounded = bwd;
+  bwd->im = im;
+  std::vector<int> domain_values(width * height, 1);
+  bwd->dom = std::make_shared<DomVX::Domain>(width, height, domain_values);
+  return bwd;
+}
+
+domVX_window get_window(DomVX::Image* im, std::shared_ptr<DomVX::Domain> dom) {
+  auto bwd = std::make_shared<WindowDesc>();
+  bwd->w_desc =
+      std::make_shared<ast4vx::WindowDescriptor>(dom->width, dom->height);
+  bwd->w_desc->bounded = bwd;
+  bwd->im = im;
+  bwd->dom = dom;
+  return bwd;
+}
+
+//*********************************************************************
 // OPERATORS
 //*********************************************************************
 domVX_point create_point_op() {
@@ -13,14 +44,6 @@ domVX_local create_local_op() {
 
 domVX_global create_global_op() {
   return std::shared_ptr<DomVX::GlobalOperator>(new DomVX::GlobalOperator());
-}
-
-//*********************************************************************
-// Image
-//*********************************************************************
-domVX_image create_image(unsigned int width, unsigned int height,
-                         vx_df_image type) {
-  return (new DomVX::Image(1024, 512, VX_DF_IMAGE_U8));
 }
 
 //*********************************************************************
@@ -49,11 +72,11 @@ domVX_domain create_domain(domVX_mask mask) {
 // MASK
 //*********************************************************************
 domVX_mask create_mask(unsigned int w, unsigned int h,
-                                         std::initializer_list<int32_t> mask) {
+                       std::initializer_list<int32_t> mask) {
   return std::shared_ptr<DomVX::Mask>(new DomVX::Mask(w, h, mask));
 }
 
 domVX_mask create_mask(unsigned int w, unsigned int h,
-                                         std::initializer_list<float> mask) {
+                       std::initializer_list<float> mask) {
   return std::shared_ptr<DomVX::Mask>(new DomVX::Mask(w, h, mask));
 }

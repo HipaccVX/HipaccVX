@@ -193,12 +193,12 @@ std::shared_ptr<ast4vx::WindowOperation> reduce(
       reduction_function);
 }
 std::shared_ptr<ast4vx::WindowOperation> reduce(
-    std::shared_ptr<BoundedWindowDescriptor> in_bwin,
+    std::shared_ptr<WindowDesc> in_bwin,
     std::shared_ptr<ast4vx::Reduction> reduction_function) {
   return reduce({in_bwin->w_desc}, reduction_function);
 }
 std::shared_ptr<ast4vx::WindowOperation> reduce(
-    std::vector<std::shared_ptr<BoundedWindowDescriptor>> in_bwins,
+    std::vector<std::shared_ptr<WindowDesc>> in_bwins,
     std::shared_ptr<ast4vx::Reduction> reduction_function) {
   std::vector<std::shared_ptr<ast4vx::WindowDescriptor>> descriptors;
   for (auto& bwin : in_bwins) descriptors.push_back(bwin->w_desc);
@@ -226,12 +226,12 @@ std::shared_ptr<ast4vx::WindowOperation> forall(
       forall_function);
 }
 std::shared_ptr<ast4vx::WindowOperation> forall(
-    std::shared_ptr<BoundedWindowDescriptor> in_bwin,
+    std::shared_ptr<WindowDesc> in_bwin,
     std::shared_ptr<ast4vx::Statements> forall_function) {
   return forall({in_bwin->w_desc}, forall_function);
 }
 std::shared_ptr<ast4vx::WindowOperation> forall(
-    std::vector<std::shared_ptr<BoundedWindowDescriptor>> in_bwins,
+    std::vector<std::shared_ptr<WindowDesc>> in_bwins,
     std::shared_ptr<ast4vx::Statements> forall_function) {
   std::vector<std::shared_ptr<ast4vx::WindowDescriptor>> descriptors;
   for (auto& bwin : in_bwins) descriptors.push_back(bwin->w_desc);

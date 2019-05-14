@@ -11,7 +11,7 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "domVX_ast_compat.hpp"
+#include "descriptors.hpp"
 
 namespace ast4vx {
 
@@ -1093,7 +1093,7 @@ class WindowDescriptor : public Node {
  public:
   unsigned int width, height;
   Datatype output_datatype;
-  std::weak_ptr<BoundedWindowDescriptor>
+  std::weak_ptr<WindowDesc>
       bounded; /** < possible pointer to the BoundedWindowDescriptor, which has
                   this WindowDescriptor as its member variable */
   std::weak_ptr<WindowOperation> parent; /** < points to the computation node,
@@ -1618,7 +1618,7 @@ std::shared_ptr<ast4vx::WindowOperation> reduce(
  * @return The new ast4vx::WindowOperation
  */
 std::shared_ptr<ast4vx::WindowOperation> reduce(
-    std::shared_ptr<BoundedWindowDescriptor> in_bwin,
+    std::shared_ptr<WindowDesc> in_bwin,
     std::shared_ptr<ast4vx::Reduction> reduction_function);
 /**
  * @brief Creates a new ast4vx::WindowOperation
@@ -1629,7 +1629,7 @@ std::shared_ptr<ast4vx::WindowOperation> reduce(
  * @return The new ast4vx::WindowOperation
  */
 std::shared_ptr<ast4vx::WindowOperation> reduce(
-    std::vector<std::shared_ptr<BoundedWindowDescriptor>> in_bwins,
+    std::vector<std::shared_ptr<WindowDesc>> in_bwins,
     std::shared_ptr<ast4vx::Reduction> reduction_function);
 /**
  * @brief Creates a new ast4vx::WindowOperation
@@ -1674,7 +1674,7 @@ std::shared_ptr<ast4vx::WindowOperation> forall(
  * @return The new ast4vx::WindowOperation
  */
 std::shared_ptr<ast4vx::WindowOperation> forall(
-    std::shared_ptr<BoundedWindowDescriptor> in_bwin,
+    std::shared_ptr<WindowDesc> in_bwin,
     std::shared_ptr<ast4vx::Statements> forall_function);
 /**
  * @brief Creates a new ast4vx::WindowOperation
@@ -1685,7 +1685,7 @@ std::shared_ptr<ast4vx::WindowOperation> forall(
  * @return The new ast4vx::WindowOperation
  */
 std::shared_ptr<ast4vx::WindowOperation> forall(
-    std::vector<std::shared_ptr<BoundedWindowDescriptor>> in_bwins,
+    std::vector<std::shared_ptr<WindowDesc>> in_bwins,
     std::shared_ptr<ast4vx::Statements> forall_function);
 /**
  * @brief Creates a new ast4vx::WindowOperation
