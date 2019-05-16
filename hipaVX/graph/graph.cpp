@@ -2,12 +2,9 @@
 
 namespace graphVX {
 
-// ------------------------- filling out the graph -----------------------------
-//template <class Vertex>
-//VertexDesc dag::add_vertex(Vertex v) {
-//  return boost::add_vertex(v, g);
-//}
-
+//*********************************************************************
+// Filling out the graph
+//*********************************************************************
 VertexDesc dag::get_vertex(int n) { return boost::vertex(n, g); }
 
 VertexType dag::get_vertex_object(int n) {
@@ -20,7 +17,9 @@ std::pair<EdgeDesc, bool> dag::add_edge(VertexDesc src, VertexDesc dst) {
   return boost::add_edge(src, dst, g);
 }
 
-// ------------------ class methods for printing -------------------------------
+//*********************************************************************
+// Graph Printing
+//*********************************************************************
 void dag::print_graph() { graphVX::_print_graph(g); }
 
 void dag::write_graphviz(std::string _name) {
@@ -49,7 +48,9 @@ void dag::print_order_of_exec() {
   _print_list(*order_of_exec, *_g_opt, "order of execution: ");
 }
 
-// -------------- class methods for detecting cycles ------------
+//*********************************************************************
+// Class methods for detecting cycles
+//*********************************************************************
 bool dag::detect_cycles() {
   cycle_detector_dfs vis(cycle_exist);
   depth_first_search(g, visitor(vis));
@@ -62,8 +63,10 @@ bool dag::detect_cycles() {
 }
 
 bool dag::detect_cycles_and_back_edges() {
-  cycle_detector_with_backedges_dfs<EdgeDesc> vis(cycle_exist, back_edges);
-  depth_first_search(g, visitor(vis));
+  //cycle_detector_with_backedges_dfs<EdgeDesc> vis(cycle_exist,
+  //                                                back_edges);
+  //depth_first_search(g, visitor(vis));
+  cycle_exist = _detect_cycles_and_back_edges(g, back_edges);
   return cycle_exist;
 }
 
@@ -80,7 +83,9 @@ void dag::print_back_edges() {
   }
 }
 
-// ------------------ class methods for dead node elimination ------------------
+//*********************************************************************
+// Class methods for dead node elimination
+//*********************************************************************
 AppGraphT* dag::reverse() {
   boost::transpose_graph(g, g_trans);
   return &g_trans;

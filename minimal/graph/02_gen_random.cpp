@@ -5,6 +5,7 @@
 #include <iostream>
 #include "../../hipaVX/dsl/types.hpp"
 #include "../../hipaVX/graph/graph.hpp"
+#include "../../hipaVX/graph/graph_utils.hpp"
 
 using graphVX::AppGraphT;
 using DomVX::Image;
@@ -16,6 +17,7 @@ int main() {
 
   // Number of vertices and edges
   g.gen_rand_graph<Node, Image>(10, 23);
+  // graphVX::_gen_rand_graph<Node, Image>(10, 23, g.g, g.inputs, g.outputs);
 
   std::cout << "graph:" << std::endl;
   g.print_graph();

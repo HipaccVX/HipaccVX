@@ -16,7 +16,8 @@ using DomVX::Scalar;
 
 int main() {
   graphVX::dag g;
-  g.gen_rand_graph<Node, Image>(10, 23);
+  //g.gen_rand_graph<Node, Image>(10, 23);
+  g.gen_rand_acyclic_graph<Node, Image>(10, 23);
 
 #ifndef PRINT_BACK_EDGES
   g.detect_cycles();
