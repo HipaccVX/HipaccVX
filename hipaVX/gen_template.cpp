@@ -1,5 +1,7 @@
 #include "gen_template.hpp"
 
+using std::string;
+
 string use_template(const string &template_string,
                     const string &template_variable,
                     const string &actual_variable) {

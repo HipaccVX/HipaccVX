@@ -2,19 +2,13 @@
 
 #include "../dsl/abstractions.hpp"
 #include "../dsl/ast.hpp"
-#include "../gen_template.hpp"
 #include "../kernels/domVX_kernels.hpp"
 
-#include <iostream>
 #include <map>
 #include <string>
 #include <vector>
 
-using std::string;
-
-static string hipaVX_folder = "hipaVX/cpp_gen";
-
-static std::map<vx_df_image, string> VX_DF_IMAGE_to_cpp = {
+static std::map<vx_df_image, std::string> VX_DF_IMAGE_to_cpp = {
     {VX_DF_IMAGE_U8, "unsigned char"},
     {VX_DF_IMAGE_S16, "short"},
     {VX_DF_IMAGE_S32, "int"},
@@ -25,12 +19,8 @@ static std::map<vx_df_image, string> VX_DF_IMAGE_to_cpp = {
     {VX_TYPE_INT32, "int"}            // Not really a vx_df_image type
 };
 
-string generate_image_name(DomVX::Image *image);
-
-void process_graph(DomVX::Graph *graph);
-
-class CPPVisitor : public ASTVisitor<std::string, int>,
-                   public AbstractionsVisitor<std::string, int> {
+class CPPVisitor : public ASTVisitor<std::string, int> {
+ public:
   std::vector<std::string> *variableaccessor_mapping = nullptr;
   std::vector<std::string> *pixelaccessor_mapping = nullptr;
   std::vector<std::string> *windowdescriptor_mapping = nullptr;
@@ -50,13 +40,4 @@ class CPPVisitor : public ASTVisitor<std::string, int>,
  public:
   virtual std::string visit(std::shared_ptr<ast4vx::Node> n,
                             int i = 0) override;
-
-  virtual std::string visit(std::shared_ptr<DomVX::AbstractionNode> n,
-                            int i = 0) override;
-
-  std::string setup_outer_loop(std::shared_ptr<DomVX::PointOperator> m);
-  std::string setup_outer_loop(std::shared_ptr<DomVX::LocalOperator> m,
-                               const std::vector<DomVX::Image *> &out);
-  std::string setup_outer_loop(std::shared_ptr<DomVX::GlobalOperator> m,
-                               const std::vector<DomVX::Image *> &in);
 };

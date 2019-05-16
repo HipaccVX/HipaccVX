@@ -23,6 +23,8 @@ list(APPEND HipaVX_SRC ${GLOB_RESULT})
 
 file(GLOB_RECURSE HipaccGen_SRC ${HIPAVX_DIR}/hipacc_gen/*)
 file(GLOB_RECURSE CppGen_SRC ${HIPAVX_DIR}/cpp_gen/*)
+file(GLOB_RECURSE GLOB_RESULT ${HIPAVX_DIR}/graph_gen/cpp_graph_gen.*)
+list(APPEND CppGen_SRC ${GLOB_RESULT})
 
 #add_library (HipaVX_Hipacc ${HipaVX_SRC} ${HipaccGen_SRC})
 add_library (HipaVX_Cpp ${HipaVX_SRC} ${CppGen_SRC})

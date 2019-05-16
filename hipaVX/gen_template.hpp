@@ -5,23 +5,21 @@
 
 #pragma once
 
-using std::string;
+std::string use_template(const std::string &template_string,
+					const std::string &template_variable,
+					const std::string &actual_variable);
 
-string use_template(const string &template_string,
-                    const string &template_variable,
-                    const string &actual_variable);
+std::string use_template(const std::string &template_string,
+					const std::string &template_variable, const int actual_variable);
 
-string use_template(const string &template_string,
-                    const string &template_variable, const int actual_variable);
-
-string use_template(const string &template_string,
-                    const string &template_variable,
+std::string use_template(const std::string &template_string,
+					const std::string &template_variable,
                     const unsigned int actual_variable);
 
-string use_template(const string &template_string,
-                    const string &template_variable,
+std::string use_template(const std::string &template_string,
+					const std::string &template_variable,
                     const double actual_variable);
 
-string read_file(const string &filename);
+std::string read_file(const std::string &filename);
 
-void _write_to_file(const string &filename, const string &content);
+void _write_to_file(const std::string &filename, const std::string &content);

@@ -1,6 +1,6 @@
 #include <string>
 #include "../../../VX/vx.h"
-#include "../../../hipaVX/cpp_gen/cpp_gen.hpp"
+#include "../../../hipaVX/graph_gen/cpp_graph_gen.hpp"
 #include "../../../hipaVX/dsl/types.hpp"
 #include "../../../hipaVX/dsl/abstractions.hpp"
 #include "../../../hipaVX/dsl/api.hpp"
@@ -59,8 +59,7 @@ int main() {
   // Add the reduction operation, needs an output image
   local_op->add_operation(reduction_op, {image_o});
 
-  CPPVisitor v;
-  std::cout << v.visit(local_op) << "\n";
+  std::cout << cpp_abstraction_code_generator::dump_code(local_op, {}, {}, {}, true);
 
   return 0;
 }

@@ -1,20 +1,20 @@
 #include <string>
 #include "../../../VX/vx.h"
-#include "../../../hipaVX/cpp_gen/cpp_gen.hpp"
-#include "../../../hipaVX/dsl/types.hpp"
 #include "../../../hipaVX/dsl/abstractions.hpp"
 #include "../../../hipaVX/dsl/api.hpp"
+#include "../../../hipaVX/dsl/types.hpp"
+#include "../../../hipaVX/graph_gen/cpp_graph_gen.hpp"
 
 int main() {
   // Created two sample pixel to pixel functions for later use
   auto ast_p2p_mult = create_p2p_mask(1, 1, 1);
   ast_p2p_mult << assign(ast_p2p_mult->d_out(0),
-                       ast_p2p_mult->d_in(0) * ast_p2p_mult->m_in(0));
+                         ast_p2p_mult->d_in(0) * ast_p2p_mult->m_in(0));
 
   // Reduction AST expects an initial value for the accumulator
   auto ast_red_sum = create_reduction(ast4vx::Constant<float>(.0f));
   ast_red_sum << assign(ast_red_sum->out(),
-                          ast_red_sum->left() + ast_red_sum->right());
+                        ast_red_sum->left() + ast_red_sum->right());
 
   // Create dummy input window and set its domain
   // There are handy functions for "forall" and "reduce", which
@@ -28,9 +28,8 @@ int main() {
   auto image_i = create_image(1024, 512, VX_DF_IMAGE_U8);
   auto image_o = create_image(1024, 512, VX_DF_IMAGE_U8);
 
-  auto mask = create_mask(3, 5, {-1, -1, 1, -1, 0,
-                                  1, -1, 0, 1, -1,
-                                  0, 1, -1, 1, 1});
+  auto mask =
+      create_mask(3, 5, {-1, -1, 1, -1, 0, 1, -1, 0, 1, -1, 0, 1, -1, 1, 1});
   auto dom = create_domain(mask);
 
   // Create the local operation
@@ -45,8 +44,7 @@ int main() {
   local->add_operation(forall_op);
   local->add_operation(reduction_op, {image_o});
 
-  CPPVisitor v;
-  std::cout << v.visit(local) << "\n";
-
+  std::cout << cpp_abstraction_code_generator::dump_code(local, {}, {}, {},
+                                                         true);
   return 0;
 }

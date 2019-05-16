@@ -1,9 +1,9 @@
 #include <string>
 #include "../../../VX/vx.h"
-#include "../../../hipaVX/cpp_gen/cpp_gen.hpp"
-#include "../../../hipaVX/dsl/types.hpp"
 #include "../../../hipaVX/dsl/abstractions.hpp"
 #include "../../../hipaVX/dsl/api.hpp"
+#include "../../../hipaVX/dsl/types.hpp"
+#include "../../../hipaVX/graph_gen/cpp_graph_gen.hpp"
 
 int main() {
   auto ast_reduction = create_reduction(ast4vx::Constant<int>(255));
@@ -26,8 +26,8 @@ int main() {
   global_op->register_input_images({image_i});
   global_op->set_reduction_function(ast_reduction, var_out);
 
-  CPPVisitor v;
-  std::cout << v.visit(global_op) << "\n";
+  std::cout << cpp_abstraction_code_generator::dump_code(global_op, {}, {},
+                                                         true);
 
   return 0;
 }

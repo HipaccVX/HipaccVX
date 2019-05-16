@@ -64,7 +64,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxProcessGraph(vx_graph graph) {
   // First, declare the images
 
   // TODO: Consider having a generator class for every backend
-  process_graph(((DomVX::Graph *)(graph->o)));
+  //process_graph(((DomVX::Graph *)(graph->o)));
   return 0;
 }
 

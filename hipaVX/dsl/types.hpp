@@ -21,22 +21,17 @@ enum class OperatorType {
   GlobalOperator,
 };
 
-enum class ObjectTask {
-  Computation,
-  Buffer,
-  API,
-  Invalid
-};
+enum class ObjectTask { Computation, Buffer, API, Invalid };
 
 ObjectTask set_task_from_type(ObjectType type);
 
 class Object {
  public:
-  Object() : my_id(next_id++){}
+  Object() : my_id(next_id++) {}
 
   virtual ~Object() = default;
 
-  Object* get() { return _obj; }
+  Object *get() { return _obj; }
 
   std::string id() { return std::to_string(my_id); }
 
@@ -65,7 +60,7 @@ class Object {
   ObjectTask obj_task = ObjectTask::Invalid;
 
  protected:
-  Object* _obj;
+  Object *_obj;
 
   static int next_id;
 
@@ -81,9 +76,8 @@ class Object {
 
   void set_task() { obj_task = set_task_from_type(type()); }
 
-  void bind(Object* _ptr) { _obj = _ptr; }
+  void bind(Object *_ptr) { _obj = _ptr; }
 };
-
 
 class Node : public Object {
  protected:
@@ -118,7 +112,6 @@ class Node : public Object {
   virtual void build() {}
 };
 
-
 class Convolution : public Object {
  public:
   Convolution() {
@@ -133,7 +126,6 @@ class Convolution : public Object {
   vx_size columns;
   vx_uint32 scale;
 };
-
 
 class Image : public Object {
  public:
@@ -177,7 +169,6 @@ class Image : public Object {
 
   void set_dtype(vx_df_image type) { col = type; }
 };
-
 
 class Scalar : public Object {
  public:
@@ -226,7 +217,6 @@ class Scalar : public Object {
   };
 };
 
-
 class Array : public Object {
  public:
   Array(vx_enum _dtype, vx_size _size, vx_size _rows)
@@ -245,7 +235,6 @@ class Array : public Object {
   vx_size size;
   vx_size rows;
 };
-
 
 class Threshold : public Object {
  public:
@@ -269,7 +258,6 @@ class Threshold : public Object {
   vx_df_image output_format;
 };
 
-
 class VX_Matrix : public Object {
  public:
   VX_Matrix() {
@@ -285,7 +273,6 @@ class VX_Matrix : public Object {
   std::vector<u_char> mat;
 };
 
-
 class Graph : public Object {
  public:
   std::vector<Node *> graph;
@@ -294,12 +281,11 @@ class Graph : public Object {
   void build();
 };
 
-
 class Context : public Object {
  public:
-  std::vector<Image*> images;
-  std::vector<Array*> arrays;
-  std::vector<Graph*> graphs;
+  std::vector<Image *> images;
+  std::vector<Array *> arrays;
+  std::vector<Graph *> graphs;
 };
 
 // ------------   TODO: fix these acccording to OpenVX definition
@@ -328,16 +314,16 @@ class Acc {
 
  public:
   void set_name() {
-    std::string _name;
+    std::string temp_name;
     if (is_acc == true) {
-      _name = "_acc_";
+      temp_name = "_acc_";
     } else if (is_is == true) {
-      _name = "_is_";
+      temp_name = "_is_";
     } else {
-      _name = "_undef_";
-    };
+      temp_name = "_undef_";
+    }
 
-    _name = im->name() + _name + std::to_string(my_id);
+    _name = im->name() + temp_name + std::to_string(my_id);
   }
 
   void init() {

@@ -1,6 +1,6 @@
 #include <string>
 #include "../../../VX/vx.h"
-#include "../../../hipaVX/cpp_gen/cpp_gen.hpp"
+#include "../../../hipaVX/graph_gen/cpp_graph_gen.hpp"
 #include "../../../hipaVX/dsl/types.hpp"
 #include "../../../hipaVX/dsl/abstractions.hpp"
 #include "../../../hipaVX/dsl/api.hpp"
@@ -19,16 +19,14 @@ int main(int argc, const char *argv[]) {
   // Bind the images to the correct pixel accessors
   map->register_images({image_0}, {image_1});
 
-  CPPVisitor v;
-
   // image_0 is the output pixel
-  std::cout << v.visit(map);
+  std::cout << cpp_abstraction_code_generator::dump_code(map, {}, {}, {}, true);
 
   // Swap the input and output image
   map->register_images({image_1}, {image_0});
 
   // image_1 is now the output pixel
-  std::cout << v.visit(map);
+  std::cout << cpp_abstraction_code_generator::dump_code(map, {}, {}, {}, true);
 
   return 0;
 }
