@@ -84,7 +84,16 @@ void dag::print_back_edges() {
 }
 
 //*********************************************************************
-// Class methods for dead node elimination
+// Order of Execution (Topological Sort)
+//*********************************************************************
+OrderedList* dag::set_order_of_exec() {
+   order_of_exec = new OrderedList;
+  _topological_sort(order_of_exec, *_g_opt);
+  return order_of_exec;
+};
+
+//*********************************************************************
+// Dead node elimination
 //*********************************************************************
 AppGraphT* dag::reverse() {
   boost::transpose_graph(g, g_trans);

@@ -83,8 +83,9 @@ typedef boost::graph_traits<OptGraphT>::out_edge_iterator OptGraphOutEdgeIter;
 typedef boost::graph_traits<OptGraphT>::in_edge_iterator OptGraphInEdgeIter;
 typedef boost::graph_traits<OptGraphT>::adjacency_iterator OptGraphAdjIter;
 
+typedef std::list<VertexDesc> OrderedList;
+
 class dag {
-  using OrderedList = std::list<VertexDesc>;
 
  public:
   AppGraphT g, g_trans;
@@ -140,11 +141,7 @@ class dag {
   OptGraphT* eliminate_dead_nodes();
 
   // topological sort for order of execution
-  OrderedList* set_order_of_exec() {
-     order_of_exec = new OrderedList;
-    _topological_sort(order_of_exec, *_g_opt);
-    return order_of_exec;
-  };
+  OrderedList* set_order_of_exec();
 
   OrderedList* get_order_of_exec() { return order_of_exec; };
 
@@ -180,7 +177,6 @@ void dag::gen_rand_graph(unsigned n, unsigned k, unsigned n_in,
   graphVX::_gen_rand_graph<Node, Image>(n, k, g, inputs, outputs,
                                         n_in, n_out);
 }
-
 template <class Node, class Image>
 void dag::gen_rand_acyclic_graph(unsigned n,
                                  unsigned k,
