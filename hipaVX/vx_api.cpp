@@ -4,11 +4,11 @@
 
 //#define HIPACC_GEN
 #ifdef HIPACC_GEN
-#include "hipacc_gen/hipacc_gen.hpp"
+#include "gen/hipacc_graph.hpp"
 #endif
 #define CPP_GEN
 #ifdef CPP_GEN
-#include "cpp_gen/cpp_gen.hpp"
+#include "gen/cpp_graph.hpp"
 #endif
 
 // TODO: Consider individual files for the API set of the following objects:

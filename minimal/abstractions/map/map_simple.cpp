@@ -1,6 +1,6 @@
 #include <string>
 #include "../../../VX/vx.h"
-#include "../../../hipaVX/graph_gen/cpp_graph_gen.hpp"
+#include "../../../hipaVX/gen/cpp_graph.hpp"
 #include "../../../hipaVX/dsl/types.hpp"
 #include "../../../hipaVX/dsl/abstractions.hpp"
 #include "../../../hipaVX/dsl/api.hpp"

@@ -2,9 +2,9 @@
 #include "../../hipaVX/dsl/types.hpp"
 #include "../../hipaVX/dsl/abstractions.hpp"
 #include "../../hipaVX/dsl/api.hpp"
-#include "../../hipaVX/cpp_gen/cpp_gen.hpp"
 #include "../../hipaVX/graph/graph.hpp"
-#include "../../hipaVX/graph_gen/hipacc_graph_gen.hpp"
+#include "../../hipaVX/gen/hipacc_graph.hpp"
+#include "../../hipaVX/gen/cpp_ast.hpp"
 #include <string>
 
 int main()

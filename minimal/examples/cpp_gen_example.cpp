@@ -7,7 +7,7 @@
 #include "../../hipaVX/dsl/ast.hpp"
 #include "../../hipaVX/dsl/types.hpp"
 #include "../../hipaVX/graph/graph.hpp"
-#include "../../hipaVX/graph_gen/cpp_graph_gen.hpp"
+#include "../../hipaVX/gen/cpp_graph.hpp"
 
 using DomVX::Image;
 using DomVX::Node;

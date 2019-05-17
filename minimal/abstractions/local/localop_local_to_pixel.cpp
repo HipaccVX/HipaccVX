@@ -3,7 +3,7 @@
 #include "../../../hipaVX/dsl/abstractions.hpp"
 #include "../../../hipaVX/dsl/api.hpp"
 #include "../../../hipaVX/dsl/types.hpp"
-#include "../../../hipaVX/graph_gen/cpp_graph_gen.hpp"
+#include "../../../hipaVX/gen/cpp_graph.hpp"
 
 int main() {
   // Create a LocalToPixel function

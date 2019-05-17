@@ -1,11 +1,11 @@
 #include <string>
 #include "../../VX/vx.h"
-#include "../../hipaVX/cpp_gen/cpp_gen.hpp"
+#include "../../hipaVX/gen/cpp_ast.hpp"
 #include "../../hipaVX/dsl/abstractions.hpp"
 #include "../../hipaVX/dsl/api.hpp"
 #include "../../hipaVX/dsl/types.hpp"
-#include "../../hipaVX/graph_gen/cpp_graph_gen.hpp"
-#include "../../hipaVX/graph_gen/hipacc_graph_gen.hpp"
+#include "../../hipaVX/gen/cpp_graph.hpp"
+#include "../../hipaVX/gen/hipacc_graph.hpp"
 
 int main() {
   std::vector<std::shared_ptr<DomVX::OperatorNode>> nodes;

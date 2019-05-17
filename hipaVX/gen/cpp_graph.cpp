@@ -1,6 +1,6 @@
-#include "cpp_graph_gen.hpp"
-#include "../cpp_gen/cpp_gen.hpp"
-#include "../gen_template.hpp"
+#include "cpp_graph.hpp"
+#include "cpp_ast.hpp"
+#include "gen_template.hpp"
 
 static CppImage* obj2img(graphVX::VertexType* v) {
   CppImage* _im = dynamic_cast<CppImage*>(v->get());
