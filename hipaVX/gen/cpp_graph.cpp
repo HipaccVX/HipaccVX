@@ -880,10 +880,9 @@ std::string dump_code(std::shared_ptr<DomVX::GlobalOperator> global,
   auto old_variable_mapping = ast_visitor.variableaccessor_mapping;
   ast_visitor.variableaccessor_mapping = &variable_mapping;
 
-  auto statements = std::make_shared<ast4vx::Statements>();
+  auto p2p = create_p2p(1, 0);
   std::string post_loop = ast_visitor.visit(
-      statements << assign(std::make_shared<ast4vx::VariableAccessor>(0),
-                           accum_var));
+      p2p << assign(std::make_shared<ast4vx::VariableAccessor>(0), accum_var));
   ast_visitor.variableaccessor_mapping = old_variable_mapping;
 
   outer_loop = use_template(outer_loop, "CODE", reduction_body);

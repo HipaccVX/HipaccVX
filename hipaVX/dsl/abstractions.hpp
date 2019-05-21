@@ -165,7 +165,7 @@ class Mask : public AbstractionNode {
  * same pixel coordinates
  */
 class PointOperator : public OperatorNode {
-  std::shared_ptr<ast4vx::Statements> function;
+  std::shared_ptr<ast4vx::PixelToPixel> function;
 
  public:
   /**
@@ -177,9 +177,9 @@ class PointOperator : public OperatorNode {
    * @brief Constructor which sets the statement as the mapping function
    * @param s The PixelToPixel mapping function
    */
-  PointOperator(std::shared_ptr<ast4vx::Statements> s) {
+  PointOperator(std::shared_ptr<ast4vx::PixelToPixel> s) {
     operator_type = OperatorType::PointOperator;
-    set_statements(s);
+    set_ops(s);
   }
 
   std::vector<DomVX::Image *> output_pixel_mappings;
@@ -191,7 +191,7 @@ class PointOperator : public OperatorNode {
    * @brief Sets the statement as the mapping function
    * @param s The PixelToPixel mapping function
    */
-  void set_statements(std::shared_ptr<ast4vx::Statements> s) {
+  void set_ops(std::shared_ptr<ast4vx::PixelToPixel> s) {
     function = s;
     output_pixel_mappings.resize(s->out_pixel_mappings.size());
     input_pixel_mappings.resize(s->in_pixel_mappings.size());
@@ -202,7 +202,7 @@ class PointOperator : public OperatorNode {
   /**
    * @brief Returns the mapping function statement
    */
-  std::shared_ptr<ast4vx::Statements> get_statements() { return function; }
+  std::shared_ptr<ast4vx::PixelToPixel> get_statements() { return function; }
 
   /**
    * @brief Binds the output and input variables of the statements to the actual

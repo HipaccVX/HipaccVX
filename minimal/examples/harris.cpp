@@ -71,7 +71,7 @@ int main() {
     sobel_x_local_op->add_operation(forall_op);
     sobel_x_local_op->add_operation(reduce_op, {image_sob_x_unnorm});
     auto sobel_x_point_op = create_point_op();
-    sobel_x_point_op->set_statements(sobel_ast_normalize);
+    sobel_x_point_op->set_ops(sobel_ast_normalize);
     sobel_x_point_op->register_images({image_sob_x}, {image_sob_x_unnorm});
 
     auto sobel_y_local_op = create_local_op();
@@ -81,7 +81,7 @@ int main() {
     sobel_y_local_op->add_operation(forall_op);
     sobel_y_local_op->add_operation(reduce_op, {image_sob_y_unnorm});
     auto sobel_y_point_op = create_point_op();
-    sobel_y_point_op->set_statements(sobel_ast_normalize);
+    sobel_y_point_op->set_ops(sobel_ast_normalize);
     sobel_y_point_op->register_images({image_sob_y}, {image_sob_y_unnorm});
 
     nodes.emplace_back(sobel_x_local_op);
@@ -121,7 +121,7 @@ int main() {
     trace_y_local_op->add_operation(reduce_op, {image_trace_y});
 
     auto treace_point_op = create_point_op();
-    treace_point_op->set_statements(trace_add);
+    treace_point_op->set_ops(trace_add);
     treace_point_op->register_images({image_trace},
                                      {image_trace_x, image_sob_y});
 
@@ -180,7 +180,7 @@ int main() {
     det_xy_local_op->add_operation(reduce_op_xy, {image_det_xy});
 
     auto det_point_op = create_point_op();
-    det_point_op->set_statements(det_point_ast);
+    det_point_op->set_ops(det_point_ast);
     det_point_op->register_images({image_det},
                                   {image_det_x, image_det_y, image_det_xy});
 
@@ -199,7 +199,7 @@ int main() {
                                                        mc_point_ast->d_in(1));
 
     auto mc_point_op = create_point_op();
-    mc_point_op->set_statements(mc_point_ast);
+    mc_point_op->set_ops(mc_point_ast);
     mc_point_op->register_images({image_mc}, {image_det, image_trace});
     mc_point_op->register_variables({}, {scalar_k});
 
@@ -216,7 +216,7 @@ int main() {
     vc_point_ast << if_greater << else_greater;
 
     auto vc_point_op = create_point_op();
-    vc_point_op->set_statements(vc_point_ast);
+    vc_point_op->set_ops(vc_point_ast);
     vc_point_op->register_images({image_vc}, {image_mc});
     vc_point_op->register_variables({}, {scalar_tc});
 

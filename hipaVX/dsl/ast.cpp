@@ -33,6 +33,12 @@ std::shared_ptr<ast4vx::Statements> operator<<(
   (*a) << statement;
   return a;
 }
+std::shared_ptr<ast4vx::PixelToPixel> operator<<(
+    std::shared_ptr<ast4vx::PixelToPixel> a,
+    std::shared_ptr<ast4vx::Node> statement) {
+  (*a) << statement;
+  return a;
+}
 std::shared_ptr<ast4vx::LocalToPixel> operator<<(
     std::shared_ptr<ast4vx::LocalToPixel> a,
     std::shared_ptr<ast4vx::Node> statement) {
@@ -198,7 +204,9 @@ std::shared_ptr<ast4vx::Node> unequal(std::shared_ptr<ast4vx::Node> a,
 std::shared_ptr<ast4vx::WindowOperation> reduce(
     std::shared_ptr<ast4vx::WindowDescriptor> in_win,
     std::shared_ptr<ast4vx::Reduction> reduction_function) {
-  return reduce({in_win}, reduction_function);
+  return reduce(
+      std::vector<std::shared_ptr<ast4vx::WindowDescriptor>>({in_win}),
+      reduction_function);
 }
 std::shared_ptr<ast4vx::WindowOperation> reduce(
     std::shared_ptr<ast4vx::WindowOperation> predecessor,
@@ -206,7 +214,7 @@ std::shared_ptr<ast4vx::WindowOperation> reduce(
   return reduce({predecessor->get_window_output()}, reduction_function);
 }
 std::shared_ptr<ast4vx::WindowOperation> reduce(
-    std::initializer_list<std::shared_ptr<ast4vx::WindowDescriptor>> in_win,
+    std::vector<std::shared_ptr<ast4vx::WindowDescriptor>> in_win,
     std::shared_ptr<ast4vx::Reduction> reduction_function) {
   auto win = std::make_shared<ast4vx::WindowOperation>();
   win->set_window_inputs(in_win);
@@ -216,26 +224,28 @@ std::shared_ptr<ast4vx::WindowOperation> reduce(
 
 std::shared_ptr<ast4vx::WindowOperation> forall(
     std::shared_ptr<ast4vx::WindowDescriptor> in_win,
-    std::shared_ptr<ast4vx::Statements> forall_function) {
-  return forall({in_win}, forall_function);
+    std::shared_ptr<ast4vx::PixelToPixel> forall_function) {
+  return forall(
+      std::vector<std::shared_ptr<ast4vx::WindowDescriptor>>({in_win}),
+      forall_function);
 }
 std::shared_ptr<ast4vx::WindowOperation> forall(
     std::shared_ptr<ast4vx::WindowOperation> predecessor,
-    std::shared_ptr<ast4vx::Statements> forall_function) {
+    std::shared_ptr<ast4vx::PixelToPixel> forall_function) {
   return forall({predecessor->get_window_output()}, forall_function);
 }
 std::shared_ptr<ast4vx::WindowOperation> forall(
-    std::initializer_list<std::shared_ptr<ast4vx::WindowDescriptor>> in_win,
-    std::shared_ptr<ast4vx::Statements> forall_function) {
+    std::vector<std::shared_ptr<ast4vx::WindowDescriptor>> in_win,
+    std::shared_ptr<ast4vx::PixelToPixel> forall_function) {
   auto win = std::make_shared<ast4vx::WindowOperation>();
   win->set_window_inputs(in_win);
   win->forall(forall_function);
   return win;
 }
 
-std::shared_ptr<ast4vx::Statements> create_p2p(unsigned int d_out,
-                                               unsigned int d_in) {
-  return std::make_shared<ast4vx::Statements>(d_out, d_in);
+std::shared_ptr<ast4vx::PixelToPixel> create_p2p(unsigned int d_out,
+                                                 unsigned int d_in) {
+  return std::make_shared<ast4vx::PixelToPixel>(d_out, d_in);
 }
 
 std::shared_ptr<ast4vx::MaskPixelToPixel> create_p2p_mask(unsigned int d_out,

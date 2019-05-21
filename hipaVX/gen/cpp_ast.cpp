@@ -300,6 +300,20 @@ std::string CPPVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i) {
       return to_return;
     }
 
+    case ast4vx::NodeType::PixelToPixel: {
+      auto s = std::dynamic_pointer_cast<ast4vx::PixelToPixel>(n);
+      std::string to_return;
+
+      for (auto statement : s->statements) {
+        to_return += this->visit(statement, i);
+        if (statement->type != ast4vx::NodeType::If &&
+            statement->type != ast4vx::NodeType::Else)
+          to_return += ";\n";
+      }
+
+      return to_return;
+    }
+
     case ast4vx::NodeType::VariableAccessor: {
       auto s = std::dynamic_pointer_cast<ast4vx::VariableAccessor>(n);
 
@@ -381,8 +395,8 @@ std::string CPPVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i) {
         for (unsigned int x = 0; x < domain->width; x++) {
           if (domain->domain[y][x] == 0) continue;
           if (s->current_state == ast4vx::WindowOperation::State::At) {
-            if (s->statements[y][x].get() == nullptr) continue;
-            if (s->statements[y][x]->out_pixel_mappings.size() != 1)
+            if (s->p2p_ops[y][x].get() == nullptr) continue;
+            if (s->p2p_ops[y][x]->out_pixel_mappings.size() != 1)
               throw std::runtime_error(
                   "CPPVisitor: WindowOperation: At operations requires exactly "
                   "one output mapping");
@@ -393,7 +407,7 @@ std::string CPPVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i) {
           current_output_y = std::to_string(y);
 
           if (s->current_state == ast4vx::WindowOperation::State::At)
-            code += visit(s->statements[y][x]);
+            code += visit(s->p2p_ops[y][x]);
           else if (s->current_state == ast4vx::WindowOperation::State::Forall)
             code += visit(s->forall_statement);
           else if (s->current_state == ast4vx::WindowOperation::State::Reduce)

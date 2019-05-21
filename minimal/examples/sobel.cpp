@@ -68,7 +68,7 @@ int main()
 
 
   auto sobel_x_point_op = create_point_op();
-  sobel_x_point_op->set_statements(sobel_ast_normalize);
+  sobel_x_point_op->set_ops(sobel_ast_normalize);
   sobel_x_point_op->register_images({image_sob_x}, {image_sob_x_unnorm});
 
   auto sobel_y_local_op = create_local_op();
@@ -78,7 +78,7 @@ int main()
   sobel_y_local_op->add_operation(forall_op);
   sobel_y_local_op->add_operation(reduce_op, {image_sob_y_unnorm});
   auto sobel_y_point_op = create_point_op();
-  sobel_y_point_op->set_statements(sobel_ast_normalize);
+  sobel_y_point_op->set_ops(sobel_ast_normalize);
   sobel_y_point_op->register_images({image_sob_y}, {image_sob_y_unnorm});
 
   //nodes.emplace_back(sobel_x_local_op);

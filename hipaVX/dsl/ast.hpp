@@ -173,12 +173,12 @@ class PixelAccessor : public Node {
  * @brief A proxy class for easy assignments in the AST for Output pixel
  * accessors
  */
-class Statements;
+class PixelToPixel;
 class PixelOutAccessor {
  public:
-  std::shared_ptr<Statements> parent;
+  std::shared_ptr<PixelToPixel> parent;
   std::shared_ptr<PixelAccessor> accessor;
-  PixelOutAccessor(std::shared_ptr<Statements> p,
+  PixelOutAccessor(std::shared_ptr<PixelToPixel> p,
                    std::shared_ptr<PixelAccessor> out)
       : parent(p), accessor(out) {}
 
@@ -829,8 +829,55 @@ class WindowAccessor : public Node,
  *
  * @todo Rename to PixelToPixel?
  */
-class Statements : public Node,
-                   public std::enable_shared_from_this<Statements> {
+class Statements : public Node {
+ public:
+  std::vector<std::shared_ptr<Node>> statements;
+
+  Statements() { type = NodeType::Statements; }
+  virtual ~Statements() override = default;
+
+  /**
+   * @brief Adds a statement at the end of the statements vector.
+   * @param n The top level AST Node, which should be treated as a statement
+   * @return Reference to *this in order allow chaining of the operator
+   */
+  Statements& operator<<(std::shared_ptr<Node> n) {
+    statements.push_back(n);
+    return *this;
+  }
+  /**
+   * @todo Akif, do we need this?
+   */
+  Statements& append(Statements& n) {
+    // statements.push_back(n);
+    statements.insert(std::end(statements), std::begin(n.statements),
+                      std::end(n.statements));
+    return *this;
+  }
+  /**
+   * @todo Akif, do we need this?
+   */
+  Statements& append(std::shared_ptr<Statements>& n) {
+    // statements.push_back(n);
+    statements.insert(std::end(statements), std::begin(n->statements),
+                      std::end(n->statements));
+    return *this;
+  }
+  /**
+   * @todo Akif, do we need this?
+   */
+  Statements& replicate(Statements n) {
+    // statements.push_back(n);
+    for (auto it = std::begin(n.statements); it != std::end(n.statements);
+         it++) {
+      statements.emplace_back(*it);
+    }
+    return *this;
+  }
+};
+
+class PixelToPixel : public Statements,
+                     public std::enable_shared_from_this<PixelToPixel> {
  public:
   std::vector<std::shared_ptr<PixelAccessor>> out_pixel_mappings;
   std::vector<std::shared_ptr<PixelAccessor>> in_pixel_mappings;
@@ -838,9 +885,15 @@ class Statements : public Node,
   std::vector<std::shared_ptr<VariableAccessor>> out_variable_mappings;
   std::vector<std::shared_ptr<VariableAccessor>> in_variable_mappings;
 
-  std::vector<std::shared_ptr<Node>> statements;
-
  public:
+  /**
+   * @param out Amount of data output pixel accessors
+   * @param in Amount of data input pixel accessors
+   */
+  PixelToPixel(unsigned int out, unsigned int in) {
+    type = NodeType::PixelToPixel;
+    set_data_inout_count(out, in);
+  }
   /**
    * @brief d_in Accessing a (d)ata (in)put pixel mapping
    * @param index input index of the data input pixel mapping
@@ -894,18 +947,6 @@ class Statements : public Node,
           "index): Index out of bounds");
     return out_variable_mappings[index];
   }
-
-  Statements() { type = NodeType::Statements; }
-  /**
-   * @param out Amount of data output pixel accessors
-   * @param in Amount of data input pixel accessors
-   */
-  Statements(unsigned int out, unsigned int in) {
-    type = NodeType::Statements;
-    set_data_inout_count(out, in);
-  }
-  virtual ~Statements() override = default;
-
   /**
    * @brief Sets amount of data in/out pixel accessors
    * @param out Amount of data output pixel accessors
@@ -937,45 +978,6 @@ class Statements : public Node,
     for (; i < out + in; i++)
       in_variable_mappings[i - out].reset(new VariableAccessor(i));
   }
-
-  /**
-   * @brief Adds a statement at the end of the statements vector.
-   * @param n The top level AST Node, which should be treated as a statement
-   * @return Reference to *this in order allow chaining of the operator
-   */
-  Statements& operator<<(std::shared_ptr<Node> n) {
-    statements.push_back(n);
-    return *this;
-  }
-  /**
-   * @todo Akif, do we need this?
-   */
-  Statements& append(Statements& n) {
-    // statements.push_back(n);
-    statements.insert(std::end(statements), std::begin(n.statements),
-                      std::end(n.statements));
-    return *this;
-  }
-  /**
-   * @todo Akif, do we need this?
-   */
-  Statements& append(std::shared_ptr<Statements>& n) {
-    // statements.push_back(n);
-    statements.insert(std::end(statements), std::begin(n->statements),
-                      std::end(n->statements));
-    return *this;
-  }
-  /**
-   * @todo Akif, do we need this?
-   */
-  Statements& replicate(Statements n) {
-    // statements.push_back(n);
-    for (auto it = std::begin(n.statements); it != std::end(n.statements);
-         it++) {
-      statements.emplace_back(*it);
-    }
-    return *this;
-  }
 };
 
 /**
@@ -988,7 +990,7 @@ class Statements : public Node,
  * Statements is that it has input windows and output data pixel accessors
  *
  */
-class LocalToPixel : public Statements {
+class LocalToPixel : public PixelToPixel {
  public:
   std::vector<std::shared_ptr<WindowAccessor>> windows;
   /**
@@ -996,7 +998,7 @@ class LocalToPixel : public Statements {
    * @param num_windows Amount of input window accessors
    */
   LocalToPixel(unsigned int num_output_images, unsigned int num_windows)
-      : Statements(num_output_images, 0) {
+      : PixelToPixel(num_output_images, 0) {
     type = NodeType::LocalToPixel;
     windows.resize(num_windows);
     for (unsigned int i = 0; i < windows.size(); i++)
@@ -1040,7 +1042,7 @@ class MaskAccessor : public Node {
  * Statements is that it has input masks additionally
  *
  */
-class MaskPixelToPixel : public Statements {
+class MaskPixelToPixel : public PixelToPixel {
  public:
   std::vector<std::shared_ptr<MaskAccessor>> masks;
 
@@ -1051,7 +1053,7 @@ class MaskPixelToPixel : public Statements {
    */
   MaskPixelToPixel(unsigned int num_output_images,
                    unsigned int num_input_images, unsigned int num_masks)
-      : Statements(num_output_images, num_input_images) {
+      : PixelToPixel(num_output_images, num_input_images) {
     type = NodeType::MaskPixelToPixel;
     masks.resize(num_masks);
     for (unsigned int i = 0; i < masks.size(); i++)
@@ -1080,7 +1082,7 @@ class MaskPixelToPixel : public Statements {
  * It provides three accessors: Reduction::left(), Reduction::right() and
  * Reduction::out()
  */
-class Reduction : public Statements {
+class Reduction : public PixelToPixel {
  public:
   std::shared_ptr<Node> initial;
 
@@ -1089,7 +1091,7 @@ class Reduction : public Statements {
    * @param c Inital constant value
    */
   template <class T>
-  Reduction(Constant<T> c = Constant<T>()) : Statements(1, 2) {
+  Reduction(Constant<T> c = Constant<T>()) : PixelToPixel(1, 2) {
     type = NodeType::Reduction;
     initial = std::make_shared<Constant<T>>(c);
   }
@@ -1146,13 +1148,13 @@ class WindowOperation : public Node {
   State current_state = State::None;
   std::shared_ptr<WindowDescriptor> output;
   std::shared_ptr<LocalToPixel> ltp_statement;
-  std::shared_ptr<Statements> forall_statement;
+  std::shared_ptr<PixelToPixel> forall_statement;
   std::shared_ptr<Reduction> reduction_statement;
 
   std::vector<std::shared_ptr<WindowDescriptor>> window_inputs;
 
  public:
-  std::vector<std::vector<std::shared_ptr<Statements>>> statements;
+  std::vector<std::vector<std::shared_ptr<PixelToPixel>>> p2p_ops;
 
   /**
    * @brief Constructor with an explicit domain size
@@ -1165,9 +1167,9 @@ class WindowOperation : public Node {
           "WindowOperation::WindowOperation: domain size must be > 0");
 
     type = NodeType::WindowOperation;
-    statements.resize(y);
-    for (unsigned int i = 0; i < statements.size(); i++) {
-      statements[i].resize(x);
+    p2p_ops.resize(y);
+    for (unsigned int i = 0; i < p2p_ops.size(); i++) {
+      p2p_ops[i].resize(x);
     }
     explicit_x_y = true;
   }
@@ -1185,8 +1187,7 @@ class WindowOperation : public Node {
    * @brief Sets the WindowDescriptors as inputs to this Operation
    * @param in The whole input list for this WindowOperation
    */
-  void set_window_inputs(
-      std::initializer_list<std::shared_ptr<WindowDescriptor>> in) {
+  void set_window_inputs(std::vector<std::shared_ptr<WindowDescriptor>> in) {
     window_inputs.clear();
     for (auto wd : in) window_inputs.emplace_back(wd);
 
@@ -1196,9 +1197,9 @@ class WindowOperation : public Node {
             "WindowOperation::set_window_inputs(): If the WindowOperation size "
             "is not explicitly set, at least one input window must be given");
 
-      statements.resize(window_inputs[0]->height);
-      for (unsigned int i = 0; i < statements.size(); i++) {
-        statements[i].resize(window_inputs[0]->width);
+      p2p_ops.resize(window_inputs[0]->height);
+      for (unsigned int i = 0; i < p2p_ops.size(); i++) {
+        p2p_ops[i].resize(window_inputs[0]->width);
       }
     }
   }
@@ -1222,24 +1223,24 @@ class WindowOperation : public Node {
    * already is bound to that coordinate
    */
   void compute_at(unsigned int x, unsigned int y,
-                  std::shared_ptr<Statements> s) {
+                  std::shared_ptr<PixelToPixel> s) {
     if (current_state != State::None && current_state != State::At)
       throw std::runtime_error(
           "WindowOperation::compute_at(): Window already in another state");
-    if (!explicit_x_y && statements.size() == 0)
+    if (!explicit_x_y && p2p_ops.size() == 0)
       throw std::runtime_error(
           "WindowOperation::compute_at(): If the WindowOperation size is not "
           "explicitly set, set_window_inputs(...) needs to get called before "
           "at(...)");
-    if (y >= statements.size() || x >= statements[x].size())
+    if (y >= p2p_ops.size() || x >= p2p_ops[x].size())
       throw std::runtime_error(
           "WindowOperation::compute_at(): Index out of bounds");
-    if (statements[y][x] != nullptr)
+    if (p2p_ops[y][x] != nullptr)
       throw std::runtime_error(
           "WindowOperation::compute_at(): Coordinate already written to");
 
     current_state = State::At;
-    statements[y][x] = s;
+    p2p_ops[y][x] = s;
   }
 
   /**
@@ -1251,7 +1252,7 @@ class WindowOperation : public Node {
    * @throws std::runtime_error will be thrown when a PixelToPixel Statement
    * already is bound for this WindowOperation
    */
-  void forall(std::shared_ptr<Statements> s) {
+  void forall(std::shared_ptr<PixelToPixel> s) {
     if (current_state != State::None && current_state != State::Forall)
       throw std::runtime_error(
           "WindowOperation::forall(): Window already in another state");
@@ -1312,8 +1313,8 @@ class WindowOperation : public Node {
           "WindowOperation::get_window_output(): Window not in the right "
           "state");
     if (output.get() == nullptr)
-      output = std::make_shared<WindowDescriptor>(statements[0].size(),
-                                                  statements.size());
+      output =
+          std::make_shared<WindowDescriptor>(p2p_ops[0].size(), p2p_ops.size());
 
     return output;
   }
@@ -1443,6 +1444,13 @@ std::shared_ptr<ast4vx::Node> operator<<(std::shared_ptr<ast4vx::Node> a,
  */
 std::shared_ptr<ast4vx::Statements> operator<<(
     std::shared_ptr<ast4vx::Statements> a,
+    std::shared_ptr<ast4vx::Node> statement);
+
+/**
+ * @brief Adds the \p statement to the statements of \p a
+ */
+std::shared_ptr<ast4vx::PixelToPixel> operator<<(
+    std::shared_ptr<ast4vx::PixelToPixel> a,
     std::shared_ptr<ast4vx::Node> statement);
 
 /**
@@ -1645,7 +1653,7 @@ std::shared_ptr<ast4vx::WindowOperation> reduce(
     std::shared_ptr<ast4vx::Reduction> reduction_function);
 /**
  * @brief Creates a new ast4vx::WindowOperation
- * @param in_win An std::initializer_list of ast4vx::WindowDescriptor that are
+ * @param in_win A vector of ast4vx::WindowDescriptor that are
  * the inputs of this reduction operation. Be aware that a reducing
  * ast4vx::WindowOperation only supports one ast4vx::WindowDescriptor
  * @param reduction_function The ast4vx::Reduction function of this
@@ -1653,7 +1661,7 @@ std::shared_ptr<ast4vx::WindowOperation> reduce(
  * @return The new ast4vx::WindowOperation
  */
 std::shared_ptr<ast4vx::WindowOperation> reduce(
-    std::initializer_list<std::shared_ptr<ast4vx::WindowDescriptor>> in_win,
+    std::vector<std::shared_ptr<ast4vx::WindowDescriptor>> in_win,
     std::shared_ptr<ast4vx::Reduction> reduction_function);
 
 /**
@@ -1665,7 +1673,7 @@ std::shared_ptr<ast4vx::WindowOperation> reduce(
  */
 std::shared_ptr<ast4vx::WindowOperation> forall(
     std::shared_ptr<ast4vx::WindowDescriptor> in_win,
-    std::shared_ptr<ast4vx::Statements> forall_function);
+    std::shared_ptr<ast4vx::PixelToPixel> forall_function);
 /**
  * @brief Creates a new ast4vx::WindowOperation
  * @param predecessor The predecessor ast4vx::WindowOperation, whichs output
@@ -1676,10 +1684,10 @@ std::shared_ptr<ast4vx::WindowOperation> forall(
  */
 std::shared_ptr<ast4vx::WindowOperation> forall(
     std::shared_ptr<ast4vx::WindowOperation> predecessor,
-    std::shared_ptr<ast4vx::Statements> forall_function);
+    std::shared_ptr<ast4vx::PixelToPixel> forall_function);
 /**
  * @brief Creates a new ast4vx::WindowOperation
- * @param in_win An std::initializer_list of ast4vx::WindowDescriptor that are
+ * @param in_win A vector of ast4vx::WindowDescriptor that are
  * the inputs of this reduction operation. Be aware that a forall
  * ast4vx::WindowOperation only supports one ast4vx::WindowDescriptor
  * @param forall_function The ast4vx::Statements function of this
@@ -1687,8 +1695,8 @@ std::shared_ptr<ast4vx::WindowOperation> forall(
  * @return The new ast4vx::WindowOperation
  */
 std::shared_ptr<ast4vx::WindowOperation> forall(
-    std::initializer_list<std::shared_ptr<ast4vx::WindowDescriptor>> in_win,
-    std::shared_ptr<ast4vx::Statements> forall_function);
+    std::vector<std::shared_ptr<ast4vx::WindowDescriptor>> in_win,
+    std::shared_ptr<ast4vx::PixelToPixel> forall_function);
 
 /**
  * @brief Returns a new PixelToPixel instance and initializes it
@@ -1696,8 +1704,8 @@ std::shared_ptr<ast4vx::WindowOperation> forall(
  * @param d_in Number of input pixel accessors
  * @return A newly created PixelToPixel instance
  */
-std::shared_ptr<ast4vx::Statements> create_p2p(unsigned int d_out,
-                                               unsigned int d_in);
+std::shared_ptr<ast4vx::PixelToPixel> create_p2p(unsigned int d_out,
+                                                 unsigned int d_in);
 
 /**
  * @brief Returns a new MaskPixelToPixel instance and initializes it

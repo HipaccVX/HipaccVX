@@ -15,7 +15,7 @@ int main(int argc, const char *argv[]) {
 
   auto map = create_point_op();
   // Set the map statement
-  map->set_statements(ast_fun);
+  map->set_ops(ast_fun);
   // Bind the images to the correct pixel accessors
   map->register_images({image_o}, {image_i});
 
