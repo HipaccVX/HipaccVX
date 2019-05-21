@@ -618,10 +618,67 @@ std::string dump_code(std::shared_ptr<DomVX::LocalOperator> local,
   ast_visitor.current_output_x = "y_" + local->id();
   ast_visitor.current_output_y = "x_" + local->id();
 
+  std::vector<std::shared_ptr<ast4vx::WindowOperation>> w_ops;
+  std::vector<
+      std::tuple<DomVX::Image*, std::shared_ptr<ast4vx::WindowDescriptor>>>
+      in_images;
+
+  std::vector<std::shared_ptr<ast4vx::WindowOperation>> work_list =
+      local->operations;
+
+  ast_visitor.desc_to_dom.clear();
+  while (!work_list.empty()) {
+    auto op = work_list.back();
+    work_list.pop_back();
+    w_ops.insert(w_ops.begin(), op);
+
+    std::vector<std::shared_ptr<ast4vx::WindowDescriptor>> in_win =
+        op->window_inputs;
+
+    for (auto win : in_win) {
+      // Check if it originates from a WindowOperation
+      if (win->parent.use_count() > 0) {
+        auto parent_op = win->parent.lock();
+        bool already_in =
+            std::find(w_ops.cbegin(), w_ops.cend(), parent_op) != w_ops.cend();
+        already_in |= std::find(work_list.cbegin(), work_list.cend(),
+                                parent_op) != work_list.cend();
+        if (!already_in) work_list.push_back(parent_op);
+      } else if (win->bounded.use_count() > 0) {
+        auto image = win->bounded.lock()->im;
+        bool already_in =
+            std::find_if(
+                in_images.cbegin(), in_images.cend(),
+                [=](const std::tuple<DomVX::Image*,
+                                     std::shared_ptr<ast4vx::WindowDescriptor>>&
+                        a) { return std::get<0>(a) == image; }) !=
+            in_images.cend();
+        if (!already_in) {
+          in_images.push_back({image, win});
+          ast_visitor.desc_to_dom[win] = win->bounded.lock()->dom;
+        }
+      } else {
+        auto it = std::find_if(
+            local->input_descriptor.begin(), local->input_descriptor.end(),
+            [=](std::tuple<DomVX::Image*,
+                           std::shared_ptr<ast4vx::WindowDescriptor>>
+                    item) { return std::get<1>(item) == win; });
+        if (it != local->input_descriptor.end())
+          in_images.push_back({std::get<0>(*it), win});
+        else
+          throw std::runtime_error(
+              "Couldn't find an Image association to a Window Descriptor");
+      }
+    }
+  }
+  for (auto& pair : local->domain_bindings)
+    ast_visitor.desc_to_dom[pair.first] = pair.second;
+
   std::vector<DomVX::Image*> output_images;
 
   // Get all the output images
-  for (auto images : local->operation_output_images) {
+  for (auto images_map : local->operation_output_images) {
+    auto images = std::get<1>(images_map);
     output_images.insert(output_images.end(), images.begin(), images.end());
   }
   if (output_images.size() == 0)
@@ -645,9 +702,9 @@ std::string dump_code(std::shared_ptr<DomVX::LocalOperator> local,
   std::string code = "";
 
   // Create the roi from the input images
-  for (unsigned int i = 0; i < local->input_descriptor.size(); i++) {
-    auto in_image = std::get<0>(local->input_descriptor[i]);
-    auto in_desc = std::get<1>(local->input_descriptor[i]);
+  for (unsigned int i = 0; i < in_images.size(); i++) {
+    auto& in_image = std::get<0>(in_images[i]);
+    auto& in_desc = std::get<1>(in_images[i]);
 
     auto name = generate_default_name(in_image);
     if (!use_default_names) {
@@ -684,13 +741,8 @@ std::string dump_code(std::shared_ptr<DomVX::LocalOperator> local,
 
   code += "\n";
 
-  ast_visitor.desc_to_dom.clear();
-  // Add the manual set domains to the map
-  for (auto binding : local->domain_bindings)
-    ast_visitor.desc_to_dom[binding.first] = binding.second;
-
-  for (unsigned int i = 0; i < local->operations.size(); i++) {
-    auto& op = local->operations[i];
+  for (unsigned int i = 0; i < w_ops.size(); i++) {
+    auto& op = w_ops[i];
 
     if (op->output != nullptr) {
       auto& in_desc = op->output;
@@ -724,7 +776,7 @@ std::string dump_code(std::shared_ptr<DomVX::LocalOperator> local,
     if (op->current_state == ast4vx::WindowOperation::State::ToPixel ||
         op->current_state == ast4vx::WindowOperation::State::Reduce) {
       // Bind an actual output image is only relevant for ToPixel and Reduce
-      for (auto& out_image : local->operation_output_images[i]) {
+      for (auto& out_image : local->operation_output_images[op]) {
         auto im = out_image;
         auto name = generate_default_name(im);
         if (!use_default_names) {
@@ -752,7 +804,7 @@ std::string dump_code(std::shared_ptr<DomVX::LocalOperator> local,
     std::vector<std::string> variable_mapping = scalar_names;
     if (use_default_names) {
       variable_mapping.clear();
-      for (auto scalar : local->operation_variables[i])
+      for (auto scalar : local->operation_variables[op])
         variable_mapping.emplace_back(generate_default_name(scalar));
     }
     auto old_variable_mapping = ast_visitor.variableaccessor_mapping;

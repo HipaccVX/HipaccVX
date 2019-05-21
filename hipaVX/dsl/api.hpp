@@ -1,7 +1,8 @@
 #pragma once
-#include "ast.hpp"
-#include "types.hpp"
 #include "abstractions.hpp"
+#include "ast.hpp"
+#include "descriptors.hpp"
+#include "types.hpp"
 
 typedef std::shared_ptr<DomVX::PointOperator> domVX_point;
 typedef std::shared_ptr<DomVX::LocalOperator> domVX_local;
@@ -11,6 +12,21 @@ typedef std::shared_ptr<DomVX::Domain> domVX_domain;
 typedef std::shared_ptr<DomVX::Mask> domVX_mask;
 
 typedef DomVX::Image* domVX_image;
+
+typedef std::shared_ptr<WindowDesc> domVX_window;
+
+//*********************************************************************
+// Image
+//*********************************************************************
+domVX_image create_image(unsigned int width, unsigned int height,
+                         vx_df_image type);
+
+//*********************************************************************
+// Descriptors
+//*********************************************************************
+domVX_window get_window(DomVX::Image* im, int width, int height);
+
+domVX_window get_window(DomVX::Image* im, std::shared_ptr<DomVX::Domain> dom);
 
 //*********************************************************************
 // OPERATORS
@@ -25,12 +41,6 @@ domVX_local create_local_op();
 domVX_global create_global_op();
 
 //*********************************************************************
-// Image
-//*********************************************************************
-domVX_image create_image(unsigned int width, unsigned int height,
-                         vx_df_image type);
-
-//*********************************************************************
 // DOMAIN  (TODO: Consider renaming as Window)
 //*********************************************************************
 /**
@@ -40,7 +50,8 @@ domVX_image create_image(unsigned int width, unsigned int height,
  * @param dom row major flat matrix of the domain values. Has to have x*y
  * entries
  */
-domVX_domain create_domain(unsigned int w, unsigned int h, std::vector<int> dom);
+domVX_domain create_domain(unsigned int w, unsigned int h,
+                           std::vector<int> dom);
 
 /**
  * @brief Creates a Domain from a given mask

@@ -11,6 +11,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "descriptors.hpp"
 
 namespace ast4vx {
 
@@ -1101,6 +1102,7 @@ class Reduction : public PixelToPixel {
   PixelOutAccessor out() { return d_out(0); }
 };
 
+class WindowOperation;
 /**
  * @brief Placeholder in the AST for a Window with a specific datatype
  *
@@ -1112,6 +1114,11 @@ class WindowDescriptor : public Node {
  public:
   unsigned int width, height;
   Datatype output_datatype;
+  std::weak_ptr<WindowDesc>
+      bounded; /** < possible pointer to the BoundedWindowDescriptor, which has
+                  this WindowDescriptor as its member variable */
+  std::weak_ptr<WindowOperation> parent; /** < points to the computation node,
+                                            which writes to this window */
 
   WindowDescriptor(unsigned int x, unsigned int y,
                    Datatype datatype = Datatype::INT32) {
@@ -1132,7 +1139,8 @@ class WindowDescriptor : public Node {
  *
  * A WindowOperation can only be in one WindowOperation::State\n
  */
-class WindowOperation : public Node {
+class WindowOperation : public Node,
+                        public std::enable_shared_from_this<WindowOperation> {
  private:
   bool explicit_x_y;
 
@@ -1188,8 +1196,7 @@ class WindowOperation : public Node {
    * @param in The whole input list for this WindowOperation
    */
   void set_window_inputs(std::vector<std::shared_ptr<WindowDescriptor>> in) {
-    window_inputs.clear();
-    for (auto wd : in) window_inputs.emplace_back(wd);
+    window_inputs = in;
 
     if (!explicit_x_y) {
       if (window_inputs.size() == 0)
@@ -1312,9 +1319,11 @@ class WindowOperation : public Node {
       throw std::runtime_error(
           "WindowOperation::get_window_output(): Window not in the right "
           "state");
-    if (output.get() == nullptr)
+    if (output.get() == nullptr) {
       output =
           std::make_shared<WindowDescriptor>(p2p_ops[0].size(), p2p_ops.size());
+      output->parent = shared_from_this();
+    }
 
     return output;
   }
@@ -1633,12 +1642,36 @@ std::shared_ptr<ast4vx::Node> extract4(std::shared_ptr<ast4vx::Node> a,
 /**
  * @brief Creates a new ast4vx::WindowOperation
  * @param in_win The input ast4vx::WindowDescriptor
+ * @param in_bwin The BoundedWindowDescriptor which contains the input
+ * ast4vx::WindowDescriptor
  * @param reduction_function The ast4vx::Reduction function of this
  * ast4vx::WindowOperation
  * @return The new ast4vx::WindowOperation
  */
 std::shared_ptr<ast4vx::WindowOperation> reduce(
     std::shared_ptr<ast4vx::WindowDescriptor> in_win,
+    std::shared_ptr<ast4vx::Reduction> reduction_function);
+/**
+ * @brief Creates a new ast4vx::WindowOperation
+ * @param in_bwin The BoundedWindowDescriptor which contains the input
+ * ast4vx::WindowDescriptor
+ * @param reduction_function The ast4vx::Reduction function of this
+ * ast4vx::WindowOperation
+ * @return The new ast4vx::WindowOperation
+ */
+std::shared_ptr<ast4vx::WindowOperation> reduce(
+    std::shared_ptr<WindowDesc> in_bwin,
+    std::shared_ptr<ast4vx::Reduction> reduction_function);
+/**
+ * @brief Creates a new ast4vx::WindowOperation
+ * @param in_bwins Vector of BoundedWindowDescriptor which contains the input
+ * ast4vx::WindowDescriptor
+ * @param reduction_function The ast4vx::Reduction function of this
+ * ast4vx::WindowOperation
+ * @return The new ast4vx::WindowOperation
+ */
+std::shared_ptr<ast4vx::WindowOperation> reduce(
+    std::vector<std::shared_ptr<WindowDesc>> in_bwins,
     std::shared_ptr<ast4vx::Reduction> reduction_function);
 /**
  * @brief Creates a new ast4vx::WindowOperation
@@ -1673,6 +1706,28 @@ std::shared_ptr<ast4vx::WindowOperation> reduce(
  */
 std::shared_ptr<ast4vx::WindowOperation> forall(
     std::shared_ptr<ast4vx::WindowDescriptor> in_win,
+    std::shared_ptr<ast4vx::PixelToPixel> forall_function);
+/**
+ * @brief Creates a new ast4vx::WindowOperation
+ * @param in_bwin The WindowDesc which contains the input
+ * ast4vx::WindowDescriptor
+ * @param forall_function The ast4vx::Statements function of this
+ * ast4vx::WindowOperation that should be applied to the whole domain
+ * @return The new ast4vx::WindowOperation
+ */
+std::shared_ptr<ast4vx::WindowOperation> forall(
+    std::shared_ptr<WindowDesc> in_bwin,
+    std::shared_ptr<ast4vx::PixelToPixel> forall_function);
+/**
+ * @brief Creates a new ast4vx::WindowOperation
+ * @param in_bwins Vector of WindowDesc which contains the input
+ * ast4vx::WindowDescriptor
+ * @param forall_function The ast4vx::Statements function of this
+ * ast4vx::WindowOperation that should be applied to the whole domain
+ * @return The new ast4vx::WindowOperation
+ */
+std::shared_ptr<ast4vx::WindowOperation> forall(
+    std::vector<std::shared_ptr<WindowDesc>> in_bwins,
     std::shared_ptr<ast4vx::PixelToPixel> forall_function);
 /**
  * @brief Creates a new ast4vx::WindowOperation
