@@ -170,6 +170,23 @@ class PixelAccessor : public Node {
 };
 
 /**
+ * @brief A proxy class for easy assignments in the AST for Output pixel
+ * accessors
+ */
+class Statements;
+class PixelOutAccessor {
+ public:
+  std::shared_ptr<Statements> parent;
+  std::shared_ptr<PixelAccessor> accessor;
+  PixelOutAccessor(std::shared_ptr<Statements> p,
+                   std::shared_ptr<PixelAccessor> out)
+      : parent(p), accessor(out) {}
+
+  PixelOutAccessor& operator=(const PixelOutAccessor&) = default;
+  PixelOutAccessor& operator=(std::shared_ptr<Node> n);
+};
+
+/**
  * @brief The SimpleBinaryNode class
  *
  * It represents all simple binary operations like addition, subtraction,
@@ -812,7 +829,8 @@ class WindowAccessor : public Node,
  *
  * @todo Rename to PixelToPixel?
  */
-class Statements : public Node {
+class Statements : public Node,
+                   public std::enable_shared_from_this<Statements> {
  public:
   std::vector<std::shared_ptr<PixelAccessor>> out_pixel_mappings;
   std::vector<std::shared_ptr<PixelAccessor>> in_pixel_mappings;
@@ -839,15 +857,15 @@ class Statements : public Node {
   /**
    * @brief d_out Accessing a (d)ata (out)put pixel mapping
    * @param index output index of the data output pixel mapping
-   * @return A std::shared_ptr<PixelAccessor>
+   * @return A PixelOutAccessor
    * @throws std::runtime_error when index is out of bounds
    */
-  std::shared_ptr<PixelAccessor> d_out(unsigned int index) {
+  PixelOutAccessor d_out(unsigned int index) {
     if (index >= out_pixel_mappings.size())
       throw std::runtime_error(
           "std::shared_ptr<PixelAccessor> Statements::d_in(unsigned int "
           "index): Index out of bounds");
-    return out_pixel_mappings[index];
+    return PixelOutAccessor(shared_from_this(), out_pixel_mappings[index]);
   }
 
   /**
@@ -1078,7 +1096,7 @@ class Reduction : public Statements {
 
   std::shared_ptr<PixelAccessor> left() { return d_in(0); }
   std::shared_ptr<PixelAccessor> right() { return d_in(1); }
-  std::shared_ptr<PixelAccessor> out() { return d_out(0); }
+  PixelOutAccessor out() { return d_out(0); }
 };
 
 /**
@@ -1496,6 +1514,20 @@ std::shared_ptr<ast4vx::Node> abs(std::shared_ptr<ast4vx::Node> a);
  * and returns it
  */
 std::shared_ptr<ast4vx::Node> assign(std::shared_ptr<ast4vx::Node> a,
+                                     std::shared_ptr<ast4vx::Node> b);
+
+/**
+ * @brief Creates a new ast4vx::Assign Node with \p a and \p b as the parameters
+ * and returns it
+ */
+std::shared_ptr<ast4vx::Node> assign(ast4vx::PixelOutAccessor& a,
+                                     std::shared_ptr<ast4vx::Node> b);
+
+/**
+ * @brief Creates a new ast4vx::Assign Node with \p a and \p b as the parameters
+ * and returns it
+ */
+std::shared_ptr<ast4vx::Node> assign(ast4vx::PixelOutAccessor a,
                                      std::shared_ptr<ast4vx::Node> b);
 
 /**

@@ -8,13 +8,11 @@
 int main() {
   // Created two sample pixel to pixel functions for later use
   auto ast_p2p_mult = create_p2p_mask(1, 1, 1);
-  ast_p2p_mult << assign(ast_p2p_mult->d_out(0),
-                         ast_p2p_mult->d_in(0) * ast_p2p_mult->m_in(0));
+  ast_p2p_mult->d_out(0) = ast_p2p_mult->d_in(0) * ast_p2p_mult->m_in(0);
 
   // Reduction AST expects an initial value for the accumulator
   auto ast_red_sum = create_reduction(ast4vx::Constant<float>(.0f));
-  ast_red_sum << assign(ast_red_sum->out(),
-                        ast_red_sum->left() + ast_red_sum->right());
+  ast_red_sum->out() = ast_red_sum->left() + ast_red_sum->right();
 
   // Create dummy input window and set its domain
   // There are handy functions for "forall" and "reduce", which

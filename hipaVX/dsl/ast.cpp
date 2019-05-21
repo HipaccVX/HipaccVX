@@ -92,6 +92,16 @@ std::shared_ptr<ast4vx::Node> assign(std::shared_ptr<ast4vx::Node> a,
   return std::make_shared<ast4vx::Assignment>(a, b);
 }
 
+std::shared_ptr<ast4vx::Node> assign(ast4vx::PixelOutAccessor &a,
+                                     std::shared_ptr<ast4vx::Node> b) {
+  return std::make_shared<ast4vx::Assignment>(a.accessor, b);
+}
+
+std::shared_ptr<ast4vx::Node> assign(ast4vx::PixelOutAccessor a,
+                                     std::shared_ptr<ast4vx::Node> b) {
+  return std::make_shared<ast4vx::Assignment>(a.accessor, b);
+}
+
 std::shared_ptr<ast4vx::Node> convert(std::shared_ptr<ast4vx::Node> a,
                                       ast4vx::Datatype type) {
   return std::make_shared<ast4vx::Conversion>(a, type);
@@ -251,4 +261,10 @@ std::shared_ptr<ast4vx::WindowOperation> create_window_op(unsigned int w,
 
 std::shared_ptr<ast4vx::WindowOperation> create_window_op() {
   return std::make_shared<ast4vx::WindowOperation>();
+}
+
+ast4vx::PixelOutAccessor &ast4vx::PixelOutAccessor::operator=(
+    std::shared_ptr<ast4vx::Node> n) {
+  parent << assign(accessor, n);
+  return *this;
 }
