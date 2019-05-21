@@ -341,6 +341,21 @@ class LocalOperator : public OperatorNode {
  public:
   LocalOperator() { operator_type = OperatorType::LocalOperator; }
 
+  std::shared_ptr<ast4vx::WindowOperation> forall(
+      std::shared_ptr<ast4vx::PixelToPixel> forall_function) {
+    auto f = std::make_shared<ast4vx::WindowOperation>();
+    f->forall(forall_function);
+    add_operation(f);
+    return f;
+  }
+  std::shared_ptr<ast4vx::WindowOperation> reduce(
+      std::shared_ptr<ast4vx::Reduction> reduction_function) {
+    auto f = std::make_shared<ast4vx::WindowOperation>();
+    f->reduce(reduction_function);
+    add_operation(f);
+    return f;
+  }
+
   /**
    * @brief Maps the ast4vx::WindowDescriptor to actual HipaVX::Image. This
    * operation clears the previous values set by this operation.

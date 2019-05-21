@@ -192,6 +192,9 @@ class Scalar : public Object {
       case VX_TYPE_FLOAT32:
         f32 = *((vx_float32 *)ptr);
         break;
+      case VX_TYPE_UINT8:
+        f32 = *((vx_uint8 *)ptr);
+        break;
       default:
         throw std::runtime_error("Unsupported vx_type_e in Scalar constructor");
     }

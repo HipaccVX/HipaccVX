@@ -5,7 +5,7 @@
 //*********************************************************************
 domVX_image create_image(unsigned int width, unsigned int height,
                          vx_df_image type) {
-  return (new DomVX::Image(1024, 512, VX_DF_IMAGE_U8));
+  return new DomVX::Image(1024, 512, VX_DF_IMAGE_U8);
 }
 
 //*********************************************************************

@@ -442,6 +442,12 @@ std::string CPPVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i) {
 
     case ast4vx::NodeType::MaskPixelToPixel: {
       auto s = std::dynamic_pointer_cast<ast4vx::MaskPixelToPixel>(n);
+
+      if (maskaccessor_mapping->size() != s->masks.size())
+        throw std::runtime_error(
+            "MaskPixelToPixel AST did not get the same amount of Mask "
+            "Accessors it expects at code generation time");
+
       std::string to_return;
       for (auto statement : s->statements) {
         to_return += this->visit(statement, i);

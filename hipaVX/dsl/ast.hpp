@@ -13,6 +13,10 @@
 #include <vector>
 #include "descriptors.hpp"
 
+namespace DomVX {
+class Mask;
+}
+
 namespace ast4vx {
 
 // TODO: Consider different enum types for abstractions and scalar operations
@@ -820,15 +824,7 @@ class WindowAccessor : public Node,
 };
 
 /**
- * @brief Packs AST Nodes together into many statements, which work on a pixel
- * basis
- *
- * This is one of the main nodes of the AST.\n
- * It provides different accessors for the AST and saves statements, which can
- * be any AST Node.\n A Statement therefore should be a self contained AST
- * Operation. This can be imagined as a line in C or C++.
- *
- * @todo Rename to PixelToPixel?
+ * @brief Packs AST Nodes together into many statements
  */
 class Statements : public Node {
  public:
@@ -877,6 +873,14 @@ class Statements : public Node {
   }
 };
 
+/**
+ * @brief Packs AST Nodes together into many statements, which work on a pixel
+ * basis
+ *
+ * This is one of the main nodes of the AST.
+ * It provides different accessors for the AST and saves statements, which can
+ * be any AST Node.
+ */
 class PixelToPixel : public Statements,
                      public std::enable_shared_from_this<PixelToPixel> {
  public:
@@ -1161,6 +1165,9 @@ class WindowOperation : public Node,
 
   std::vector<std::shared_ptr<WindowDescriptor>> window_inputs;
 
+  std::vector<std::shared_ptr<DomVX::Mask>> mask_binding;
+  std::vector<DomVX::Image*> out_image_binding;
+
  public:
   std::vector<std::vector<std::shared_ptr<PixelToPixel>>> p2p_ops;
 
@@ -1209,6 +1216,90 @@ class WindowOperation : public Node,
         p2p_ops[i].resize(window_inputs[0]->width);
       }
     }
+  }
+
+  /**
+   * @brief Sets the WindowDescriptors as inputs to this Operation
+   * @param in The whole input list for this WindowOperation
+   */
+  std::shared_ptr<WindowOperation> in(
+      std::vector<std::shared_ptr<WindowOperation>> in_win) {
+    std::vector<std::shared_ptr<WindowDescriptor>> descriptors;
+    for (auto op : in_win) descriptors.push_back(op->get_window_output());
+    set_window_inputs(descriptors);
+    return shared_from_this();
+  }
+  /**
+   * @brief Sets the WindowDescriptors as input to this Operation
+   * @param in The only input for this WindowOperation
+   */
+  std::shared_ptr<WindowOperation> in(std::shared_ptr<WindowOperation> in_win) {
+    in(in_win->get_window_output());
+    return shared_from_this();
+  }
+
+  /**
+   * @brief Sets the WindowDescriptors as inputs to this Operation
+   * @param in The whole input list for this WindowOperation
+   */
+  std::shared_ptr<WindowOperation> in(
+      std::vector<std::shared_ptr<WindowDescriptor>> in_win) {
+    set_window_inputs(in_win);
+    return shared_from_this();
+  }
+
+  /**
+   * @brief Sets the WindowDescriptors as input to this Operation
+   * @param in The only input for this WindowOperation
+   */
+  std::shared_ptr<WindowOperation> in(
+      std::shared_ptr<WindowDescriptor> in_win) {
+    set_window_inputs({in_win});
+    return shared_from_this();
+  }
+
+  /**
+   * @brief Sets the WindowDescriptors as input to this Operation
+   * @param in The only input for this WindowOperation
+   */
+  std::shared_ptr<WindowOperation> in(std::shared_ptr<WindowDesc> in_win) {
+    set_window_inputs({in_win->w_desc});
+    return shared_from_this();
+  }
+
+  /**
+   * @brief Sets the Masks as inputs to this Operation
+   * @param in The input masks for this WindowOperation
+   */
+  std::shared_ptr<WindowOperation> mask(
+      std::vector<std::shared_ptr<DomVX::Mask>> in) {
+    mask_binding = in;
+    return shared_from_this();
+  }
+
+  /**
+   * @brief Sets the Masks as input to this Operation
+   * @param in The only input mask for this WindowOperation
+   */
+  std::shared_ptr<WindowOperation> mask(std::shared_ptr<DomVX::Mask> in) {
+    mask(std::vector<std::shared_ptr<DomVX::Mask>>({in}));
+    return shared_from_this();
+  }
+
+  /**
+   * @brief Sets the Images as output of this Operation
+   */
+  std::shared_ptr<WindowOperation> out(std::vector<DomVX::Image*> out_im) {
+    out_image_binding = out_im;
+    return shared_from_this();
+  }
+
+  /**
+   * @brief Set the Image as output of this Operation
+   */
+  std::shared_ptr<WindowOperation> out(DomVX::Image* out_im) {
+    out(std::vector<DomVX::Image*>({out_im}));
+    return shared_from_this();
   }
 
   /**

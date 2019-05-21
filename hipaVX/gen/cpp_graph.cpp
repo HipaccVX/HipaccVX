@@ -622,6 +622,7 @@ std::string dump_code(std::shared_ptr<DomVX::LocalOperator> local,
   std::vector<
       std::tuple<DomVX::Image*, std::shared_ptr<ast4vx::WindowDescriptor>>>
       in_images;
+  std::vector<DomVX::Image*> output_images;
 
   std::vector<std::shared_ptr<ast4vx::WindowOperation>> work_list =
       local->operations;
@@ -632,6 +633,8 @@ std::string dump_code(std::shared_ptr<DomVX::LocalOperator> local,
     work_list.pop_back();
     w_ops.insert(w_ops.begin(), op);
 
+    output_images.insert(output_images.end(), op->out_image_binding.begin(),
+                         op->out_image_binding.end());
     std::vector<std::shared_ptr<ast4vx::WindowDescriptor>> in_win =
         op->window_inputs;
 
@@ -673,8 +676,6 @@ std::string dump_code(std::shared_ptr<DomVX::LocalOperator> local,
   }
   for (auto& pair : local->domain_bindings)
     ast_visitor.desc_to_dom[pair.first] = pair.second;
-
-  std::vector<DomVX::Image*> output_images;
 
   // Get all the output images
   for (auto images_map : local->operation_output_images) {
@@ -771,12 +772,27 @@ std::string dump_code(std::shared_ptr<DomVX::LocalOperator> local,
     if (local->mask_bindings.count(op) != 0)
       for (auto& mask : local->mask_bindings[op])
         mask_mappings.push_back(mask->name());
+    for (auto& mask : op->mask_binding) mask_mappings.push_back(mask->name());
 
     // Setup all mappings
     if (op->current_state == ast4vx::WindowOperation::State::ToPixel ||
         op->current_state == ast4vx::WindowOperation::State::Reduce) {
       // Bind an actual output image is only relevant for ToPixel and Reduce
       for (auto& out_image : local->operation_output_images[op]) {
+        auto im = out_image;
+        auto name = generate_default_name(im);
+        if (!use_default_names) {
+          auto is_it =
+              std::find_if(output_image_is.begin(), output_image_is.end(),
+                           [=](DomVX::Acc* acc) { return acc->im == im; });
+          if (is_it == output_image_is.end())
+            throw std::runtime_error(
+                "Coudln't find IterationSpace for an Image");
+          name = (*is_it)->name();
+        }
+        pixel_mappings.emplace_back(name);
+      }
+      for (auto& out_image : op->out_image_binding) {
         auto im = out_image;
         auto name = generate_default_name(im);
         if (!use_default_names) {
