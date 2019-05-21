@@ -558,8 +558,8 @@ std::string dump_code(std::shared_ptr<DomVX::PointOperator> point,
       use_template(outer_loop, "HEIGHT", point->output_pixel_mappings[0]->h);
   outer_loop =
       use_template(outer_loop, "WIDTH", point->output_pixel_mappings[0]->w);
-  outer_loop = use_template(outer_loop, "Y_NAME", ast_visitor.current_output_x);
-  outer_loop = use_template(outer_loop, "X_NAME", ast_visitor.current_output_y);
+  outer_loop = use_template(outer_loop, "Y_NAME", ast_visitor.current_output_y);
+  outer_loop = use_template(outer_loop, "X_NAME", ast_visitor.current_output_x);
 
   std::vector<std::string> mappings;
 
@@ -697,8 +697,8 @@ std::string dump_code(std::shared_ptr<DomVX::LocalOperator> local,
 )END";
   outer_loop = use_template(outer_loop, "HEIGHT", output_images[0]->h);
   outer_loop = use_template(outer_loop, "WIDTH", output_images[0]->w);
-  outer_loop = use_template(outer_loop, "Y_NAME", ast_visitor.current_output_x);
-  outer_loop = use_template(outer_loop, "X_NAME", ast_visitor.current_output_y);
+  outer_loop = use_template(outer_loop, "Y_NAME", ast_visitor.current_output_y);
+  outer_loop = use_template(outer_loop, "X_NAME", ast_visitor.current_output_x);
   std::string code = "";
 
   // Create the roi from the input images
@@ -921,8 +921,8 @@ std::string dump_code(std::shared_ptr<DomVX::GlobalOperator> global,
       use_template(outer_loop, "HEIGHT", global->input_pixel_mappings[0]->h);
   outer_loop =
       use_template(outer_loop, "WIDTH", global->input_pixel_mappings[0]->w);
-  outer_loop = use_template(outer_loop, "Y_NAME", ast_visitor.current_output_x);
-  outer_loop = use_template(outer_loop, "X_NAME", ast_visitor.current_output_y);
+  outer_loop = use_template(outer_loop, "Y_NAME", ast_visitor.current_output_y);
+  outer_loop = use_template(outer_loop, "X_NAME", ast_visitor.current_output_x);
 
   std::vector<std::string> variable_mapping = scalar_names;
   if (use_default_names) {
