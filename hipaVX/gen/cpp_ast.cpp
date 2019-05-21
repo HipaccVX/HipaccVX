@@ -406,8 +406,9 @@ std::string CPPVisitor::visit(std::shared_ptr<ast4vx::Node> n, int i) {
 
       // Write back the Accumulator
       if (s->current_state == ast4vx::WindowOperation::State::Reduce) {
-        code += visit(
-            assign(std::make_shared<ast4vx::PixelAccessor>(0), accum_var));
+        code += visit(assign(std::make_shared<ast4vx::PixelAccessor>(0),
+                             accum_var)) +
+                ';';
       }
 
       return code;
