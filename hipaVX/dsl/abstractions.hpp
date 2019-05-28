@@ -164,7 +164,8 @@ class Mask : public AbstractionNode {
  * @brief Calculates every output pixel from the input image pixels from the
  * same pixel coordinates
  */
-class PointOperator : public OperatorNode {
+class PointOperator : public OperatorNode,
+                      public std::enable_shared_from_this<PointOperator> {
   std::shared_ptr<ast4vx::PixelToPixel> function;
 
  public:
@@ -179,7 +180,7 @@ class PointOperator : public OperatorNode {
    */
   PointOperator(std::shared_ptr<ast4vx::PixelToPixel> s) {
     operator_type = OperatorType::PointOperator;
-    set_ops(s);
+    op(s);
   }
 
   std::vector<DomVX::Image *> output_pixel_mappings;
@@ -191,12 +192,13 @@ class PointOperator : public OperatorNode {
    * @brief Sets the statement as the mapping function
    * @param s The PixelToPixel mapping function
    */
-  void set_ops(std::shared_ptr<ast4vx::PixelToPixel> s) {
+  std::shared_ptr<PointOperator> op(std::shared_ptr<ast4vx::PixelToPixel> s) {
     function = s;
     output_pixel_mappings.resize(s->out_pixel_mappings.size());
     input_pixel_mappings.resize(s->in_pixel_mappings.size());
     output_variable_mappings.resize(s->out_variable_mappings.size());
     input_variable_mappings.resize(s->in_variable_mappings.size());
+    return shared_from_this();
   }
 
   /**
@@ -216,10 +218,11 @@ class PointOperator : public OperatorNode {
    * same es the size of the input placeholders of the underlying statements set
    * via Map::set_statements
    */
-  void register_variables(std::vector<DomVX::Scalar *> out,
-                          std::vector<DomVX::Scalar *> in) {
+  std::shared_ptr<PointOperator> register_variables(
+      std::vector<DomVX::Scalar *> out, std::vector<DomVX::Scalar *> in) {
     register_output_variables(out);
     register_input_variables(in);
+    return shared_from_this();
   }
   /**
    * @brief Binds the input variables of the statements to the actual
@@ -229,7 +232,8 @@ class PointOperator : public OperatorNode {
    * same es the size of the input placeholders of the underlying statements set
    * via Map::set_statements
    */
-  void register_input_variables(std::vector<DomVX::Scalar *> variables) {
+  std::shared_ptr<PointOperator> register_input_variables(
+      std::vector<DomVX::Scalar *> variables) {
     if (variables.size() != input_variable_mappings.size())
       throw std::runtime_error(
           "void Map::register_input_variables(): Vector has to be the same "
@@ -237,6 +241,7 @@ class PointOperator : public OperatorNode {
 
     input_variable_mappings.clear();
     for (auto image : variables) input_variable_mappings.emplace_back(image);
+    return shared_from_this();
   }
   /**
    * @brief Binds the output variables of the statements to the actual
@@ -246,7 +251,8 @@ class PointOperator : public OperatorNode {
    * same es the size of the output placeholders of the underlying statements
    * set via Map::set_statements
    */
-  void register_output_variables(std::vector<DomVX::Scalar *> variables) {
+  std::shared_ptr<PointOperator> register_output_variables(
+      std::vector<DomVX::Scalar *> variables) {
     if (variables.size() != output_variable_mappings.size())
       throw std::runtime_error(
           "void Map::register_output_variables(): Vector has to be the same "
@@ -254,6 +260,7 @@ class PointOperator : public OperatorNode {
 
     output_variable_mappings.clear();
     for (auto image : variables) output_variable_mappings.emplace_back(image);
+    return shared_from_this();
   }
 
   /**
@@ -268,10 +275,11 @@ class PointOperator : public OperatorNode {
    * same es the size of the input placeholders of the underlying statements set
    * via Map::set_statements
    */
-  void register_images(std::vector<DomVX::Image *> out,
-                       std::vector<DomVX::Image *> in) {
-    register_output_images(out);
-    register_input_images(in);
+  std::shared_ptr<PointOperator> register_images(
+      std::vector<DomVX::Image *> out_im, std::vector<DomVX::Image *> in_im) {
+    out(out_im);
+    in(in_im);
+    return shared_from_this();
   }
   /**
    * @brief Binds the input iamges of the statements to the actual HipaVX::Image
@@ -280,14 +288,32 @@ class PointOperator : public OperatorNode {
    * same es the size of the input placeholders of the underlying statements set
    * via Map::set_statements
    */
-  void register_input_images(std::vector<DomVX::Image *> images) {
+  std::shared_ptr<PointOperator> in(std::vector<DomVX::Image *> images) {
     if (images.size() != input_pixel_mappings.size())
       throw std::runtime_error(
-          "void Map::register_input_images(): Vector list has to be the same "
+          "void Map::in(): Vector list has to be the same "
           "size as the input_accessors of the underlying statemens");
 
     input_pixel_mappings.clear();
     for (auto image : images) input_pixel_mappings.emplace_back(image);
+    return shared_from_this();
+  }
+  /**
+   * @brief Binds the input iamges of the statements to the actual HipaVX::Image
+   * @param image input image binding
+   * @throws std::runtime_error when the length of the std::vector is not the
+   * same es the size of the input placeholders of the underlying statements set
+   * via Map::set_statements
+   */
+  std::shared_ptr<PointOperator> in(DomVX::Image *image) {
+    if (1 != input_pixel_mappings.size())
+      throw std::runtime_error(
+          "void Map::in(): Vector list has to be the same "
+          "size as the input_accessors of the underlying statemens");
+
+    input_pixel_mappings.clear();
+    input_pixel_mappings.emplace_back(image);
+    return shared_from_this();
   }
   /**
    * @brief Binds the output iamges of the statements to the actual
@@ -297,14 +323,33 @@ class PointOperator : public OperatorNode {
    * same es the size of the output placeholders of the underlying statements
    * set via Map::set_statements
    */
-  void register_output_images(std::vector<DomVX::Image *> images) {
+  std::shared_ptr<PointOperator> out(std::vector<DomVX::Image *> images) {
     if (images.size() != output_pixel_mappings.size())
       throw std::runtime_error(
-          "void Map::register_output_images(): Vector list has to be the same "
+          "void Map::out(): Vector list has to be the same "
           "size as the output_accessors of the underlying statemens");
 
     output_pixel_mappings.clear();
     for (auto image : images) output_pixel_mappings.emplace_back(image);
+    return shared_from_this();
+  }
+  /**
+   * @brief Binds the output iamges of the statements to the actual
+   * HipaVX::Image
+   * @param image output image bindings
+   * @throws std::runtime_error when the length of the std::vector is not the
+   * same es the size of the output placeholders of the underlying statements
+   * set via Map::set_statements
+   */
+  std::shared_ptr<PointOperator> out(DomVX::Image *image) {
+    if (1 != output_pixel_mappings.size())
+      throw std::runtime_error(
+          "void Map::out(): Vector list has to be the same "
+          "size as the output_accessors of the underlying statemens");
+
+    output_pixel_mappings.clear();
+    output_pixel_mappings.emplace_back(image);
+    return shared_from_this();
   }
 };
 
@@ -482,15 +527,3 @@ class GlobalOperator : public OperatorNode {
   }
 };
 }  // namespace DomVX
-
-// TODO: What is the motivation behind having this here?
-
-/**
- * @brief Abstract Visitor class for DomVX::AbstractionNode
- */
-template <class ReturnType, class ParameterType>
-class AbstractionsVisitor {
- public:
-  virtual ReturnType visit(std::shared_ptr<DomVX::AbstractionNode> n,
-                           ParameterType p) = 0;
-};

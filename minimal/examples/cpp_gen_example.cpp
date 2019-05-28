@@ -57,7 +57,7 @@ int main() {
   ast_mul << assign(ast_mul->d_out(0), ast_mul->d_in(0) * constant(0.5f));
 
   auto point_op = create_point_op();
-  point_op->set_ops(ast_mul);
+  point_op->op(ast_mul);
   point_op->register_images({&im2}, {&im1});
 
   // graph

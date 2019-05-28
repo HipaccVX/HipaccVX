@@ -1,9 +1,9 @@
 #include <string>
 #include "../../../VX/vx.h"
-#include "../../../hipaVX/gen/cpp_graph.hpp"
-#include "../../../hipaVX/dsl/types.hpp"
 #include "../../../hipaVX/dsl/abstractions.hpp"
 #include "../../../hipaVX/dsl/api.hpp"
+#include "../../../hipaVX/dsl/types.hpp"
+#include "../../../hipaVX/gen/cpp_graph.hpp"
 
 int main(int argc, const char *argv[]) {
   auto image_0 = new DomVX::Image(1024, 1024, VX_DF_IMAGE_U8);
@@ -20,7 +20,7 @@ int main(int argc, const char *argv[]) {
 
   auto map = create_point_op();
   // Set the map statement
-  map->set_ops(ast_fun);
+  map->op(ast_fun);
   // Bind the images to the correct pixel accessors
   map->register_images({image_0}, {image_1});
   // Bind the variables to the correct variable accessors
