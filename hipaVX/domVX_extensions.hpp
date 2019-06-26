@@ -31,3 +31,5 @@ void vxDrawDotGraph(vx_graph graph, std::string filename,
 // Write a vx_image to a file
 vx_node vxAnotherBilateralFilterNode(vx_graph graph, vx_image image,
                                      vx_int32 sigma_r, vx_image out);
+
+vx_kernel vxHipaccKernel(std::string filename);

@@ -9,44 +9,6 @@ domVX_image create_image(unsigned int width, unsigned int height,
 }
 
 //*********************************************************************
-// Descriptors
-//*********************************************************************
-domVX_window get_window(DomVX::Image* im, int width, int height) {
-  auto bwd = std::make_shared<WindowDesc>();
-  bwd->w_desc = std::make_shared<ast4vx::WindowDescriptor>(width, height);
-  bwd->w_desc->bounded = bwd;
-  bwd->im = im;
-  std::vector<int> domain_values(width * height, 1);
-  bwd->dom = std::make_shared<DomVX::Domain>(width, height, domain_values);
-  return bwd;
-}
-
-domVX_window get_window(DomVX::Image* im, std::shared_ptr<DomVX::Domain> dom) {
-  auto bwd = std::make_shared<WindowDesc>();
-  bwd->w_desc =
-      std::make_shared<ast4vx::WindowDescriptor>(dom->width, dom->height);
-  bwd->w_desc->bounded = bwd;
-  bwd->im = im;
-  bwd->dom = dom;
-  return bwd;
-}
-
-//*********************************************************************
-// OPERATORS
-//*********************************************************************
-domVX_point create_point_op() {
-  return std::shared_ptr<DomVX::PointOperator>(new DomVX::PointOperator());
-}
-
-domVX_local create_local_op() {
-  return std::shared_ptr<DomVX::LocalOperator>(new DomVX::LocalOperator());
-}
-
-domVX_global create_global_op() {
-  return std::shared_ptr<DomVX::GlobalOperator>(new DomVX::GlobalOperator());
-}
-
-//*********************************************************************
 // DOMAIN  (TODO: Consider renaming as Window)
 //*********************************************************************
 domVX_domain create_domain(unsigned int x, unsigned int y,

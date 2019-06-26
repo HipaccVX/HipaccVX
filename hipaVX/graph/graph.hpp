@@ -31,7 +31,6 @@
 #include <cstdarg>
 #include <iostream>
 
-
 // Vertex { std::string name, VertexTask task}
 
 namespace graphVX {
@@ -40,9 +39,9 @@ using VertexType = DomVX::Object;
 using EdgeType = DomVX::Acc;
 using DomVX::ObjectTask;
 
-
-typedef boost::adjacency_list<boost::listS,boost::vecS,
-          boost::bidirectionalS, VertexType, EdgeType> AppGraphT;
+typedef boost::adjacency_list<boost::listS, boost::vecS, boost::bidirectionalS,
+                              VertexType, EdgeType>
+    AppGraphT;
 
 // typedef boost::adjacency_list<> _GraphT;
 
@@ -86,7 +85,6 @@ typedef boost::graph_traits<OptGraphT>::adjacency_iterator OptGraphAdjIter;
 typedef std::list<VertexDesc> OrderedList;
 
 class dag {
-
  public:
   AppGraphT g, g_trans;
 
@@ -143,13 +141,12 @@ class dag {
   // topological sort for order of execution
   OrderedList* set_order_of_exec();
 
-  OrderedList* get_order_of_exec() { return order_of_exec; };
+  OrderedList* get_order_of_exec() { return order_of_exec; }
 
   // random graphs for testing
   template <class Node, class Image>
   void gen_rand_graph(unsigned nvertex, unsigned nedges,
-                      unsigned num_inputs = 1,
-                      unsigned num_outputs = 2);
+                      unsigned num_inputs = 1, unsigned num_outputs = 2);
 
   template <class Node, class Image>
   void gen_rand_acyclic_graph(unsigned nvertex, unsigned nedges,
@@ -162,7 +159,6 @@ class dag {
   std::vector<EdgeDesc> back_edges;
 };
 
-
 //*********************************************************************
 // Template methods
 //*********************************************************************
@@ -174,17 +170,35 @@ VertexDesc dag::add_vertex(Vertex v) {
 template <class Node, class Image>
 void dag::gen_rand_graph(unsigned n, unsigned k, unsigned n_in,
                          unsigned n_out) {
-  graphVX::_gen_rand_graph<Node, Image>(n, k, g, inputs, outputs,
-                                        n_in, n_out);
+  graphVX::_gen_rand_graph<Node, Image>(n, k, g, inputs, outputs, n_in, n_out);
 }
 template <class Node, class Image>
-void dag::gen_rand_acyclic_graph(unsigned n,
-                                 unsigned k,
-                                 unsigned n_in,
+void dag::gen_rand_acyclic_graph(unsigned n, unsigned k, unsigned n_in,
                                  unsigned n_out) {
-  graphVX::_gen_rand_acyclic_graph<Node, Image>(n, k, g, inputs, outputs,
-                                        n_in, n_out);
-  //print_io_nodes();
+  graphVX::_gen_rand_acyclic_graph<Node, Image>(n, k, g, inputs, outputs, n_in,
+                                                n_out);
+  // print_io_nodes();
 }
 
 }  // namespace graphVX
+
+namespace DomVX {
+
+class Graph : public Object {
+ public:
+  std::vector<Node*> graph;
+
+  std::unique_ptr<graphVX::dag> dag;
+  std::map<DomVX::Node*, graphVX::VertexDesc> refs;
+
+  bool built = false;
+
+  void build() {
+    for (auto& node : graph) {
+      node->build();
+    }
+
+    built = true;
+  }
+};
+};  // namespace DomVX

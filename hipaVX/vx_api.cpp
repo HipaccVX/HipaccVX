@@ -1,15 +1,11 @@
+#include <cstring>
+#include <exception>
 #include "../VX/vx.h"
 #include "../VX/vx_compatibility.h"
-#include "vx_adaptor.hpp"
-
-//#define HIPACC_GEN
-#ifdef HIPACC_GEN
+#include "dsl/abstractions.hpp"
 #include "gen/hipacc_graph.hpp"
-#endif
-#define CPP_GEN
-#ifdef CPP_GEN
-#include "gen/cpp_graph.hpp"
-#endif
+#include "graph/graph.hpp"
+#include "vx_adaptor.hpp"
 
 // TODO: Consider individual files for the API set of the following objects:
 //          Object: Reference
@@ -48,6 +44,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxReleaseContext(vx_context *context) {
 // Object: Graph
 VX_API_ENTRY vx_graph VX_API_CALL vxCreateGraph(vx_context context) {
   auto graph = new DomVX::Graph();
+  graph->dag.reset(new graphVX::dag());
   auto vx = new _vx_graph();
   vx->o = graph;
   ((DomVX::Context *)(context->o))->graphs.emplace_back(graph);
@@ -64,7 +61,15 @@ VX_API_ENTRY vx_status VX_API_CALL vxProcessGraph(vx_graph graph) {
   // First, declare the images
 
   // TODO: Consider having a generator class for every backend
-  //process_graph(((DomVX::Graph *)(graph->o)));
+  // process_graph(((DomVX::Graph *)(graph->o)));
+
+  ((DomVX::Graph *)(graph->o))->dag->eliminate_dead_nodes();
+  ((DomVX::Graph *)(graph->o))->dag->dump_graph("graph");
+  hipacc_gen gen(*((DomVX::Graph *)(graph->o))->dag);
+  gen.set_edges();
+  gen.iterate_spaces();
+  gen.iterate_nodes();
+  gen.dump_code();
   return 0;
 }
 
@@ -88,7 +93,8 @@ VX_API_ENTRY vx_array VX_API_CALL vxCreateArray(vx_context context,
                                                 vx_enum data_type,
                                                 vx_size size) {
   if (data_type != VX_TYPE_KEYPOINT)
-    throw std::runtime_error( "vx_array: Only VX_TYPE_KEYPOINT is currently supported");
+    throw std::runtime_error(
+        "vx_array: Only VX_TYPE_KEYPOINT is currently supported");
 
   // vx_keypoint_t has 7 32bit members
   DomVX::Array *arr = new DomVX::Array(data_type, size, 7);
@@ -188,6 +194,8 @@ VX_API_ENTRY vx_status VX_API_CALL vxCopyMatrix(vx_matrix mat, void *user_ptr,
       std::memcpy(matrix->mat.data(), user_ptr,
                   matrix->columns * matrix->rows * 4);
       break;
+    default:
+      return VX_FAILURE;
   }
 
   return VX_SUCCESS;
@@ -250,5 +258,66 @@ VX_API_ENTRY vx_status VX_API_CALL vxSetThresholdAttribute(vx_threshold th,
     default:
       return VX_FAILURE;
   }
+  return VX_SUCCESS;
+}
+
+VX_API_ENTRY vx_status VX_API_CALL vxAddParameterToKernel(vx_kernel kernel,
+                                                          vx_uint32 index,
+                                                          vx_enum dir,
+                                                          vx_enum data_type,
+                                                          vx_enum state) {
+  DomVX::HipaccKernel *hk = ((DomVX::HipaccKernel *)(kernel->o));
+  if (index >= hk->direction.size()) {
+    hk->direction.resize(index + 1);
+    hk->type.resize(index + 1);
+  }
+
+  hk->direction[index] = (vx_direction_e)dir;
+  hk->type[index] = (vx_type_e)data_type;
+  return VX_SUCCESS;
+}
+
+VX_API_ENTRY vx_status VX_API_CALL vxFinalizeKernel(vx_kernel kernel) {}
+
+VX_API_ENTRY vx_node VX_API_CALL vxCreateGenericNode(vx_graph graph,
+                                                     vx_kernel kernel) {
+  DomVX::HipaccKernel *hk = dynamic_cast<DomVX::HipaccKernel *>(kernel->o);
+  if (hk == nullptr) return nullptr;
+  auto hn = new DomVX::HipaccNode();
+  auto vx = new _vx_node();
+  vx->o = hn;
+  hn->graph = dynamic_cast<DomVX::Graph *>(graph->o);
+  hn->graph->refs[(DomVX::Node *)hn] =
+      hn->graph->dag->add_vertex(*(DomVX::Node *)vx->o);
+  hn->kernel = hk;
+  hn->parameters.resize(hk->direction.size());
+  return vx;
+}
+VX_API_ENTRY vx_status VX_API_CALL vxSetParameterByIndex(vx_node node,
+                                                         vx_uint32 index,
+                                                         vx_reference value) {
+  DomVX::HipaccNode *hn = dynamic_cast<DomVX::HipaccNode *>(node->o);
+  if (hn == nullptr) return VX_FAILURE;
+  if (index >= hn->kernel->direction.size()) return VX_FAILURE;
+
+  hn->parameters[index] = value;
+  DomVX::Node *hn_node = (DomVX::Node *)hn;
+  DomVX::Node *value_node = (DomVX::Node *)value->o;
+  if (hn->graph->refs.find(value_node) == hn->graph->refs.end())
+    hn->graph->refs[value_node] = hn->graph->dag->add_vertex(*value->o);
+
+  if (hn->kernel->direction[index] == VX_INPUT)
+    hn->graph->dag->add_edge(hn->graph->refs[value_node],
+                             hn->graph->refs[hn_node]);
+  else
+    hn->graph->dag->add_edge(hn->graph->refs[hn_node],
+                             hn->graph->refs[value_node]);
+
+  // small hack
+  if (index == 0)
+    hn->graph->dag->outputs.push_back(hn->graph->refs[value_node]);
+  else if (index == 1)
+    hn->graph->dag->inputs.push_back(hn->graph->refs[value_node]);
+
   return VX_SUCCESS;
 }

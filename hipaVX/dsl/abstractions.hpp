@@ -12,7 +12,6 @@
 #include <string>
 #include <vector>
 
-#include "ast.hpp"
 #include "types.hpp"
 
 namespace DomVX {
@@ -21,7 +20,6 @@ namespace DomVX {
 //        move Image definition to here, and rename to Acc2D
 
 using AbstractionNode = DomVX::Object;
-using OperatorNode = DomVX::Node;
 
 /**
  * @brief Represents an actual Domain for the virtual ast4vx::WindowDescriptor
@@ -160,370 +158,25 @@ class Mask : public AbstractionNode {
   }
 };
 
-/**
- * @brief Calculates every output pixel from the input image pixels from the
- * same pixel coordinates
- */
-class PointOperator : public OperatorNode,
-                      public std::enable_shared_from_this<PointOperator> {
-  std::shared_ptr<ast4vx::PixelToPixel> function;
-
+class HipaccKernel : public Node {
  public:
-  /**
-   * @brief Default constructor
-   */
-  PointOperator() { operator_type = OperatorType::PointOperator; }
+  HipaccKernel() = default;
+  std::vector<vx_direction_e> direction;
+  std::vector<vx_type_e> type;
+  std::string filename;
 
-  /**
-   * @brief Constructor which sets the statement as the mapping function
-   * @param s The PixelToPixel mapping function
-   */
-  PointOperator(std::shared_ptr<ast4vx::PixelToPixel> s) {
-    operator_type = OperatorType::PointOperator;
-    op(s);
-  }
-
-  std::vector<DomVX::Image *> output_pixel_mappings;
-  std::vector<DomVX::Image *> input_pixel_mappings;
-  std::vector<DomVX::Scalar *> output_variable_mappings;
-  std::vector<DomVX::Scalar *> input_variable_mappings;
-
-  /**
-   * @brief Sets the statement as the mapping function
-   * @param s The PixelToPixel mapping function
-   */
-  std::shared_ptr<PointOperator> op(std::shared_ptr<ast4vx::PixelToPixel> s) {
-    function = s;
-    output_pixel_mappings.resize(s->out_pixel_mappings.size());
-    input_pixel_mappings.resize(s->in_pixel_mappings.size());
-    output_variable_mappings.resize(s->out_variable_mappings.size());
-    input_variable_mappings.resize(s->in_variable_mappings.size());
-    return shared_from_this();
-  }
-
-  /**
-   * @brief Returns the mapping function statement
-   */
-  std::shared_ptr<ast4vx::PixelToPixel> get_statements() { return function; }
-
-  /**
-   * @brief Binds the output and input variables of the statements to the actual
-   * HipaVX::Scalar
-   * @param out std::vector of the output variable bindings
-   * @param in std::vector of the input variable bindings
-   * @throws std::runtime_error when the length of the out std::vector is not
-   * the same es the size of the output placeholders of the underlying
-   * statements set via Map::set_statements
-   * @throws std::runtime_error when the length of the in std::vector is not the
-   * same es the size of the input placeholders of the underlying statements set
-   * via Map::set_statements
-   */
-  std::shared_ptr<PointOperator> register_variables(
-      std::vector<DomVX::Scalar *> out, std::vector<DomVX::Scalar *> in) {
-    register_output_variables(out);
-    register_input_variables(in);
-    return shared_from_this();
-  }
-  /**
-   * @brief Binds the input variables of the statements to the actual
-   * HipaVX::Scalar
-   * @param variables std::vector of the input variable bindings
-   * @throws std::runtime_error when the length of the std::vector is not the
-   * same es the size of the input placeholders of the underlying statements set
-   * via Map::set_statements
-   */
-  std::shared_ptr<PointOperator> register_input_variables(
-      std::vector<DomVX::Scalar *> variables) {
-    if (variables.size() != input_variable_mappings.size())
-      throw std::runtime_error(
-          "void Map::register_input_variables(): Vector has to be the same "
-          "size as the input_accessors of the underlying statemens");
-
-    input_variable_mappings.clear();
-    for (auto image : variables) input_variable_mappings.emplace_back(image);
-    return shared_from_this();
-  }
-  /**
-   * @brief Binds the output variables of the statements to the actual
-   * HipaVX::Scalar
-   * @param variables std::vector of the output variable bindings
-   * @throws std::runtime_error when the length of the std::vector is not the
-   * same es the size of the output placeholders of the underlying statements
-   * set via Map::set_statements
-   */
-  std::shared_ptr<PointOperator> register_output_variables(
-      std::vector<DomVX::Scalar *> variables) {
-    if (variables.size() != output_variable_mappings.size())
-      throw std::runtime_error(
-          "void Map::register_output_variables(): Vector has to be the same "
-          "size as the output_accessors of the underlying statemens");
-
-    output_variable_mappings.clear();
-    for (auto image : variables) output_variable_mappings.emplace_back(image);
-    return shared_from_this();
-  }
-
-  /**
-   * @brief Binds the output and input ast4vx::PixelAccessors of the statements
-   * to the actual HipaVX::Image
-   * @param out std::vector of the output image bindings
-   * @param in std::vector of the input image bindings
-   * @throws std::runtime_error when the length of the out std::vector is not
-   * the same es the size of the output placeholders of the underlying
-   * statements set via Map::set_statements
-   * @throws std::runtime_error when the length of the in std::vector is not the
-   * same es the size of the input placeholders of the underlying statements set
-   * via Map::set_statements
-   */
-  std::shared_ptr<PointOperator> register_images(
-      std::vector<DomVX::Image *> out_im, std::vector<DomVX::Image *> in_im) {
-    out(out_im);
-    in(in_im);
-    return shared_from_this();
-  }
-  /**
-   * @brief Binds the input iamges of the statements to the actual HipaVX::Image
-   * @param images std::vector of the input image bindings
-   * @throws std::runtime_error when the length of the std::vector is not the
-   * same es the size of the input placeholders of the underlying statements set
-   * via Map::set_statements
-   */
-  std::shared_ptr<PointOperator> in(std::vector<DomVX::Image *> images) {
-    if (images.size() != input_pixel_mappings.size())
-      throw std::runtime_error(
-          "void Map::in(): Vector list has to be the same "
-          "size as the input_accessors of the underlying statemens");
-
-    input_pixel_mappings.clear();
-    for (auto image : images) input_pixel_mappings.emplace_back(image);
-    return shared_from_this();
-  }
-  /**
-   * @brief Binds the input iamges of the statements to the actual HipaVX::Image
-   * @param image input image binding
-   * @throws std::runtime_error when the length of the std::vector is not the
-   * same es the size of the input placeholders of the underlying statements set
-   * via Map::set_statements
-   */
-  std::shared_ptr<PointOperator> in(DomVX::Image *image) {
-    if (1 != input_pixel_mappings.size())
-      throw std::runtime_error(
-          "void Map::in(): Vector list has to be the same "
-          "size as the input_accessors of the underlying statemens");
-
-    input_pixel_mappings.clear();
-    input_pixel_mappings.emplace_back(image);
-    return shared_from_this();
-  }
-  /**
-   * @brief Binds the output iamges of the statements to the actual
-   * HipaVX::Image
-   * @param images std::vector of the output image bindings
-   * @throws std::runtime_error when the length of the std::vector is not the
-   * same es the size of the output placeholders of the underlying statements
-   * set via Map::set_statements
-   */
-  std::shared_ptr<PointOperator> out(std::vector<DomVX::Image *> images) {
-    if (images.size() != output_pixel_mappings.size())
-      throw std::runtime_error(
-          "void Map::out(): Vector list has to be the same "
-          "size as the output_accessors of the underlying statemens");
-
-    output_pixel_mappings.clear();
-    for (auto image : images) output_pixel_mappings.emplace_back(image);
-    return shared_from_this();
-  }
-  /**
-   * @brief Binds the output iamges of the statements to the actual
-   * HipaVX::Image
-   * @param image output image bindings
-   * @throws std::runtime_error when the length of the std::vector is not the
-   * same es the size of the output placeholders of the underlying statements
-   * set via Map::set_statements
-   */
-  std::shared_ptr<PointOperator> out(DomVX::Image *image) {
-    if (1 != output_pixel_mappings.size())
-      throw std::runtime_error(
-          "void Map::out(): Vector list has to be the same "
-          "size as the output_accessors of the underlying statemens");
-
-    output_pixel_mappings.clear();
-    output_pixel_mappings.emplace_back(image);
-    return shared_from_this();
-  }
+  virtual ~HipaccKernel() override = default;
 };
 
-/**
- * @brief Calculates an output pixel from Domains and Masks of input images. The
- * domains and masks center is at the current output pixels coordinate.
- *
- * It supports multiple input and output images - input domains and masks - and
- * multiple ast4vx::WindowOperation
- */
-class LocalOperator : public OperatorNode {
+class HipaccNode : public Node {
  public:
-  std::vector<
-      std::tuple<DomVX::Image *, std::shared_ptr<ast4vx::WindowDescriptor>>>
-      input_descriptor;
-  std::vector<std::shared_ptr<ast4vx::WindowOperation>> operations;
+  HipaccNode() = default;
 
-  // TODO: Have one parameter type
-  std::map<std::shared_ptr<ast4vx::WindowOperation>,
-           std::vector<DomVX::Image *>>
-      operation_output_images;  // TODO: Maybe strore IS
-  std::map<std::shared_ptr<ast4vx::WindowOperation>,
-           std::vector<DomVX::Scalar *>>
-      operation_variables;  // TODO: Maybe strore IS
+  DomVX::Graph *graph;
+  HipaccKernel *kernel;
+  std::vector<vx_reference> parameters;
 
-  // TODO: Do we really need these bindings, makes the code description tedious
-  std::map<std::shared_ptr<ast4vx::WindowOperation>,
-           std::vector<std::shared_ptr<DomVX::Mask>>>
-      mask_bindings;
-  std::map<std::shared_ptr<ast4vx::WindowDescriptor>,
-           std::shared_ptr<DomVX::Domain>>
-      domain_bindings;
-
- public:
-  LocalOperator() { operator_type = OperatorType::LocalOperator; }
-
-  std::shared_ptr<ast4vx::WindowOperation> forall(
-      std::shared_ptr<ast4vx::PixelToPixel> forall_function) {
-    auto f = std::make_shared<ast4vx::WindowOperation>();
-    f->forall(forall_function);
-    add_operation(f);
-    return f;
-  }
-  std::shared_ptr<ast4vx::WindowOperation> reduce(
-      std::shared_ptr<ast4vx::Reduction> reduction_function) {
-    auto f = std::make_shared<ast4vx::WindowOperation>();
-    f->reduce(reduction_function);
-    add_operation(f);
-    return f;
-  }
-
-  /**
-   * @brief Maps the ast4vx::WindowDescriptor to actual HipaVX::Image. This
-   * operation clears the previous values set by this operation.
-   * @param in_descriptors std::vector of std::tuple with an HipaVX::Image
-   * pointer which should be mapped to the ast4vx::WindowDescriptor and the
-   * ast4vx::WindowDescriptor itself
-   */
-  void set_input_window_desc(
-      std::vector<
-          std::tuple<DomVX::Image *, std::shared_ptr<ast4vx::WindowDescriptor>>>
-          in_descriptors) {
-    input_descriptor.clear();
-    for (auto desc : in_descriptors) input_descriptor.emplace_back(desc);
-  }
-
-  /**
-   * @brief Maps the ast4vx::WindowDescriptor to actual DomVX::Domain. This
-   * operation clears the previous values set by this operation.
-   * @param desc_domain_binding std::vector of std::tuple with an
-   * ast4vx::WindowDescriptor std::shared_ptr and a DomVX::Domain
-   * std::shared_ptr which should be used for this ast4vx::WindowDescriptor
-   */
-  void set_domains(
-      std::vector<std::tuple<std::shared_ptr<ast4vx::WindowDescriptor>,
-                             std::shared_ptr<DomVX::Domain>>>
-          desc_domain_binding) {
-    domain_bindings.clear();
-    for (auto desc : desc_domain_binding)
-      domain_bindings[std::get<0>(desc)] = std::get<1>(desc);
-  }
-
-  /**
-   * @brief Sets a list of input DomVX::Mask for the specified
-   * ast4vx::WindowOperation. This operation clears the previous values set by
-   * this operation.
-   * @param desc_mask_bindings std::vector of std::tuple with an
-   * ast4vx::WindowOperation std::shared_ptr and another std::vector of
-   * DomVX::Mask std::shared_ptr which should be mapped to the
-   * ast4vx::WindowOperation
-   */
-  void set_masks(
-      std::vector<std::tuple<std::shared_ptr<ast4vx::WindowOperation>,
-                             std::vector<std::shared_ptr<DomVX::Mask>>>>
-          desc_mask_bindings) {
-    mask_bindings.clear();
-    for (auto desc : desc_mask_bindings)
-      mask_bindings[std::get<0>(desc)] = std::get<1>(desc);
-  }
-
-  /**
-   * @brief Sets a list of input DomVX::Mask for the specified
-   * ast4vx::WindowOperation. This operation clears the previous values set by
-   * this operation.
-   * @param desc_mask_bindings std::vector of std::tuple with an
-   * ast4vx::WindowOperation std::shared_ptr and a DomVX::Mask std::shared_ptr
-   * which should be mapped to the ast4vx::WindowOperation
-   */
-  void set_masks(
-      std::vector<std::tuple<std::shared_ptr<ast4vx::WindowOperation>,
-                             std::shared_ptr<DomVX::Mask>>>
-          desc_mask_bindings) {
-    mask_bindings.clear();
-    for (auto desc : desc_mask_bindings) {
-      auto &masks = mask_bindings[std::get<0>(desc)];
-      masks.clear();
-      masks.emplace_back(std::get<1>(desc));
-    }
-  }
-
-  /**
-   * @brief Adds an operation to this LocalOperation. The order of operations is
-   * derived from the order of calls to this method
-   * @param op The ast4vx::WindowOperation which should get added
-   * @param out Optional std::vector of HipaVX::Image pointers to be bound to
-   * the operations output ast4vx::PixelAccessor if it has some
-   * @param var_bindings std::vector of HipaVX::Scalar pointers to be bound to
-   * the operations output and input ast4vx::VariableAccessor if it has some
-   */
-  void add_operation(std::shared_ptr<ast4vx::WindowOperation> op,
-                     std::vector<DomVX::Image *> out = {},
-                     std::vector<DomVX::Scalar *> var_bindings = {}) {
-    operations.emplace_back(op);
-    operation_output_images[op] = out;
-    operation_variables[op] = var_bindings;
-  }
+  virtual ~HipaccNode() override = default;
 };
 
-/**
- * @brief Calculates an output value from an input image
- *
- * Currently only global reduction of an image is supported
- */
-class GlobalOperator : public OperatorNode {
- public:
-  std::shared_ptr<ast4vx::Reduction> reduction;
-  DomVX::Scalar *reduction_out;
-  std::vector<DomVX::Image *> input_pixel_mappings;
-
- public:
-  GlobalOperator() { operator_type = OperatorType::GlobalOperator; }
-
-  /**
-   * @brief Binds the input iamges of the statements to the actual HipaVX::Image
-   * Currently only the first input image is used, since currently reduction
-   * only works on one Image
-   * @param images std::vector of the input image bindings
-   */
-  void register_input_images(std::vector<DomVX::Image *> images) {
-    input_pixel_mappings.clear();
-    for (auto image : images) input_pixel_mappings.emplace_back(image);
-  }
-
-  /**
-   * @brief Sets the reduction function for this GlobalOperation
-   * @param red The ast4vx::Reduction statement which should be used for this
-   * computation
-   * @param out The output HipaVX::Scalar pointer, which gets mapped to the
-   * output of the ast4vx::Reduction
-   */
-  void set_reduction_function(std::shared_ptr<ast4vx::Reduction> red,
-                              DomVX::Scalar *out) {
-    reduction = red;
-    reduction_out = out;
-  }
-};
 }  // namespace DomVX

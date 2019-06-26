@@ -11,11 +11,11 @@ using VertexType = DomVX::Object;
 template <class GraphT>
 void _write_graphviz(GraphT _g, std::string name) {
   std::ofstream file_out(name + ".dot");
-  boost::write_graphviz(file_out, _g,
+  boost::write_graphviz(
+      file_out, _g,
       make_vertex_writer(boost::get(&VertexType::obj_name, _g),
                          boost::get(&VertexType::obj_task, _g)));
 }
-
 
 // print the whole graph
 template <class GraphT>
@@ -23,16 +23,14 @@ void _print_graph(GraphT _g) {
   boost::print_graph(_g, get(&VertexType::obj_name, _g));
 }
 
-
 // print the graph and .dot file
 template <class GraphT>
 void _dump_graph(GraphT _g, std::string _name) {
   std::cout << _name << std::endl;
   graphVX::_print_graph(_g);
+  std::cout << std::endl;
   graphVX::_write_graphviz(_g, _name);
-  std::cout << "\n";
 }
-
 
 // print a given Vertex or Edge list
 template <class VertexOrEdgeDesc, class GraphT>
@@ -44,16 +42,14 @@ void _print_list(std::list<VertexOrEdgeDesc> list, GraphT g,
   std::cout << std::endl << std::endl;
 }
 
-
 // topological sort
 template <class VertexDesc, class GraphT>
 void _topological_sort(std::list<VertexDesc>* sorted, GraphT g) {
-  //using OrderedList = std::list<VertexDesc>;
-  //OrderedList* sorted = new OrderedList;
+  // using OrderedList = std::list<VertexDesc>;
+  // OrderedList* sorted = new OrderedList;
 
   topological_sort(g, std::front_inserter(*sorted));
 }
-
 
 // dfs visit (not search)
 template <class VertexDesc, class GraphT, class VisitorT, class TerminatorT>
@@ -69,9 +65,11 @@ void _depth_first_visit(VertexDesc root_vertex, GraphT g, VisitorT vis,
 
 #include "graph_visitors.hpp"
 
-template<class GraphT>
-bool _detect_cycles_and_back_edges(GraphT &g,
-    std::vector<typename boost::graph_traits<GraphT>::edge_descriptor>& back_edges) {
+template <class GraphT>
+bool _detect_cycles_and_back_edges(
+    GraphT& g,
+    std::vector<typename boost::graph_traits<GraphT>::edge_descriptor>&
+        back_edges) {
   bool cycle_exist = false;
 
   using EdgeDesc = typename boost::graph_traits<GraphT>::edge_descriptor;
@@ -89,11 +87,10 @@ bool _detect_cycles_and_back_edges(GraphT &g,
 #include <random>
 
 template <class Node, class Data, typename GraphT>
-void _gen_rand_graph(unsigned n, unsigned k, GraphT &g,
-      std::vector<typename GraphT::vertex_descriptor>& inputs,
-      std::vector<typename GraphT::vertex_descriptor>& outputs,
-      unsigned num_inputs = 1, unsigned num_outputs = 2
-      ) {
+void _gen_rand_graph(unsigned n, unsigned k, GraphT& g,
+                     std::vector<typename GraphT::vertex_descriptor>& inputs,
+                     std::vector<typename GraphT::vertex_descriptor>& outputs,
+                     unsigned num_inputs = 1, unsigned num_outputs = 2) {
   std::random_device rd;
   std::mt19937 gen(rd());
   std::uniform_int_distribution<> dis(0, n - 1);
@@ -135,13 +132,12 @@ void _gen_rand_graph(unsigned n, unsigned k, GraphT &g,
   }
 }
 
-
 template <class Node, class Image, typename GraphT>
-void _gen_rand_acyclic_graph(unsigned n, unsigned k, GraphT &g,
-      std::vector<typename GraphT::vertex_descriptor>& inputs,
-      std::vector<typename GraphT::vertex_descriptor>& outputs,
-      unsigned num_inputs = 1, unsigned num_outputs = 2
-      ) {
+void _gen_rand_acyclic_graph(
+    unsigned n, unsigned k, GraphT& g,
+    std::vector<typename GraphT::vertex_descriptor>& inputs,
+    std::vector<typename GraphT::vertex_descriptor>& outputs,
+    unsigned num_inputs = 1, unsigned num_outputs = 2) {
   std::random_device rd;
   std::mt19937 gen(rd());
   std::uniform_int_distribution<> dis(0, n - 1);
@@ -214,7 +210,7 @@ void _gen_rand_acyclic_graph(unsigned n, unsigned k, GraphT &g,
       if (g[v].task() == ObjectTask::Buffer) {
         // if(boost::in_degree(v, g) > 0 && cntr < n_out) {
         if (cntr < num_outputs) {
-        g[v].is_virtual(false);
+          g[v].is_virtual(false);
           outputs.push_back(v);
           add_edge(nodes[dis(gen)], v, g);
           cntr++;

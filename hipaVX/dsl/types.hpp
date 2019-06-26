@@ -2,14 +2,13 @@
 
 #include "../../VX/vx.h"
 #include "../../VX/vx_types.h"
-#include "ast.hpp"
 
+#include <memory>
 #include <string>
 #include <vector>
 
-ast4vx::Datatype convert_type(vx_df_image type);
-
 namespace DomVX {
+class Graph;
 
 using ObjectType = vx_type_e;
 
@@ -105,7 +104,6 @@ class Node : public Object {
   std::vector<Object *> outputs;
 
   vx_border_e border_mode = VX_BORDER_UNDEFINED;
-  std::shared_ptr<DomVX::Node> kernel = nullptr;
 
   DomVX::OperatorType operator_type = DomVX::OperatorType::None;
 
@@ -274,14 +272,6 @@ class VX_Matrix : public Object {
   vx_size rows;
   vx_size columns;
   std::vector<u_char> mat;
-};
-
-class Graph : public Object {
- public:
-  std::vector<Node *> graph;
-  bool built = false;
-
-  void build();
 };
 
 class Context : public Object {

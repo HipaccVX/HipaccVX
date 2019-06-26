@@ -1,19 +1,12 @@
 #pragma once
 #include "abstractions.hpp"
-#include "ast.hpp"
-#include "descriptors.hpp"
 #include "types.hpp"
-
-typedef std::shared_ptr<DomVX::PointOperator> domVX_point;
-typedef std::shared_ptr<DomVX::LocalOperator> domVX_local;
-typedef std::shared_ptr<DomVX::GlobalOperator> domVX_global;
 
 typedef std::shared_ptr<DomVX::Domain> domVX_domain;
 typedef std::shared_ptr<DomVX::Mask> domVX_mask;
 
 typedef DomVX::Image* domVX_image;
 
-typedef std::shared_ptr<WindowDesc> domVX_window;
 
 //*********************************************************************
 // Image
@@ -21,24 +14,6 @@ typedef std::shared_ptr<WindowDesc> domVX_window;
 domVX_image create_image(unsigned int width, unsigned int height,
                          vx_df_image type);
 
-//*********************************************************************
-// Descriptors
-//*********************************************************************
-domVX_window get_window(DomVX::Image* im, int width, int height);
-
-domVX_window get_window(DomVX::Image* im, std::shared_ptr<DomVX::Domain> dom);
-
-//*********************************************************************
-// OPERATORS
-//*********************************************************************
-/// @brief creates a point operator.
-domVX_point create_point_op();
-
-/// @brief creates a point operator.
-domVX_local create_local_op();
-
-/// @brief creates a point operator.
-domVX_global create_global_op();
 
 //*********************************************************************
 // DOMAIN  (TODO: Consider renaming as Window)

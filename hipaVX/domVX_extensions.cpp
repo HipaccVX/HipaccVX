@@ -1,4 +1,7 @@
 #include "domVX_extensions.hpp"
+#include <algorithm>
+#include "dsl/abstractions.hpp"
+#include "graph/graph.hpp"
 #include "kernels/domVX_kernels.hpp"
 
 vx_node vxHipaccNode(vx_graph graph, std::string filename,
@@ -48,8 +51,8 @@ void vxDrawDotGraph(vx_graph graph, std::string filename,
 
   std::string node_definitions;
   for (auto node : nodes)
-    node_definitions += "\tID_" + node->id() + " [label=\"" +
-                        node->name() + "\", color=green];\n";
+    node_definitions += "\tID_" + node->id() + " [label=\"" + node->name() +
+                        "\", color=green];\n";
   for (auto object : objects)
     node_definitions += "\tID_" + object->id() + " [label=\"" +
                         get_object_name(object) +
@@ -59,4 +62,12 @@ void vxDrawDotGraph(vx_graph graph, std::string filename,
   content += edges;
   std::ofstream dot_writer(filename);
   dot_writer << "digraph graphname {\n" << content << "}";
+}
+
+vx_kernel vxHipaccKernel(std::string filename) {
+  auto kern = new DomVX::HipaccKernel();
+  kern->filename = filename;
+  auto vx = new _vx_kernel();
+  vx->o = kern;
+  return vx;
 }

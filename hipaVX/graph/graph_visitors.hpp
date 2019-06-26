@@ -5,7 +5,7 @@
 
 namespace graphVX {
 
-using DomVX::ObjectTask; // graphviz
+using DomVX::ObjectTask;  // graphviz
 
 //------------------------------------------------------------------
 //                   Cycle Detection
@@ -23,7 +23,6 @@ struct cycle_detector_dfs : public boost::dfs_visitor<> {
  protected:
   bool& m_has_cycle;
 };
-
 
 // backedges are stored in a vector
 template <class EdgeDesc>
@@ -45,13 +44,10 @@ struct cycle_detector_with_backedges_dfs : public boost::dfs_visitor<> {
   std::vector<EdgeDesc>& back_edges;
 };
 
-
-
 template <class EdgeDesc>
 inline cycle_detector_with_backedges_dfs<EdgeDesc> make_cycle_dbe(EdgeDesc e) {
   return cycle_detector_with_backedges_dfs<EdgeDesc>(e);
 }
-
 
 //------------------------------------------------------------------
 //            Initialize all the graph nodes
@@ -76,7 +72,6 @@ struct mark_as_alive : public boost::dfs_visitor<> {
  private:
   GraphType& g;
 };
-
 
 //------------------------------------------------------------------
 //            Graphviz .dot File Generation
@@ -108,7 +103,6 @@ class vertex_writer {
   NameMap name_m;
   TaskMap task_m;
 };
-
 
 template <class NameMap, class TaskMap>
 inline vertex_writer<NameMap, TaskMap> make_vertex_writer(NameMap nm,

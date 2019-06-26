@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.4.3)
 
 project(HipaVX)
 set(VERSION_MAJOR   0   CACHE STRING "Project major version number.")
-set(VERSION_MINOR   1   CACHE STRING "Project minor version number.")
-set(VERSION_PATCH   0   CACHE STRING "Project patch version number.")
+set(VERSION_MINOR   0   CACHE STRING "Project minor version number.")
+set(VERSION_PATCH   1   CACHE STRING "Project patch version number.")
 
 set (CMAKE_CXX_STANDARD 11)
 
@@ -23,21 +23,10 @@ file(GLOB GLOB_RESULT LIST_DIRECTORIES FALSE ${HIPAVX_DIR}/gen/*)
 list(APPEND HipaVX_SRC ${GLOB_RESULT})
 
 
-file(GLOB_RECURSE HipaccGen_SRC ${HIPAVX_DIR}/hipacc_gen/*)
-file(GLOB_RECURSE CppGen_SRC ${HIPAVX_DIR}/cpp_gen/*)
-file(GLOB_RECURSE GLOB_RESULT ${HIPAVX_DIR}/graph_gen/cpp_graph_gen.*)
-list(APPEND CppGen_SRC ${GLOB_RESULT})
+file(GLOB_RECURSE HipaccGen_SRC ${HIPAVX_DIR}/gen/hipacc_*)
 
-#add_library (HipaVX_Hipacc ${HipaVX_SRC} ${HipaccGen_SRC})
-add_library (HipaVX_Cpp ${HipaVX_SRC} ${CppGen_SRC})
+add_library (HipaVX_Hipacc ${HipaVX_SRC} ${HipaccGen_SRC})
 
-#add_executable (main_hipacc main.cpp)
-#target_include_directories (main_hipacc PUBLIC ${VX_DIR} ${HIPAVX_DIR})
-#target_link_libraries (main_hipacc HipaVX_Hipacc)
-
-add_executable (main_cpp main.cpp)
-target_include_directories (main_cpp PUBLIC ${VX_DIR} ${HIPAVX_DIR})
-target_link_libraries (main_cpp HipaVX_Cpp)
-
-add_subdirectory(minimal)
-add_subdirectory(doc)
+add_executable (main_hipacc main.cpp)
+target_include_directories (main_hipacc PUBLIC ${VX_DIR} ${HIPAVX_DIR})
+target_link_libraries (main_hipacc HipaVX_Hipacc)
