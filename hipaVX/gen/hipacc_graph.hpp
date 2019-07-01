@@ -625,8 +625,6 @@ class hipacc_gen : public graph_gen, public hipacc_writer {
 
   using hipacc_writer::def;
 
-  std::stringstream ss_mask;
-  std::stringstream ss_dom;
   std::stringstream ss_im;
   std::stringstream ss_acc;
   std::stringstream ss_is;
@@ -636,6 +634,8 @@ class hipacc_gen : public graph_gen, public hipacc_writer {
   // new
   std::stringstream ss_sc;
   std::stringstream ss_mat;
+
+  std::vector<std::string> already_included_kernels;
 
   void def(VertexType* hn);
 
@@ -652,16 +652,10 @@ class hipacc_gen : public graph_gen, public hipacc_writer {
 
     ss << "int main() {\n";
 
-    ss << dind << "// masks\n";
-    ss << ss_mask.str() << "\n";
-
-    ss << dind << "// domains\n";
-    ss << ss_dom.str() << "\n";
-
     ss << dind << "// scalars\n";
     ss << ss_sc.str() << "\n";
 
-    ss << dind << "// matrix\n";
+    ss << dind << "// matrix/mask/domain\n";
     ss << ss_mat.str() << "\n";
 
     ss << dind << "// images\n";
@@ -709,13 +703,6 @@ void hipacc_gen::set_edges() {
     if (_im) {
       edge->set_img(_im);
       edge->set_name();
-
-      // moved to iterate nodes
-      // if(edge->is_acc == true) {
-      //  def_acc(ss_acc, edge, DefType::Hdecl);
-      //} else if(edge->is_is == true ) {
-      //  def_is(ss_is, edge, DefType::Hdecl);
-      //}
     }
   }
 }
@@ -730,25 +717,14 @@ void hipacc_gen::iterate_nodes() {
       ERRORM("iterate_nodes: vertex must be an instance of DomVX::HipaccNope")
 
     std::string kernel = read_file(hn->kernel->filename);
-    std::string kernel_name = "";
-
     size_t class_index = kernel.find("class");
     size_t kernelname_index = kernel.find(" ", class_index) + 1;
     size_t kernelname_end_index = kernel.find(" ", kernelname_index);
 
-    kernel_name = kernel.substr(kernelname_index,
-                                kernelname_end_index - kernelname_index);
-    const size_t kernel_name_length = kernel_name.length();
-    while (true) {
-      kernelname_index = kernel.find(kernel_name, kernelname_index);
-      if (kernelname_index == std::string::npos) break;
-      kernel.replace(kernelname_index, kernel_name_length,
-                     kernel_name + "_" + hn->id());
-      kernelname_index += kernel_name_length;
-    }
+    std::string kernel_name = kernel.substr(
+        kernelname_index, kernelname_end_index - kernelname_index);
 
-    std::string kernel_instance_name =
-        kernel_name + "_" + hn->id() + "_instance";
+    std::string kernel_instance_name = kernel_name + "_" + hn->id();
 
     ss_execs << dind << kernel_instance_name << ".execute();" << std::endl;
 
@@ -817,11 +793,15 @@ void hipacc_gen::iterate_nodes() {
       }
     }
 
-    ss_kern << kernel;
+    if (std::find(already_included_kernels.cbegin(),
+                  already_included_kernels.cend(),
+                  hn->kernel->filename) == already_included_kernels.cend()) {
+      already_included_kernels.emplace_back(hn->kernel->filename);
+      ss_kern << kernel;
+    }
 
     ss_kern_host << dind;
-    ss_kern_host << kernel_name << "_" << hn->id() << " "
-                 << kernel_instance_name << "(";
+    ss_kern_host << kernel_name << " " << kernel_instance_name << "(";
     for (unsigned int i = 0; i < param_names.size(); i++) {
       if (i != 0) ss_kern_host << ", ";
       ss_kern_host << param_names[i];
