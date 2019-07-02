@@ -172,8 +172,8 @@ int main() {
     vx_graph graph = vxCreateGraph(context);
 
     auto hn = vxCreateGenericNode(graph, hk);
-    vxSetParameterByIndex(hn, 0, (vx_reference)images[6]);
-    vxSetParameterByIndex(hn, 1, (vx_reference)images[7]);
+    vxSetParameterByIndex(hn, 0, (vx_reference)images[7]);
+    vxSetParameterByIndex(hn, 1, (vx_reference)images[6]);
     vxSetParameterByIndex(hn, 2, (vx_reference)sigma_s);
     vxSetParameterByIndex(hn, 3, (vx_reference)sigma_r);
 
@@ -191,15 +191,16 @@ int main() {
           vxFWriteImageNode(graph, images[1], "akif-200x300_bw_sobel_x.png"),
           vxFWriteImageNode(graph, images[2], "akif-200x300_bw_sobel_y.png"),
           vxFWriteImageNode(graph, images[3], "akif-200x300_bw_mag.png"),
-          vxFWriteImageNode(graph, images[4], "akif-200x300_bw_out.png"),
+          vxFWriteImageNode(graph, images[4], "akif-200x300_bw_out.png"),*/
 
-          vxAndNode(graph, images[4], images[5], images[6]),
-          vxOrNode(graph, images[4], images[6], images[7]),
-          vxFWriteImageNode(graph, images[7], "akif-200x300_bw_out_and_or.png"),
+          vxAndNode(graph, images[6], images[7], images[8]),
+          vxOrNode(graph, images[6], images[7], images[8]),
+          // vxFWriteImageNode(graph, images[7],
+          // "akif-200x300_bw_out_and_or.png"),
 
-          vxXorNode(graph, images[4], images[5], images[8]),
-          vxXorNode(graph, images[8], images[5], images[9]),
-          vxFWriteImageNode(graph, images[9], "akif-200x300_bw_xor_xor.png"),*/
+          vxXorNode(graph, images[6], images[7], images[8]),
+          vxXorNode(graph, images[6], images[7], images[8]),
+          // vxFWriteImageNode(graph, images[9], "akif-200x300_bw_xor_xor.png"),
 
           vxAbsDiffNode(graph, images[1], images[4], images[2]),
           /*vxFWriteImageNode(graph, images[10],

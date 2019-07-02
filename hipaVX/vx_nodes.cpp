@@ -90,6 +90,15 @@ static DomVX::Convolution* convert(vx_convolution n) {
   return (DomVX::Convolution*)(n->o);
 }
 
+static std::string type(vx_image image) {
+  if (convert(image)->col == VX_DF_IMAGE_U8)
+    return "u8";
+  else if (convert(image)->col == VX_DF_IMAGE_S16)
+    return "s16";
+  else
+    return "not_implemented";
+}
+
 VX_API_ENTRY vx_node VX_API_CALL vxChannelExtractNode(vx_graph graph,
                                                       vx_image input,
                                                       vx_enum channel,
@@ -152,25 +161,8 @@ VX_API_ENTRY vx_node VX_API_CALL vxAbsDiffNode(vx_graph graph, vx_image in1,
       convert(out)->col != VX_DF_IMAGE_S16)
     return nullptr;
 
-  std::string out_type;
-  std::string in1_type;
-  std::string in2_type;
-
-  if (convert(out)->col == VX_DF_IMAGE_U8)
-    out_type = "u8";
-  else
-    out_type = "s16";
-  if (convert(in1)->col == VX_DF_IMAGE_U8)
-    in1_type = "u8";
-  else
-    in1_type = "s16";
-  if (convert(in2)->col == VX_DF_IMAGE_U8)
-    in2_type = "u8";
-  else
-    in2_type = "s16";
-
-  vx_kernel kern = vxHipaccKernel("hipacc_kernels/point/absdiff_" + out_type +
-                                  "_" + in1_type + "_" + in2_type + ".hpp");
+  vx_kernel kern = vxHipaccKernel("hipacc_kernels/point/absdiff_" + type(out) +
+                                  "_" + type(in1) + "_" + type(in2) + ".hpp");
   vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_IMAGE, 0);
@@ -270,22 +262,82 @@ VX_API_ENTRY vx_node VX_API_CALL vxAccumulateSquareImageNode(vx_graph graph,
 
 VX_API_ENTRY vx_node VX_API_CALL vxAndNode(vx_graph graph, vx_image in1,
                                            vx_image in2, vx_image out) {
-  return nullptr;
+  if (convert(out)->col != VX_DF_IMAGE_U8 ||
+      convert(in1)->col != VX_DF_IMAGE_U8 ||
+      convert(in2)->col != VX_DF_IMAGE_U8)
+    return nullptr;
+
+  vx_kernel kern =
+      vxHipaccKernel("hipacc_kernels/point/bitwiseand_" + type(out) + "_" +
+                     type(in1) + "_" + type(in2) + ".hpp");
+  vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
+  vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
+  vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_IMAGE, 0);
+
+  auto hn = vxCreateGenericNode(graph, kern);
+  vxSetParameterByIndex(hn, 0, (vx_reference)out);
+  vxSetParameterByIndex(hn, 1, (vx_reference)in1);
+  vxSetParameterByIndex(hn, 2, (vx_reference)in2);
+  return hn;
 }
 
 VX_API_ENTRY vx_node VX_API_CALL vxOrNode(vx_graph graph, vx_image in1,
                                           vx_image in2, vx_image out) {
-  return nullptr;
+  if (convert(out)->col != VX_DF_IMAGE_U8 ||
+      convert(in1)->col != VX_DF_IMAGE_U8 ||
+      convert(in2)->col != VX_DF_IMAGE_U8)
+    return nullptr;
+
+  vx_kernel kern =
+      vxHipaccKernel("hipacc_kernels/point/bitwiseor_" + type(out) + "_" +
+                     type(in1) + "_" + type(in2) + ".hpp");
+  vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
+  vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
+  vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_IMAGE, 0);
+
+  auto hn = vxCreateGenericNode(graph, kern);
+  vxSetParameterByIndex(hn, 0, (vx_reference)out);
+  vxSetParameterByIndex(hn, 1, (vx_reference)in1);
+  vxSetParameterByIndex(hn, 2, (vx_reference)in2);
+  return hn;
 }
 
 VX_API_ENTRY vx_node VX_API_CALL vxXorNode(vx_graph graph, vx_image in1,
                                            vx_image in2, vx_image out) {
-  return nullptr;
+  if (convert(out)->col != VX_DF_IMAGE_U8 ||
+      convert(in1)->col != VX_DF_IMAGE_U8 ||
+      convert(in2)->col != VX_DF_IMAGE_U8)
+    return nullptr;
+
+  vx_kernel kern =
+      vxHipaccKernel("hipacc_kernels/point/bitwisexor_" + type(out) + "_" +
+                     type(in1) + "_" + type(in2) + ".hpp");
+  vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
+  vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
+  vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_IMAGE, 0);
+
+  auto hn = vxCreateGenericNode(graph, kern);
+  vxSetParameterByIndex(hn, 0, (vx_reference)out);
+  vxSetParameterByIndex(hn, 1, (vx_reference)in1);
+  vxSetParameterByIndex(hn, 2, (vx_reference)in2);
+  return hn;
 }
 
 VX_API_ENTRY vx_node VX_API_CALL vxNotNode(vx_graph graph, vx_image input,
                                            vx_image output) {
-  return nullptr;
+  if (convert(output)->col != VX_DF_IMAGE_U8 ||
+      convert(input)->col != VX_DF_IMAGE_U8)
+    return nullptr;
+
+  vx_kernel kern = vxHipaccKernel("hipacc_kernels/point/bitwisenot_" +
+                                  type(output) + "_" + type(input) + ".hpp");
+  vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
+  vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
+
+  auto hn = vxCreateGenericNode(graph, kern);
+  vxSetParameterByIndex(hn, 0, (vx_reference)output);
+  vxSetParameterByIndex(hn, 1, (vx_reference)input);
+  return hn;
 }
 
 VX_API_ENTRY vx_node VX_API_CALL vxAddNode(vx_graph graph, vx_image in1,

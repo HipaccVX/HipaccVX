@@ -716,6 +716,7 @@ void hipacc_gen::iterate_nodes() {
     if (hn == nullptr)
       ERRORM("iterate_nodes: vertex must be an instance of DomVX::HipaccNope")
 
+    std::cout << hn->kernel->filename << std::endl;
     std::string kernel = read_file(hn->kernel->filename);
     size_t class_index = kernel.find("class");
     size_t kernelname_index = kernel.find(" ", class_index) + 1;
