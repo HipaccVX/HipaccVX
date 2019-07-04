@@ -193,6 +193,8 @@ class Graph : public Object {
 
   bool built = false;
 
+  Context* context;
+
   void build() {
     for (auto& node : graph) {
       node->build();

@@ -1,5 +1,6 @@
 #include "../VX/vx.h"
 #include "domVX_extensions.hpp"
+#include "graph/graph.hpp"
 #include "kernels/domVX_kernels.hpp"
 
 // High priority
@@ -199,7 +200,40 @@ VX_API_ENTRY vx_node VX_API_CALL vxDilate3x3Node(vx_graph graph, vx_image input,
 
 VX_API_ENTRY vx_node VX_API_CALL vxBox3x3Node(vx_graph graph, vx_image input,
                                               vx_image output) {
-  return nullptr;
+  if (convert(input)->col == VX_DF_IMAGE_U8 ||
+      convert(output)->col != VX_DF_IMAGE_U8)
+    return nullptr;
+
+  std::string out_type;
+  std::string in_type;
+  std::string in2_type;
+
+  if (convert(output)->col == VX_DF_IMAGE_U8)
+    out_type = "u8";
+  else
+    out_type = "s16";
+  if (convert(input)->col == VX_DF_IMAGE_U8)
+    in_type = "u8";
+  else
+    in_type = "s16";
+
+  const int coef_box[9] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
+  vx_context c = new _vx_context();
+  c->o = convert(graph)->context;
+  vx_matrix box_values = vxCreateMatrix(c, VX_TYPE_INT32, 3, 3);
+  vxCopyMatrix(box_values, (void*)coef_box, VX_WRITE_ONLY, VX_MEMORY_TYPE_HOST);
+
+  vx_kernel kern = vxHipaccKernel("hipacc_kernels/local/box_" + out_type + "_" +
+                                  in_type + ".hpp");
+  vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
+  vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
+  vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_MATRIX, 0);
+
+  auto hn = vxCreateGenericNode(graph, kern);
+  vxSetParameterByIndex(hn, 0, (vx_reference)output);
+  vxSetParameterByIndex(hn, 1, (vx_reference)input);
+  vxSetParameterByIndex(hn, 2, (vx_reference)box_values);
+  return hn;
 }
 
 VX_API_ENTRY vx_node VX_API_CALL vxGaussian3x3Node(vx_graph graph,

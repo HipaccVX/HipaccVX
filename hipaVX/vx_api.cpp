@@ -45,6 +45,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxReleaseContext(vx_context *context) {
 VX_API_ENTRY vx_graph VX_API_CALL vxCreateGraph(vx_context context) {
   auto graph = new DomVX::Graph();
   graph->dag.reset(new graphVX::dag());
+  graph->context = (DomVX::Context *)(context->o);
   auto vx = new _vx_graph();
   vx->o = graph;
   ((DomVX::Context *)(context->o))->graphs.emplace_back(graph);
