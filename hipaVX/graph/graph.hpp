@@ -137,6 +137,7 @@ class dag {
   AppGraphT* reverse();
 
   OptGraphT* eliminate_dead_nodes();
+  OptGraphT* dont_eliminate_dead_nodes(); // temporary
 
   // topological sort for order of execution
   OrderedList* set_order_of_exec();

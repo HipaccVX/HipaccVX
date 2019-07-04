@@ -64,8 +64,9 @@ VX_API_ENTRY vx_status VX_API_CALL vxProcessGraph(vx_graph graph) {
   // TODO: Consider having a generator class for every backend
   // process_graph(((DomVX::Graph *)(graph->o)));
 
-  ((DomVX::Graph *)(graph->o))->dag->eliminate_dead_nodes();
+  ((DomVX::Graph *)(graph->o))->dag->dont_eliminate_dead_nodes();
   ((DomVX::Graph *)(graph->o))->dag->dump_graph("graph");
+  ((DomVX::Graph *)(graph->o))->dag->dump_optimized("optimized");
   hipacc_gen gen(*((DomVX::Graph *)(graph->o))->dag);
   gen.set_edges();
   gen.iterate_spaces();

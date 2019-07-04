@@ -119,4 +119,12 @@ OptGraphT* dag::eliminate_dead_nodes() {
   return _g_opt;
 }
 
+OptGraphT* dag::dont_eliminate_dead_nodes() {
+  boost::transpose_graph(g, g_trans);
+
+  _g_opt = new OptGraphT(g, boost::keep_all{}, boost::keep_all{});
+
+  return _g_opt;
+}
+
 }  // namespace graphVX
