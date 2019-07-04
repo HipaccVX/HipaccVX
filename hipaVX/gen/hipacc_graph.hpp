@@ -582,7 +582,7 @@ void graph_gen::init() {
   _g_opt = g_dag._g_opt;
 
   _verts = g_dag.set_order_of_exec();
-  // g_dag.print_order_of_exec();
+  g_dag.print_order_of_exec();
 
   for (auto i : *_verts) {
     switch ((*_g_opt)[i].task()) {

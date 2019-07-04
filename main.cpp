@@ -172,8 +172,8 @@ int main() {
     vx_graph graph = vxCreateGraph(context);
 
     auto hn = vxCreateGenericNode(graph, hk);
-    vxSetParameterByIndex(hn, 0, (vx_reference)images[7]);
-    vxSetParameterByIndex(hn, 1, (vx_reference)images[6]);
+    vxSetParameterByIndex(hn, 0, (vx_reference)images[24]);
+    vxSetParameterByIndex(hn, 1, (vx_reference)images[4]);
     vxSetParameterByIndex(hn, 2, (vx_reference)sigma_s);
     vxSetParameterByIndex(hn, 3, (vx_reference)sigma_r);
 
@@ -193,13 +193,13 @@ int main() {
           vxFWriteImageNode(graph, images[3], "akif-200x300_bw_mag.png"),
           vxFWriteImageNode(graph, images[4], "akif-200x300_bw_out.png"),*/
 
-          vxAndNode(graph, images[6], images[7], images[8]),
-          vxOrNode(graph, images[6], images[7], images[8]),
+          vxAndNode(graph, images[4], images[7], images[6]),
+          vxOrNode(graph, images[4], images[4], images[7]),
           // vxFWriteImageNode(graph, images[7],
           // "akif-200x300_bw_out_and_or.png"),
 
-          vxXorNode(graph, images[6], images[7], images[8]),
-          vxXorNode(graph, images[6], images[7], images[8]),
+          vxXorNode(graph, images[4], images[7], images[8]),
+          vxXorNode(graph, images[6], images[7], images[9]),
           // vxFWriteImageNode(graph, images[9], "akif-200x300_bw_xor_xor.png"),
 
           vxAbsDiffNode(graph, images[1], images[4], images[2]),
@@ -217,44 +217,45 @@ int main() {
           vxErode3x3Node(graph, images[0], images[15]),
           vxFWriteImageNode(graph, images[15], "akif-200x300_bw_erode.png"),
 
-          vxBox3x3Node(graph, images[0], images[13]),
-          vxFWriteImageNode(graph, images[13], "akif-200x300_bw_box.png"),
-          vxGaussian3x3Node(graph, images[0], images[16]),
-          vxFWriteImageNode(graph, images[16], "akif-200x300_bw_gaussian.png"),
+          */
+          vxBox3x3Node(graph, images[8], images[13]), /*
+         vxFWriteImageNode(graph, images[13], "akif-200x300_bw_box.png"),
+         vxGaussian3x3Node(graph, images[0], images[16]),
+         vxFWriteImageNode(graph, images[16], "akif-200x300_bw_gaussian.png"),
 
-          // vxHarrisCornersNode(graph, images[0], harris_strength,
-          // harris_min_distance,
-          harris_sensitivity, 3, 3, harris_corners,
-          //harris_corners_num), vxFWriteImageNode(graph, images[17],
-          // "akif-200x300_bw_harris.png"),
+         // vxHarrisCornersNode(graph, images[0], harris_strength,
+         // harris_min_distance,
+         harris_sensitivity, 3, 3, harris_corners,
+         //harris_corners_num), vxFWriteImageNode(graph, images[17],
+         // "akif-200x300_bw_harris.png"),
 
-          vxThresholdNode(graph, images[0], thresh, images[17]),
-          vxFWriteImageNode(graph, images[17], "akif-200x300_bw_thresh.png"),
+         vxThresholdNode(graph, images[0], thresh, images[17]),
+         vxFWriteImageNode(graph, images[17], "akif-200x300_bw_thresh.png"),
 
-          vxChannelExtractNode(graph, images[18], VX_CHANNEL_R, images[19]),
-          vxChannelExtractNode(graph, images[18], VX_CHANNEL_G, images[20]),
-          vxChannelExtractNode(graph, images[18], VX_CHANNEL_B, images[21]),
-          vxChannelExtractNode(graph, images[18], VX_CHANNEL_A, images[22]),
-          vxFWriteImageNode(graph, images[19], "akif-200x300_rgba_r.png"),
-          vxFWriteImageNode(graph, images[20], "akif-200x300_rgba_g.png"),
-          vxFWriteImageNode(graph, images[21], "akif-200x300_rgba_b.png"),
-          vxFWriteImageNode(graph, images[22], "akif-200x300_rgba_a.png"),
+         vxChannelExtractNode(graph, images[18], VX_CHANNEL_R, images[19]),
+         vxChannelExtractNode(graph, images[18], VX_CHANNEL_G, images[20]),
+         vxChannelExtractNode(graph, images[18], VX_CHANNEL_B, images[21]),
+         vxChannelExtractNode(graph, images[18], VX_CHANNEL_A, images[22]),
+         vxFWriteImageNode(graph, images[19], "akif-200x300_rgba_r.png"),
+         vxFWriteImageNode(graph, images[20], "akif-200x300_rgba_g.png"),
+         vxFWriteImageNode(graph, images[21], "akif-200x300_rgba_b.png"),
+         vxFWriteImageNode(graph, images[22], "akif-200x300_rgba_a.png"),
 
-          vxConvolveNode(graph, images[0], scharr_x, images[23]),
-          vxFWriteImageNode(graph, images[23], "akif-200x300_bw_scharr_x.png"),
+         vxConvolveNode(graph, images[0], scharr_x, images[23]),
+         vxFWriteImageNode(graph, images[23], "akif-200x300_bw_scharr_x.png"),
 
-          // vxHipaccNode(graph, "hipacc_interop/BilateralFilter.cpp",
-          // bilateral_parameters.data(), bilateral_parameters.size(),
-          // images[24]),
-          vxFWriteImageNode(graph, images[24],
-                            "akif-200x300_bw_customhipacc_bilateral.png"),
+         // vxHipaccNode(graph, "hipacc_interop/BilateralFilter.cpp",
+         // bilateral_parameters.data(), bilateral_parameters.size(),
+         // images[24]),
+         vxFWriteImageNode(graph, images[24],
+                           "akif-200x300_bw_customhipacc_bilateral.png"),
 
-          /*vxScaleImageNode(graph, images[0], images[25],
-          VX_INTERPOLATION_NEAREST_NEIGHBOR), vxFWriteImageNode(graph,
-          images[25], "akif-200x300_bw_scaled_down.png"),
-          vxScaleImageNode(graph, images[0], images[26],
-          VX_INTERPOLATION_NEAREST_NEIGHBOR), vxFWriteImageNode(graph,
-          images[26], "akif-200x300_bw_scaled_up.png"),*/
+         /*vxScaleImageNode(graph, images[0], images[25],
+         VX_INTERPOLATION_NEAREST_NEIGHBOR), vxFWriteImageNode(graph,
+         images[25], "akif-200x300_bw_scaled_down.png"),
+         vxScaleImageNode(graph, images[0], images[26],
+         VX_INTERPOLATION_NEAREST_NEIGHBOR), vxFWriteImageNode(graph,
+         images[26], "akif-200x300_bw_scaled_up.png"),*/
 
           /*vxChannelCombineNode(graph, images[21], images[20], images[19],
                                images[22], images[27]),
