@@ -102,6 +102,13 @@ int main() {
 
         vxCreateImage(context, WIDTH, HEIGHT,
                       VX_DF_IMAGE_U8), /*29: another bilateralfilter */
+
+        vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_S16), /*30: test */
+        vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_S16), /*31: test */
+        vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_S16), /*32: test */
+        vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_S16), /*33: test */
+        vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),  /*34: test */
+        vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),  /*32: test */
     };
 
     int32_t two = 2;
@@ -128,6 +135,11 @@ int main() {
                             sizeof(some_int));
     some_int = 200;
     vxSetThresholdAttribute(thresh, VX_THRESHOLD_THRESHOLD_UPPER, &some_int,
+                            sizeof(some_int));
+
+    vx_threshold thresh_bin = vxCreateThresholdForImage(
+        context, VX_THRESHOLD_TYPE_BINARY, VX_DF_IMAGE_U8, VX_DF_IMAGE_U8);
+    vxSetThresholdAttribute(thresh_bin, VX_THRESHOLD_THRESHOLD_VALUE, &some_int,
                             sizeof(some_int));
 
     vx_convolution scharr_x = vxCreateConvolution(context, 3, 3);
@@ -184,8 +196,9 @@ int main() {
                             "akif-200x300_bw_done_nothing.png"),*/
 
           /*vxSobel3x3Node(graph, images[0], images[1], images[2]),
+           */
           vxMagnitudeNode(graph, images[1], images[2], images[3]),
-          vxConvertDepthNode(graph, images[3], images[4],
+          /*vxConvertDepthNode(graph, images[3], images[4],
                              VX_CONVERT_POLICY_SATURATE, two_scalar),
 
           vxFWriteImageNode(graph, images[1], "akif-200x300_bw_sobel_x.png"),
@@ -194,7 +207,7 @@ int main() {
           vxFWriteImageNode(graph, images[4], "akif-200x300_bw_out.png"),*/
 
           vxAndNode(graph, images[4], images[7], images[6]),
-          vxOrNode(graph, images[4], images[4], images[7]),
+          vxOrNode(graph, images[4], images[22], images[7]),
           // vxFWriteImageNode(graph, images[7],
           // "akif-200x300_bw_out_and_or.png"),
 
@@ -212,50 +225,54 @@ int main() {
                          images[12]),
           vxFWriteImageNode(graph, images[12], "akif-200x300_bw_add_sub.png"),
 
-          vxDilate3x3Node(graph, images[0], images[14]),
-          vxFWriteImageNode(graph, images[14], "akif-200x300_bw_dilate.png"),
-          vxErode3x3Node(graph, images[0], images[15]),
-          vxFWriteImageNode(graph, images[15], "akif-200x300_bw_erode.png"),
+          */
+          vxDilate3x3Node(graph, images[8], images[14]),
+          // vxFWriteImageNode(graph, images[14], "akif-200x300_bw_dilate.png"),
+          vxErode3x3Node(graph, images[8], images[15]),
+          // vxFWriteImageNode(graph, images[15], "akif-200x300_bw_erode.png"),
+
+          vxBox3x3Node(graph, images[8], images[13]),
+          // vxFWriteImageNode(graph, images[13], "akif-200x300_bw_box.png"),
+          vxGaussian3x3Node(graph, images[8], images[16]),
+          // vxFWriteImageNode(graph, images[16],
+          // "akif-200x300_bw_gaussian.png"),
+
+          // vxHarrisCornersNode(graph, images[0], harris_strength,
+          // harris_min_distance,
+          /* harris_sensitivity, 3, 3, harris_corners,
+          // harris_corners_num), vxFWriteImageNode(graph, images[17],
+          // "akif-200x300_bw_harris.png"),
 
           */
-          vxBox3x3Node(graph, images[8], images[13]), /*
-         vxFWriteImageNode(graph, images[13], "akif-200x300_bw_box.png"),
-         vxGaussian3x3Node(graph, images[0], images[16]),
-         vxFWriteImageNode(graph, images[16], "akif-200x300_bw_gaussian.png"),
+          vxThresholdNode(graph, images[9], thresh_bin, images[17]),
+          vxThresholdNode(graph, images[9], thresh, images[19]),
+          /*
+           vxFWriteImageNode(graph, images[17], "akif-200x300_bw_thresh.png"),
 
-         // vxHarrisCornersNode(graph, images[0], harris_strength,
-         // harris_min_distance,
-         harris_sensitivity, 3, 3, harris_corners,
-         //harris_corners_num), vxFWriteImageNode(graph, images[17],
-         // "akif-200x300_bw_harris.png"),
+           vxChannelExtractNode(graph, images[18], VX_CHANNEL_R, images[19]),
+           vxChannelExtractNode(graph, images[18], VX_CHANNEL_G, images[20]),
+           vxChannelExtractNode(graph, images[18], VX_CHANNEL_B, images[21]),
+           vxChannelExtractNode(graph, images[18], VX_CHANNEL_A, images[22]),
+           vxFWriteImageNode(graph, images[19], "akif-200x300_rgba_r.png"),
+           vxFWriteImageNode(graph, images[20], "akif-200x300_rgba_g.png"),
+           vxFWriteImageNode(graph, images[21], "akif-200x300_rgba_b.png"),
+           vxFWriteImageNode(graph, images[22], "akif-200x300_rgba_a.png"),
 
-         vxThresholdNode(graph, images[0], thresh, images[17]),
-         vxFWriteImageNode(graph, images[17], "akif-200x300_bw_thresh.png"),
+           vxConvolveNode(graph, images[0], scharr_x, images[23]),
+           vxFWriteImageNode(graph, images[23], "akif-200x300_bw_scharr_x.png"),
 
-         vxChannelExtractNode(graph, images[18], VX_CHANNEL_R, images[19]),
-         vxChannelExtractNode(graph, images[18], VX_CHANNEL_G, images[20]),
-         vxChannelExtractNode(graph, images[18], VX_CHANNEL_B, images[21]),
-         vxChannelExtractNode(graph, images[18], VX_CHANNEL_A, images[22]),
-         vxFWriteImageNode(graph, images[19], "akif-200x300_rgba_r.png"),
-         vxFWriteImageNode(graph, images[20], "akif-200x300_rgba_g.png"),
-         vxFWriteImageNode(graph, images[21], "akif-200x300_rgba_b.png"),
-         vxFWriteImageNode(graph, images[22], "akif-200x300_rgba_a.png"),
+           // vxHipaccNode(graph, "hipacc_interop/BilateralFilter.cpp",
+           // bilateral_parameters.data(), bilateral_parameters.size(),
+           // images[24]),
+           vxFWriteImageNode(graph, images[24],
+                             "akif-200x300_bw_customhipacc_bilateral.png"),
 
-         vxConvolveNode(graph, images[0], scharr_x, images[23]),
-         vxFWriteImageNode(graph, images[23], "akif-200x300_bw_scharr_x.png"),
-
-         // vxHipaccNode(graph, "hipacc_interop/BilateralFilter.cpp",
-         // bilateral_parameters.data(), bilateral_parameters.size(),
-         // images[24]),
-         vxFWriteImageNode(graph, images[24],
-                           "akif-200x300_bw_customhipacc_bilateral.png"),
-
-         /*vxScaleImageNode(graph, images[0], images[25],
-         VX_INTERPOLATION_NEAREST_NEIGHBOR), vxFWriteImageNode(graph,
-         images[25], "akif-200x300_bw_scaled_down.png"),
-         vxScaleImageNode(graph, images[0], images[26],
-         VX_INTERPOLATION_NEAREST_NEIGHBOR), vxFWriteImageNode(graph,
-         images[26], "akif-200x300_bw_scaled_up.png"),*/
+           /*vxScaleImageNode(graph, images[0], images[25],
+           VX_INTERPOLATION_NEAREST_NEIGHBOR), vxFWriteImageNode(graph,
+           images[25], "akif-200x300_bw_scaled_down.png"),
+           vxScaleImageNode(graph, images[0], images[26],
+           VX_INTERPOLATION_NEAREST_NEIGHBOR), vxFWriteImageNode(graph,
+           images[26], "akif-200x300_bw_scaled_up.png"),*/
 
           /*vxChannelCombineNode(graph, images[21], images[20], images[19],
                                images[22], images[27]),
@@ -267,6 +284,18 @@ int main() {
           // vxAnotherBilateralFilterNode(graph, images[0], 16, images[29]),
           // vxFWriteImageNode(graph, images[29],
           // "akif-200x300_bw_another_bilateral.png"),/**/
+          vxAddNode(graph, images[1], images[2], VX_CONVERT_POLICY_WRAP,
+                    images[30]),
+          vxAddNode(graph, images[6], images[1], VX_CONVERT_POLICY_WRAP,
+                    images[31]),
+          vxAddNode(graph, images[7], images[6], VX_CONVERT_POLICY_WRAP,
+                    images[34]),
+          vxSubtractNode(graph, images[10], images[6], VX_CONVERT_POLICY_WRAP,
+                         images[32]),
+          vxSubtractNode(graph, images[1], images[10], VX_CONVERT_POLICY_WRAP,
+                         images[33]),
+          vxSubtractNode(graph, images[6], images[7], VX_CONVERT_POLICY_WRAP,
+                         images[35]),
       };
 
       // Step4.Verify Graph
