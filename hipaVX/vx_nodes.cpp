@@ -1,7 +1,6 @@
 #include "../VX/vx.h"
 #include "domVX_extensions.hpp"
 #include "graph/graph.hpp"
-#include "kernels/domVX_kernels.hpp"
 
 // High priority
 // TODO: Nodes consisting of graphs should be described in here not in class

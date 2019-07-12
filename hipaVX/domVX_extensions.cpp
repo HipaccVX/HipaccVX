@@ -2,7 +2,6 @@
 #include <algorithm>
 #include "dsl/abstractions.hpp"
 #include "graph/graph.hpp"
-#include "kernels/domVX_kernels.hpp"
 
 vx_node vxHipaccNode(vx_graph graph, std::string filename,
                      vx_reference *parameters, vx_size count, vx_image out) {
