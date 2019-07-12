@@ -108,7 +108,7 @@ int main() {
         vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_S16), /*32: test */
         vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_S16), /*33: test */
         vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),  /*34: test */
-        vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),  /*32: test */
+        vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),  /*35: test */
     };
 
     int32_t two = 2;
@@ -195,8 +195,7 @@ int main() {
           /*vxFWriteImageNode(graph, images[0],
                             "akif-200x300_bw_done_nothing.png"),*/
 
-          /*vxSobel3x3Node(graph, images[0], images[1], images[2]),
-           */
+          vxSobel3x3Node(graph, images[35], images[1], images[2]),
           vxMagnitudeNode(graph, images[1], images[2], images[3]),
           /*vxConvertDepthNode(graph, images[3], images[4],
                              VX_CONVERT_POLICY_SATURATE, two_scalar),

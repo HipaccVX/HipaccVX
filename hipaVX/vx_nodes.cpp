@@ -1,5 +1,6 @@
 #include "../VX/vx.h"
 #include "domVX_extensions.hpp"
+#include "dsl/abstractions.hpp"
 #include "graph/graph.hpp"
 
 // High priority
@@ -138,25 +139,54 @@ VX_API_ENTRY vx_node VX_API_CALL vxSobel3x3Node(vx_graph graph, vx_image input,
       ((!output_y) && convert(output_y)->col != VX_DF_IMAGE_S16))
     return nullptr;
 
-  return nullptr;  // We can't support multiple image outputs currently
-  /*if (output_x)
-  const int coef[9] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
-  vx_context c = new _vx_context();
-  c->o = convert(graph)->context;
-  vx_matrix mat = vxCreateMatrix(c, VX_TYPE_INT32, 3, 3);
-  vxCopyMatrix(mat, (void*)coef, VX_WRITE_ONLY, VX_MEMORY_TYPE_HOST);
+  auto multi_node = new DomVX::MultiNode();
 
-  vx_kernel kern = vxHipaccKernel("hipacc_kernels/local/erode_" + type(output) +
-                                  "_" + type(input) + ".hpp");
-  vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
-  vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
-  vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_MATRIX, 0);
+  if (output_x) {
+    const int coef[9] = {-1, 0, 1, -2, 0, 2, -1, 0, 1};
+    vx_context c = new _vx_context();
+    c->o = convert(graph)->context;
+    vx_matrix mat = vxCreateMatrix(c, VX_TYPE_INT32, 3, 3);
+    vxCopyMatrix(mat, (void*)coef, VX_WRITE_ONLY, VX_MEMORY_TYPE_HOST);
 
-  auto hn = vxCreateGenericNode(graph, kern);
-  vxSetParameterByIndex(hn, 0, (vx_reference)output);
-  vxSetParameterByIndex(hn, 1, (vx_reference)input);
-  vxSetParameterByIndex(hn, 2, (vx_reference)mat);
-  return hn;*/
+    vx_kernel kern =
+        vxHipaccKernel("hipacc_kernels/local/sobelx_" + type_str(output_x) +
+                       "_" + type_str(input) + ".hpp");
+    vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
+    vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
+    vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_MATRIX, 0);
+
+    auto hn = vxCreateGenericNode(graph, kern);
+    vxSetParameterByIndex(hn, 0, (vx_reference)output_x);
+    vxSetParameterByIndex(hn, 1, (vx_reference)input);
+    vxSetParameterByIndex(hn, 2, (vx_reference)mat);
+
+    multi_node->nodes.emplace_back(hn);
+  }
+  if (output_y) {
+    const int coef[9] = {-1, -2, -1, 0, 0, 0, 1, 2, 1};
+    vx_context c = new _vx_context();
+    c->o = convert(graph)->context;
+    vx_matrix mat = vxCreateMatrix(c, VX_TYPE_INT32, 3, 3);
+    vxCopyMatrix(mat, (void*)coef, VX_WRITE_ONLY, VX_MEMORY_TYPE_HOST);
+
+    vx_kernel kern =
+        vxHipaccKernel("hipacc_kernels/local/sobely_" + type_str(output_y) +
+                       "_" + type_str(input) + ".hpp");
+    vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
+    vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
+    vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_MATRIX, 0);
+
+    auto hn = vxCreateGenericNode(graph, kern);
+    vxSetParameterByIndex(hn, 0, (vx_reference)output_y);
+    vxSetParameterByIndex(hn, 1, (vx_reference)input);
+    vxSetParameterByIndex(hn, 2, (vx_reference)mat);
+
+    multi_node->nodes.emplace_back(hn);
+  }
+
+  vx_node n = new _vx_node();
+  n->o = multi_node;
+  return n;
 }
 
 VX_API_ENTRY vx_node VX_API_CALL vxMagnitudeNode(vx_graph graph,
