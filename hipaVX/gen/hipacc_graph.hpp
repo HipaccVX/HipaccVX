@@ -199,6 +199,7 @@ std::string hipacc_writer::initial_includes() {
   out += "#include <cmath>\n";
   out += "#include <cstdlib>\n";
   out += "#include <vector>\n";
+  out += "#include \"hipacc_helper.hpp\"\n";
   out += "#include \"hipacc.hpp\"\n\n";
 
   out += "using namespace hipacc;\n";
@@ -211,9 +212,19 @@ void hipacc_writer::def(std::stringstream& ss, HipaccImage* img,
                         DefType deftype) {
   switch (deftype) {
     case DefType::Hdecl: {
-      ss << dind << "Image"
-         << "<" << dtype(img) + "> " << name(img) << "(" << img->get_width()
-         << ", " << img->get_height() << ");\n";
+      auto in_image = dynamic_cast<DomVX::FileinputImage*>(img);
+      if (in_image != nullptr) {
+        ss << dind << dtype(img) << " *" << name(img) << "_input = load_data<"
+           << dtype(img) << ">(" << img->get_width() << ", "
+           << img->get_height() << ", 1, \"" << in_image->file << "\");\n";
+        ss << dind << "Image"
+           << "<" << dtype(img) + "> " << name(img) << "(" << img->get_width()
+           << ", " << img->get_height() << ", " << name(img) << "_input);\n";
+      } else {
+        ss << dind << "Image"
+           << "<" << dtype(img) + "> " << name(img) << "(" << img->get_width()
+           << ", " << img->get_height() << ");\n";
+      }
       break;
     }
 

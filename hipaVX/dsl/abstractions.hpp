@@ -186,4 +186,14 @@ class MultiNode : public Node {
   std::vector<vx_node> nodes;
 };
 
+class FileinputImage : public Image {
+ public:
+  FileinputImage(vx_uint32 width, vx_uint32 height, vx_df_image color,
+                 std::string filename)
+      : Image(width, height, color), file(filename) {}
+  virtual ~FileinputImage() = default;
+
+  std::string file;
+};
+
 }  // namespace DomVX

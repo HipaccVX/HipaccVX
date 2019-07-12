@@ -11,7 +11,12 @@ vx_node vxHipaccNode(vx_graph graph, std::string filename,
 vx_image vxCreateImageFromFile(vx_context context, vx_uint32 width,
                                vx_uint32 height, vx_df_image color,
                                std::string filename) {
-  return nullptr;
+  DomVX::FileinputImage *image;
+  image = new DomVX::FileinputImage(width, height, color, filename);
+  auto vx = new _vx_image();
+  vx->o = image;
+  ((DomVX::Context *)(context->o))->images.emplace_back(image);
+  return vx;
 }
 
 vx_node vxFWriteImageNode(vx_graph graph, vx_image image, std::string file) {
