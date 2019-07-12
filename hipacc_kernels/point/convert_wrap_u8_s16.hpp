@@ -1,10 +1,10 @@
-class Convert_Wrap_u8_s16 : public Kernel<short> {
+class Convert_Wrap_u8_s16 : public Kernel<unsigned char> {
 private:
-    Accessor<unsigned char> &input;
+    Accessor<short> &input;
     int shift;
 
 public:
-    Convert_Wrap_u8_s16(IterationSpace<short> &iter, Accessor<unsigned char> &input, int shift)
+    Convert_Wrap_u8_s16(IterationSpace<unsigned char> &iter, Accessor<short> &input, int shift)
           : Kernel(iter), input(input), shift(shift){
         add_accessor(&input);
     }
