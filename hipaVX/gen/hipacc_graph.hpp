@@ -42,6 +42,7 @@ using HipaccKernel = DomVX::HipaccNode;
 #define U16 VX_DF_IMAGE_U16
 #define S32 VX_DF_IMAGE_S32
 #define U32 VX_DF_IMAGE_U32
+#define RGBA VX_DF_IMAGE_RGBX
 #define F32 VX_TYPE_FLOAT32
 #define UNDEF VX_TYPE_DF_IMAGE
 
@@ -168,6 +169,9 @@ std::string hipacc_writer::_dtype(HipaccDataType type, std::string name) {
     case F32: {
       return "float";
     }
+    case RGBA: {
+      return "uchar4";
+    }
     case UNDEF: {
       return "undef";
     }
@@ -214,9 +218,15 @@ void hipacc_writer::def(std::stringstream& ss, HipaccImage* img,
     case DefType::Hdecl: {
       auto in_image = dynamic_cast<DomVX::FileinputImage*>(img);
       if (in_image != nullptr) {
-        ss << dind << dtype(img) << " *" << name(img) << "_input = load_data<"
-           << dtype(img) << ">(" << img->get_width() << ", "
-           << img->get_height() << ", 1, \"" << in_image->file << "\");\n";
+        if (in_image->col == VX_DF_IMAGE_RGBX) {
+          ss << dind << dtype(img) << " *" << name(img) << "_input = ("
+             << dtype(img) << "*) load_data<uchar>(" << img->get_width() << ", "
+             << img->get_height() << ", 4, \"" << in_image->file << "\");\n";
+        } else {
+          ss << dind << dtype(img) << " *" << name(img) << "_input = load_data<"
+             << dtype(img) << ">(" << img->get_width() << ", "
+             << img->get_height() << ", 1, \"" << in_image->file << "\");\n";
+        }
         ss << dind << "Image"
            << "<" << dtype(img) + "> " << name(img) << "(" << img->get_width()
            << ", " << img->get_height() << ", " << name(img) << "_input);\n";

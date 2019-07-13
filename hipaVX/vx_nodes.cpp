@@ -95,6 +95,8 @@ static std::string type_str(vx_image image) {
     return "u8";
   else if (convert(image)->col == VX_DF_IMAGE_S16)
     return "s16";
+  else if (convert(image)->col == VX_DF_IMAGE_RGBX)
+    return "uchar4";
   else
     return "not_implemented";
 }
@@ -106,12 +108,44 @@ static std::string policy_str(vx_enum policy) {
   else
     return "not_implemented";
 }
+static std::string channel_str(vx_channel_e channel) {
+  switch (channel) {
+    case VX_CHANNEL_0:
+    case VX_CHANNEL_B:
+      return "0";
+    case VX_CHANNEL_1:
+    case VX_CHANNEL_G:
+      return "1";
+    case VX_CHANNEL_2:
+    case VX_CHANNEL_R:
+      return "2";
+    case VX_CHANNEL_3:
+    case VX_CHANNEL_A:
+      return "3";
+    default:
+      return "not_implemented";
+  }
+}
 
 VX_API_ENTRY vx_node VX_API_CALL vxChannelExtractNode(vx_graph graph,
                                                       vx_image input,
                                                       vx_enum channel,
                                                       vx_image output) {
-  return nullptr;
+  if (convert(input)->col != VX_DF_IMAGE_RGBX ||
+      convert(output)->col != VX_DF_IMAGE_U8)
+    return nullptr;
+
+  vx_kernel kern =
+      vxHipaccKernel("hipacc_kernels/point/channelextract_" +
+                     channel_str((vx_channel_e)channel) + "_" +
+                     type_str(output) + "_" + type_str(input) + ".hpp");
+  vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
+  vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
+
+  auto hn = vxCreateGenericNode(graph, kern);
+  vxSetParameterByIndex(hn, 0, (vx_reference)output);
+  vxSetParameterByIndex(hn, 1, (vx_reference)input);
+  return hn;
 }
 
 VX_API_ENTRY vx_node VX_API_CALL
