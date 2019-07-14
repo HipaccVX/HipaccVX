@@ -358,8 +358,7 @@ void hipacc_writer::def_acc(std::stringstream& ss, DomVXAcc* acc,
       } else {
         ss << dind << "BoundaryCondition"
            << "<" << dtype(acc->im) + "> " << name(acc) << "_bc"
-           << "(" << acc->im->name() << "," << dom_name
-           << ",Boundary::UNDEFINED"
+           << "(" << acc->im->name() << "," << dom_name << ",Boundary::CLAMP"
            << ");\n";
 
         ss << dind << "Accessor"

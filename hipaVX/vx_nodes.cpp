@@ -95,6 +95,10 @@ static std::string type_str(vx_image image) {
     return "u8";
   else if (convert(image)->col == VX_DF_IMAGE_S16)
     return "s16";
+  else if (convert(image)->col == VX_TYPE_FLOAT32)
+    return "f";
+  else if (convert(image)->col == VX_DF_IMAGE_S32)
+    return "s32";
   else if (convert(image)->col == VX_DF_IMAGE_RGBX)
     return "uchar4";
   else
@@ -694,7 +698,167 @@ VX_API_ENTRY vx_node VX_API_CALL vxHarrisCornersNode(
     vx_graph graph, vx_image input, vx_scalar strength_thresh,
     vx_scalar min_distance, vx_scalar sensitivity, vx_int32 gradient_size,
     vx_int32 block_size, vx_array corners, vx_scalar num_corners) {
-  return nullptr;
+  vx_context c = new _vx_context();
+  c->o = convert(graph)->context;
+
+  vx_matrix sobel_x, sobel_y, window;
+  if (gradient_size == 3) {
+    const int sobel_x_coefs[9] = {-1, 0, 1, -2, 0, 2, -1, 0, 1};
+    sobel_x = vxCreateMatrix(c, VX_TYPE_INT32, 3, 3);
+    vxCopyMatrix(sobel_x, (void*)sobel_x_coefs, VX_WRITE_ONLY,
+                 VX_MEMORY_TYPE_HOST);
+    const int sobel_y_coefs[9] = {-1, -2, -1, 0, 0, 0, 1, 2, 1};
+    sobel_y = vxCreateMatrix(c, VX_TYPE_INT32, 3, 3);
+    vxCopyMatrix(sobel_y, (void*)sobel_y_coefs, VX_WRITE_ONLY,
+                 VX_MEMORY_TYPE_HOST);
+  } else if (gradient_size == 5) {
+    const int sobel_x_coefs[25] = {-1, -2, 0,   2,  1,  -4, -8, 0,  8,
+                                   4,  -6, -12, 0,  12, 6,  -4, -8, 0,
+                                   8,  4,  -1,  -2, 0,  2,  1};
+    sobel_x = vxCreateMatrix(c, VX_TYPE_INT32, 5, 5);
+    vxCopyMatrix(sobel_x, (void*)sobel_x_coefs, VX_WRITE_ONLY,
+                 VX_MEMORY_TYPE_HOST);
+    const int sobel_y_coefs[25] = {-1, -4, -6, -4, -1, -2, -8, -12, -8,
+                                   -2, 0,  0,  0,  0,  0,  2,  8,   12,
+                                   8,  2,  1,  4,  6,  4,  1};
+    sobel_y = vxCreateMatrix(c, VX_TYPE_INT32, 5, 5);
+    vxCopyMatrix(sobel_y, (void*)sobel_y_coefs, VX_WRITE_ONLY,
+                 VX_MEMORY_TYPE_HOST);
+  } else if (gradient_size == 7) {
+    const int sobel_x_coefs[49] = {
+        -1, -4,  -5,  0,   5,   4,  1,  -6, -24, -30, 0,    30,  24,
+        6,  -15, -60, -75, 0,   75, 60, 15, -20, -80, -100, 0,   100,
+        80, 20,  -15, -60, -75, 0,  75, 60, 15,  -6,  -24,  -30, 0,
+        30, 24,  6,   -1,  -4,  -5, 0,  5,  4,   1};
+    sobel_x = vxCreateMatrix(c, VX_TYPE_INT32, 7, 7);
+    vxCopyMatrix(sobel_x, (void*)sobel_x_coefs, VX_WRITE_ONLY,
+                 VX_MEMORY_TYPE_HOST);
+    const int sobel_y_coefs[49] = {
+        -1, -6, -15, -20, -15,  -6,  -1,  -4, -24, -60, -80, -60, -24,
+        -4, -5, -30, -75, -100, -75, -30, -5, 0,   0,   0,   0,   0,
+        0,  0,  5,   30,  75,   100, 75,  30, 5,   4,   24,  60,  80,
+        60, 24, 4,   1,   6,    15,  20,  15, 6,   1};
+    sobel_y = vxCreateMatrix(c, VX_TYPE_INT32, 7, 7);
+    vxCopyMatrix(sobel_y, (void*)sobel_y_coefs, VX_WRITE_ONLY,
+                 VX_MEMORY_TYPE_HOST);
+  } else
+    return nullptr;
+
+  if (block_size == 3) {
+    const int block_coefs[9] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
+    window = vxCreateMatrix(c, VX_TYPE_INT32, 3, 3);
+    vxCopyMatrix(window, (void*)block_coefs, VX_WRITE_ONLY,
+                 VX_MEMORY_TYPE_HOST);
+  } else if (gradient_size == 5) {
+    const int block_coefs[25] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+    window = vxCreateMatrix(c, VX_TYPE_INT32, 5, 5);
+    vxCopyMatrix(window, (void*)block_coefs, VX_WRITE_ONLY,
+                 VX_MEMORY_TYPE_HOST);
+  } else if (gradient_size == 7) {
+    const int block_coefs[49] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+    window = vxCreateMatrix(c, VX_TYPE_INT32, 7, 7);
+    vxCopyMatrix(window, (void*)block_coefs, VX_WRITE_ONLY,
+                 VX_MEMORY_TYPE_HOST);
+  } else
+    return nullptr;
+
+  auto multi_node = new DomVX::MultiNode();
+
+  vx_scalar block_scalar = vxCreateScalar(c, VX_TYPE_INT32, &block_size);
+
+  vx_image sobel_x_image =
+      vxCreateImage(c, convert(input)->w, convert(input)->h, VX_TYPE_FLOAT32);
+  vx_image sobel_y_image =
+      vxCreateImage(c, convert(input)->w, convert(input)->h, VX_TYPE_FLOAT32);
+  vx_image trace_image =
+      vxCreateImage(c, convert(input)->w, convert(input)->h, VX_TYPE_FLOAT32);
+  vx_image det_image =
+      vxCreateImage(c, convert(input)->w, convert(input)->h, VX_TYPE_FLOAT32);
+  vx_image vc_image =
+      vxCreateImage(c, convert(input)->w, convert(input)->h, VX_TYPE_FLOAT32);
+
+  // Gx and Gy
+  {
+    vx_kernel kern_sobel = vxHipaccKernel("hipacc_kernels/local/harris/sobel_" +
+                                          type_str(sobel_x_image) + "_" +
+                                          type_str(input) + ".hpp");
+    vxAddParameterToKernel(kern_sobel, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
+    vxAddParameterToKernel(kern_sobel, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
+    vxAddParameterToKernel(kern_sobel, 2, VX_INPUT, VX_TYPE_MATRIX, 0);
+    vxAddParameterToKernel(kern_sobel, 3, VX_INPUT, VX_TYPE_SCALAR, 0);
+
+    auto hn_sobel_x = vxCreateGenericNode(graph, kern_sobel);
+    vxSetParameterByIndex(hn_sobel_x, 0, (vx_reference)sobel_x_image);
+    vxSetParameterByIndex(hn_sobel_x, 1, (vx_reference)input);
+    vxSetParameterByIndex(hn_sobel_x, 2, (vx_reference)sobel_x);
+    vxSetParameterByIndex(hn_sobel_x, 3, (vx_reference)block_scalar);
+    multi_node->nodes.emplace_back(hn_sobel_x);
+
+    auto hn_sobel_y = vxCreateGenericNode(graph, kern_sobel);
+    vxSetParameterByIndex(hn_sobel_y, 0, (vx_reference)sobel_y_image);
+    vxSetParameterByIndex(hn_sobel_y, 1, (vx_reference)input);
+    vxSetParameterByIndex(hn_sobel_y, 2, (vx_reference)sobel_y);
+    vxSetParameterByIndex(hn_sobel_y, 3, (vx_reference)block_scalar);
+    multi_node->nodes.emplace_back(hn_sobel_y);
+  }
+  // Trace and Det
+  {
+    vx_kernel kern_trace = vxHipaccKernel(
+        "hipacc_kernels/local/harris/trace_" + type_str(trace_image) + "_" +
+        type_str(sobel_x_image) + "_" + type_str(sobel_y_image) + ".hpp");
+    vxAddParameterToKernel(kern_trace, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
+    vxAddParameterToKernel(kern_trace, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
+    vxAddParameterToKernel(kern_trace, 2, VX_INPUT, VX_TYPE_IMAGE, 0);
+    vxAddParameterToKernel(kern_trace, 3, VX_INPUT, VX_TYPE_MATRIX, 0);
+
+    auto hn_trace = vxCreateGenericNode(graph, kern_trace);
+    vxSetParameterByIndex(hn_trace, 0, (vx_reference)trace_image);
+    vxSetParameterByIndex(hn_trace, 1, (vx_reference)sobel_x_image);
+    vxSetParameterByIndex(hn_trace, 2, (vx_reference)sobel_y_image);
+    vxSetParameterByIndex(hn_trace, 3, (vx_reference)window);
+    multi_node->nodes.emplace_back(hn_trace);
+
+    vx_kernel kern_det = vxHipaccKernel(
+        "hipacc_kernels/local/harris/det_" + type_str(det_image) + "_" +
+        type_str(sobel_x_image) + "_" + type_str(sobel_y_image) + ".hpp");
+    vxAddParameterToKernel(kern_det, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
+    vxAddParameterToKernel(kern_det, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
+    vxAddParameterToKernel(kern_det, 2, VX_INPUT, VX_TYPE_IMAGE, 0);
+    vxAddParameterToKernel(kern_det, 3, VX_INPUT, VX_TYPE_MATRIX, 0);
+
+    auto hn_det = vxCreateGenericNode(graph, kern_det);
+    vxSetParameterByIndex(hn_det, 0, (vx_reference)det_image);
+    vxSetParameterByIndex(hn_det, 1, (vx_reference)sobel_x_image);
+    vxSetParameterByIndex(hn_det, 2, (vx_reference)sobel_y_image);
+    vxSetParameterByIndex(hn_det, 3, (vx_reference)window);
+    multi_node->nodes.emplace_back(hn_det);
+  }
+  // Mc and Vc in one kernel
+  {
+    vx_kernel kern_McVc = vxHipaccKernel(
+        "hipacc_kernels/local/harris/mcvc_" + type_str(vc_image) + "_" +
+        type_str(det_image) + "_" + type_str(trace_image) + ".hpp");
+    vxAddParameterToKernel(kern_McVc, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
+    vxAddParameterToKernel(kern_McVc, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
+    vxAddParameterToKernel(kern_McVc, 2, VX_INPUT, VX_TYPE_IMAGE, 0);
+    vxAddParameterToKernel(kern_McVc, 3, VX_INPUT, VX_TYPE_SCALAR, 0);
+    vxAddParameterToKernel(kern_McVc, 4, VX_INPUT, VX_TYPE_SCALAR, 0);
+
+    auto hn_McVc = vxCreateGenericNode(graph, kern_McVc);
+    vxSetParameterByIndex(hn_McVc, 0, (vx_reference)vc_image);
+    vxSetParameterByIndex(hn_McVc, 1, (vx_reference)det_image);
+    vxSetParameterByIndex(hn_McVc, 2, (vx_reference)trace_image);
+    vxSetParameterByIndex(hn_McVc, 3, (vx_reference)sensitivity);
+    vxSetParameterByIndex(hn_McVc, 4, (vx_reference)strength_thresh);
+    multi_node->nodes.emplace_back(hn_McVc);
+  }
+  vx_node node = new _vx_node();
+  node->o = multi_node;
+  return node;
 }
 
 VX_API_ENTRY vx_node VX_API_CALL vxAnotherBilateralFilterNode(vx_graph graph,
