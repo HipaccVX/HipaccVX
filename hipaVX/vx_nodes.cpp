@@ -151,7 +151,31 @@ VX_API_ENTRY vx_node VX_API_CALL vxChannelExtractNode(vx_graph graph,
 VX_API_ENTRY vx_node VX_API_CALL
 vxChannelCombineNode(vx_graph graph, vx_image plane0, vx_image plane1,
                      vx_image plane2, vx_image plane3, vx_image output) {
-  return nullptr;
+  // currently only 4 channel -> rgbx is supported
+  if (convert(output)->col != VX_DF_IMAGE_RGBX || plane0 == nullptr ||
+      convert(plane0)->col != VX_DF_IMAGE_U8 || plane1 == nullptr ||
+      convert(plane1)->col != VX_DF_IMAGE_U8 || plane2 == nullptr ||
+      convert(plane2)->col != VX_DF_IMAGE_U8 || plane3 == nullptr ||
+      convert(plane3)->col != VX_DF_IMAGE_U8)
+    return nullptr;
+
+  vx_kernel kern =
+      vxHipaccKernel("hipacc_kernels/point/channelcombine_" + type_str(output) +
+                     "_" + type_str(plane0) + "_" + type_str(plane1) + "_" +
+                     type_str(plane2) + "_" + type_str(plane3) + ".hpp");
+  vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
+  vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
+  vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_IMAGE, 0);
+  vxAddParameterToKernel(kern, 3, VX_INPUT, VX_TYPE_IMAGE, 0);
+  vxAddParameterToKernel(kern, 4, VX_INPUT, VX_TYPE_IMAGE, 0);
+
+  auto hn = vxCreateGenericNode(graph, kern);
+  vxSetParameterByIndex(hn, 0, (vx_reference)output);
+  vxSetParameterByIndex(hn, 1, (vx_reference)plane0);
+  vxSetParameterByIndex(hn, 2, (vx_reference)plane1);
+  vxSetParameterByIndex(hn, 3, (vx_reference)plane2);
+  vxSetParameterByIndex(hn, 4, (vx_reference)plane3);
+  return hn;
 }
 
 VX_API_ENTRY vx_node VX_API_CALL vxPhaseNode(vx_graph graph, vx_image grad_x,

@@ -274,16 +274,16 @@ int main() {
           VX_INTERPOLATION_NEAREST_NEIGHBOR), vxFWriteImageNode(graph,
           images[26], "akif-200x300_bw_scaled_up.png"),*/
 
-          /*vxChannelCombineNode(graph, images[21], images[20], images[19],
-                               images[22], images[27]),
-          vxFWriteImageNode(graph, images[27], "akif-200x300_rgba_rgba.png"),
+          vxChannelCombineNode(graph, images[21], images[20], images[19],
+                               images[22], images[27]), /*
+           vxFWriteImageNode(graph, images[27], "akif-200x300_rgba_rgba.png"),*/
           vxChannelCombineNode(graph, images[20], images[19], images[21],
-                               images[22], images[28]),
-          vxFWriteImageNode(graph, images[28], "akif-200x300_rgba_gbra.png"),
+                               images[22], images[28]), /*
+           vxFWriteImageNode(graph, images[28], "akif-200x300_rgba_gbra.png"),
 
-          // vxAnotherBilateralFilterNode(graph, images[0], 16, images[29]),
-          // vxFWriteImageNode(graph, images[29],
-          // "akif-200x300_bw_another_bilateral.png"),/**/
+           // vxAnotherBilateralFilterNode(graph, images[0], 16, images[29]),
+           // vxFWriteImageNode(graph, images[29],
+           // "akif-200x300_bw_another_bilateral.png"),/**/
           vxAddNode(graph, images[1], images[2], VX_CONVERT_POLICY_WRAP,
                     images[30]),
           vxAddNode(graph, images[6], images[1], VX_CONVERT_POLICY_WRAP,
