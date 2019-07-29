@@ -1,11 +1,11 @@
 #pragma once
 
-#include "../../VX/vx.h"
-#include "../../VX/vx_types.h"
 
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "../../VX/vx.h"
 
 namespace DomVX {
 class Graph;
@@ -271,7 +271,7 @@ class VX_Matrix : public Object {
   vx_enum data_type;
   vx_size rows;
   vx_size columns;
-  std::vector<u_char> mat;
+  std::vector<unsigned char> mat;
 };
 
 class Context : public Object {
