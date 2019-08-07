@@ -21,7 +21,8 @@ vx_image vxCreateImageFromFile(vx_context context, vx_uint32 width,
                                std::string filename);
 
 // Write a vx_image to a file
-vx_node vxFWriteImageNode(vx_graph graph, vx_image image, std::string file);
+void vxWriteImageAfterGraphCompletion(vx_graph graph, vx_image image,
+                                      std::string file);
 
 // generate a .dot file from an OpenVX graph
 void vxDrawDotGraph(vx_graph graph, std::string filename,

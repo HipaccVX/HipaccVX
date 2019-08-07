@@ -19,8 +19,10 @@ vx_image vxCreateImageFromFile(vx_context context, vx_uint32 width,
   return vx;
 }
 
-vx_node vxFWriteImageNode(vx_graph graph, vx_image image, std::string file) {
-  return nullptr;
+void vxWriteImageAfterGraphCompletion(vx_graph graph, vx_image image,
+                                      std::string file) {
+  ((DomVX::Graph *)(graph->o))
+      ->write_after_completion[(DomVX::Image *)(image->o)] = file;
 }
 
 static std::string get_object_name(DomVX::Object *object) { return nullptr; }

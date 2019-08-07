@@ -95,6 +95,9 @@ class dag {
   OrderedList* order_of_exec;
 
  public:
+  // explicit output spaces that should be written to file
+  std::map<VertexType*, std::string> space_to_file;
+
   AppGraphT get_graph() { return g; }
 
   AppGraphT get_reversed_graph() { return g_trans; }
@@ -137,7 +140,7 @@ class dag {
   AppGraphT* reverse();
 
   OptGraphT* eliminate_dead_nodes();
-  OptGraphT* dont_eliminate_dead_nodes(); // temporary
+  OptGraphT* dont_eliminate_dead_nodes();  // temporary
 
   // topological sort for order of execution
   OrderedList* set_order_of_exec();
@@ -188,6 +191,7 @@ namespace DomVX {
 class Graph : public Object {
  public:
   std::vector<Node*> graph;
+  std::map<Image*, std::string> write_after_completion;
 
   std::unique_ptr<graphVX::dag> dag;
   std::map<DomVX::Node*, graphVX::VertexDesc> refs;

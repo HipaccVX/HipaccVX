@@ -651,6 +651,7 @@ class hipacc_gen : public graph_gen, public hipacc_writer {
   std::stringstream ss_kern;
   std::stringstream ss_kern_host;
   std::stringstream ss_execs;
+  std::stringstream ss_out_im;
   // new
   std::stringstream ss_sc;
   std::stringstream ss_mat;
@@ -692,6 +693,9 @@ class hipacc_gen : public graph_gen, public hipacc_writer {
 
     ss << dind << "// execution\n";
     ss << ss_execs.str() << "\n";
+
+    ss << dind << "// output image writes\n";
+    ss << ss_out_im.str() << "\n";
 
     ss << dind << "return 0;\n";
     ss << "}\n";
@@ -835,6 +839,24 @@ void hipacc_gen::iterate_spaces() {
   for (auto v : spaces) {
     DomVX::Object* n = get_vert(v);
     def(n);
+  }
+
+  for (auto output_space : g_dag.space_to_file) {
+    auto img = obj2img(output_space.first);
+
+    int channels = 1;
+    std::string conversion = "";
+    if (img->get_dtype() == VX_DF_IMAGE_RGBX) {
+      channels = 4;
+      conversion = "(uchar*) ";
+    }
+
+    std::string data_name = name(img) + "_data";
+    ss_out_im << dind << dtype(img) << " *" << data_name << " = " << name(img)
+              << ".data();\n";
+    ss_out_im << dind << "save_data(" << img->w << ", " << img->h << ", "
+              << channels << ", " << conversion << data_name << ", \""
+              << output_space.second << "\");\n";
   }
 }
 
