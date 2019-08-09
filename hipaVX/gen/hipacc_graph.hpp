@@ -263,6 +263,10 @@ void hipacc_writer::def(std::stringstream& ss, HipaccScalar* sc,
           type = "unsigned char";
           value = std::to_string(sc->ui8);
           break;
+        case VX_TYPE_UINT32:
+          type = "unsigned int";
+          value = std::to_string(sc->ui32);
+          break;
         default:
           ERRORM("Unsupported data_type @ def(HipaccScalar)")
       }
@@ -291,6 +295,9 @@ void hipacc_writer::def(std::stringstream& ss, HipaccMatrix* mat,
         case VX_TYPE_UINT8:
           type = "unsigned char";
           break;
+        case VX_TYPE_INT16:
+          type = "short";
+          break;
         default:
           ERRORM("Unsupported data_type @ def(HipaccMatrix)")
       }
@@ -316,6 +323,10 @@ void hipacc_writer::def(std::stringstream& ss, HipaccMatrix* mat,
             case VX_TYPE_UINT8:
               ss << *reinterpret_cast<unsigned char*>(
                   mat->mat.data() + (1 * y * mat->columns + x));
+              break;
+            case VX_TYPE_INT16:
+              ss << *reinterpret_cast<short*>(mat->mat.data() +
+                                              (2 * (y * mat->columns + x)));
               break;
             default:
               ERRORM("Unsupported data_type @ def(HipaccMatrix)")
@@ -742,6 +753,7 @@ void hipacc_gen::iterate_nodes() {
 
     std::cout << hn->kernel->filename << std::endl;
     std::string kernel = read_file(hn->kernel->filename);
+    if (kernel == "") ERRORM("Couldn't find file " + hn->kernel->filename)
     size_t class_index = kernel.find("class");
     size_t kernelname_index = kernel.find(" ", class_index) + 1;
     size_t kernelname_end_index = kernel.find(" ", kernelname_index);

@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <memory>
 #include <string>
 #include <vector>
@@ -192,6 +191,9 @@ class Scalar : public Object {
         break;
       case VX_TYPE_UINT8:
         f32 = *((vx_uint8 *)ptr);
+        break;
+      case VX_TYPE_UINT32:
+        ui32 = *((vx_uint32 *)ptr);
         break;
       default:
         throw std::runtime_error("Unsupported vx_type_e in Scalar constructor");

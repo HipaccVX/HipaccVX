@@ -110,6 +110,8 @@ int main() {
         vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),  /*34: test */
         vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),  /*35: test */
         vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),  /*36: test */
+        vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),  /*37: copy */
+        vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),  /*38: nonmax */
     };
 
     int32_t two = 2;
@@ -226,11 +228,8 @@ int main() {
           vxChannelExtractNode(graph, images[18], VX_CHANNEL_G, images[20]),
           vxChannelExtractNode(graph, images[18], VX_CHANNEL_B, images[21]),
           vxChannelExtractNode(graph, images[18], VX_CHANNEL_A, images[22]),
-          /*
 
           vxConvolveNode(graph, images[0], scharr_x, images[23]),
-          vxFWriteImageNode(graph, images[23],
-          "akif-200x300_bw_scharr_x.png"),
 
           /*vxScaleImageNode(graph, images[0], images[25],
           VX_INTERPOLATION_NEAREST_NEIGHBOR),
@@ -262,6 +261,8 @@ int main() {
                          images[33]),
           vxSubtractNode(graph, images[6], images[7], VX_CONVERT_POLICY_WRAP,
                          images[35]),
+          vxCopyNode(graph, (vx_reference)images[0], (vx_reference)images[37]),
+          vxNonMaxSuppressionNode(graph, images[4], nullptr, 5, images[38]),
       };
 
       vxWriteImageAfterGraphCompletion(graph, images[0],
@@ -304,6 +305,12 @@ int main() {
                                        "akif-200x300_rgba_rgba.png");
       vxWriteImageAfterGraphCompletion(graph, images[28],
                                        "akif-200x300_rgba_gbra.png");
+      vxWriteImageAfterGraphCompletion(graph, images[37],
+                                       "akif-200x300_bw_copy.png");
+      vxWriteImageAfterGraphCompletion(graph, images[23],
+                                       "akif-200x300_bw_scharr_x.png");
+      vxWriteImageAfterGraphCompletion(graph, images[38],
+                                       "akif-200x300_bw_non_max.png");
 
       // Step4.Verify Graph
       status = vxVerifyGraph(graph);

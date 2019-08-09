@@ -90,20 +90,21 @@ static DomVX::Convolution* convert(vx_convolution n) {
   return (DomVX::Convolution*)(n->o);
 }
 
-static std::string type_str(vx_image image) {
-  if (convert(image)->col == VX_DF_IMAGE_U8)
+static std::string type_str(DomVX::Image* image) {
+  if (image->col == VX_DF_IMAGE_U8)
     return "u8";
-  else if (convert(image)->col == VX_DF_IMAGE_S16)
+  else if (image->col == VX_DF_IMAGE_S16)
     return "s16";
-  else if (convert(image)->col == VX_TYPE_FLOAT32)
+  else if (image->col == VX_TYPE_FLOAT32)
     return "f";
-  else if (convert(image)->col == VX_DF_IMAGE_S32)
+  else if (image->col == VX_DF_IMAGE_S32)
     return "s32";
-  else if (convert(image)->col == VX_DF_IMAGE_RGBX)
+  else if (image->col == VX_DF_IMAGE_RGBX)
     return "uchar4";
   else
     return "not_implemented";
 }
+static std::string type_str(vx_image image) { return type_str(convert(image)); }
 static std::string policy_str(vx_enum policy) {
   if (policy == VX_CONVERT_POLICY_WRAP)
     return "wrap";
@@ -190,7 +191,26 @@ VX_API_ENTRY vx_node VX_API_CALL vxPhaseNode(vx_graph graph, vx_image grad_x,
 
 VX_API_ENTRY vx_node VX_API_CALL vxCopyNode(vx_graph graph, vx_reference input,
                                             vx_reference output) {
-  return nullptr;
+  // Current support only for images
+  if (input->o->type() != VX_TYPE_IMAGE || output->o->type() != VX_TYPE_IMAGE)
+    return nullptr;
+  auto in_im = dynamic_cast<DomVX::Image*>(input->o);
+  auto out_im = dynamic_cast<DomVX::Image*>(output->o);
+  if (in_im->col != out_im->col ||
+      (in_im->col != VX_DF_IMAGE_U8 && in_im->col != VX_DF_IMAGE_S16 &&
+       in_im->col != VX_TYPE_FLOAT32))
+    return nullptr;
+
+  vx_kernel kern =
+      vxHipaccKernel("hipacc_kernels/point/copy_" + type_str(out_im) + "_" +
+                     type_str(in_im) + ".hpp");
+  vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
+  vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
+
+  auto hn = vxCreateGenericNode(graph, kern);
+  vxSetParameterByIndex(hn, 0, (vx_reference)output);
+  vxSetParameterByIndex(hn, 1, (vx_reference)input);
+  return hn;
 }
 
 VX_API_ENTRY vx_node VX_API_CALL vxSobel3x3Node(vx_graph graph, vx_image input,
@@ -482,7 +502,35 @@ VX_API_ENTRY vx_node VX_API_CALL vxGaussian3x3Node(vx_graph graph,
 VX_API_ENTRY vx_node VX_API_CALL vxConvolveNode(vx_graph graph, vx_image input,
                                                 vx_convolution conv,
                                                 vx_image output) {
-  return nullptr;
+  if (convert(input)->col != VX_DF_IMAGE_U8 ||
+      (convert(output)->col != VX_DF_IMAGE_U8 &&
+       convert(output)->col != VX_DF_IMAGE_S16))
+    return nullptr;
+
+  auto convolution = convert(conv);
+  vx_context c = new _vx_context();
+  c->o = convert(graph)->context;
+  vx_matrix box_values =
+      vxCreateMatrix(c, VX_TYPE_INT16, convolution->rows, convolution->columns);
+  vxCopyMatrix(box_values, (void*)convolution->coefficients.data(),
+               VX_WRITE_ONLY, VX_MEMORY_TYPE_HOST);
+
+  vx_scalar scale = vxCreateScalar(c, VX_TYPE_UINT32, &convolution->scale);
+
+  vx_kernel kern =
+      vxHipaccKernel("hipacc_kernels/local/convolve_" + type_str(output) + "_" +
+                     type_str(input) + ".hpp");
+  vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
+  vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
+  vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_MATRIX, 0);
+  vxAddParameterToKernel(kern, 3, VX_INPUT, VX_TYPE_SCALAR, 0);
+
+  auto hn = vxCreateGenericNode(graph, kern);
+  vxSetParameterByIndex(hn, 0, (vx_reference)output);
+  vxSetParameterByIndex(hn, 1, (vx_reference)input);
+  vxSetParameterByIndex(hn, 2, (vx_reference)box_values);
+  vxSetParameterByIndex(hn, 3, (vx_reference)scale);
+  return hn;
 }
 
 VX_API_ENTRY vx_node VX_API_CALL vxAccumulateImageNode(vx_graph graph,
@@ -503,6 +551,48 @@ VX_API_ENTRY vx_node VX_API_CALL vxAccumulateSquareImageNode(vx_graph graph,
                                                              vx_scalar shift,
                                                              vx_image accum) {
   return nullptr;
+}
+
+VX_API_ENTRY vx_node VX_API_CALL vxNonMaxSuppressionNode(vx_graph graph,
+                                                         vx_image input,
+                                                         vx_image mask,
+                                                         vx_int32 win_size,
+                                                         vx_image output) {
+  if ((convert(output)->col != VX_DF_IMAGE_U8 ||
+       convert(input)->col != VX_DF_IMAGE_U8) &&
+      (convert(output)->col != VX_DF_IMAGE_S16 ||
+       convert(input)->col != VX_DF_IMAGE_S16))
+    return nullptr;
+
+  if (mask != nullptr) return nullptr;  // Currently not supported
+
+  if (win_size % 2 == 0) return nullptr;
+
+  vx_int32 width = convert(input)->w;
+  vx_int32 height = convert(input)->h;
+  vx_int32 small_side = width;
+  if (small_side > height) small_side = height;
+
+  if (small_side < win_size) return nullptr;
+
+  std::vector<int> coef(win_size * win_size, 1);
+  vx_context c = new _vx_context();
+  c->o = convert(graph)->context;
+  vx_matrix mat = vxCreateMatrix(c, VX_TYPE_INT32, win_size, win_size);
+  vxCopyMatrix(mat, (void*)coef.data(), VX_WRITE_ONLY, VX_MEMORY_TYPE_HOST);
+
+  vx_kernel kern =
+      vxHipaccKernel("hipacc_kernels/local/nonmax_" + type_str(output) + "_" +
+                     type_str(input) + ".hpp");
+  vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
+  vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
+  vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_MATRIX, 0);
+
+  auto hn = vxCreateGenericNode(graph, kern);
+  vxSetParameterByIndex(hn, 0, (vx_reference)output);
+  vxSetParameterByIndex(hn, 1, (vx_reference)input);
+  vxSetParameterByIndex(hn, 2, (vx_reference)mat);
+  return hn;
 }
 
 VX_API_ENTRY vx_node VX_API_CALL vxAndNode(vx_graph graph, vx_image in1,

@@ -166,8 +166,8 @@ VX_API_ENTRY vx_matrix VX_API_CALL vxCreateMatrix(vx_context c,
                                                   vx_enum data_type,
                                                   vx_size columns,
                                                   vx_size rows) {
-  if (data_type != VX_TYPE_UINT8 && data_type != VX_TYPE_INT32 &&
-      data_type != VX_TYPE_FLOAT32)
+  if (data_type != VX_TYPE_UINT8 && data_type != VX_TYPE_INT16 &&
+      data_type != VX_TYPE_INT32 && data_type != VX_TYPE_FLOAT32)
     return nullptr;
 
   DomVX::VX_Matrix *mat = new DomVX::VX_Matrix();
@@ -195,6 +195,10 @@ VX_API_ENTRY vx_status VX_API_CALL vxCopyMatrix(vx_matrix mat, void *user_ptr,
   switch (matrix->data_type) {
     case VX_TYPE_UINT8:
       std::memcpy(matrix->mat.data(), user_ptr, matrix->columns * matrix->rows);
+      break;
+    case VX_TYPE_INT16:
+      std::memcpy(matrix->mat.data(), user_ptr,
+                  matrix->columns * matrix->rows * 2);
       break;
     case VX_TYPE_INT32:
     case VX_TYPE_FLOAT32:
