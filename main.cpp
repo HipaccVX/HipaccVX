@@ -112,6 +112,7 @@ int main() {
         vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),  /*36: test */
         vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),  /*37: copy */
         vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),  /*38: nonmax */
+        vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),  /*39: median */
     };
 
     int32_t two = 2;
@@ -263,6 +264,7 @@ int main() {
                          images[35]),
           vxCopyNode(graph, (vx_reference)images[0], (vx_reference)images[37]),
           vxNonMaxSuppressionNode(graph, images[4], nullptr, 5, images[38]),
+          vxMedian3x3Node(graph, images[0], images[39]),
       };
 
       vxWriteImageAfterGraphCompletion(graph, images[0],
@@ -311,6 +313,8 @@ int main() {
                                        "akif-200x300_bw_scharr_x.png");
       vxWriteImageAfterGraphCompletion(graph, images[38],
                                        "akif-200x300_bw_non_max.png");
+      vxWriteImageAfterGraphCompletion(graph, images[39],
+                                       "akif-200x300_bw_median.png");
 
       // Step4.Verify Graph
       status = vxVerifyGraph(graph);

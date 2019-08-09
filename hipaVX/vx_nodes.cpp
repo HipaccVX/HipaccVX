@@ -982,9 +982,28 @@ VX_API_ENTRY vx_node VX_API_CALL vxHarrisCornersNode(
   return node;
 }
 
-VX_API_ENTRY vx_node VX_API_CALL vxAnotherBilateralFilterNode(vx_graph graph,
-                                                              vx_image input,
-                                                              vx_int32 sigma_r,
-                                                              vx_image output) {
-  return nullptr;
+VX_API_ENTRY vx_node VX_API_CALL vxMedian3x3Node(vx_graph graph, vx_image input,
+                                                 vx_image output) {
+  if (convert(input)->col != VX_DF_IMAGE_U8 ||
+      convert(output)->col != VX_DF_IMAGE_U8)
+    return nullptr;
+
+  const int coef_box[9] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
+  vx_context c = new _vx_context();
+  c->o = convert(graph)->context;
+  vx_matrix box_values = vxCreateMatrix(c, VX_TYPE_INT32, 3, 3);
+  vxCopyMatrix(box_values, (void*)coef_box, VX_WRITE_ONLY, VX_MEMORY_TYPE_HOST);
+
+  vx_kernel kern =
+      vxHipaccKernel("hipacc_kernels/local/median_" + type_str(output) + "_" +
+                     type_str(input) + ".hpp");
+  vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
+  vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
+  vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_MATRIX, 0);
+
+  auto hn = vxCreateGenericNode(graph, kern);
+  vxSetParameterByIndex(hn, 0, (vx_reference)output);
+  vxSetParameterByIndex(hn, 1, (vx_reference)input);
+  vxSetParameterByIndex(hn, 2, (vx_reference)box_values);
+  return hn;
 }
