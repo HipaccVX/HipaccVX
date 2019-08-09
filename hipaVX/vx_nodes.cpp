@@ -299,7 +299,38 @@ VX_API_ENTRY vx_node VX_API_CALL vxMultiplyNode(vx_graph graph, vx_image in1,
                                                 vx_enum overflow_policy,
                                                 vx_enum rounding_policy,
                                                 vx_image out) {
-  return nullptr;
+  if (convert(out)->col == VX_DF_IMAGE_U8 &&
+      (convert(in1)->col != VX_DF_IMAGE_U8 ||
+       convert(in2)->col != VX_DF_IMAGE_U8))
+    return nullptr;
+
+  if (convert(in1)->col != VX_DF_IMAGE_U8 &&
+      convert(in1)->col != VX_DF_IMAGE_S16)
+    return nullptr;
+  if (convert(in2)->col != VX_DF_IMAGE_U8 &&
+      convert(in2)->col != VX_DF_IMAGE_S16)
+    return nullptr;
+  if (convert(out)->col != VX_DF_IMAGE_U8 &&
+      convert(out)->col != VX_DF_IMAGE_S16)
+    return nullptr;
+
+  if (rounding_policy != VX_ROUND_POLICY_TO_ZERO)
+    return nullptr;  // Nearest not supported currently
+
+  vx_kernel kern = vxHipaccKernel(
+      "hipacc_kernels/point/mul_" + policy_str(overflow_policy) + "_" +
+      type_str(out) + "_" + type_str(in1) + "_" + type_str(in2) + ".hpp");
+  vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
+  vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
+  vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_IMAGE, 0);
+  vxAddParameterToKernel(kern, 3, VX_INPUT, VX_TYPE_SCALAR, 0);
+
+  auto hn = vxCreateGenericNode(graph, kern);
+  vxSetParameterByIndex(hn, 0, (vx_reference)out);
+  vxSetParameterByIndex(hn, 1, (vx_reference)in1);
+  vxSetParameterByIndex(hn, 2, (vx_reference)in2);
+  vxSetParameterByIndex(hn, 3, (vx_reference)scale);
+  return hn;
 }
 
 VX_API_ENTRY vx_node VX_API_CALL vxAbsDiffNode(vx_graph graph, vx_image in1,

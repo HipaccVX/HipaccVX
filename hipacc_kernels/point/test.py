@@ -1,17 +1,18 @@
-templ = """class Sub_Saturate_ONE_TWO_THREE : public Kernel<ONE_TYPE> {
+templ = """class Mul_Saturate_ONE_TWO_THREE : public Kernel<ONE_TYPE> {
 private:
     Accessor<TWO_TYPE> &input1;
     Accessor<THREE_TYPE> &input2;
+    float scale;
 
 public:
-    Sub_Saturate_ONE_TWO_THREE(IterationSpace<ONE_TYPE> &iter, Accessor<TWO_TYPE> &input1, Accessor<THREE_TYPE> &input2)
-          : Kernel(iter), input1(input1), input2(input2){
+    Mul_Saturate_ONE_TWO_THREE(IterationSpace<ONE_TYPE> &iter,Accessor<TWO_TYPE> &input1, Accessor<THREE_TYPE> &input2, float scale)
+          : Kernel(iter), input1(input1), input2(input2), scale(scale) {
         add_accessor(&input1);
         add_accessor(&input2);
     }
 
     void kernel() {
-        int out = input1() - input2();
+        int out = input1() * input2() * scale;
 
         if (out > 255) // max u8
             out = 255;
@@ -30,7 +31,7 @@ public:
             out = -32767;
 """
 
-filename = """sub_saturate_ONE_TWO_THREE.hpp"""
+filename = """mul_saturate_ONE_TWO_THREE.hpp"""
 
 outputs = []#["s16"]
 outputs_type = ["short"]
