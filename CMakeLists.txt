@@ -23,6 +23,8 @@ file(GLOB GLOB_RESULT LIST_DIRECTORIES FALSE ${HIPAVX_DIR}/gen/*)
 list(APPEND HipaVX_SRC ${GLOB_RESULT})
 
 
+set(COMMON_INC_DIRS ${VX_DIR} ${HIPAVX_DIR} ${ROOT_DIR})
+
 file(GLOB_RECURSE HipaccGen_SRC ${HIPAVX_DIR}/gen/hipacc_*)
 
 add_library (HipaVX_Hipacc ${HipaVX_SRC} ${HipaccGen_SRC})
@@ -30,3 +32,5 @@ add_library (HipaVX_Hipacc ${HipaVX_SRC} ${HipaccGen_SRC})
 add_executable (main_hipacc main.cpp)
 target_include_directories (main_hipacc PUBLIC ${VX_DIR} ${HIPAVX_DIR})
 target_link_libraries (main_hipacc HipaVX_Hipacc)
+
+add_subdirectory(tests)
