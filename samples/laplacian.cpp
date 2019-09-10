@@ -53,7 +53,7 @@ int main()
 			//Step 3.Create node and add into a graph
 			vx_node laplacian_node = vxConvolveNode(graph, src, laplacian_convolution, dst);
 
-			vx_node out_node_write = vxFWriteImageNode(graph, dst, "laplacian.png");
+			vxWriteImageAfterGraphCompletion(graph, dst, "laplacian.png");
 
 			//Step4.Verify Graph
 			status = vxVerifyGraph(graph);

@@ -61,7 +61,7 @@ int main()
 			vx_node sobel_node = vxSobel3x3Node(graph, src, sx16_img, sy16_img);
 			vx_node convX_node = vxConvertDepthNode(graph, sx16_img, sx_img, convtP, s_shift);
 			vx_node convY_node = vxConvertDepthNode(graph, sy16_img, sy_img, convtP, s_shift);
-			vx_node out_node = vxMultiplyNode(graph, sx_img, sx_img, s_scale, convtP, rounde, sxx_img );
+			vx_node mult_node = vxMultiplyNode(graph, sx_img, sx_img, s_scale, convtP, rounde, sxx_img );
 			vx_node squareY_node = vxMultiplyNode(graph, sy_img, sy_img, s_scale, convtP, rounde, syy_img );
 			vx_node squareXY_node = vxMultiplyNode(graph, sx_img, sy_img, s_scale, convtP, rounde, sxy_img );
 			vx_node gaussianX_node = vxGaussian3x3Node(graph, sxx_img, gxx_img);
@@ -78,7 +78,7 @@ int main()
 			vx_node convLam_node = vxConvertDepthNode(graph, lambda1_img, lambda18_img, convtP, s_shift);
 			vx_node out_node = vxThresholdNode(graph, lambda18_img, thresh, dst);
 
-			vx_node out_node_write = vxFWriteImageNode(graph, dst, "tomasi.png");
+			vxWriteImageAfterGraphCompletion(graph, dst, "tomasi.png");
 
             //Step4.Verify Graph
             status = vxVerifyGraph(graph);

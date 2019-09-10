@@ -33,8 +33,9 @@ add_definitions(-DHIPACC_KERNEL_DIR=\"${HIPACC_KERNEL_DIR}\")
 
 add_library (HipaVX_Hipacc ${HipaVX_SRC} ${HipaccGen_SRC})
 
-add_executable (main_hipacc main.cpp)
-target_include_directories (main_hipacc PUBLIC ${VX_DIR} ${HIPAVX_DIR})
-target_link_libraries (main_hipacc HipaVX_Hipacc)
+#add_executable (main_hipacc main.cpp)
+#target_include_directories (main_hipacc PUBLIC ${VX_DIR} ${HIPAVX_DIR})
+#target_link_libraries (main_hipacc HipaVX_Hipacc)
 
 add_subdirectory(tests)
+add_subdirectory(samples)

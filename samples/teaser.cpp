@@ -11,8 +11,8 @@
 int main(int argc, char *argv[])
 {
   vx_status status = VX_SUCCESS;
-  vx_uint32 width = 200;
-  vx_uint32 height = 300;
+  vx_uint32 width = 2048;
+  vx_uint32 height = 2048;
   vx_uint32 th = 40;
   vx_uint32 i;
 
@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 
     // Images
     vx_image images[] = {
-	  vxCreateImageFromFile(context, width, height, VX_DF_IMAGE_U8, "akif-200x300_bw.png"),
+	    vxCreateImageFromFile(context, width, height, VX_DF_IMAGE_U8, "akif-200x300_bw.png"),
       vxCreateImage(context, width, height,  VX_DF_IMAGE_U8),
       vxCreateImage(context, width, height, VX_DF_IMAGE_S16),
       vxCreateImage(context, width, height, VX_DF_IMAGE_S16),
@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
       vx_node nodes[] = {
         vxGaussian3x3Node(graph, images[0], images[1]),
         vxSobel3x3Node(graph, images[1], images[2], images[3]),
-        vxMagnitudeNode(graph, images[2], images[3], images[4]),
+        vxMagnitudeNode(graph, images[2], images[2], images[4]),
         vxThresholdNode(graph, images[4], thresh, images[5]),
       };
 
