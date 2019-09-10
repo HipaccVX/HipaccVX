@@ -101,6 +101,8 @@ static std::string type_str(DomVX::Image* image) {
     return "s32";
   else if (image->col == VX_DF_IMAGE_RGBX)
     return "uchar4";
+  else if (image->col == VX_DF_IMAGE_UYVY)
+    return "uchar4";
   else
     return "not_implemented";
 }
@@ -137,6 +139,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxChannelExtractNode(vx_graph graph,
                                                       vx_enum channel,
                                                       vx_image output) {
   if (convert(input)->col != VX_DF_IMAGE_RGBX ||
+      convert(input)->col != VX_DF_IMAGE_UYVY ||
       convert(output)->col != VX_DF_IMAGE_U8)
     return nullptr;
 

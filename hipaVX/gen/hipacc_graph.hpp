@@ -43,6 +43,7 @@ using HipaccKernel = DomVX::HipaccNode;
 #define S32 VX_DF_IMAGE_S32
 #define U32 VX_DF_IMAGE_U32
 #define RGBA VX_DF_IMAGE_RGBX
+#define UYVY VX_DF_IMAGE_UYVY
 #define F32 VX_TYPE_FLOAT32
 #define UNDEF VX_TYPE_DF_IMAGE
 
@@ -172,6 +173,9 @@ std::string hipacc_writer::_dtype(HipaccDataType type, std::string name) {
     case RGBA: {
       return "uchar4";
     }
+    case UYVY: {
+      return "uchar4";
+    }
     case UNDEF: {
       return "undef";
     }
@@ -219,6 +223,10 @@ void hipacc_writer::def(std::stringstream& ss, HipaccImage* img,
       auto in_image = dynamic_cast<DomVX::FileinputImage*>(img);
       if (in_image != nullptr) {
         if (in_image->col == VX_DF_IMAGE_RGBX) {
+          ss << dind << dtype(img) << " *" << name(img) << "_input = ("
+             << dtype(img) << "*) load_data<uchar>(" << img->get_width() << ", "
+             << img->get_height() << ", 4, \"" << in_image->file << "\");\n";
+        } else if (in_image->col == VX_DF_IMAGE_UYVY) {
           ss << dind << dtype(img) << " *" << name(img) << "_input = ("
              << dtype(img) << "*) load_data<uchar>(" << img->get_width() << ", "
              << img->get_height() << ", 4, \"" << in_image->file << "\");\n";
@@ -858,7 +866,8 @@ void hipacc_gen::iterate_spaces() {
 
     int channels = 1;
     std::string conversion = "";
-    if (img->get_dtype() == VX_DF_IMAGE_RGBX) {
+    if (img->get_dtype() == VX_DF_IMAGE_RGBX ||
+        img->get_dtype() == VX_DF_IMAGE_UYVY) {
       channels = 4;
       conversion = "(uchar*) ";
     }
