@@ -178,7 +178,7 @@ int main() {
 
     // new stuff
 
-    auto hk = vxHipaccKernel("hipacc_kernels/bilateral.hpp");
+    auto hk = vxHipaccKernel(std::string(HIPACC_KERNEL_DIR) + "/bilateral.hpp");
     vxAddParameterToKernel(hk, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
     vxAddParameterToKernel(hk, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
     vxAddParameterToKernel(hk, 2, VX_INPUT, VX_TYPE_MATRIX, 0);

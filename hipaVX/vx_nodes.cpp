@@ -141,7 +141,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxChannelExtractNode(vx_graph graph,
     return nullptr;
 
   vx_kernel kern =
-      vxHipaccKernel("hipacc_kernels/point/channelextract_" +
+      vxHipaccKernel(std::string(HIPACC_KERNEL_DIR) + "/point/channelextract_" +
                      channel_str((vx_channel_e)channel) + "_" +
                      type_str(output) + "_" + type_str(input) + ".hpp");
   vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
@@ -164,10 +164,10 @@ vxChannelCombineNode(vx_graph graph, vx_image plane0, vx_image plane1,
       convert(plane3)->col != VX_DF_IMAGE_U8)
     return nullptr;
 
-  vx_kernel kern =
-      vxHipaccKernel("hipacc_kernels/point/channelcombine_" + type_str(output) +
-                     "_" + type_str(plane0) + "_" + type_str(plane1) + "_" +
-                     type_str(plane2) + "_" + type_str(plane3) + ".hpp");
+  vx_kernel kern = vxHipaccKernel(
+      std::string(HIPACC_KERNEL_DIR) + "/point/channelcombine_" +
+      type_str(output) + "_" + type_str(plane0) + "_" + type_str(plane1) + "_" +
+      type_str(plane2) + "_" + type_str(plane3) + ".hpp");
   vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_IMAGE, 0);
@@ -202,8 +202,8 @@ VX_API_ENTRY vx_node VX_API_CALL vxCopyNode(vx_graph graph, vx_reference input,
     return nullptr;
 
   vx_kernel kern =
-      vxHipaccKernel("hipacc_kernels/point/copy_" + type_str(out_im) + "_" +
-                     type_str(in_im) + ".hpp");
+      vxHipaccKernel(std::string(HIPACC_KERNEL_DIR) + "/point/copy_" +
+                     type_str(out_im) + "_" + type_str(in_im) + ".hpp");
   vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
 
@@ -231,8 +231,8 @@ VX_API_ENTRY vx_node VX_API_CALL vxSobel3x3Node(vx_graph graph, vx_image input,
     vxCopyMatrix(mat, (void*)coef, VX_WRITE_ONLY, VX_MEMORY_TYPE_HOST);
 
     vx_kernel kern =
-        vxHipaccKernel("hipacc_kernels/local/sobelx_" + type_str(output_x) +
-                       "_" + type_str(input) + ".hpp");
+        vxHipaccKernel(std::string(HIPACC_KERNEL_DIR) + "/local/sobelx_" +
+                       type_str(output_x) + "_" + type_str(input) + ".hpp");
     vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
     vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
     vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_MATRIX, 0);
@@ -252,8 +252,8 @@ VX_API_ENTRY vx_node VX_API_CALL vxSobel3x3Node(vx_graph graph, vx_image input,
     vxCopyMatrix(mat, (void*)coef, VX_WRITE_ONLY, VX_MEMORY_TYPE_HOST);
 
     vx_kernel kern =
-        vxHipaccKernel("hipacc_kernels/local/sobely_" + type_str(output_y) +
-                       "_" + type_str(input) + ".hpp");
+        vxHipaccKernel(std::string(HIPACC_KERNEL_DIR) + "/local/sobely_" +
+                       type_str(output_y) + "_" + type_str(input) + ".hpp");
     vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
     vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
     vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_MATRIX, 0);
@@ -280,9 +280,9 @@ VX_API_ENTRY vx_node VX_API_CALL vxMagnitudeNode(vx_graph graph,
       convert(grad_y)->col != VX_DF_IMAGE_S16)
     return nullptr;
 
-  vx_kernel kern =
-      vxHipaccKernel("hipacc_kernels/point/magnitude_" + type_str(mag) + "_" +
-                     type_str(grad_x) + "_" + type_str(grad_y) + ".hpp");
+  vx_kernel kern = vxHipaccKernel(
+      std::string(HIPACC_KERNEL_DIR) + "/point/magnitude_" + type_str(mag) +
+      "_" + type_str(grad_x) + "_" + type_str(grad_y) + ".hpp");
   vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_IMAGE, 0);
@@ -317,9 +317,10 @@ VX_API_ENTRY vx_node VX_API_CALL vxMultiplyNode(vx_graph graph, vx_image in1,
   if (rounding_policy != VX_ROUND_POLICY_TO_ZERO)
     return nullptr;  // Nearest not supported currently
 
-  vx_kernel kern = vxHipaccKernel(
-      "hipacc_kernels/point/mul_" + policy_str(overflow_policy) + "_" +
-      type_str(out) + "_" + type_str(in1) + "_" + type_str(in2) + ".hpp");
+  vx_kernel kern =
+      vxHipaccKernel(std::string(HIPACC_KERNEL_DIR) + "/point/mul_" +
+                     policy_str(overflow_policy) + "_" + type_str(out) + "_" +
+                     type_str(in1) + "_" + type_str(in2) + ".hpp");
   vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_IMAGE, 0);
@@ -350,9 +351,9 @@ VX_API_ENTRY vx_node VX_API_CALL vxAbsDiffNode(vx_graph graph, vx_image in1,
       convert(out)->col != VX_DF_IMAGE_S16)
     return nullptr;
 
-  vx_kernel kern =
-      vxHipaccKernel("hipacc_kernels/point/absdiff_" + type_str(out) + "_" +
-                     type_str(in1) + "_" + type_str(in2) + ".hpp");
+  vx_kernel kern = vxHipaccKernel(std::string(HIPACC_KERNEL_DIR) +
+                                  "/point/absdiff_" + type_str(out) + "_" +
+                                  type_str(in1) + "_" + type_str(in2) + ".hpp");
   vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_IMAGE, 0);
@@ -383,9 +384,9 @@ VX_API_ENTRY vx_node VX_API_CALL vxThresholdNode(vx_graph graph, vx_image input,
   if (convert(thresh)->threshold_type == VX_THRESHOLD_TYPE_BINARY) {
     int binary_value = convert(thresh)->value;
     auto binary_scalar = vxCreateScalar(c, VX_TYPE_INT32, &binary_value);
-    vx_kernel kern =
-        vxHipaccKernel("hipacc_kernels/point/thresholdbinary_" +
-                       type_str(output) + "_" + type_str(input) + ".hpp");
+    vx_kernel kern = vxHipaccKernel(
+        std::string(HIPACC_KERNEL_DIR) + "/point/thresholdbinary_" +
+        type_str(output) + "_" + type_str(input) + ".hpp");
     vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
     vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
     vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_SCALAR, 0);
@@ -404,9 +405,9 @@ VX_API_ENTRY vx_node VX_API_CALL vxThresholdNode(vx_graph graph, vx_image input,
     int upper_value = convert(thresh)->upper;
     auto lower_scalar = vxCreateScalar(c, VX_TYPE_INT32, &lower_value);
     auto upper_scalar = vxCreateScalar(c, VX_TYPE_INT32, &upper_value);
-    vx_kernel kern =
-        vxHipaccKernel("hipacc_kernels/point/thresholdrange_" +
-                       type_str(output) + "_" + type_str(input) + ".hpp");
+    vx_kernel kern = vxHipaccKernel(
+        std::string(HIPACC_KERNEL_DIR) + "/point/thresholdrange_" +
+        type_str(output) + "_" + type_str(input) + ".hpp");
     vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
     vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
     vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_SCALAR, 0);
@@ -438,8 +439,8 @@ VX_API_ENTRY vx_node VX_API_CALL vxErode3x3Node(vx_graph graph, vx_image input,
   vxCopyMatrix(mat, (void*)coef, VX_WRITE_ONLY, VX_MEMORY_TYPE_HOST);
 
   vx_kernel kern =
-      vxHipaccKernel("hipacc_kernels/local/erode_" + type_str(output) + "_" +
-                     type_str(input) + ".hpp");
+      vxHipaccKernel(std::string(HIPACC_KERNEL_DIR) + "/local/erode_" +
+                     type_str(output) + "_" + type_str(input) + ".hpp");
   vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_MATRIX, 0);
@@ -464,8 +465,8 @@ VX_API_ENTRY vx_node VX_API_CALL vxDilate3x3Node(vx_graph graph, vx_image input,
   vxCopyMatrix(mat, (void*)coef, VX_WRITE_ONLY, VX_MEMORY_TYPE_HOST);
 
   vx_kernel kern =
-      vxHipaccKernel("hipacc_kernels/local/dilate_" + type_str(output) + "_" +
-                     type_str(input) + ".hpp");
+      vxHipaccKernel(std::string(HIPACC_KERNEL_DIR) + "/local/dilate_" +
+                     type_str(output) + "_" + type_str(input) + ".hpp");
   vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_MATRIX, 0);
@@ -490,8 +491,8 @@ VX_API_ENTRY vx_node VX_API_CALL vxBox3x3Node(vx_graph graph, vx_image input,
   vxCopyMatrix(box_values, (void*)coef_box, VX_WRITE_ONLY, VX_MEMORY_TYPE_HOST);
 
   vx_kernel kern =
-      vxHipaccKernel("hipacc_kernels/local/box_" + type_str(output) + "_" +
-                     type_str(input) + ".hpp");
+      vxHipaccKernel(std::string(HIPACC_KERNEL_DIR) + "/local/box_" +
+                     type_str(output) + "_" + type_str(input) + ".hpp");
   vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_MATRIX, 0);
@@ -517,8 +518,8 @@ VX_API_ENTRY vx_node VX_API_CALL vxGaussian3x3Node(vx_graph graph,
   vxCopyMatrix(box_values, (void*)coef_box, VX_WRITE_ONLY, VX_MEMORY_TYPE_HOST);
 
   vx_kernel kern =
-      vxHipaccKernel("hipacc_kernels/local/gaussian_" + type_str(output) + "_" +
-                     type_str(input) + ".hpp");
+      vxHipaccKernel(std::string(HIPACC_KERNEL_DIR) + "/local/gaussian_" +
+                     type_str(output) + "_" + type_str(input) + ".hpp");
   vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_MATRIX, 0);
@@ -549,8 +550,8 @@ VX_API_ENTRY vx_node VX_API_CALL vxConvolveNode(vx_graph graph, vx_image input,
   vx_scalar scale = vxCreateScalar(c, VX_TYPE_UINT32, &convolution->scale);
 
   vx_kernel kern =
-      vxHipaccKernel("hipacc_kernels/local/convolve_" + type_str(output) + "_" +
-                     type_str(input) + ".hpp");
+      vxHipaccKernel(std::string(HIPACC_KERNEL_DIR) + "/local/convolve_" +
+                     type_str(output) + "_" + type_str(input) + ".hpp");
   vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_MATRIX, 0);
@@ -613,8 +614,8 @@ VX_API_ENTRY vx_node VX_API_CALL vxNonMaxSuppressionNode(vx_graph graph,
   vxCopyMatrix(mat, (void*)coef.data(), VX_WRITE_ONLY, VX_MEMORY_TYPE_HOST);
 
   vx_kernel kern =
-      vxHipaccKernel("hipacc_kernels/local/nonmax_" + type_str(output) + "_" +
-                     type_str(input) + ".hpp");
+      vxHipaccKernel(std::string(HIPACC_KERNEL_DIR) + "/local/nonmax_" +
+                     type_str(output) + "_" + type_str(input) + ".hpp");
   vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_MATRIX, 0);
@@ -633,9 +634,9 @@ VX_API_ENTRY vx_node VX_API_CALL vxAndNode(vx_graph graph, vx_image in1,
       convert(in2)->col != VX_DF_IMAGE_U8)
     return nullptr;
 
-  vx_kernel kern =
-      vxHipaccKernel("hipacc_kernels/point/bitwiseand_" + type_str(out) + "_" +
-                     type_str(in1) + "_" + type_str(in2) + ".hpp");
+  vx_kernel kern = vxHipaccKernel(std::string(HIPACC_KERNEL_DIR) +
+                                  "/point/bitwiseand_" + type_str(out) + "_" +
+                                  type_str(in1) + "_" + type_str(in2) + ".hpp");
   vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_IMAGE, 0);
@@ -654,9 +655,9 @@ VX_API_ENTRY vx_node VX_API_CALL vxOrNode(vx_graph graph, vx_image in1,
       convert(in2)->col != VX_DF_IMAGE_U8)
     return nullptr;
 
-  vx_kernel kern =
-      vxHipaccKernel("hipacc_kernels/point/bitwiseor_" + type_str(out) + "_" +
-                     type_str(in1) + "_" + type_str(in2) + ".hpp");
+  vx_kernel kern = vxHipaccKernel(std::string(HIPACC_KERNEL_DIR) +
+                                  "/point/bitwiseor_" + type_str(out) + "_" +
+                                  type_str(in1) + "_" + type_str(in2) + ".hpp");
   vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_IMAGE, 0);
@@ -675,9 +676,9 @@ VX_API_ENTRY vx_node VX_API_CALL vxXorNode(vx_graph graph, vx_image in1,
       convert(in2)->col != VX_DF_IMAGE_U8)
     return nullptr;
 
-  vx_kernel kern =
-      vxHipaccKernel("hipacc_kernels/point/bitwisexor_" + type_str(out) + "_" +
-                     type_str(in1) + "_" + type_str(in2) + ".hpp");
+  vx_kernel kern = vxHipaccKernel(std::string(HIPACC_KERNEL_DIR) +
+                                  "/point/bitwisexor_" + type_str(out) + "_" +
+                                  type_str(in1) + "_" + type_str(in2) + ".hpp");
   vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_IMAGE, 0);
@@ -696,8 +697,8 @@ VX_API_ENTRY vx_node VX_API_CALL vxNotNode(vx_graph graph, vx_image input,
     return nullptr;
 
   vx_kernel kern =
-      vxHipaccKernel("hipacc_kernels/point/bitwisenot_" + type_str(output) +
-                     "_" + type_str(input) + ".hpp");
+      vxHipaccKernel(std::string(HIPACC_KERNEL_DIR) + "/point/bitwisenot_" +
+                     type_str(output) + "_" + type_str(input) + ".hpp");
   vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
 
@@ -726,8 +727,8 @@ VX_API_ENTRY vx_node VX_API_CALL vxAddNode(vx_graph graph, vx_image in1,
     return nullptr;
 
   vx_kernel kern = vxHipaccKernel(
-      "hipacc_kernels/point/add_" + policy_str(policy) + "_" + type_str(out) +
-      "_" + type_str(in1) + "_" + type_str(in2) + ".hpp");
+      std::string(HIPACC_KERNEL_DIR) + "/point/add_" + policy_str(policy) +
+      "_" + type_str(out) + "_" + type_str(in1) + "_" + type_str(in2) + ".hpp");
   vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_IMAGE, 0);
@@ -758,8 +759,8 @@ VX_API_ENTRY vx_node VX_API_CALL vxSubtractNode(vx_graph graph, vx_image in1,
     return nullptr;
 
   vx_kernel kern = vxHipaccKernel(
-      "hipacc_kernels/point/sub_" + policy_str(policy) + "_" + type_str(out) +
-      "_" + type_str(in1) + "_" + type_str(in2) + ".hpp");
+      std::string(HIPACC_KERNEL_DIR) + "/point/sub_" + policy_str(policy) +
+      "_" + type_str(out) + "_" + type_str(in1) + "_" + type_str(in2) + ".hpp");
   vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_IMAGE, 0);
@@ -788,8 +789,8 @@ VX_API_ENTRY vx_node VX_API_CALL vxConvertDepthNode(vx_graph graph,
   // Up conversion ignores the policy
   if (convert(output)->col == VX_DF_IMAGE_S16) {
     vx_kernel kern =
-        vxHipaccKernel("hipacc_kernels/point/convert_" + type_str(output) +
-                       "_" + type_str(input) + ".hpp");
+        vxHipaccKernel(std::string(HIPACC_KERNEL_DIR) + "/point/convert_" +
+                       type_str(output) + "_" + type_str(input) + ".hpp");
     vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
     vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
     vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_SCALAR, 0);
@@ -801,8 +802,9 @@ VX_API_ENTRY vx_node VX_API_CALL vxConvertDepthNode(vx_graph graph,
     return hn;
   } else {
     vx_kernel kern =
-        vxHipaccKernel("hipacc_kernels/point/convert_" + policy_str(policy) +
-                       "_" + type_str(output) + "_" + type_str(input) + ".hpp");
+        vxHipaccKernel(std::string(HIPACC_KERNEL_DIR) + "/point/convert_" +
+                       policy_str(policy) + "_" + type_str(output) + "_" +
+                       type_str(input) + ".hpp");
     vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
     vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
     vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_SCALAR, 0);
@@ -904,9 +906,9 @@ VX_API_ENTRY vx_node VX_API_CALL vxHarrisCornersNode(
 
   // Gx and Gy
   {
-    vx_kernel kern_sobel = vxHipaccKernel("hipacc_kernels/local/harris/sobel_" +
-                                          type_str(sobel_x_image) + "_" +
-                                          type_str(input) + ".hpp");
+    vx_kernel kern_sobel = vxHipaccKernel(
+        std::string(HIPACC_KERNEL_DIR) + "/local/harris/sobel_" +
+        type_str(sobel_x_image) + "_" + type_str(input) + ".hpp");
     vxAddParameterToKernel(kern_sobel, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
     vxAddParameterToKernel(kern_sobel, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
     vxAddParameterToKernel(kern_sobel, 2, VX_INPUT, VX_TYPE_MATRIX, 0);
@@ -928,9 +930,10 @@ VX_API_ENTRY vx_node VX_API_CALL vxHarrisCornersNode(
   }
   // Trace and Det
   {
-    vx_kernel kern_trace = vxHipaccKernel(
-        "hipacc_kernels/local/harris/trace_" + type_str(trace_image) + "_" +
-        type_str(sobel_x_image) + "_" + type_str(sobel_y_image) + ".hpp");
+    vx_kernel kern_trace =
+        vxHipaccKernel(std::string(HIPACC_KERNEL_DIR) + "/local/harris/trace_" +
+                       type_str(trace_image) + "_" + type_str(sobel_x_image) +
+                       "_" + type_str(sobel_y_image) + ".hpp");
     vxAddParameterToKernel(kern_trace, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
     vxAddParameterToKernel(kern_trace, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
     vxAddParameterToKernel(kern_trace, 2, VX_INPUT, VX_TYPE_IMAGE, 0);
@@ -943,9 +946,10 @@ VX_API_ENTRY vx_node VX_API_CALL vxHarrisCornersNode(
     vxSetParameterByIndex(hn_trace, 3, (vx_reference)window);
     multi_node->nodes.emplace_back(hn_trace);
 
-    vx_kernel kern_det = vxHipaccKernel(
-        "hipacc_kernels/local/harris/det_" + type_str(det_image) + "_" +
-        type_str(sobel_x_image) + "_" + type_str(sobel_y_image) + ".hpp");
+    vx_kernel kern_det =
+        vxHipaccKernel(std::string(HIPACC_KERNEL_DIR) + "/local/harris/det_" +
+                       type_str(det_image) + "_" + type_str(sobel_x_image) +
+                       "_" + type_str(sobel_y_image) + ".hpp");
     vxAddParameterToKernel(kern_det, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
     vxAddParameterToKernel(kern_det, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
     vxAddParameterToKernel(kern_det, 2, VX_INPUT, VX_TYPE_IMAGE, 0);
@@ -960,9 +964,10 @@ VX_API_ENTRY vx_node VX_API_CALL vxHarrisCornersNode(
   }
   // Mc and Vc in one kernel
   {
-    vx_kernel kern_McVc = vxHipaccKernel(
-        "hipacc_kernels/local/harris/mcvc_" + type_str(vc_image) + "_" +
-        type_str(det_image) + "_" + type_str(trace_image) + ".hpp");
+    vx_kernel kern_McVc =
+        vxHipaccKernel(std::string(HIPACC_KERNEL_DIR) + "/local/harris/mcvc_" +
+                       type_str(vc_image) + "_" + type_str(det_image) + "_" +
+                       type_str(trace_image) + ".hpp");
     vxAddParameterToKernel(kern_McVc, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
     vxAddParameterToKernel(kern_McVc, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
     vxAddParameterToKernel(kern_McVc, 2, VX_INPUT, VX_TYPE_IMAGE, 0);
@@ -995,8 +1000,8 @@ VX_API_ENTRY vx_node VX_API_CALL vxMedian3x3Node(vx_graph graph, vx_image input,
   vxCopyMatrix(box_values, (void*)coef_box, VX_WRITE_ONLY, VX_MEMORY_TYPE_HOST);
 
   vx_kernel kern =
-      vxHipaccKernel("hipacc_kernels/local/median_" + type_str(output) + "_" +
-                     type_str(input) + ".hpp");
+      vxHipaccKernel(std::string(HIPACC_KERNEL_DIR) + "/local/median_" +
+                     type_str(output) + "_" + type_str(input) + ".hpp");
   vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_MATRIX, 0);
