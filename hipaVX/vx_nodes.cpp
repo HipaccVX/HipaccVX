@@ -138,8 +138,8 @@ VX_API_ENTRY vx_node VX_API_CALL vxChannelExtractNode(vx_graph graph,
                                                       vx_image input,
                                                       vx_enum channel,
                                                       vx_image output) {
-  if (convert(input)->col != VX_DF_IMAGE_RGBX ||
-      convert(input)->col != VX_DF_IMAGE_UYVY ||
+  if ((convert(input)->col != VX_DF_IMAGE_RGBX &&
+       convert(input)->col != VX_DF_IMAGE_UYVY) ||
       convert(output)->col != VX_DF_IMAGE_U8)
     return nullptr;
 
