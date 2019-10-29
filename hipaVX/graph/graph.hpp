@@ -58,14 +58,20 @@ typedef boost::graph_traits<AppGraphT>::edge_descriptor EdgeDesc;
 
 struct terminator {
   std::vector<VertexDesc> dest;
+  VertexDesc root;
 
-  terminator(std::vector<VertexDesc>& _dest) { dest = _dest; }
+  terminator(std::vector<VertexDesc>& _dest, VertexDesc _root) {
+    dest = _dest;
+    root = _root;
+  }
 
   template <class Vertex, class Graph>
   bool operator()(const Vertex& v, const Graph& g) {
     if (boost::out_degree(v, g) == 0) return true;
 
-    // this loop should be unnecessary for an OpenVX graph
+    // terminate if v is in the list and not equals to root
+    if (v == root) return false;
+
     for (auto v_dest : dest) {
       if (v == v_dest) return true;
     }
@@ -137,6 +143,8 @@ class dag {
 
   // reverse graph and dead node elimination
   AppGraphT* reverse();
+
+  void set_io_nodes();
 
   OptGraphT* eliminate_dead_nodes();
 

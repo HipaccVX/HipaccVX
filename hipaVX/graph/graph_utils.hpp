@@ -154,6 +154,7 @@ void _gen_rand_acyclic_graph(unsigned n, unsigned k, GraphT &g,
   // Create a random graph
   for (unsigned v = 0; v < n; v++) {
     auto new_node = new Node();
+    new_node->is_virtual(true);
     auto new_image = new Image(1024, 1024, VX_DF_IMAGE_U8);
     nodes[v] = add_vertex(*new_node, g);
     images[v] = add_vertex(*new_image, g);
@@ -185,43 +186,32 @@ void _gen_rand_acyclic_graph(unsigned n, unsigned k, GraphT &g,
   // dump_graph();
 
   // inputs
-  unsigned cntr = 0;
+  unsigned icntr = 0, ocntr = 0;
   for (auto v : ordered) {
+    // std:: cout << "------ " <<  g[v].name() << ", degree" << boost::out_degree(v, g) << std::endl;
     // make sure that initial nodes are images
-    // if (boost::in_degree(v, g) == 1) break;
-    if (g[v].task() != ObjectTask::Buffer) {
-      clear_vertex(v, g);
-      // remove_vertex(v, g);
-    } else {
-      if (cntr < num_inputs) {
+    if(g[v].task() == ObjectTask::Buffer) {
+      if (icntr < num_inputs) {
         g[v].is_virtual(false);
         inputs.push_back(v);
         add_edge(v, nodes[dis(gen)], g);
-        cntr++;
-      } else {
-        break;
+        icntr++;
+      }
+      if (ocntr < num_outputs && boost::out_degree(v, g) == 0) {
+        g[v].is_virtual(false);
+        outputs.push_back(v);
+        add_edge(nodes[dis(gen)], v, g);
+        ocntr++;
       }
     }
   }
 
-  // outputs
-  cntr = 0;
-  for (auto v_it = ordered.rbegin(); v_it != ordered.rend(); ++v_it) {
-    auto v = *v_it;
-    // std:: cout << "------ " <<  g[v].name() << "
-    //              , degree" << boost::out_degree(v, g) << std::endl;
-    if (boost::out_degree(v, g) == 0) {
-      if (g[v].task() == ObjectTask::Buffer) {
-        // if(boost::in_degree(v, g) > 0 && cntr < n_out) {
-        if (cntr < num_outputs) {
-        g[v].is_virtual(false);
-          outputs.push_back(v);
-          add_edge(nodes[dis(gen)], v, g);
-          cntr++;
-        }
-      } else {
+  for (auto v : ordered) {
+    // std:: cout << "------ " <<  g[v].name() << ", degree" << boost::out_degree(v, g) << std::endl;
+    // make sure that root and child nodes are images
+    if (g[v].task() != ObjectTask::Buffer) {
+      if(boost::in_degree(v, g) == 0 || boost::out_degree(v, g) == 0) {
         clear_vertex(v, g);
-        // remove_vertex(v, g);
       }
     }
   }
