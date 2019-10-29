@@ -109,7 +109,7 @@ OptGraphT* dag::eliminate_dead_nodes() {
   mark_as_alive<AppGraphT> vis(g_trans);
 
   for (auto root : outputs) {
-    _depth_first_visit(root, g_trans, vis, terminator(inputs));
+    _depth_first_visit(root, g_trans, vis, terminator(inputs, root));
   }
 
   auto is_alive = [this](VertexDesc vd) { return this->g_trans[vd].is_alive(); };
@@ -117,6 +117,28 @@ OptGraphT* dag::eliminate_dead_nodes() {
   _g_opt = new OptGraphT(g, boost::keep_all{}, is_alive);
 
   return _g_opt;
+}
+
+void dag::set_io_nodes() {
+  AppGraphT::vertex_iterator v, vend;
+
+  for (boost::tie(v, vend) = vertices(g); v != vend; ++v) {
+    if(g[*v].is_virtual() == false && g[*v].task() == ObjectTask::Buffer) {
+        bool is_in = (in_degree(*v, g) == 0);
+        bool is_out = (out_degree(*v, g) == 0);
+
+        if(!is_in && !is_out) {
+          inputs.push_back(*v);
+          outputs.push_back(*v);
+        }
+        else if (is_in != is_out){
+          if(is_in)
+            inputs.push_back(*v);
+          if(is_out)
+            outputs.push_back(*v);
+        }
+    }
+  }
 }
 
 OptGraphT* dag::dont_eliminate_dead_nodes() {
