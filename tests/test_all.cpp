@@ -115,6 +115,7 @@ int main() {
 		vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),  /*39: median */
 		vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),  /*40: cpp test node */
 		vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),  /*41: median after cpp test node */
+		vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),  /*42: gaussian cpp test node */
 	};
 
 	int32_t two = 2;
@@ -223,8 +224,8 @@ int main() {
 		  vxDilate3x3Node(graph, images[0], images[14]),
 		  vxErode3x3Node(graph, images[0], images[15]),
 
-		  vxBox3x3Node(graph, images[0], images[13]),
-		  vxGaussian3x3Node(graph, images[0], images[16]),
+		  vxBox3x3Node(graph, images[0], images[13]),*/
+		  vxGaussian3x3Node(graph, images[0], images[16]),/*
 
 		  vxHarrisCornersNode(graph, images[0], harris_strength,
 							  harris_min_distance, harris_sensitivity, 3, 3,
@@ -273,6 +274,7 @@ int main() {
 		  vxMedian3x3Node(graph, images[0], images[39]),
 		  testNode(graph, images[39], zero_scalar, images[40]),
 		  vxMedian3x3Node(graph, images[40], images[41]),
+		  testNode2(graph, images[0], images[42]),
 	  };
 
 	  /*vxWriteImageAfterGraphCompletion(graph, images[0],
@@ -298,9 +300,9 @@ int main() {
 	  vxWriteImageAfterGraphCompletion(graph, images[15],
 									   "akif-200x300_bw_erode.png");
 	  vxWriteImageAfterGraphCompletion(graph, images[13],
-									   "akif-200x300_bw_box.png");
+									   "akif-200x300_bw_box.png");*/
 	  vxWriteImageAfterGraphCompletion(graph, images[16],
-									   "akif-200x300_bw_gaussian.png");
+									   "akif-200x300_bw_gaussian.png");/*
 	  vxWriteImageAfterGraphCompletion(graph, images[17],
 									   "akif-200x300_bw_thresh.png");
 	  vxWriteImageAfterGraphCompletion(graph, images[19],
@@ -327,6 +329,8 @@ int main() {
 									   "akif-200x300_bw_cpp_test.png");
 	  vxWriteImageAfterGraphCompletion(graph, images[41],
 									   "akif-200x300_bw_cpp_test_then_median.png");
+	  vxWriteImageAfterGraphCompletion(graph, images[42],
+									   "akif-200x300_bw_cpp_gaussian.png");
 
 	  // Step4.Verify Graph
 	  status = vxVerifyGraph(graph);

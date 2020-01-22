@@ -904,9 +904,43 @@ void hipacc_gen::iterate_nodes() {
 				  param_names.push_back(name((HipaccScalar*)src));
 				} break;
 				case VX_TYPE_MATRIX: {
-				  ERRORM("VX_TYPE_MATRIX not implemented for CPP generator");
-				  // param_names.push_back(name((HipaccMatrix*)src) + "_dom");
-				  // param_names.push_back(name((HipaccMatrix*)src));
+				  DomVX::VX_Matrix *mat = ((HipaccMatrix*)src->get());
+				  std::string mat_name = name(mat) + "_" + cn->id() + "_" + std::to_string(i);
+
+				  // define an array for the values
+				  ss_execs << dind << "int " << mat_name << "[" << mat->rows * mat->columns << "]"
+					 << " = {\n" << tind;
+				  for (unsigned y = 0; y < mat->rows; y++) {
+					for (unsigned x = 0; x < mat->columns; x++) {
+					  switch (mat->data_type) {
+						case VX_TYPE_INT32:
+						  ss_execs << *reinterpret_cast<int32_t*>(mat->mat.data() +
+															(4 * (y * mat->columns + x)));
+						  break;
+						case VX_TYPE_FLOAT32:
+						  ss_execs << *reinterpret_cast<float*>(mat->mat.data() +
+														  (4 * (y * mat->columns + x)));
+						  break;
+						case VX_TYPE_UINT8:
+						  ss_execs << *reinterpret_cast<unsigned char*>(
+							  mat->mat.data() + (1 * y * mat->columns + x));
+						  break;
+						case VX_TYPE_INT16:
+						  ss_execs << *reinterpret_cast<short*>(mat->mat.data() +
+														  (2 * (y * mat->columns + x)));
+						  break;
+						default:
+						  ERRORM("Unsupported data_type @ hipacc_gen::iterate_nodes()")
+					  }
+					  if (x != mat->columns - 1 || y != mat->rows - 1)
+						ss_execs << ",";
+					}
+				  }
+				  ss_execs << "};\n";
+
+				  param_names.push_back(mat_name);
+				  param_names.push_back(std::to_string(mat->columns));
+				  param_names.push_back(std::to_string(mat->rows));
 				} break;
 				default:
 				  ERRORM("no case for src->type()")
@@ -982,6 +1016,7 @@ void hipacc_gen::iterate_nodes() {
 						name(edge->im) + "_out_" + cn->id() + "_" + std::to_string(i);
 
 					ss_execs << dind << name(edge->im) << " = " << array_name + ";\n";
+					ss_execs << dind << "delete[] " << array_name + ";\n";
 				  }
 				} break;
 				case VX_TYPE_SCALAR: {

@@ -1036,3 +1036,29 @@ VX_API_ENTRY vx_node VX_API_CALL testNode(vx_graph graph, vx_image in,
   vxSetParameterByIndex(hn, 2, (vx_reference)s);
   return hn;
 }
+
+VX_API_ENTRY vx_node VX_API_CALL testNode2(vx_graph graph, vx_image in,
+										  vx_image out) {
+  if (convert(out)->col != VX_DF_IMAGE_U8 ||
+	  convert(in)->col != VX_DF_IMAGE_U8)
+	return nullptr;
+
+  const int coef[9] = {1, 2, 1, 2, 4, 2, 1, 2, 1};
+  vx_context c = new _vx_context();
+  c->o = convert(graph)->context;
+  vx_matrix mat = vxCreateMatrix(c, VX_TYPE_INT32, 3, 3);
+  vxCopyMatrix(mat, (void*)coef, VX_WRITE_ONLY, VX_MEMORY_TYPE_HOST);
+
+  vx_kernel kern =
+	  vxCppKernel(std::string(CPP_KERNEL_DIR) + "/point/dosomething2_" +
+				  type_str(out) + "_" + type_str(in) + ".hpp");
+  vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
+  vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
+  vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_MATRIX, 0);
+
+  auto hn = vxCreateGenericNode(graph, kern);
+  vxSetParameterByIndex(hn, 0, (vx_reference)out);
+  vxSetParameterByIndex(hn, 1, (vx_reference)in);
+  vxSetParameterByIndex(hn, 2, (vx_reference)mat);
+  return hn;
+}
