@@ -27,9 +27,12 @@ set(COMMON_INC_DIRS ${VX_DIR} ${HIPAVX_DIR} ${ROOT_DIR})
 
 file(GLOB_RECURSE HipaccGen_SRC ${HIPAVX_DIR}/gen/hipacc_*)
 
-get_filename_component(DEFAULT_KERNELS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/hipacc_kernels ABSOLUTE)
-set(HIPACC_KERNEL_DIR ${DEFAULT_KERNELS_DIR} CACHE STRING "Directory of the Hipacc Kernels")
+get_filename_component(DEFAULT_HIPACC_KERNELS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/hipacc_kernels ABSOLUTE)
+set(HIPACC_KERNEL_DIR ${DEFAULT_HIPACC_KERNELS_DIR} CACHE STRING "Directory of the Hipacc Kernels")
 add_definitions(-DHIPACC_KERNEL_DIR=\"${HIPACC_KERNEL_DIR}\")
+get_filename_component(DEFAULT_CPP_KERNELS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cpp_kernels ABSOLUTE)
+set(CPP_KERNEL_DIR ${DEFAULT_CPP_KERNELS_DIR} CACHE STRING "Directory of the Cpp Kernels")
+add_definitions(-DCPP_KERNEL_DIR=\"${CPP_KERNEL_DIR}\")
 
 add_library (HipaVX_Hipacc ${HipaVX_SRC} ${HipaccGen_SRC})
 

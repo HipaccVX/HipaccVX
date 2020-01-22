@@ -77,3 +77,11 @@ vx_kernel vxHipaccKernel(std::string filename) {
   vx->o = kern;
   return vx;
 }
+
+vx_kernel vxCppKernel(std::string filename) {
+  auto kern = new DomVX::CppKernel();
+  kern->filename = filename;
+  auto vx = new _vx_kernel();
+  vx->o = kern;
+  return vx;
+}

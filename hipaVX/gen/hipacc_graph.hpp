@@ -34,7 +34,7 @@ using HipaccIterationSpace = DomVXAcc;
 
 using HipaccDataType = vx_df_image;
 
-using HipaccKernel = DomVX::HipaccNode;
+using CustomNode = DomVX::CustomNode;
 
 // vx_df_image to HipaccWriter
 #define U8 VX_DF_IMAGE_U8
@@ -85,16 +85,6 @@ HipaccMatrix* obj2matrix(VertexType* v) {
   return _mat;
 }
 
-HipaccKernel* obj2node(VertexType* v) {
-  // TODO: catch exception to avoid segmentation fault
-  HipaccKernel* _node = dynamic_cast<DomVX::HipaccNode*>(v->get());
-
-  if (_node == nullptr)
-    ERRORM("graph_gen obj2node, dynamic cast fail for: " + v->name())
-
-  return _node;
-}
-
 class hipacc_writer {
  protected:
   std::string hind = " ";
@@ -136,7 +126,7 @@ class hipacc_writer {
   void def(std::stringstream& ss, HipaccMask* mask,
            DefType deftype = DefType::Hdecl);
 
-  void def(std::stringstream& ss, HipaccKernel* kern,
+  void def(std::stringstream& ss, CustomNode* kern,
            DefType deftype = DefType::Hdecl,
            std::vector<HipaccAccessor*> acc_l = {},
            std::vector<HipaccIterationSpace*> is_l = {},
@@ -528,11 +518,11 @@ void hipacc_writer::def(std::stringstream& ss, HipaccMask* mask,
 // TODO: can have a base class for the parameter types, thus one initializer
 // list
 //       , which shortens the code significantly
-void hipacc_writer::def(std::stringstream& ss, HipaccKernel* kern,
-                        DefType deftype, std::vector<HipaccAccessor*> acc_l,
-                        std::vector<HipaccIterationSpace*> is_l,
-                        std::vector<HipaccMatrix*> matrix_l,
-                        std::vector<HipaccScalar*> scalar_l) {
+void hipacc_writer::def(std::stringstream& ss, CustomNode* kern,
+						DefType deftype, std::vector<HipaccAccessor*> acc_l,
+						std::vector<HipaccIterationSpace*> is_l,
+						std::vector<HipaccMatrix*> matrix_l,
+						std::vector<HipaccScalar*> scalar_l) {
   if (is_l.size() != 1) {
     ERRORM("Hipacc Kernel" + name(kern) + " has " +
            std::to_string(is_l.size()) + " iteration spaces")
@@ -719,9 +709,10 @@ class hipacc_gen : public graph_gen, public hipacc_writer {
     ss << dind << "return 0;\n";
     ss << "}\n";
 
-    std::cout << ss.str();
+	auto code = ss.str();
+	std::cout << code;
     std::ofstream to_file("hipacc_tmp/hipacc_gen.cpp");
-    to_file << ss.str();
+	to_file << code;
   }
 };
 
@@ -755,103 +746,255 @@ void hipacc_gen::iterate_nodes() {
     // here check nodes and print them etc...
     auto v = get_vert(vert);
 
-    auto hn = dynamic_cast<DomVX::HipaccNode*>(v->get());
-    if (hn == nullptr)
-      ERRORM("iterate_nodes: vertex must be an instance of DomVX::HipaccNope")
+	auto cn = dynamic_cast<DomVX::CustomNode*>(v->get());
+	// assert(false && "check for cpp node aswell");
+	if (cn == nullptr)
+	  ERRORM("iterate_nodes: vertex must be an instance of DomVX::CustomNode")
 
-    std::cout << hn->kernel->filename << std::endl;
-    std::string kernel = read_file(hn->kernel->filename);
-    if (kernel == "") ERRORM("Couldn't find file " + hn->kernel->filename)
-    size_t class_index = kernel.find("class");
-    size_t kernelname_index = kernel.find(" ", class_index) + 1;
-    size_t kernelname_end_index = kernel.find(" ", kernelname_index);
+	auto hk = dynamic_cast<DomVX::HipaccKernel*>(cn->kernel);
+	auto ck = dynamic_cast<DomVX::CppKernel*>(cn->kernel);
 
-    std::string kernel_name = kernel.substr(
-        kernelname_index, kernelname_end_index - kernelname_index);
+	if (hk) {
+	  std::cout << hk->filename << std::endl;
+	  std::string kernel = read_file(hk->filename);
+	  if (kernel == "") ERRORM("Couldn't find file " + hk->filename)
+	  size_t class_index = kernel.find("class");
+	  size_t kernelname_index = kernel.find(" ", class_index) + 1;
+	  size_t kernelname_end_index = kernel.find(" ", kernelname_index);
 
-    std::string kernel_instance_name = kernel_name + "_" + hn->id();
+	  std::string kernel_name = kernel.substr(
+		  kernelname_index, kernelname_end_index - kernelname_index);
 
-    ss_execs << dind << kernel_instance_name << ".execute();" << std::endl;
+	  std::string kernel_instance_name = kernel_name + "_" + cn->id();
 
-    std::vector<std::string> param_names;
+	  ss_execs << dind << kernel_instance_name << ".execute();" << std::endl;
 
-    bool local = false;
-    std::string dom_name = "";
-    for (unsigned int i = 0; i < hn->parameters.size(); i++) {
-      if (hn->kernel->type[i] == VX_TYPE_MATRIX) {
-        local = true;
-        dom_name = (name((HipaccMatrix*)hn->parameters[i]->o->get()) + "_dom");
-        break;
-      }
-    }
-    for (unsigned int i = 0; i < hn->parameters.size(); i++) {
-      if (hn->kernel->direction[i] == VX_INPUT) {
-        graphVX::OptGraphInEdgeIter ie, ie_end;
-        for (std::tie(ie, ie_end) = boost::in_edges(vert, *_g_opt);
-             ie != ie_end; ie++) {
-          auto src = &(*_g_opt)[ie->m_source];
-          if (src->id() == hn->parameters[i]->o->id()) {
-            if (src->type() != hn->kernel->type[i]) ERRORM("type mismatch")
-            switch (src->type()) {
-              case VX_TYPE_IMAGE: {
-                auto edge = &(*_g_opt)[*ie];
-                if (edge->isImgSet()) {
-                  def_acc(ss_acc, edge, DefType::Hdecl, dom_name);
-                }
-                param_names.push_back(name(edge));
-              } break;
-              case VX_TYPE_SCALAR: {
-                param_names.push_back(name((HipaccScalar*)src));
-              } break;
-              case VX_TYPE_MATRIX: {
-                param_names.push_back(name((HipaccMatrix*)src) + "_dom");
-                param_names.push_back(name((HipaccMatrix*)src));
-              } break;
-              default:
-                ERRORM("no case for src->type()")
-            }
-          }
-        }
-      } else {
-        graphVX::OptGraphOutEdgeIter beg, end;
-        std::tie(beg, end) = boost::out_edges(vert, *_g_opt);
-        for (auto it = beg; it != end; it++) {
-          auto target = &(*_g_opt)[beg->m_target];
-          if (target->id() == hn->parameters[i]->o->id()) {
-            if (target->type() != hn->kernel->type[i]) ERRORM("type mismatch")
-            switch (target->type()) {
-              case VX_TYPE_IMAGE: {
-                auto edge = &(*_g_opt)[*it];
-                if (edge->isImgSet()) {
-                  def_is(ss_is, edge, DefType::Hdecl);
-                }
-                param_names.push_back(name(edge));
-              } break;
-              case VX_TYPE_SCALAR: {
-                param_names.push_back(name((HipaccScalar*)target));
-              } break;
-              default:
-                ERRORM("no case for src->type()")
-            }
-          }
-        }
-      }
-    }
+	  std::vector<std::string> param_names;
 
-    if (std::find(already_included_kernels.cbegin(),
-                  already_included_kernels.cend(),
-                  hn->kernel->filename) == already_included_kernels.cend()) {
-      already_included_kernels.emplace_back(hn->kernel->filename);
-      ss_kern << kernel;
-    }
+	  bool local = false;
+	  std::string dom_name = "";
+	  for (unsigned int i = 0; i < cn->parameters.size(); i++) {
+		if (cn->kernel->type[i] == VX_TYPE_MATRIX) {
+		  local = true;
+		  dom_name =
+			  (name((HipaccMatrix*)cn->parameters[i]->o->get()) + "_dom");
+		  break;
+		}
+	  }
+	  for (unsigned int i = 0; i < cn->parameters.size(); i++) {
+		if (cn->kernel->direction[i] == VX_INPUT) {
+		  graphVX::OptGraphInEdgeIter ie, ie_end;
+		  for (std::tie(ie, ie_end) = boost::in_edges(vert, *_g_opt);
+			   ie != ie_end; ie++) {
+			auto src = &(*_g_opt)[ie->m_source];
+			if (src->id() == cn->parameters[i]->o->id()) {
+			  if (src->type() != cn->kernel->type[i]) ERRORM("type mismatch")
+			  switch (src->type()) {
+				case VX_TYPE_IMAGE: {
+				  auto edge = &(*_g_opt)[*ie];
+				  if (edge->isImgSet()) {
+					def_acc(ss_acc, edge, DefType::Hdecl, dom_name);
+				  }
+				  param_names.push_back(name(edge));
+				} break;
+				case VX_TYPE_SCALAR: {
+				  param_names.push_back(name((HipaccScalar*)src));
+				} break;
+				case VX_TYPE_MATRIX: {
+				  param_names.push_back(name((HipaccMatrix*)src) + "_dom");
+				  param_names.push_back(name((HipaccMatrix*)src));
+				} break;
+				default:
+				  ERRORM("no case for src->type()")
+			  }
+			}
+		  }
+		} else {
+		  graphVX::OptGraphOutEdgeIter beg, end;
+		  std::tie(beg, end) = boost::out_edges(vert, *_g_opt);
+		  for (auto it = beg; it != end; it++) {
+			auto target = &(*_g_opt)[beg->m_target];
+			if (target->id() == cn->parameters[i]->o->id()) {
+			  if (target->type() != cn->kernel->type[i]) ERRORM("type mismatch")
+			  switch (target->type()) {
+				case VX_TYPE_IMAGE: {
+				  auto edge = &(*_g_opt)[*it];
+				  if (edge->isImgSet()) {
+					def_is(ss_is, edge, DefType::Hdecl);
+				  }
+				  param_names.push_back(name(edge));
+				} break;
+				case VX_TYPE_SCALAR: {
+				  param_names.push_back(name((HipaccScalar*)target));
+				} break;
+				default:
+				  ERRORM("no case for src->type()")
+			  }
+			}
+		  }
+		}
+	  }
 
-    ss_kern_host << dind;
-    ss_kern_host << kernel_name << " " << kernel_instance_name << "(";
-    for (unsigned int i = 0; i < param_names.size(); i++) {
-      if (i != 0) ss_kern_host << ", ";
-      ss_kern_host << param_names[i];
-    }
-    ss_kern_host << ");\n";
+	  if (std::find(already_included_kernels.cbegin(),
+					already_included_kernels.cend(),
+					hk->filename) == already_included_kernels.cend()) {
+		already_included_kernels.emplace_back(hk->filename);
+		ss_kern << kernel;
+	  }
+
+	  ss_kern_host << dind;
+	  ss_kern_host << kernel_name << " " << kernel_instance_name << "(";
+	  for (unsigned int i = 0; i < param_names.size(); i++) {
+		if (i != 0) ss_kern_host << ", ";
+		ss_kern_host << param_names[i];
+	  }
+	  ss_kern_host << ");\n";
+	} else if (ck) {
+	  std::cout << ck->filename << std::endl;
+	  std::string kernel = read_file(ck->filename);
+	  if (kernel == "") ERRORM("Couldn't find file " + ck->filename)
+	  size_t void_index = kernel.find("void");
+	  size_t methodname_index = kernel.find(" ", void_index) + 1;
+	  size_t methodname_end_index_space = kernel.find(" ", methodname_index);
+	  size_t methodname_end_index_brace = kernel.find("(", methodname_index);
+	  size_t methodname_end_index =
+		  (methodname_end_index_space < methodname_end_index_brace)
+			  ? methodname_end_index_space
+			  : methodname_end_index_brace;
+
+	  std::string method_name = kernel.substr(
+		  methodname_index, methodname_end_index - methodname_index);
+
+	  std::vector<std::string> param_names;
+
+	  bool local = false;
+	  std::string dom_name = "";
+	  for (unsigned int i = 0; i < cn->parameters.size(); i++) {
+		if (cn->kernel->type[i] == VX_TYPE_MATRIX) {
+		  local = true;
+		  dom_name =
+			  (name((HipaccMatrix*)cn->parameters[i]->o->get()) + "_dom");
+		  break;
+		}
+	  }
+	  for (unsigned int i = 0; i < cn->parameters.size(); i++) {
+		if (cn->kernel->direction[i] == VX_INPUT) {
+		  graphVX::OptGraphInEdgeIter ie, ie_end;
+		  for (std::tie(ie, ie_end) = boost::in_edges(vert, *_g_opt);
+			   ie != ie_end; ie++) {
+			auto src = &(*_g_opt)[ie->m_source];
+			if (src->id() == cn->parameters[i]->o->id()) {
+			  if (src->type() != cn->kernel->type[i]) ERRORM("type mismatch")
+			  switch (src->type()) {
+				case VX_TYPE_IMAGE: {
+				  auto edge = &(*_g_opt)[*ie];
+				  if (edge->isImgSet()) {
+					std::string image_name =
+						name(edge->im) + "_" + cn->id() + "_" + std::to_string(i);
+
+					ss_execs << dind << dtype(edge->im) << " *" << image_name
+							 << " = " << name(edge->im) << ".data();\n";
+
+					param_names.push_back(image_name);
+					param_names.push_back(std::to_string(edge->im->w));
+					param_names.push_back(std::to_string(edge->im->h));
+				  }
+				} break;
+				case VX_TYPE_SCALAR: {
+				  param_names.push_back(name((HipaccScalar*)src));
+				} break;
+				case VX_TYPE_MATRIX: {
+				  ERRORM("VX_TYPE_MATRIX not implemented for CPP generator");
+				  // param_names.push_back(name((HipaccMatrix*)src) + "_dom");
+				  // param_names.push_back(name((HipaccMatrix*)src));
+				} break;
+				default:
+				  ERRORM("no case for src->type()")
+			  }
+			}
+		  }
+		} else {
+		  graphVX::OptGraphOutEdgeIter beg, end;
+		  std::tie(beg, end) = boost::out_edges(vert, *_g_opt);
+		  for (auto it = beg; it != end; it++) {
+			auto target = &(*_g_opt)[beg->m_target];
+			if (target->id() == cn->parameters[i]->o->id()) {
+			  if (target->type() != cn->kernel->type[i]) ERRORM("type mismatch")
+			  switch (target->type()) {
+				case VX_TYPE_IMAGE: {
+				  auto edge = &(*_g_opt)[*it];
+				  if (edge->isImgSet()) {
+					std::string array_name =
+						name(edge->im) + "_out_" + cn->id() + "_" + std::to_string(i);
+
+					ss_execs << dind << dtype(edge->im) << " *" << array_name
+							 << " = new " << dtype(edge->im)
+							 << "[" << std::to_string(edge->im->w * edge->im->h) << "];\n";
+
+					param_names.push_back(array_name);
+					param_names.push_back(std::to_string(edge->im->w));
+					param_names.push_back(std::to_string(edge->im->h));
+				  }
+				} break;
+				case VX_TYPE_SCALAR: {
+				  ERRORM("VX_TYPE_SCALAR not implemented for CPP generator");
+				} break;
+				default:
+				  ERRORM("no case for src->type()")
+			  }
+			}
+		  }
+		}
+	  }
+
+	  if (std::find(already_included_kernels.cbegin(),
+					already_included_kernels.cend(),
+					ck->filename) == already_included_kernels.cend()) {
+		already_included_kernels.emplace_back(ck->filename);
+		ss_kern << kernel;
+	  }
+
+	  ss_execs << dind;
+	  ss_execs << method_name << "(";
+	  for (unsigned int i = 0; i < param_names.size(); i++) {
+		if (i != 0) ss_execs << ", ";
+		ss_execs << param_names[i];
+	  }
+	  ss_execs << ");\n";
+
+	  // Write back the software images to hipacc images
+
+	  for (unsigned int i = 0; i < cn->parameters.size(); i++) {
+		if (cn->kernel->direction[i] == VX_OUTPUT) {
+		  graphVX::OptGraphOutEdgeIter beg, end;
+		  std::tie(beg, end) = boost::out_edges(vert, *_g_opt);
+		  for (auto it = beg; it != end; it++) {
+			auto target = &(*_g_opt)[beg->m_target];
+			if (target->id() == cn->parameters[i]->o->id()) {
+			  if (target->type() != cn->kernel->type[i]) ERRORM("type mismatch")
+			  switch (target->type()) {
+				case VX_TYPE_IMAGE: {
+				  auto edge = &(*_g_opt)[*it];
+				  if (edge->isImgSet()) {
+					def_is(ss_is, edge, DefType::Hdecl);
+
+					std::string array_name =
+						name(edge->im) + "_out_" + cn->id() + "_" + std::to_string(i);
+
+					ss_execs << dind << name(edge->im) << " = " << array_name + ";\n";
+				  }
+				} break;
+				case VX_TYPE_SCALAR: {
+				} break;
+				default:
+				  ERRORM("no case for src->type()")
+			  }
+			}
+		  }
+		}
+	  }
+
+	}
   }
 }
 

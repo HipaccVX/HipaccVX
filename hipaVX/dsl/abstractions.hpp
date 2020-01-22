@@ -158,23 +158,34 @@ class Mask : public AbstractionNode {
   }
 };
 
-class HipaccKernel : public Node {
+class CustomKernel : public Node{
+public:
+	virtual ~CustomKernel() override = default;
+
+	std::vector<vx_direction_e> direction;
+	std::vector<vx_type_e> type;
+};
+
+class HipaccKernel : public CustomKernel {
  public:
-  HipaccKernel() = default;
   virtual ~HipaccKernel() override = default;
 
-  std::vector<vx_direction_e> direction;
-  std::vector<vx_type_e> type;
   std::string filename;
 };
 
-class HipaccNode : public Node {
+class CppKernel : public CustomKernel {
  public:
-  HipaccNode() = default;
-  virtual ~HipaccNode() override = default;
+  virtual ~CppKernel() override = default;
+
+  std::string filename;
+};
+
+class CustomNode : public Node {
+ public:
+  virtual ~CustomNode() override = default;
 
   DomVX::Graph *graph;
-  HipaccKernel *kernel;
+  CustomKernel *kernel;
   std::vector<vx_reference> parameters;
 };
 

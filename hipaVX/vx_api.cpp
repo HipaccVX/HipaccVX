@@ -292,22 +292,22 @@ VX_API_ENTRY vx_status VX_API_CALL vxFinalizeKernel(vx_kernel kernel) {}
 
 VX_API_ENTRY vx_node VX_API_CALL vxCreateGenericNode(vx_graph graph,
                                                      vx_kernel kernel) {
-  DomVX::HipaccKernel *hk = dynamic_cast<DomVX::HipaccKernel *>(kernel->o);
-  if (hk == nullptr) return nullptr;
-  auto hn = new DomVX::HipaccNode();
+  DomVX::CustomKernel *ck = dynamic_cast<DomVX::CustomKernel *>(kernel->o);
+  if (ck == nullptr) return nullptr;
+  auto cn = new DomVX::CustomNode();
   auto vx = new _vx_node();
-  vx->o = hn;
-  hn->graph = dynamic_cast<DomVX::Graph *>(graph->o);
-  hn->graph->refs[(DomVX::Node *)hn] =
-      hn->graph->dag->add_vertex(*(DomVX::Node *)vx->o);
-  hn->kernel = hk;
-  hn->parameters.resize(hk->direction.size());
+  vx->o = cn;
+  cn->graph = dynamic_cast<DomVX::Graph *>(graph->o);
+  cn->graph->refs[(DomVX::Node *)cn] =
+	  cn->graph->dag->add_vertex(*(DomVX::Node *)vx->o);
+  cn->kernel = ck;
+  cn->parameters.resize(ck->direction.size());
   return vx;
 }
 VX_API_ENTRY vx_status VX_API_CALL vxSetParameterByIndex(vx_node node,
                                                          vx_uint32 index,
                                                          vx_reference value) {
-  DomVX::HipaccNode *hn = dynamic_cast<DomVX::HipaccNode *>(node->o);
+  DomVX::CustomNode *hn = dynamic_cast<DomVX::CustomNode *>(node->o);
   if (hn == nullptr) return VX_FAILURE;
   if (index >= hn->kernel->direction.size()) return VX_FAILURE;
 

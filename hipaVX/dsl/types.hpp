@@ -190,7 +190,7 @@ class Scalar : public Object {
         f32 = *((vx_float32 *)ptr);
         break;
       case VX_TYPE_UINT8:
-        f32 = *((vx_uint8 *)ptr);
+		ui8 = *((vx_uint8 *)ptr);
         break;
       case VX_TYPE_UINT32:
         ui32 = *((vx_uint32 *)ptr);

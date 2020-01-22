@@ -1015,3 +1015,24 @@ VX_API_ENTRY vx_node VX_API_CALL vxMedian3x3Node(vx_graph graph, vx_image input,
   vxSetParameterByIndex(hn, 2, (vx_reference)box_values);
   return hn;
 }
+
+VX_API_ENTRY vx_node VX_API_CALL testNode(vx_graph graph, vx_image in,
+										  vx_scalar s, vx_image out) {
+  if (convert(out)->col != VX_DF_IMAGE_U8 ||
+	  convert(in)->col != VX_DF_IMAGE_U8 ||
+	  convert(s)->data_type != VX_TYPE_UINT8)
+	return nullptr;
+
+  vx_kernel kern =
+	  vxCppKernel(std::string(CPP_KERNEL_DIR) + "/point/dosomething_" +
+				  type_str(out) + "_" + type_str(in) + ".hpp");
+  vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
+  vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
+  vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_SCALAR, 0);
+
+  auto hn = vxCreateGenericNode(graph, kern);
+  vxSetParameterByIndex(hn, 0, (vx_reference)out);
+  vxSetParameterByIndex(hn, 1, (vx_reference)in);
+  vxSetParameterByIndex(hn, 2, (vx_reference)s);
+  return hn;
+}

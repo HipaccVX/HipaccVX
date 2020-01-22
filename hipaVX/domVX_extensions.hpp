@@ -34,3 +34,7 @@ vx_node vxAnotherBilateralFilterNode(vx_graph graph, vx_image image,
                                      vx_int32 sigma_r, vx_image out);
 
 vx_kernel vxHipaccKernel(std::string filename);
+
+vx_kernel vxCppKernel(std::string filename);
+
+vx_node testNode(vx_graph graph, vx_image in, vx_scalar s, vx_image out);
