@@ -1,5 +1,6 @@
 #include <cstring>
 #include <exception>
+
 #include "../VX/vx.h"
 #include "../VX/vx_compatibility.h"
 #include "dsl/abstractions.hpp"
@@ -104,7 +105,7 @@ VX_API_ENTRY vx_array VX_API_CALL vxCreateArray(vx_context context,
         "vx_array: Only VX_TYPE_KEYPOINT is currently supported");
 
   // vx_keypoint_t has 7 32bit members
-  DomVX::Array *arr = new DomVX::Array(data_type, size, 7);
+  DomVX::Array *arr = new DomVX::Array(data_type, size);
   auto vx = new _vx_array();
   vx->o = arr;
   ((DomVX::Context *)(context->o))->arrays.emplace_back(arr);
@@ -299,7 +300,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxCreateGenericNode(vx_graph graph,
   vx->o = cn;
   cn->graph = dynamic_cast<DomVX::Graph *>(graph->o);
   cn->graph->refs[(DomVX::Node *)cn] =
-	  cn->graph->dag->add_vertex(*(DomVX::Node *)vx->o);
+      cn->graph->dag->add_vertex(*(DomVX::Node *)vx->o);
   cn->kernel = ck;
   cn->parameters.resize(ck->direction.size());
   return vx;
@@ -325,10 +326,10 @@ VX_API_ENTRY vx_status VX_API_CALL vxSetParameterByIndex(vx_node node,
                              hn->graph->refs[value_node]);
 
   // small hack
-  if (index == 0)
-    hn->graph->dag->outputs.push_back(hn->graph->refs[value_node]);
-  else if (index == 1)
-    hn->graph->dag->inputs.push_back(hn->graph->refs[value_node]);
+  //  if (index == 0)
+  //    hn->graph->dag->outputs.push_back(hn->graph->refs[value_node]);
+  //  else if (index == 1)
+  //    hn->graph->dag->inputs.push_back(hn->graph->refs[value_node]);
 
   return VX_SUCCESS;
 }

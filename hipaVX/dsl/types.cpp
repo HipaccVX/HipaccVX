@@ -10,6 +10,7 @@ ObjectTask set_task_from_type(DomVX::ObjectType _type) {
     case VX_TYPE_CONVOLUTION:
       return ObjectTask::Computation;
     case VX_TYPE_IMAGE:
+    case VX_TYPE_BOOL:
     case VX_TYPE_SCALAR:
     case VX_TYPE_ARRAY:
     case VX_TYPE_MATRIX:

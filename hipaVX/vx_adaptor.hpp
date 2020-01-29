@@ -47,3 +47,7 @@ struct _vx_graph {
 struct _vx_context {
   DomVX::Object *o;
 };
+
+struct _vx_bool {
+  DomVX::Object *o;
+};

@@ -1016,32 +1016,10 @@ VX_API_ENTRY vx_node VX_API_CALL vxMedian3x3Node(vx_graph graph, vx_image input,
   return hn;
 }
 
-VX_API_ENTRY vx_node VX_API_CALL testNode(vx_graph graph, vx_image in,
-										  vx_scalar s, vx_image out) {
-  if (convert(out)->col != VX_DF_IMAGE_U8 ||
-	  convert(in)->col != VX_DF_IMAGE_U8 ||
-	  convert(s)->data_type != VX_TYPE_UINT8)
-	return nullptr;
-
-  vx_kernel kern =
-	  vxCppKernel(std::string(CPP_KERNEL_DIR) + "/point/dosomething_" +
-				  type_str(out) + "_" + type_str(in) + ".hpp");
-  vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
-  vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
-  vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_SCALAR, 0);
-
-  auto hn = vxCreateGenericNode(graph, kern);
-  vxSetParameterByIndex(hn, 0, (vx_reference)out);
-  vxSetParameterByIndex(hn, 1, (vx_reference)in);
-  vxSetParameterByIndex(hn, 2, (vx_reference)s);
-  return hn;
-}
-
-VX_API_ENTRY vx_node VX_API_CALL testNode2(vx_graph graph, vx_image in,
-										  vx_image out) {
-  if (convert(out)->col != VX_DF_IMAGE_U8 ||
-	  convert(in)->col != VX_DF_IMAGE_U8)
-	return nullptr;
+VX_API_ENTRY vx_node VX_API_CALL vxFastCornersNode(
+    vx_graph graph, vx_image input, vx_scalar strength_thresh,
+    vx_bool nonmax_suppression, vx_array corners, vx_scalar num_corners) {
+  if (convert(input)->col != VX_DF_IMAGE_U8) return nullptr;
 
   const int coef[9] = {1, 2, 1, 2, 4, 2, 1, 2, 1};
   vx_context c = new _vx_context();
@@ -1049,16 +1027,23 @@ VX_API_ENTRY vx_node VX_API_CALL testNode2(vx_graph graph, vx_image in,
   vx_matrix mat = vxCreateMatrix(c, VX_TYPE_INT32, 3, 3);
   vxCopyMatrix(mat, (void*)coef, VX_WRITE_ONLY, VX_MEMORY_TYPE_HOST);
 
-  vx_kernel kern =
-	  vxCppKernel(std::string(CPP_KERNEL_DIR) + "/point/dosomething2_" +
-				  type_str(out) + "_" + type_str(in) + ".hpp");
-  vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
-  vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
-  vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_MATRIX, 0);
+  DomVX::Bool *b = new DomVX::Bool(nonmax_suppression);
+  _vx_bool *adaptor_b = new _vx_bool();
+  adaptor_b->o = b;
+
+  vx_kernel kern = vxCppKernel(std::string(CPP_KERNEL_DIR) + "/local/fast9_" +
+                               type_str(input) + ".hpp");
+  vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_ARRAY, 0);
+  vxAddParameterToKernel(kern, 1, VX_OUTPUT, VX_TYPE_SCALAR, VX_PARAMETER_STATE_OPTIONAL);
+  vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_IMAGE, 0);
+  vxAddParameterToKernel(kern, 3, VX_INPUT, VX_TYPE_SCALAR, 0);//thresh
+  vxAddParameterToKernel(kern, 4, VX_INPUT, VX_TYPE_BOOL, 0);//nonmax_suppression
 
   auto hn = vxCreateGenericNode(graph, kern);
-  vxSetParameterByIndex(hn, 0, (vx_reference)out);
-  vxSetParameterByIndex(hn, 1, (vx_reference)in);
-  vxSetParameterByIndex(hn, 2, (vx_reference)mat);
+  vxSetParameterByIndex(hn, 0, (vx_reference)corners);
+  vxSetParameterByIndex(hn, 1, (vx_reference)num_corners);
+  vxSetParameterByIndex(hn, 2, (vx_reference)input);
+  vxSetParameterByIndex(hn, 3, (vx_reference)strength_thresh);
+  vxSetParameterByIndex(hn, 4, (vx_reference)adaptor_b);
   return hn;
 }

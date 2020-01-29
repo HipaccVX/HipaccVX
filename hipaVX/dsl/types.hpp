@@ -190,7 +190,7 @@ class Scalar : public Object {
         f32 = *((vx_float32 *)ptr);
         break;
       case VX_TYPE_UINT8:
-		ui8 = *((vx_uint8 *)ptr);
+        ui8 = *((vx_uint8 *)ptr);
         break;
       case VX_TYPE_UINT32:
         ui32 = *((vx_uint32 *)ptr);
@@ -222,21 +222,36 @@ class Scalar : public Object {
 
 class Array : public Object {
  public:
-  Array(vx_enum _dtype, vx_size _size, vx_size _rows)
-      : data_type(_dtype), size(_size), rows(_rows) {
+  Array(vx_enum _dtype, vx_size _size) : data_type(_dtype), size(_size) {
     init();
-    set_name("Arr");
   }
 
   void init() {
     set_type(VX_TYPE_ARRAY);
     set_task();
+    set_name("Arr");
+    bind(this);
   }
 
   virtual ~Array() = default;
   vx_enum data_type;
   vx_size size;
-  vx_size rows;
+};
+
+class Bool : public Object {
+ public:
+  Bool() { init(); }
+  Bool(vx_bool value) : value(value) { init(); }
+
+  void init() {
+    set_type(VX_TYPE_BOOL);
+    set_name("Bool");
+    set_task();
+    bind(this);
+  }
+
+  virtual ~Bool() = default;
+  vx_bool value;
 };
 
 class Threshold : public Object {

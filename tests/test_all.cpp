@@ -116,7 +116,10 @@ int main() {
 		vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),  /*40: cpp test node */
 		vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),  /*41: median after cpp test node */
 		vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),  /*42: gaussian cpp test node */
-	};
+
+        vxCreateImageFromFile(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8,
+                              "sample.png"),           /* 43: sample corner input image */
+    };
 
 	int32_t two = 2;
 	vx_scalar two_scalar = vxCreateScalar(context, VX_TYPE_INT32, (void*)&two);
@@ -179,6 +182,11 @@ int main() {
 	bilateral_parameters.push_back((vx_reference)sigma_s);
 	bilateral_parameters.push_back((vx_reference)sigma_r);
 
+
+    vx_array fast9_corners = vxCreateArray(context, VX_TYPE_KEYPOINT, 10);
+    int32_t zero = 0;
+    vx_scalar fast9_num_corners = vxCreateScalar(context, VX_TYPE_INT32, &zero);
+
 	// new stuff
 
 	auto hk = vxHipaccKernel(std::string(HIPACC_KERNEL_DIR) + "/bilateral.hpp");
@@ -197,8 +205,8 @@ int main() {
 	vxSetParameterByIndex(hn, 3, (vx_reference)sigma_r);*/
 
 
-	uint8_t zero = 20;
-	vx_scalar zero_scalar = vxCreateScalar(context, VX_TYPE_UINT8, &zero);
+    uint8_t twenty = 20;
+    vx_scalar twenty_scalar = vxCreateScalar(context, VX_TYPE_UINT8, &twenty);
 
 	if (vxGetStatus((vx_reference)graph) == VX_SUCCESS) {
 	  printf("graph has been created... \n");
@@ -271,10 +279,7 @@ int main() {
 						 images[35]),
 		  vxCopyNode(graph, (vx_reference)images[0], (vx_reference)images[37]),
 		  vxNonMaxSuppressionNode(graph, images[4], nullptr, 5, images[38]),*/
-		  vxMedian3x3Node(graph, images[0], images[39]),
-		  testNode(graph, images[39], zero_scalar, images[40]),
-		  vxMedian3x3Node(graph, images[40], images[41]),
-		  testNode2(graph, images[0], images[42]),
+          vxFastCornersNode(graph, images[43], twenty_scalar, true, fast9_corners, fast9_num_corners),
 	  };
 
 	  /*vxWriteImageAfterGraphCompletion(graph, images[0],
@@ -322,15 +327,7 @@ int main() {
 	  vxWriteImageAfterGraphCompletion(graph, images[23],
 									   "akif-200x300_bw_scharr_x.png");
 	  vxWriteImageAfterGraphCompletion(graph, images[38],
-									   "akif-200x300_bw_non_max.png");*/
-	  vxWriteImageAfterGraphCompletion(graph, images[39],
-									   "akif-200x300_bw_median.png");
-	  vxWriteImageAfterGraphCompletion(graph, images[40],
-									   "akif-200x300_bw_cpp_test.png");
-	  vxWriteImageAfterGraphCompletion(graph, images[41],
-									   "akif-200x300_bw_cpp_test_then_median.png");
-	  vxWriteImageAfterGraphCompletion(graph, images[42],
-									   "akif-200x300_bw_cpp_gaussian.png");
+                                       "akif-200x300_bw_non_max.png");*/
 
 	  // Step4.Verify Graph
 	  status = vxVerifyGraph(graph);
