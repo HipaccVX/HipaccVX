@@ -119,6 +119,7 @@ int main() {
         vxCreateImageFromFile(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8,
                               "sample.png"),           /* 43: sample corner input image */
         vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),  /* 44: eq hist */
+        vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U32),  /* 44: integral */
     };
 
 	int32_t two = 2;
@@ -281,6 +282,7 @@ int main() {
 		  vxNonMaxSuppressionNode(graph, images[4], nullptr, 5, images[38]),*/
           vxFastCornersNode(graph, images[43], twenty_scalar, true, fast9_corners, fast9_num_corners),
           vxEqualizeHistNode(graph, images[0], images[44]),
+          vxIntegralImageNode(graph, images[0], images[45]),
       };
 
 	  /*vxWriteImageAfterGraphCompletion(graph, images[0],

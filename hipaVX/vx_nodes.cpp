@@ -99,6 +99,8 @@ static std::string type_str(DomVX::Image* image) {
     return "f";
   else if (image->col == VX_DF_IMAGE_S32)
     return "s32";
+  else if (image->col == VX_DF_IMAGE_U32)
+    return "u32";
   else if (image->col == VX_DF_IMAGE_RGBX)
     return "uchar4";
   else if (image->col == VX_DF_IMAGE_UYVY)
@@ -1059,6 +1061,25 @@ VX_API_ENTRY vx_node VX_API_CALL vxEqualizeHistNode(vx_graph graph,
 
   vx_kernel kern =
       vxCppKernel(std::string(CPP_KERNEL_DIR) + "/global/eq_hist_" +
+                  type_str(output) + "_" + type_str(input) + ".hpp");
+  vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
+  vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
+
+  auto hn = vxCreateGenericNode(graph, kern);
+  vxSetParameterByIndex(hn, 0, (vx_reference)output);
+  vxSetParameterByIndex(hn, 1, (vx_reference)input);
+  return hn;
+}
+
+VX_API_ENTRY vx_node VX_API_CALL vxIntegralImageNode(vx_graph graph,
+                                                     vx_image input,
+                                                     vx_image output) {
+  if (convert(input)->col != VX_DF_IMAGE_U8 ||
+      convert(output)->col != VX_DF_IMAGE_U32)
+    return nullptr;
+
+  vx_kernel kern =
+      vxCppKernel(std::string(CPP_KERNEL_DIR) + "/global/integral_" +
                   type_str(output) + "_" + type_str(input) + ".hpp");
   vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
   vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
