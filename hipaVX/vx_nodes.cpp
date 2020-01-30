@@ -1089,3 +1089,26 @@ VX_API_ENTRY vx_node VX_API_CALL vxIntegralImageNode(vx_graph graph,
   vxSetParameterByIndex(hn, 1, (vx_reference)input);
   return hn;
 }
+
+VX_API_ENTRY vx_node VX_API_CALL vxMeanStdDevNode(vx_graph graph,
+                                                  vx_image input,
+                                                  vx_scalar mean,
+                                                  vx_scalar stddev) {
+  if (convert(input)->col != VX_DF_IMAGE_U8 ||
+      convert(mean)->data_type != VX_TYPE_FLOAT32 ||
+      (stddev && convert(stddev)->data_type != VX_TYPE_FLOAT32))
+    return nullptr;
+
+  vx_kernel kern =
+      vxCppKernel(std::string(CPP_KERNEL_DIR) + "/global/mean_std_dev_" +
+                  type_str(input) + ".hpp");
+  vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_SCALAR, 0);
+  vxAddParameterToKernel(kern, 1, VX_OUTPUT, VX_TYPE_SCALAR, VX_PARAMETER_STATE_OPTIONAL);
+  vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_IMAGE, 0);
+
+  auto hn = vxCreateGenericNode(graph, kern);
+  vxSetParameterByIndex(hn, 0, (vx_reference)mean);
+  vxSetParameterByIndex(hn, 1, (vx_reference)stddev);
+  vxSetParameterByIndex(hn, 2, (vx_reference)input);
+  return hn;
+}

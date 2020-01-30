@@ -209,6 +209,12 @@ int main() {
     uint8_t twenty = 20;
     vx_scalar twenty_scalar = vxCreateScalar(context, VX_TYPE_UINT8, &twenty);
 
+    float zero_f = 0;
+    vx_scalar mean =
+        vxCreateScalar(context, VX_TYPE_FLOAT32, (void*)&zero_f);
+    vx_scalar stddev =
+        vxCreateScalar(context, VX_TYPE_FLOAT32, (void*)&zero_f);
+
 	if (vxGetStatus((vx_reference)graph) == VX_SUCCESS) {
 	  printf("graph has been created... \n");
 	  vx_node nodes[] = {
@@ -283,6 +289,7 @@ int main() {
           vxFastCornersNode(graph, images[43], twenty_scalar, true, fast9_corners, fast9_num_corners),
           vxEqualizeHistNode(graph, images[0], images[44]),
           vxIntegralImageNode(graph, images[0], images[45]),
+          vxMeanStdDevNode(graph, images[0], mean, stddev),
       };
 
 	  /*vxWriteImageAfterGraphCompletion(graph, images[0],
