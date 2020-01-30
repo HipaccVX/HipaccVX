@@ -116,9 +116,9 @@ int main() {
 		vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),  /*40: cpp test node */
 		vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),  /*41: median after cpp test node */
 		vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),  /*42: gaussian cpp test node */
-
         vxCreateImageFromFile(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8,
                               "sample.png"),           /* 43: sample corner input image */
+        vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8),  /* 44: eq hist */
     };
 
 	int32_t two = 2;
@@ -280,7 +280,8 @@ int main() {
 		  vxCopyNode(graph, (vx_reference)images[0], (vx_reference)images[37]),
 		  vxNonMaxSuppressionNode(graph, images[4], nullptr, 5, images[38]),*/
           vxFastCornersNode(graph, images[43], twenty_scalar, true, fast9_corners, fast9_num_corners),
-	  };
+          vxEqualizeHistNode(graph, images[0], images[44]),
+      };
 
 	  /*vxWriteImageAfterGraphCompletion(graph, images[0],
 									   "akif-200x300_bw_done_nothing.png");
@@ -328,6 +329,8 @@ int main() {
 									   "akif-200x300_bw_scharr_x.png");
 	  vxWriteImageAfterGraphCompletion(graph, images[38],
                                        "akif-200x300_bw_non_max.png");*/
+      vxWriteImageAfterGraphCompletion(graph, images[44],
+                                       "akif-200x300_bw_eq_hist.png");
 
 	  // Step4.Verify Graph
 	  status = vxVerifyGraph(graph);

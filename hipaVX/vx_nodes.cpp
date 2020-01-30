@@ -1027,17 +1027,19 @@ VX_API_ENTRY vx_node VX_API_CALL vxFastCornersNode(
   vx_matrix mat = vxCreateMatrix(c, VX_TYPE_INT32, 3, 3);
   vxCopyMatrix(mat, (void*)coef, VX_WRITE_ONLY, VX_MEMORY_TYPE_HOST);
 
-  DomVX::Bool *b = new DomVX::Bool(nonmax_suppression);
-  _vx_bool *adaptor_b = new _vx_bool();
+  DomVX::Bool* b = new DomVX::Bool(nonmax_suppression);
+  _vx_bool* adaptor_b = new _vx_bool();
   adaptor_b->o = b;
 
   vx_kernel kern = vxCppKernel(std::string(CPP_KERNEL_DIR) + "/local/fast9_" +
                                type_str(input) + ".hpp");
   vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_ARRAY, 0);
-  vxAddParameterToKernel(kern, 1, VX_OUTPUT, VX_TYPE_SCALAR, VX_PARAMETER_STATE_OPTIONAL);
+  vxAddParameterToKernel(kern, 1, VX_OUTPUT, VX_TYPE_SCALAR,
+                         VX_PARAMETER_STATE_OPTIONAL);
   vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_IMAGE, 0);
-  vxAddParameterToKernel(kern, 3, VX_INPUT, VX_TYPE_SCALAR, 0);//thresh
-  vxAddParameterToKernel(kern, 4, VX_INPUT, VX_TYPE_BOOL, 0);//nonmax_suppression
+  vxAddParameterToKernel(kern, 3, VX_INPUT, VX_TYPE_SCALAR, 0);  // thresh
+  vxAddParameterToKernel(kern, 4, VX_INPUT, VX_TYPE_BOOL,
+                         0);  // nonmax_suppression
 
   auto hn = vxCreateGenericNode(graph, kern);
   vxSetParameterByIndex(hn, 0, (vx_reference)corners);
@@ -1045,5 +1047,24 @@ VX_API_ENTRY vx_node VX_API_CALL vxFastCornersNode(
   vxSetParameterByIndex(hn, 2, (vx_reference)input);
   vxSetParameterByIndex(hn, 3, (vx_reference)strength_thresh);
   vxSetParameterByIndex(hn, 4, (vx_reference)adaptor_b);
+  return hn;
+}
+
+VX_API_ENTRY vx_node VX_API_CALL vxEqualizeHistNode(vx_graph graph,
+                                                    vx_image input,
+                                                    vx_image output) {
+  if (convert(input)->col != VX_DF_IMAGE_U8 ||
+      convert(output)->col != VX_DF_IMAGE_U8)
+    return nullptr;
+
+  vx_kernel kern =
+      vxCppKernel(std::string(CPP_KERNEL_DIR) + "/global/eq_hist_" +
+                  type_str(output) + "_" + type_str(input) + ".hpp");
+  vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
+  vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
+
+  auto hn = vxCreateGenericNode(graph, kern);
+  vxSetParameterByIndex(hn, 0, (vx_reference)output);
+  vxSetParameterByIndex(hn, 1, (vx_reference)input);
   return hn;
 }
