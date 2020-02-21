@@ -55,20 +55,23 @@ VX_API_ENTRY vx_graph VX_API_CALL vxCreateGraph(vx_context context) {
 
 VX_API_ENTRY vx_status VX_API_CALL vxVerifyGraph(vx_graph graph) {
   ((DomVX::Graph *)(graph->o))->build();
+
+  // TODO: Consider having a generator class for every backend
+  // process_graph(((DomVX::Graph *)(graph->o)));
+  auto &dag = ((DomVX::Graph *)(graph->o))->dag;
+  //dag->dont_eliminate_dead_nodes();
+  dag->dump_graph("graph");
+  dag->set_io_nodes();
+  dag->eliminate_dead_nodes();
+  dag->dump_optimized("optimized");
+
   return VX_SUCCESS;
 }
 
 VX_API_ENTRY vx_status VX_API_CALL vxProcessGraph(vx_graph graph) {
   // 1. Get the base main function
   // First, declare the images
-
-  // TODO: Consider having a generator class for every backend
-  // process_graph(((DomVX::Graph *)(graph->o)));
-
   auto &dag = ((DomVX::Graph *)(graph->o))->dag;
-  dag->dont_eliminate_dead_nodes();
-  dag->dump_graph("graph");
-  dag->dump_optimized("optimized");
 
   for (auto out : ((DomVX::Graph *)(graph->o))->write_after_completion)
     dag->space_to_file[out.first] = out.second;

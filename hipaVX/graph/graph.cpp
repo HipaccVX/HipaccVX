@@ -26,7 +26,7 @@ void dag::write_graphviz(std::string _name) {
   graphVX::_write_graphviz(g, _name);
 }
 
-void dag::dump_graph(std::string _name) { graphVX::_dump_graph(g, _name); }
+void dag::dump_graph(std::string _name) { graphVX::_dump_graph<AppGraphT>(this->g, _name); }
 
 void dag::dump_reversed(std::string _name) {
   graphVX::_dump_graph(g_trans, _name);
