@@ -127,6 +127,10 @@ void dag::set_io_nodes() {
         bool is_in = (in_degree(*v, g) == 0);
         bool is_out = (out_degree(*v, g) == 0);
 
+        //std::cout << "Node: " << g[*v].name()
+        //          << ", in_degree = " << in_degree(*v, g)
+        //          << ", out_degree = " << out_degree(*v, g) << std::endl;
+
         if(!is_in && !is_out) {
           inputs.push_back(*v);
           outputs.push_back(*v);

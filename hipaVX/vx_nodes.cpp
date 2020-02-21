@@ -374,9 +374,9 @@ VX_API_ENTRY vx_node VX_API_CALL vxThresholdNode(vx_graph graph, vx_image input,
                                                  vx_threshold thresh,
                                                  vx_image output) {
   // Currently only output U8 supported
-  if (convert(output)->col != VX_DF_IMAGE_U8 ||
-      convert(input)->col != VX_DF_IMAGE_U8)
-    return nullptr;
+//  if (convert(output)->col != VX_DF_IMAGE_U8 ||
+//      convert(input)->col != VX_DF_IMAGE_U8)
+//    return nullptr;
 
   vx_context c = new _vx_context();
   c->o = convert(graph)->context;

@@ -59,9 +59,9 @@ VX_API_ENTRY vx_status VX_API_CALL vxVerifyGraph(vx_graph graph) {
   // TODO: Consider having a generator class for every backend
   // process_graph(((DomVX::Graph *)(graph->o)));
   auto &dag = ((DomVX::Graph *)(graph->o))->dag;
-  //dag->dont_eliminate_dead_nodes();
   dag->dump_graph("graph");
   dag->set_io_nodes();
+  //dag->print_io_nodes();
   dag->eliminate_dead_nodes();
   dag->dump_optimized("optimized");
 
@@ -160,6 +160,17 @@ VX_API_ENTRY vx_image VX_API_CALL vxCreateImage(vx_context context,
   auto vx = new _vx_image();
   vx->o = image;
   ((DomVX::Context *)(context->o))->images.emplace_back(image);
+  return vx;
+}
+
+VX_API_ENTRY vx_image VX_API_CALL vxCreateVirtualImage(vx_graph graph,
+                                                       vx_uint32 width,
+                                                       vx_uint32 height,
+                                                       vx_df_image color) {
+  DomVX::Image *image = new DomVX::Image(width, height, color);
+  image->is_virtual(true);
+  auto vx = new _vx_image();
+  vx->o = image;
   return vx;
 }
 
