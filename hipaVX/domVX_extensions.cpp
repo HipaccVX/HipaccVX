@@ -27,49 +27,6 @@ void vxWriteImageAfterGraphCompletion(vx_graph graph, vx_image image,
 
 static std::string get_object_name(DomVX::Object *object) { return nullptr; }
 
-void vxDrawDotGraph(vx_graph graph, std::string filename,
-                    vx_uint32 node_depth) {
-  if (node_depth != 0)
-    throw std::runtime_error("Currently only node_depth of 0 is supported");
-  std::vector<DomVX::Node *> nodes = ((DomVX::Graph *)(graph->o))->graph;
-  std::vector<DomVX::Object *> objects;
-
-  std::string content;
-
-  std::string edges;
-  for (auto node : nodes) {
-    auto inputs = node->inputs;
-    auto outputs = node->outputs;
-
-    for (auto input : inputs) {
-      edges += "\tID_" + input->id() + " -> ID_" + node->id() + ";\n";
-    }
-    for (auto output : outputs) {
-      edges += "\tID_" + node->id() + " -> ID_" + output->id() + ";\n";
-    }
-
-    objects.insert(objects.end(), inputs.begin(), inputs.end());
-    objects.insert(objects.end(), outputs.begin(), outputs.end());
-  }
-
-  std::sort(objects.begin(), objects.end());
-  objects.erase(std::unique(objects.begin(), objects.end()), objects.end());
-
-  std::string node_definitions;
-  for (auto node : nodes)
-    node_definitions += "\tID_" + node->id() + " [label=\"" + node->name() +
-                        "\", color=green];\n";
-  for (auto object : objects)
-    node_definitions += "\tID_" + object->id() + " [label=\"" +
-                        get_object_name(object) +
-                        "\", shape=box, color=blue];\n";
-
-  content += node_definitions;
-  content += edges;
-  std::ofstream dot_writer(filename);
-  dot_writer << "digraph graphname {\n" << content << "}";
-}
-
 vx_kernel vxHipaccKernel(std::string filename) {
   auto kern = new DomVX::HipaccKernel();
   kern->filename = filename;
@@ -84,4 +41,9 @@ vx_kernel vxCppKernel(std::string filename) {
   auto vx = new _vx_kernel();
   vx->o = kern;
   return vx;
+}
+
+void set_output_filename(std::string filename)
+{
+    hipaVX_output_filename = filename;
 }

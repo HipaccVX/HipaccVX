@@ -6,19 +6,20 @@
 #pragma once
 
 std::string use_template(const std::string &template_string,
-					const std::string &template_variable,
-					const std::string &actual_variable);
+                         const std::string &template_variable,
+                         const std::string &actual_variable);
 
 std::string use_template(const std::string &template_string,
-					const std::string &template_variable, const int actual_variable);
+                         const std::string &template_variable,
+                         const int actual_variable);
 
 std::string use_template(const std::string &template_string,
-					const std::string &template_variable,
-                    const unsigned int actual_variable);
+                         const std::string &template_variable,
+                         const unsigned int actual_variable);
 
 std::string use_template(const std::string &template_string,
-					const std::string &template_variable,
-                    const double actual_variable);
+                         const std::string &template_variable,
+                         const double actual_variable);
 
 std::string read_file(const std::string &filename);
 

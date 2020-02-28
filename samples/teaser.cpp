@@ -10,6 +10,9 @@
 
 int main(int argc, char *argv[])
 {
+#ifdef HIPAVX_OUTPUT_FILENAME
+  set_output_filename(HIPAVX_OUTPUT_FILENAME);
+#endif
   vx_status status = VX_SUCCESS;
   vx_uint32 width = 2048;
   vx_uint32 height = 2048;

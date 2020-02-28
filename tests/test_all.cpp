@@ -39,7 +39,9 @@ int main() {
 
   return 0;
 */
-
+#ifdef HIPAVX_OUTPUT_FILENAME
+  set_output_filename(HIPAVX_OUTPUT_FILENAME);
+#endif
   vx_status status = VX_FAILURE;
   // Step 1.Create Context
   vx_context context = vxCreateContext();
@@ -346,9 +348,7 @@ int main() {
 	  if (status == VX_SUCCESS) {
 		// Step5. Process Graph
 		status = vxProcessGraph(graph);
-	  }
-
-	  // vxDrawDotGraph(graph, "graph.dot", 0);
+      }
 
 	  for (i = 0; i < 8; i++) {
 		vxReleaseNode(&nodes[i]);

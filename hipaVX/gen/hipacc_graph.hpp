@@ -13,6 +13,7 @@
 //#define ERRORM(msg) static_assert(true, msg);
 #define ERRORM(msg) throw std::runtime_error((msg));
 
+
 using DomVX::ObjectTask;
 using DomVX::ObjectType;
 using graphVX::dag;
@@ -765,7 +766,7 @@ class hipacc_gen : public graph_gen, public hipacc_writer {
 
     auto code = ss.str();
     std::cout << code;
-    std::ofstream to_file("hipacc_tmp/hipacc_gen.cpp");
+    std::ofstream to_file(hipaVX_output_filename);
     to_file << code;
   }
 };

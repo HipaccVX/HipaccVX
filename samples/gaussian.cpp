@@ -8,6 +8,9 @@
 #include "hipaVX/domVX_extensions.hpp"
 
 int main(int argc, char *argv[]) {
+#ifdef HIPAVX_OUTPUT_FILENAME
+    set_output_filename(HIPAVX_OUTPUT_FILENAME);
+#endif
     vx_uint32 width = 200;
     vx_uint32 height = 300;
 
@@ -29,7 +32,7 @@ int main(int argc, char *argv[]) {
             };
         }
 
-        vx_status status = vxVerifyGraph(graph);
+        status = vxVerifyGraph(graph);
 
         if (status == VX_SUCCESS) {
             status = vxProcessGraph(graph);
@@ -38,8 +41,6 @@ int main(int argc, char *argv[]) {
             printf("VERIFICATION ERROR: %d\n", status);
         }
 
-        vxDrawDotGraph(graph, "graph.dot", 0);
-        vxReleaseGraph(&graph);
 	    for (int i = 0; i < 2; i++) vxReleaseImage(&img[i]);
     }
     vxReleaseContext(&context);

@@ -37,3 +37,6 @@ hipacc_compile_pass/akif-200x300_rgba_*
 
 #documentation
 doc/html/
+
+build*/
+hipacc/

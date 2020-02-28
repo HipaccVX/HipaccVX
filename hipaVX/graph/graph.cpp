@@ -1,5 +1,7 @@
 #include "graph.hpp"
 
+std::string hipaVX_output_filename = "main.hipaVX.cpp";
+
 namespace graphVX {
 
 //*********************************************************************

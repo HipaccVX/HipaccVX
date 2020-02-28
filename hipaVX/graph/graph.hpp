@@ -33,6 +33,9 @@
 
 // Vertex { std::string name, VertexTask task}
 
+extern std::string hipaVX_output_filename;
+//std::string hipavx_output_filename = "hipacc_tmp/hipacc_gen.cpp";
+
 namespace graphVX {
 
 using VertexType = DomVX::Object;

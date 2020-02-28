@@ -24,10 +24,6 @@ vx_image vxCreateImageFromFile(vx_context context, vx_uint32 width,
 void vxWriteImageAfterGraphCompletion(vx_graph graph, vx_image image,
                                       std::string file);
 
-// generate a .dot file from an OpenVX graph
-void vxDrawDotGraph(vx_graph graph, std::string filename,
-                    vx_uint32 node_depth = 0);
-
 // TODO: get rid of this one
 // Write a vx_image to a file
 vx_node vxAnotherBilateralFilterNode(vx_graph graph, vx_image image,
@@ -36,3 +32,5 @@ vx_node vxAnotherBilateralFilterNode(vx_graph graph, vx_image image,
 vx_kernel vxHipaccKernel(std::string filename);
 
 vx_kernel vxCppKernel(std::string filename);
+
+void set_output_filename(std::string filename);
