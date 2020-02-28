@@ -373,10 +373,10 @@ VX_API_ENTRY vx_node VX_API_CALL vxAbsDiffNode(vx_graph graph, vx_image in1,
 VX_API_ENTRY vx_node VX_API_CALL vxThresholdNode(vx_graph graph, vx_image input,
                                                  vx_threshold thresh,
                                                  vx_image output) {
-  // Currently only output U8 supported
-//  if (convert(output)->col != VX_DF_IMAGE_U8 ||
-//      convert(input)->col != VX_DF_IMAGE_U8)
-//    return nullptr;
+  if (convert(output)->col != VX_DF_IMAGE_U8 ||
+      (convert(input)->col != VX_DF_IMAGE_U8 &&
+       convert(input)->col != VX_DF_IMAGE_S16))
+    return nullptr;
 
   vx_context c = new _vx_context();
   c->o = convert(graph)->context;
@@ -1103,7 +1103,8 @@ VX_API_ENTRY vx_node VX_API_CALL vxMeanStdDevNode(vx_graph graph,
       vxCppKernel(std::string(CPP_KERNEL_DIR) + "/global/mean_std_dev_" +
                   type_str(input) + ".hpp");
   vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_SCALAR, 0);
-  vxAddParameterToKernel(kern, 1, VX_OUTPUT, VX_TYPE_SCALAR, VX_PARAMETER_STATE_OPTIONAL);
+  vxAddParameterToKernel(kern, 1, VX_OUTPUT, VX_TYPE_SCALAR,
+                         VX_PARAMETER_STATE_OPTIONAL);
   vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_IMAGE, 0);
 
   auto hn = vxCreateGenericNode(graph, kern);
