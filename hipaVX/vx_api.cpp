@@ -28,7 +28,7 @@
 
 // Error Checking
 VX_API_ENTRY vx_status VX_API_CALL vxGetStatus(vx_reference reference) {
-  return VX_SUCCESS;
+  return reference->o->status;
 }
 
 // Object: Context
@@ -54,6 +54,8 @@ VX_API_ENTRY vx_graph VX_API_CALL vxCreateGraph(vx_context context) {
 }
 
 VX_API_ENTRY vx_status VX_API_CALL vxVerifyGraph(vx_graph graph) {
+  if (graph->o->status != VX_SUCCESS) return graph->o->status;
+
   ((DomVX::Graph *)(graph->o))->build();
 
   // TODO: Consider having a generator class for every backend
@@ -61,7 +63,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxVerifyGraph(vx_graph graph) {
   auto &dag = ((DomVX::Graph *)(graph->o))->dag;
   dag->dump_graph("graph");
   dag->set_io_nodes();
-  //dag->print_io_nodes();
+  // dag->print_io_nodes();
   dag->eliminate_dead_nodes();
   dag->dump_optimized("optimized");
 

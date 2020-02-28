@@ -142,8 +142,13 @@ VX_API_ENTRY vx_node VX_API_CALL vxChannelExtractNode(vx_graph graph,
                                                       vx_image output) {
   if ((convert(input)->col != VX_DF_IMAGE_RGBX &&
        convert(input)->col != VX_DF_IMAGE_UYVY) ||
-      convert(output)->col != VX_DF_IMAGE_U8)
+      convert(output)->col != VX_DF_IMAGE_U8) {
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
 
   vx_kernel kern =
       vxHipaccKernel(std::string(HIPACC_KERNEL_DIR) + "/point/channelextract_" +
@@ -166,8 +171,13 @@ vxChannelCombineNode(vx_graph graph, vx_image plane0, vx_image plane1,
       convert(plane0)->col != VX_DF_IMAGE_U8 || plane1 == nullptr ||
       convert(plane1)->col != VX_DF_IMAGE_U8 || plane2 == nullptr ||
       convert(plane2)->col != VX_DF_IMAGE_U8 || plane3 == nullptr ||
-      convert(plane3)->col != VX_DF_IMAGE_U8)
+      convert(plane3)->col != VX_DF_IMAGE_U8) {
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
 
   vx_kernel kern = vxHipaccKernel(
       std::string(HIPACC_KERNEL_DIR) + "/point/channelcombine_" +
@@ -197,14 +207,24 @@ VX_API_ENTRY vx_node VX_API_CALL vxPhaseNode(vx_graph graph, vx_image grad_x,
 VX_API_ENTRY vx_node VX_API_CALL vxCopyNode(vx_graph graph, vx_reference input,
                                             vx_reference output) {
   // Current support only for images
-  if (input->o->type() != VX_TYPE_IMAGE || output->o->type() != VX_TYPE_IMAGE)
+  if (input->o->type() != VX_TYPE_IMAGE || output->o->type() != VX_TYPE_IMAGE) {
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
   auto in_im = dynamic_cast<DomVX::Image*>(input->o);
   auto out_im = dynamic_cast<DomVX::Image*>(output->o);
   if (in_im->col != out_im->col ||
       (in_im->col != VX_DF_IMAGE_U8 && in_im->col != VX_DF_IMAGE_S16 &&
-       in_im->col != VX_TYPE_FLOAT32))
+       in_im->col != VX_TYPE_FLOAT32)) {
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
 
   vx_kernel kern =
       vxHipaccKernel(std::string(HIPACC_KERNEL_DIR) + "/point/copy_" +
@@ -223,8 +243,13 @@ VX_API_ENTRY vx_node VX_API_CALL vxSobel3x3Node(vx_graph graph, vx_image input,
                                                 vx_image output_y) {
   if ((convert(input)->col != VX_DF_IMAGE_U8) ||
       ((!output_x) && convert(output_x)->col != VX_DF_IMAGE_S16) ||
-      ((!output_y) && convert(output_y)->col != VX_DF_IMAGE_S16))
+      ((!output_y) && convert(output_y)->col != VX_DF_IMAGE_S16)) {
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
 
   auto multi_node = new DomVX::MultiNode();
 
@@ -282,8 +307,13 @@ VX_API_ENTRY vx_node VX_API_CALL vxMagnitudeNode(vx_graph graph,
                                                  vx_image mag) {
   if (convert(mag)->col != VX_DF_IMAGE_S16 ||
       convert(grad_x)->col != VX_DF_IMAGE_S16 ||
-      convert(grad_y)->col != VX_DF_IMAGE_S16)
+      convert(grad_y)->col != VX_DF_IMAGE_S16) {
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
 
   vx_kernel kern = vxHipaccKernel(
       std::string(HIPACC_KERNEL_DIR) + "/point/magnitude_" + type_str(mag) +
@@ -306,21 +336,47 @@ VX_API_ENTRY vx_node VX_API_CALL vxMultiplyNode(vx_graph graph, vx_image in1,
                                                 vx_image out) {
   if (convert(out)->col == VX_DF_IMAGE_U8 &&
       (convert(in1)->col != VX_DF_IMAGE_U8 ||
-       convert(in2)->col != VX_DF_IMAGE_U8))
+       convert(in2)->col != VX_DF_IMAGE_U8)) {
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
 
   if (convert(in1)->col != VX_DF_IMAGE_U8 &&
-      convert(in1)->col != VX_DF_IMAGE_S16)
+      convert(in1)->col != VX_DF_IMAGE_S16) {
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
   if (convert(in2)->col != VX_DF_IMAGE_U8 &&
-      convert(in2)->col != VX_DF_IMAGE_S16)
+      convert(in2)->col != VX_DF_IMAGE_S16) {
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
   if (convert(out)->col != VX_DF_IMAGE_U8 &&
-      convert(out)->col != VX_DF_IMAGE_S16)
+      convert(out)->col != VX_DF_IMAGE_S16) {
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
 
-  if (rounding_policy != VX_ROUND_POLICY_TO_ZERO)
-    return nullptr;  // Nearest not supported currently
+  if (rounding_policy !=
+      VX_ROUND_POLICY_TO_ZERO) {  // Nearest not supported currently
+    convert(graph)->status = VX_ERROR_INVALID_NODE;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_NOT_SUPPORTED;
+    return nullptr;
+  }
 
   vx_kernel kern =
       vxHipaccKernel(std::string(HIPACC_KERNEL_DIR) + "/point/mul_" +
@@ -343,18 +399,26 @@ VX_API_ENTRY vx_node VX_API_CALL vxAbsDiffNode(vx_graph graph, vx_image in1,
                                                vx_image in2, vx_image out) {
   if (convert(out)->col == VX_DF_IMAGE_U8 &&
       (convert(in1)->col != VX_DF_IMAGE_U8 ||
-       convert(in2)->col != VX_DF_IMAGE_U8))
+       convert(in2)->col != VX_DF_IMAGE_U8)) {
+    convert(graph)->status = VX_ERROR_INVALID_VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
 
   if (convert(in1)->col != VX_DF_IMAGE_U8 &&
-      convert(in1)->col != VX_DF_IMAGE_S16)
+      convert(in1)->col != VX_DF_IMAGE_S16) {
+    convert(graph)->status = VX_ERROR_INVALID_VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
   if (convert(in2)->col != VX_DF_IMAGE_U8 &&
-      convert(in2)->col != VX_DF_IMAGE_S16)
+      convert(in2)->col != VX_DF_IMAGE_S16) {
+    convert(graph)->status = VX_ERROR_INVALID_VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
   if (convert(out)->col != VX_DF_IMAGE_U8 &&
-      convert(out)->col != VX_DF_IMAGE_S16)
+      convert(out)->col != VX_DF_IMAGE_S16) {
+    convert(graph)->status = VX_ERROR_INVALID_VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
 
   vx_kernel kern = vxHipaccKernel(std::string(HIPACC_KERNEL_DIR) +
                                   "/point/absdiff_" + type_str(out) + "_" +
@@ -375,8 +439,10 @@ VX_API_ENTRY vx_node VX_API_CALL vxThresholdNode(vx_graph graph, vx_image input,
                                                  vx_image output) {
   if (convert(output)->col != VX_DF_IMAGE_U8 ||
       (convert(input)->col != VX_DF_IMAGE_U8 &&
-       convert(input)->col != VX_DF_IMAGE_S16))
+       convert(input)->col != VX_DF_IMAGE_S16)) {
+    convert(graph)->status = VX_ERROR_INVALID_VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
 
   vx_context c = new _vx_context();
   c->o = convert(graph)->context;
@@ -434,8 +500,10 @@ VX_API_ENTRY vx_node VX_API_CALL vxThresholdNode(vx_graph graph, vx_image input,
 VX_API_ENTRY vx_node VX_API_CALL vxErode3x3Node(vx_graph graph, vx_image input,
                                                 vx_image output) {
   if (convert(output)->col != VX_DF_IMAGE_U8 ||
-      convert(input)->col != VX_DF_IMAGE_U8)
+      convert(input)->col != VX_DF_IMAGE_U8) {
+    convert(graph)->status = VX_ERROR_INVALID_VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
 
   const int coef[9] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
   vx_context c = new _vx_context();
@@ -460,8 +528,10 @@ VX_API_ENTRY vx_node VX_API_CALL vxErode3x3Node(vx_graph graph, vx_image input,
 VX_API_ENTRY vx_node VX_API_CALL vxDilate3x3Node(vx_graph graph, vx_image input,
                                                  vx_image output) {
   if (convert(output)->col != VX_DF_IMAGE_U8 ||
-      convert(input)->col != VX_DF_IMAGE_U8)
+      convert(input)->col != VX_DF_IMAGE_U8) {
+    convert(graph)->status = VX_ERROR_INVALID_VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
 
   const int coef[9] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
   vx_context c = new _vx_context();
@@ -486,8 +556,10 @@ VX_API_ENTRY vx_node VX_API_CALL vxDilate3x3Node(vx_graph graph, vx_image input,
 VX_API_ENTRY vx_node VX_API_CALL vxBox3x3Node(vx_graph graph, vx_image input,
                                               vx_image output) {
   if (convert(input)->col != VX_DF_IMAGE_U8 ||
-      convert(output)->col != VX_DF_IMAGE_U8)
+      convert(output)->col != VX_DF_IMAGE_U8) {
+    convert(graph)->status = VX_ERROR_INVALID_VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
 
   const int coef_box[9] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
   vx_context c = new _vx_context();
@@ -513,8 +585,10 @@ VX_API_ENTRY vx_node VX_API_CALL vxGaussian3x3Node(vx_graph graph,
                                                    vx_image input,
                                                    vx_image output) {
   if (convert(input)->col != VX_DF_IMAGE_U8 ||
-      convert(output)->col != VX_DF_IMAGE_U8)
+      convert(output)->col != VX_DF_IMAGE_U8) {
+    convert(graph)->status = VX_ERROR_INVALID_VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
 
   const int coef_box[9] = {1, 2, 1, 2, 4, 2, 1, 2, 1};
   vx_context c = new _vx_context();
@@ -541,8 +615,13 @@ VX_API_ENTRY vx_node VX_API_CALL vxConvolveNode(vx_graph graph, vx_image input,
                                                 vx_image output) {
   if (convert(input)->col != VX_DF_IMAGE_U8 ||
       (convert(output)->col != VX_DF_IMAGE_U8 &&
-       convert(output)->col != VX_DF_IMAGE_S16))
+       convert(output)->col != VX_DF_IMAGE_S16)) {
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
 
   auto convolution = convert(conv);
   vx_context c = new _vx_context();
@@ -598,19 +677,42 @@ VX_API_ENTRY vx_node VX_API_CALL vxNonMaxSuppressionNode(vx_graph graph,
   if ((convert(output)->col != VX_DF_IMAGE_U8 ||
        convert(input)->col != VX_DF_IMAGE_U8) &&
       (convert(output)->col != VX_DF_IMAGE_S16 ||
-       convert(input)->col != VX_DF_IMAGE_S16))
+       convert(input)->col != VX_DF_IMAGE_S16)) {
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
 
-  if (mask != nullptr) return nullptr;  // Currently not supported
+  if (mask != nullptr) {  // Currently not supported
+    convert(graph)->status = VX_ERROR_INVALID_NODE;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_NOT_SUPPORTED;
+    return nullptr;
+  }
 
-  if (win_size % 2 == 0) return nullptr;
+  if (win_size % 2 == 0) {
+    convert(graph)->status = VX_ERROR_INVALID_VALUE;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_VALUE;
+    return nullptr;
+  }
 
   vx_int32 width = convert(input)->w;
   vx_int32 height = convert(input)->h;
   vx_int32 small_side = width;
   if (small_side > height) small_side = height;
 
-  if (small_side < win_size) return nullptr;
+  if (small_side < win_size) {
+    convert(graph)->status = VX_ERROR_INVALID_VALUE;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_VALUE;
+    return nullptr;
+  }
 
   std::vector<int> coef(win_size * win_size, 1);
   vx_context c = new _vx_context();
@@ -636,8 +738,13 @@ VX_API_ENTRY vx_node VX_API_CALL vxAndNode(vx_graph graph, vx_image in1,
                                            vx_image in2, vx_image out) {
   if (convert(out)->col != VX_DF_IMAGE_U8 ||
       convert(in1)->col != VX_DF_IMAGE_U8 ||
-      convert(in2)->col != VX_DF_IMAGE_U8)
+      convert(in2)->col != VX_DF_IMAGE_U8) {
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
 
   vx_kernel kern = vxHipaccKernel(std::string(HIPACC_KERNEL_DIR) +
                                   "/point/bitwiseand_" + type_str(out) + "_" +
@@ -657,8 +764,13 @@ VX_API_ENTRY vx_node VX_API_CALL vxOrNode(vx_graph graph, vx_image in1,
                                           vx_image in2, vx_image out) {
   if (convert(out)->col != VX_DF_IMAGE_U8 ||
       convert(in1)->col != VX_DF_IMAGE_U8 ||
-      convert(in2)->col != VX_DF_IMAGE_U8)
+      convert(in2)->col != VX_DF_IMAGE_U8) {
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
 
   vx_kernel kern = vxHipaccKernel(std::string(HIPACC_KERNEL_DIR) +
                                   "/point/bitwiseor_" + type_str(out) + "_" +
@@ -678,8 +790,13 @@ VX_API_ENTRY vx_node VX_API_CALL vxXorNode(vx_graph graph, vx_image in1,
                                            vx_image in2, vx_image out) {
   if (convert(out)->col != VX_DF_IMAGE_U8 ||
       convert(in1)->col != VX_DF_IMAGE_U8 ||
-      convert(in2)->col != VX_DF_IMAGE_U8)
+      convert(in2)->col != VX_DF_IMAGE_U8) {
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
 
   vx_kernel kern = vxHipaccKernel(std::string(HIPACC_KERNEL_DIR) +
                                   "/point/bitwisexor_" + type_str(out) + "_" +
@@ -698,8 +815,13 @@ VX_API_ENTRY vx_node VX_API_CALL vxXorNode(vx_graph graph, vx_image in1,
 VX_API_ENTRY vx_node VX_API_CALL vxNotNode(vx_graph graph, vx_image input,
                                            vx_image output) {
   if (convert(output)->col != VX_DF_IMAGE_U8 ||
-      convert(input)->col != VX_DF_IMAGE_U8)
+      convert(input)->col != VX_DF_IMAGE_U8) {
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
 
   vx_kernel kern =
       vxHipaccKernel(std::string(HIPACC_KERNEL_DIR) + "/point/bitwisenot_" +
@@ -718,18 +840,38 @@ VX_API_ENTRY vx_node VX_API_CALL vxAddNode(vx_graph graph, vx_image in1,
                                            vx_image out) {
   if (convert(out)->col == VX_DF_IMAGE_U8 &&
       (convert(in1)->col != VX_DF_IMAGE_U8 ||
-       convert(in2)->col != VX_DF_IMAGE_U8))
+       convert(in2)->col != VX_DF_IMAGE_U8)) {
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
 
   if (convert(in1)->col != VX_DF_IMAGE_U8 &&
-      convert(in1)->col != VX_DF_IMAGE_S16)
+      convert(in1)->col != VX_DF_IMAGE_S16) {
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
   if (convert(in2)->col != VX_DF_IMAGE_U8 &&
-      convert(in2)->col != VX_DF_IMAGE_S16)
+      convert(in2)->col != VX_DF_IMAGE_S16) {
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
   if (convert(out)->col != VX_DF_IMAGE_U8 &&
-      convert(out)->col != VX_DF_IMAGE_S16)
+      convert(out)->col != VX_DF_IMAGE_S16) {
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
 
   vx_kernel kern = vxHipaccKernel(
       std::string(HIPACC_KERNEL_DIR) + "/point/add_" + policy_str(policy) +
@@ -750,18 +892,38 @@ VX_API_ENTRY vx_node VX_API_CALL vxSubtractNode(vx_graph graph, vx_image in1,
                                                 vx_image out) {
   if (convert(out)->col == VX_DF_IMAGE_U8 &&
       (convert(in1)->col != VX_DF_IMAGE_U8 ||
-       convert(in2)->col != VX_DF_IMAGE_U8))
+       convert(in2)->col != VX_DF_IMAGE_U8)) {
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
 
   if (convert(in1)->col != VX_DF_IMAGE_U8 &&
-      convert(in1)->col != VX_DF_IMAGE_S16)
+      convert(in1)->col != VX_DF_IMAGE_S16) {
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
   if (convert(in2)->col != VX_DF_IMAGE_U8 &&
-      convert(in2)->col != VX_DF_IMAGE_S16)
+      convert(in2)->col != VX_DF_IMAGE_S16) {
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
   if (convert(out)->col != VX_DF_IMAGE_U8 &&
-      convert(out)->col != VX_DF_IMAGE_S16)
+      convert(out)->col != VX_DF_IMAGE_S16) {
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
 
   vx_kernel kern = vxHipaccKernel(
       std::string(HIPACC_KERNEL_DIR) + "/point/sub_" + policy_str(policy) +
@@ -783,11 +945,21 @@ VX_API_ENTRY vx_node VX_API_CALL vxConvertDepthNode(vx_graph graph,
                                                     vx_enum policy,
                                                     vx_scalar shift) {
   if (convert(input)->col == VX_DF_IMAGE_U8 &&
-      convert(output)->col != VX_DF_IMAGE_S16)
+      convert(output)->col != VX_DF_IMAGE_S16) {
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
   if (convert(input)->col == VX_DF_IMAGE_S16 &&
-      convert(output)->col != VX_DF_IMAGE_U8)
+      convert(output)->col != VX_DF_IMAGE_U8) {
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
   if (convert(shift)->data_type != VX_TYPE_INT32) return nullptr;
   if (convert(shift)->i32 < 0 || convert(shift)->i32 >= 8) return nullptr;
 
@@ -869,8 +1041,13 @@ VX_API_ENTRY vx_node VX_API_CALL vxHarrisCornersNode(
     sobel_y = vxCreateMatrix(c, VX_TYPE_INT32, 7, 7);
     vxCopyMatrix(sobel_y, (void*)sobel_y_coefs, VX_WRITE_ONLY,
                  VX_MEMORY_TYPE_HOST);
-  } else
+  } else {
+    convert(graph)->status = VX_ERROR_INVALID_VALUE;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_VALUE;
     return nullptr;
+  }
 
   if (block_size == 3) {
     const int block_coefs[9] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
@@ -891,8 +1068,13 @@ VX_API_ENTRY vx_node VX_API_CALL vxHarrisCornersNode(
     window = vxCreateMatrix(c, VX_TYPE_INT32, 7, 7);
     vxCopyMatrix(window, (void*)block_coefs, VX_WRITE_ONLY,
                  VX_MEMORY_TYPE_HOST);
-  } else
+  } else {
+    convert(graph)->status = VX_ERROR_INVALID_VALUE;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_VALUE;
     return nullptr;
+  }
 
   auto multi_node = new DomVX::MultiNode();
 
@@ -995,8 +1177,13 @@ VX_API_ENTRY vx_node VX_API_CALL vxHarrisCornersNode(
 VX_API_ENTRY vx_node VX_API_CALL vxMedian3x3Node(vx_graph graph, vx_image input,
                                                  vx_image output) {
   if (convert(input)->col != VX_DF_IMAGE_U8 ||
-      convert(output)->col != VX_DF_IMAGE_U8)
+      convert(output)->col != VX_DF_IMAGE_U8) {
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
 
   const int coef_box[9] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
   vx_context c = new _vx_context();
@@ -1021,7 +1208,13 @@ VX_API_ENTRY vx_node VX_API_CALL vxMedian3x3Node(vx_graph graph, vx_image input,
 VX_API_ENTRY vx_node VX_API_CALL vxFastCornersNode(
     vx_graph graph, vx_image input, vx_scalar strength_thresh,
     vx_bool nonmax_suppression, vx_array corners, vx_scalar num_corners) {
-  if (convert(input)->col != VX_DF_IMAGE_U8) return nullptr;
+  if (convert(input)->col != VX_DF_IMAGE_U8) {
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_FORMAT;
+    return nullptr;
+  }
 
   const int coef[9] = {1, 2, 1, 2, 4, 2, 1, 2, 1};
   vx_context c = new _vx_context();
@@ -1056,8 +1249,13 @@ VX_API_ENTRY vx_node VX_API_CALL vxEqualizeHistNode(vx_graph graph,
                                                     vx_image input,
                                                     vx_image output) {
   if (convert(input)->col != VX_DF_IMAGE_U8 ||
-      convert(output)->col != VX_DF_IMAGE_U8)
+      convert(output)->col != VX_DF_IMAGE_U8) {
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
 
   vx_kernel kern =
       vxCppKernel(std::string(CPP_KERNEL_DIR) + "/global/eq_hist_" +
@@ -1075,8 +1273,13 @@ VX_API_ENTRY vx_node VX_API_CALL vxIntegralImageNode(vx_graph graph,
                                                      vx_image input,
                                                      vx_image output) {
   if (convert(input)->col != VX_DF_IMAGE_U8 ||
-      convert(output)->col != VX_DF_IMAGE_U32)
+      convert(output)->col != VX_DF_IMAGE_U32) {
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
 
   vx_kernel kern =
       vxCppKernel(std::string(CPP_KERNEL_DIR) + "/global/integral_" +
@@ -1096,8 +1299,13 @@ VX_API_ENTRY vx_node VX_API_CALL vxMeanStdDevNode(vx_graph graph,
                                                   vx_scalar stddev) {
   if (convert(input)->col != VX_DF_IMAGE_U8 ||
       convert(mean)->data_type != VX_TYPE_FLOAT32 ||
-      (stddev && convert(stddev)->data_type != VX_TYPE_FLOAT32))
+      (stddev && convert(stddev)->data_type != VX_TYPE_FLOAT32)) {
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
+    auto vx = new _vx_node();
+    vx->o = new DomVX::Object();
+    vx->o->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
+  }
 
   vx_kernel kern =
       vxCppKernel(std::string(CPP_KERNEL_DIR) + "/global/mean_std_dev_" +

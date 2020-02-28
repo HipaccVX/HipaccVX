@@ -57,6 +57,8 @@ class Object {
 
   ObjectTask obj_task = ObjectTask::Invalid;
 
+  vx_status_e status = VX_SUCCESS;
+
  protected:
   Object *_obj;
 
