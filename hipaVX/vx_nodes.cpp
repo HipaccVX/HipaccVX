@@ -400,23 +400,23 @@ VX_API_ENTRY vx_node VX_API_CALL vxAbsDiffNode(vx_graph graph, vx_image in1,
   if (convert(out)->col == VX_DF_IMAGE_U8 &&
       (convert(in1)->col != VX_DF_IMAGE_U8 ||
        convert(in2)->col != VX_DF_IMAGE_U8)) {
-    convert(graph)->status = VX_ERROR_INVALID_VX_ERROR_INVALID_FORMAT;
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
   }
 
   if (convert(in1)->col != VX_DF_IMAGE_U8 &&
       convert(in1)->col != VX_DF_IMAGE_S16) {
-    convert(graph)->status = VX_ERROR_INVALID_VX_ERROR_INVALID_FORMAT;
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
   }
   if (convert(in2)->col != VX_DF_IMAGE_U8 &&
       convert(in2)->col != VX_DF_IMAGE_S16) {
-    convert(graph)->status = VX_ERROR_INVALID_VX_ERROR_INVALID_FORMAT;
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
   }
   if (convert(out)->col != VX_DF_IMAGE_U8 &&
       convert(out)->col != VX_DF_IMAGE_S16) {
-    convert(graph)->status = VX_ERROR_INVALID_VX_ERROR_INVALID_FORMAT;
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
   }
 
@@ -440,7 +440,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxThresholdNode(vx_graph graph, vx_image input,
   if (convert(output)->col != VX_DF_IMAGE_U8 ||
       (convert(input)->col != VX_DF_IMAGE_U8 &&
        convert(input)->col != VX_DF_IMAGE_S16)) {
-    convert(graph)->status = VX_ERROR_INVALID_VX_ERROR_INVALID_FORMAT;
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
   }
 
@@ -501,7 +501,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxErode3x3Node(vx_graph graph, vx_image input,
                                                 vx_image output) {
   if (convert(output)->col != VX_DF_IMAGE_U8 ||
       convert(input)->col != VX_DF_IMAGE_U8) {
-    convert(graph)->status = VX_ERROR_INVALID_VX_ERROR_INVALID_FORMAT;
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
   }
 
@@ -529,7 +529,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxDilate3x3Node(vx_graph graph, vx_image input,
                                                  vx_image output) {
   if (convert(output)->col != VX_DF_IMAGE_U8 ||
       convert(input)->col != VX_DF_IMAGE_U8) {
-    convert(graph)->status = VX_ERROR_INVALID_VX_ERROR_INVALID_FORMAT;
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
   }
 
@@ -557,7 +557,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxBox3x3Node(vx_graph graph, vx_image input,
                                               vx_image output) {
   if (convert(input)->col != VX_DF_IMAGE_U8 ||
       convert(output)->col != VX_DF_IMAGE_U8) {
-    convert(graph)->status = VX_ERROR_INVALID_VX_ERROR_INVALID_FORMAT;
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
   }
 
@@ -586,7 +586,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxGaussian3x3Node(vx_graph graph,
                                                    vx_image output) {
   if (convert(input)->col != VX_DF_IMAGE_U8 ||
       convert(output)->col != VX_DF_IMAGE_U8) {
-    convert(graph)->status = VX_ERROR_INVALID_VX_ERROR_INVALID_FORMAT;
+    convert(graph)->status = VX_ERROR_INVALID_FORMAT;
     return nullptr;
   }
 

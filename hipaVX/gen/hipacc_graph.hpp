@@ -429,7 +429,7 @@ void hipacc_writer::def_acc(std::stringstream& ss, DomVXAcc* acc,
     } break;
 
     default: {
-      ERRORM("Unsupported deftype @ def(image)")
+      ERRORM("Unsupported deftype @ def(acc)")
     }
   }
 }
@@ -719,6 +719,12 @@ class hipacc_gen : public graph_gen, public hipacc_writer {
 
   std::vector<std::string> already_included_kernels;
 
+  template<typename ParameterList, typename NodeType, typename EdgeType>
+  void add_output_to_kernelparams(ParameterList &list, NodeType node, EdgeType ie);
+
+  template<typename ParameterList, typename NodeType, typename EdgeDesc>
+  void add_input_to_kernelparams(ParameterList &list, NodeType node, EdgeDesc ie, std::string dom_name);
+
   void def(VertexType* hn);
 
   void iterate_nodes();
@@ -796,6 +802,78 @@ void hipacc_gen::set_edges() {
   }
 }
 
+
+template<typename ParameterList, typename NodeType, typename NodeId>
+size_t get_parameter_index(const ParameterList &list, NodeType n, NodeId id) {
+  // TODO: make n->parameters a hashlist based on its id
+  // TODO: fix: multiple edges from same image to same Node
+  //            -> have the same ids at n->parameters.
+  //            -> different ids at edge objects
+  //            make it more cleaver and use edge ids
+  size_t i = 0;
+  for (; i < n->parameters.size() + 1; i++) {
+      if (id == n->parameters[i]->o->id()) {
+        if (list.at(i) == "") break;
+      }
+      if (i == n->parameters.size())
+        ERRORM("attempt to add a wrong parameter to kernel parameterlist")
+  }
+  return i;
+}
+
+
+template<typename ParameterList, typename NodeType, typename EdgeDesc>
+void hipacc_gen::add_input_to_kernelparams(ParameterList &list, NodeType node, EdgeDesc ie, std::string dom_name) {
+  //TODO: get rid of dom_name here
+  auto src = &(*_g_opt)[ie->m_source];
+  auto index = get_parameter_index(list, node, src->id());
+  //if (node->kernel->direction[i] != VX_INPUT) error
+  if (src->type() != node->kernel->type[index]) ERRORM("type mismatch")
+
+  switch (src->type()) {
+    case VX_TYPE_IMAGE: {
+      auto edge = &(*_g_opt)[*ie];
+      if (edge->isImgSet()) {
+        def_acc(ss_acc, edge, DefType::Hdecl, dom_name);
+      }
+      list.at(index) = name(edge);
+    } break;
+    case VX_TYPE_SCALAR: {
+      list.at(index) = name((HipaccScalar*)src);
+    } break;
+    case VX_TYPE_MATRIX: {
+      //TODO: below is wrong
+      list.at(index) = name((HipaccMatrix*)src) + "_dom";
+      list.push_back(name((HipaccMatrix*)src));
+    } break;
+    default:
+      ERRORM("no case for src->type()")
+  }
+}
+
+template<typename ParameterList, typename NodeType, typename EdgeType>
+void hipacc_gen::add_output_to_kernelparams(ParameterList &list, NodeType node, EdgeType ie) {
+  auto target = &(*_g_opt)[ie->m_target];
+  auto index = get_parameter_index(list, node, target->id());
+  //if (node->kernel->direction[i] != VX_OUTPUT) error
+  if (target->type() != node->kernel->type[index]) ERRORM("type mismatch")
+
+  switch (target->type()) {
+    case VX_TYPE_IMAGE: {
+      auto edge = &(*_g_opt)[*ie];
+      if (edge->isImgSet()) {
+        def_is(ss_is, edge, DefType::Hdecl);
+      }
+      list.at(index) = name(edge);
+    } break;
+    case VX_TYPE_SCALAR: {
+      list.at(index) = name((HipaccScalar*)target);
+    } break;
+    default:
+      ERRORM("no case for target->type()")
+  }
+}
+
 void hipacc_gen::iterate_nodes() {
   for (auto vert : nodes) {
     // here check nodes and print them etc...
@@ -824,7 +902,7 @@ void hipacc_gen::iterate_nodes() {
 
       ss_execs << dind << kernel_instance_name << ".execute();" << std::endl;
 
-      std::vector<std::string> param_names;
+      std::vector<std::string> param_names(cn->parameters.size());
 
       bool local = false;
       std::string dom_name = "";
@@ -836,58 +914,20 @@ void hipacc_gen::iterate_nodes() {
           break;
         }
       }
-      for (unsigned int i = 0; i < cn->parameters.size(); i++) {
-        if (cn->kernel->direction[i] == VX_INPUT) {
-          graphVX::OptGraphInEdgeIter ie, ie_end;
-          for (std::tie(ie, ie_end) = boost::in_edges(vert, *_g_opt);
-               ie != ie_end; ie++) {
-            auto src = &(*_g_opt)[ie->m_source];
-            if (src->id() == cn->parameters[i]->o->id()) {
-              if (src->type() != cn->kernel->type[i]) ERRORM("type mismatch")
-              switch (src->type()) {
-                case VX_TYPE_IMAGE: {
-                  auto edge = &(*_g_opt)[*ie];
-                  if (edge->isImgSet()) {
-                    def_acc(ss_acc, edge, DefType::Hdecl, dom_name);
-                  }
-                  param_names.push_back(name(edge));
-                } break;
-                case VX_TYPE_SCALAR: {
-                  param_names.push_back(name((HipaccScalar*)src));
-                } break;
-                case VX_TYPE_MATRIX: {
-                  param_names.push_back(name((HipaccMatrix*)src) + "_dom");
-                  param_names.push_back(name((HipaccMatrix*)src));
-                } break;
-                default:
-                  ERRORM("no case for src->type()")
-              }
-            }
-          }
-        } else {
-          graphVX::OptGraphOutEdgeIter beg, end;
-          std::tie(beg, end) = boost::out_edges(vert, *_g_opt);
-          for (auto it = beg; it != end; it++) {
-            auto target = &(*_g_opt)[beg->m_target];
-            if (target->id() == cn->parameters[i]->o->id()) {
-              if (target->type() != cn->kernel->type[i]) ERRORM("type mismatch")
-              switch (target->type()) {
-                case VX_TYPE_IMAGE: {
-                  auto edge = &(*_g_opt)[*it];
-                  if (edge->isImgSet()) {
-                    def_is(ss_is, edge, DefType::Hdecl);
-                  }
-                  param_names.push_back(name(edge));
-                } break;
-                case VX_TYPE_SCALAR: {
-                  param_names.push_back(name((HipaccScalar*)target));
-                } break;
-                default:
-                  ERRORM("no case for src->type()")
-              }
-            }
-          }
-        }
+
+      // input parameters: accessor etc
+      graphVX::OptGraphInEdgeIter ie, ie_end;
+      for (std::tie(ie, ie_end) = boost::in_edges(vert, *_g_opt);
+           ie != ie_end; ie++) {
+        auto param = &(*_g_opt)[ie->m_source];
+        add_input_to_kernelparams(param_names, cn, ie, dom_name);
+      }
+
+      // output parameters: iteration space etc
+      graphVX::OptGraphOutEdgeIter it, it_end;
+      for (std::tie(it, it_end) = boost::out_edges(vert, *_g_opt);
+           it != it_end; it++) {
+        add_output_to_kernelparams(param_names, cn, it);
       }
 
       if (std::find(already_included_kernels.cbegin(),

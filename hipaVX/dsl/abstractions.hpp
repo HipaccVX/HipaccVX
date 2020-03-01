@@ -159,6 +159,7 @@ class Mask : public AbstractionNode {
 };
 
 class CustomKernel : public Node{
+// Can't we put the type and direction to Node definition?
 public:
 	virtual ~CustomKernel() override = default;
 
