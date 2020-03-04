@@ -1,5 +1,6 @@
-include_directories(${ROOT_DIR})
+# TODO: Create a folder for each test case and generate files there
 
+include_directories(${ROOT_DIR})
 
 add_executable (gaussian gaussian.cpp)
 target_include_directories (gaussian PUBLIC ${COMMON_INC_DIRS})

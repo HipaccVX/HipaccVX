@@ -22,9 +22,7 @@ list(APPEND HipaVX_SRC ${GLOB_RESULT})
 file(GLOB GLOB_RESULT LIST_DIRECTORIES FALSE ${HIPAVX_DIR}/gen/*)
 list(APPEND HipaVX_SRC ${GLOB_RESULT})
 
-
 set(HIPACC_VERSION   "0.8.3"   CACHE STRING "The Hipacc version to use")
-
 
 
 # Create the hipacc subfolder
@@ -50,6 +48,7 @@ if(NOT EXISTS "${ROOT_DIR}/hipacc/hipacc_${HIPACC_VERSION}_amd64.deb")
 			")
 	endif()
 endif()
+
 
 # Unpach hipacc binary .deb, move to right location and delete unnecessary files
 if(NOT EXISTS "${ROOT_DIR}/hipacc/bin" AND NOT IS_DIRECTORY "${ROOT_DIR}/hipacc/bin")
@@ -103,12 +102,12 @@ set(CPP_KERNEL_DIR ${DEFAULT_CPP_KERNELS_DIR} CACHE STRING "Directory of the Cpp
 add_definitions(-DCPP_KERNEL_DIR=\"${CPP_KERNEL_DIR}\")
 
 add_library (HipaVX_Hipacc ${HipaVX_SRC} ${HipaccGen_SRC})
-
+add_library(hipaccRuntime UNKNOWN IMPORTED)
+set_target_properties(hipaccRuntime PROPERTIES IMPORTED_LOCATION ${ROOT_DIR}/hipacc/lib/libhipaccRuntime.a)
 
 find_package( OpenCV REQUIRED )
 
 function(create_hipacc_version target_name)
-
 	set("${target_name}_out_filename" "${CMAKE_CURRENT_BINARY_DIR}/${target_name}_hipacc.cpp")
 	set("${target_name}_out_hipacc_cpu_filename" "${CMAKE_CURRENT_BINARY_DIR}/${target_name}_hipacc_cpu.cpp")
 
@@ -131,20 +130,20 @@ function(create_hipacc_version target_name)
 		DEPENDS "${${target_name}_out_filename}"
 		WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
 	)
-	add_executable (hipacc_${target_name} "${${target_name}_out_hipacc_cpu_filename}")
-	target_compile_options(hipacc_${target_name} PRIVATE -std=c++11 -O2)
-	target_include_directories (hipacc_${target_name} PUBLIC "${ROOT_DIR}/hipacc/include")
-	target_link_directories (hipacc_${target_name} PUBLIC "${ROOT_DIR}/hipacc/lib")
-	target_link_libraries (hipacc_${target_name} hipaccRuntime ${OpenCV_LIBS})
+  
+  add_executable (hipacc_${target_name} "${${target_name}_out_hipacc_cpu_filename}")
+  target_compile_options(hipacc_${target_name} PRIVATE -std=c++11 -O2)
+  target_include_directories (hipacc_${target_name} PUBLIC "${ROOT_DIR}/hipacc/include")
+  #target_link_directories (hipacc_${target_name} PUBLIC "${ROOT_DIR}/hipacc/lib")
+  #target_link_libraries (hipacc_${target_name} hipaccRuntime ${OpenCV_LIBS})
+  target_link_libraries(hipacc_${target_name} hipaccRuntime ${OpenCV_LIBS})
 
 	if(OpenCV_VERSION VERSION_LESS "4.0")
 		target_compile_definitions(hipacc_${target_name} PRIVATE USE_OPENCV)
 	else()
 		target_compile_definitions(hipacc_${target_name} PRIVATE USE_OPENCV USE_OPENCV4)
 	endif()
-
 endfunction(create_hipacc_version)
-
 
 #add_executable (main_hipacc main.cpp)
 #target_include_directories (main_hipacc PUBLIC ${VX_DIR} ${HIPAVX_DIR})
