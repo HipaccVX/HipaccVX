@@ -1,33 +1,15 @@
-# TODO: Create a folder for each test case and generate files there
-
 include_directories(${ROOT_DIR})
 
-add_executable (gaussian gaussian.cpp)
-target_include_directories (gaussian PUBLIC ${COMMON_INC_DIRS})
-target_link_libraries (gaussian HipaVX_Hipacc)
+add_subdirectory(gaussian)
+add_subdirectory(laplacian)
+add_subdirectory(magnitude)
+add_subdirectory(multiply)
+add_subdirectory(sobel)
+add_subdirectory(teaser)
+add_subdirectory(tomasi)
 
-add_executable (magnitude magnitude.cpp)
-target_include_directories (magnitude PUBLIC ${COMMON_INC_DIRS})
-target_link_libraries (magnitude HipaVX_Hipacc)
-
-add_executable (multiply_node multiply_node.cpp)
-target_include_directories (multiply_node PUBLIC ${COMMON_INC_DIRS})
-target_link_libraries (multiply_node HipaVX_Hipacc)
-
-add_executable (laplacian laplacian.cpp)
-target_include_directories (laplacian PUBLIC ${COMMON_INC_DIRS})
-target_link_libraries (laplacian HipaVX_Hipacc)
-
-add_executable (tomasi tomasi.cpp)
-target_include_directories (tomasi PUBLIC ${COMMON_INC_DIRS})
-target_link_libraries (tomasi HipaVX_Hipacc)
-
-add_executable (teaser teaser.cpp)
-target_include_directories (teaser PUBLIC ${COMMON_INC_DIRS})
-target_link_libraries (teaser HipaVX_Hipacc)
-
-get_directory_property(targets BUILDSYSTEM_TARGETS)
-foreach(TARGET_DEFINED ${targets})
-	get_target_property(tmp ${TARGET_DEFINED} NAME)
-	create_hipacc_version(${tmp})
-endforeach()
+# get_directory_property(targets BUILDSYSTEM_TARGETS)
+# foreach(TARGET_DEFINED ${targets})
+# 	get_target_property(tmp ${TARGET_DEFINED} NAME)
+# 	create_hipacc_version(${tmp})
+# endforeach()
