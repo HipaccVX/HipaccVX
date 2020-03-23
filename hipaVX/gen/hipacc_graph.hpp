@@ -874,6 +874,21 @@ void hipacc_gen::add_output_to_kernelparams(ParameterList &list, NodeType node, 
   }
 }
 
+std::string get_kernel_name(std::string const &file, std::string const &filename) {
+  if (file == "") ERRORM("Couldn't find file " + filename)
+  size_t class_index = file.find("class");
+  size_t filename_index = file.find(" ", class_index) + 1;
+  size_t filename_end_index = file.find(" ", filename_index);
+
+  std::string file_name = file.substr(
+      filename_index, filename_end_index - filename_index);
+
+  return file_name;
+}
+
+// TODO: Please simplify this function
+// TODO: we can use namespaces for different components (hVX::template::read_file)
+// TODO: Please use get functions instead of A->b->((*somecast)C)
 void hipacc_gen::iterate_nodes() {
   for (auto vert : nodes) {
     // here check nodes and print them etc...
@@ -888,18 +903,13 @@ void hipacc_gen::iterate_nodes() {
     auto ck = dynamic_cast<DomVX::CppKernel*>(cn->kernel);
 
     if (hk) {
+      // TODO: use get functions
+      // read hipacc kernel from the corresponding file
       std::cout << hk->filename << std::endl;
-      std::string kernel = read_file(hk->filename);
-      if (kernel == "") ERRORM("Couldn't find file " + hk->filename)
-      size_t class_index = kernel.find("class");
-      size_t kernelname_index = kernel.find(" ", class_index) + 1;
-      size_t kernelname_end_index = kernel.find(" ", kernelname_index);
+      std::string file = read_file(hk->filename);
 
-      std::string kernel_name = kernel.substr(
-          kernelname_index, kernelname_end_index - kernelname_index);
-
+      std::string kernel_name = get_kernel_name(file, hk->filename);
       std::string kernel_instance_name = kernel_name + "_" + cn->id();
-
       ss_execs << dind << kernel_instance_name << ".execute();" << std::endl;
 
       std::vector<std::string> param_names(cn->parameters.size());
@@ -919,7 +929,6 @@ void hipacc_gen::iterate_nodes() {
       graphVX::OptGraphInEdgeIter ie, ie_end;
       for (std::tie(ie, ie_end) = boost::in_edges(vert, *_g_opt);
            ie != ie_end; ie++) {
-        auto param = &(*_g_opt)[ie->m_source];
         add_input_to_kernelparams(param_names, cn, ie, dom_name);
       }
 
@@ -934,7 +943,7 @@ void hipacc_gen::iterate_nodes() {
                     already_included_kernels.cend(),
                     hk->filename) == already_included_kernels.cend()) {
         already_included_kernels.emplace_back(hk->filename);
-        ss_kern << kernel;
+        ss_kern << file;
       }
 
       ss_kern_host << dind;
