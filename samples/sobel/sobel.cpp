@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
       vxCreateImage(context, width, height,  VX_DF_IMAGE_U8),
       vxCreateImage(context, width, height, VX_DF_IMAGE_S16),
       vxCreateImage(context, width, height, VX_DF_IMAGE_S16),
-      vxCreateImage(context, width, height, VX_DF_IMAGE_U8),
+      vxCreateImage(context, width, height, VX_DF_IMAGE_S16),
       vxCreateImage(context, width, height, VX_DF_IMAGE_U8),
     };
 

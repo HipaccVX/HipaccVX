@@ -527,7 +527,71 @@ void hipacc_writer::def_dom(std::stringstream& ss, HipaccMatrix* mat,
 
   switch (deftype) {
     case DefType::Hdecl: {
-      ss << dind << "Domain " << dom_name << "(" << name(mat) << ");\n";
+      std::string type;
+      switch (mat->data_type) {
+        case VX_TYPE_INT32:
+          type = "int";
+          break;
+        case VX_TYPE_FLOAT32:
+          type = "float";
+          break;
+        case VX_TYPE_UINT8:
+          type = "unsigned char";
+          break;
+        case VX_TYPE_INT16:
+          type = "short";
+          break;
+        default:
+          ERRORM("Unsupported data_type @ def(HipaccMatrix)")
+      }
+      std::string mat_name = name(mat) + "_dom_val";
+      std::string ind = dind;
+
+      // define an array for the values
+      ss << ind << "uchar " << mat_name << "[" << mat->rows << "]["
+         << mat->columns << "]"
+         << " = {\n";
+      for (unsigned y = 0; y < mat->rows; y++) {
+        ss << ind << sind << "{";
+        for (unsigned x = 0; x < mat->columns; x++) {
+          switch (mat->data_type) {
+            case VX_TYPE_INT32:
+              ss << (((*reinterpret_cast<int32_t*>(
+                          mat->mat.data() + (4 * (y * mat->columns + x)))) == 0)
+                         ? 0
+                         : 1);
+              break;
+            case VX_TYPE_FLOAT32:
+              ss << (((*reinterpret_cast<float*>(
+                          mat->mat.data() + (4 * (y * mat->columns + x)))) == 0)
+                         ? 0
+                         : 1);
+              break;
+            case VX_TYPE_UINT8:
+              ss << (((*reinterpret_cast<unsigned char*>(
+                          mat->mat.data() + (1 * y * mat->columns + x))) == 0)
+                         ? 0
+                         : 1);
+              break;
+            case VX_TYPE_INT16:
+              ss << (((*reinterpret_cast<short*>(
+                          mat->mat.data() + (2 * (y * mat->columns + x)))) == 0)
+                         ? 0
+                         : 1);
+              break;
+            default:
+              ERRORM("Unsupported data_type @ def(HipaccMatrix)")
+          }
+          if (x == mat->columns - 1)
+            ss << "}";
+          else
+            ss << ",";
+        }
+        if (y != mat->rows - 1) ss << ",\n";
+      }
+      ss << "};\n";
+
+      ss << dind << "Domain " << dom_name << "(" << mat_name << ");\n";
       break;
     }
     default: {

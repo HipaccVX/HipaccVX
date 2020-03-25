@@ -2,13 +2,12 @@ class HarrisDet_f_f_f : public Kernel<float> {
 private:
     Accessor<float> &input1;
     Accessor<float> &input2;
-    Mask<int> &mask;
     Domain &dom;
 
 public:
     HarrisDet_f_f_f(IterationSpace<float> &iter, Accessor<float> &input1, Accessor<float> &input2,
-                    Domain &dom, Mask<int> &mask)
-          : Kernel(iter), input1(input1), input2(input2), dom(dom), mask(mask){
+                    Domain &dom)
+          : Kernel(iter), input1(input1), input2(input2), dom(dom){
         add_accessor(&input1);
         add_accessor(&input2);
     }
