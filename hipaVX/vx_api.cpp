@@ -324,28 +324,22 @@ VX_API_ENTRY vx_node VX_API_CALL vxCreateGenericNode(vx_graph graph,
 VX_API_ENTRY vx_status VX_API_CALL vxSetParameterByIndex(vx_node node,
                                                          vx_uint32 index,
                                                          vx_reference value) {
-  DomVX::CustomNode *hn = dynamic_cast<DomVX::CustomNode *>(node->o);
-  if (hn == nullptr) return VX_FAILURE;
-  if (index >= hn->kernel->direction.size()) return VX_FAILURE;
+  DomVX::CustomNode *cn = dynamic_cast<DomVX::CustomNode *>(node->o);
+  if (cn == nullptr) return VX_FAILURE;
+  if (index >= cn->kernel->direction.size()) return VX_FAILURE;
 
-  hn->parameters[index] = value;
-  DomVX::Node *hn_node = (DomVX::Node *)hn;
+  cn->parameters[index] = value;
+  DomVX::Node *cn_node = (DomVX::Node *)cn;
   DomVX::Node *value_node = (DomVX::Node *)value->o;
-  if (hn->graph->refs.find(value_node) == hn->graph->refs.end())
-    hn->graph->refs[value_node] = hn->graph->dag->add_vertex(*value->o);
+  if (cn->graph->refs.find(value_node) == cn->graph->refs.end())
+    cn->graph->refs[value_node] = cn->graph->dag->add_vertex(*value->o);
 
-  if (hn->kernel->direction[index] == VX_INPUT)
-    hn->graph->dag->add_edge(hn->graph->refs[value_node],
-                             hn->graph->refs[hn_node]);
+  if (cn->kernel->direction[index] == VX_INPUT)
+    cn->graph->dag->add_edge(cn->graph->refs[value_node],
+                             cn->graph->refs[cn_node]);
   else
-    hn->graph->dag->add_edge(hn->graph->refs[hn_node],
-                             hn->graph->refs[value_node]);
-
-  // small hack
-  //  if (index == 0)
-  //    hn->graph->dag->outputs.push_back(hn->graph->refs[value_node]);
-  //  else if (index == 1)
-  //    hn->graph->dag->inputs.push_back(hn->graph->refs[value_node]);
+    cn->graph->dag->add_edge(cn->graph->refs[cn_node],
+                             cn->graph->refs[value_node]);
 
   return VX_SUCCESS;
 }

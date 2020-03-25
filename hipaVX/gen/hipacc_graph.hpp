@@ -13,7 +13,6 @@
 //#define ERRORM(msg) static_assert(true, msg);
 #define ERRORM(msg) throw std::runtime_error((msg));
 
-
 using DomVX::ObjectTask;
 using DomVX::ObjectType;
 using graphVX::dag;
@@ -106,6 +105,11 @@ class hipacc_writer {
   std::string dind = sind + sind;
   std::string tind = dind + sind;
 
+  // Set to keep track if domains or masks need to be created or if an "old" one
+  // can be used instead
+  std::set<std::string> domains;
+  std::set<std::string> masks;
+
  public:
   std::stringstream ss;
 
@@ -136,11 +140,11 @@ class hipacc_writer {
   void def_is(std::stringstream& ss, DomVXAcc* is,
               DefType deftype = DefType::Hdecl);
 
-  void def(std::stringstream& ss, HipaccDomain* n,
-           DefType deftype = DefType::Hdecl);
+  void def_dom(std::stringstream& ss, HipaccMatrix* is,
+               DefType deftype = DefType::Hdecl);
 
-  void def(std::stringstream& ss, HipaccMask* mask,
-           DefType deftype = DefType::Hdecl);
+  void def_mask(std::stringstream& ss, HipaccMatrix* is,
+                DefType deftype = DefType::Hdecl);
 
   void def(std::stringstream& ss, CustomNode* kern,
            DefType deftype = DefType::Hdecl,
@@ -328,11 +332,11 @@ void hipacc_writer::def(std::stringstream& ss, HipaccMatrix* mat,
         default:
           ERRORM("Unsupported data_type @ def(HipaccMatrix)")
       }
-      std::string val_name = name(mat) + "_val";
+      std::string mat_name = name(mat);
       std::string ind = dind;
 
       // define an array for the values
-      ss << ind << type << " " << val_name << "[" << mat->rows << "]["
+      ss << ind << type << " " << mat_name << "[" << mat->rows << "]["
          << mat->columns << "]"
          << " = {\n";
       for (unsigned y = 0; y < mat->rows; y++) {
@@ -367,11 +371,6 @@ void hipacc_writer::def(std::stringstream& ss, HipaccMatrix* mat,
       }
       ss << "};\n";
 
-      // define mask
-      ss << ind << "Mask<" << type << "> " << name(mat) << "(" << val_name
-         << ");\n";
-      ss << ind << "Domain " << name(mat) + "_dom"
-         << "(" << name(mat) << ");\n";
       break;
     }
     default: {
@@ -473,99 +472,6 @@ void hipacc_writer::def_is(std::stringstream& ss, DomVXAcc* is,
   }
 }
 
-void hipacc_writer::def(std::stringstream& ss, HipaccDomain* dom,
-                        DefType deftype) {
-  std::string dtype = "uchar";
-
-  switch (deftype) {
-    case DefType::Hdecl: {
-      std::string val_name = name(dom) + "_val";
-      ss << dind << dtype << " " << val_name << "[" << dom->height * dom->width
-         << "] = {";
-
-      // for(auto &ity : dom->domain) {
-      //  std::copy(ity.begin(), ity.end() - 1, std::ostream_iterator<int>(ss,
-      //  ", ")); ss << int(ity.back()); if (ity != dom->domain.back()){ ss <<
-      //  ", "; }
-      //}
-      for (unsigned y = 0; y < dom->height; y++) {
-        for (unsigned x = 0; x < dom->width - 1; x++) {
-          ss << int(dom->domain[y].at(x)) << ", ";
-        }
-        ss << int(dom->domain[y].back());
-        if (y != dom->height - 1) {
-          ss << ", ";
-        }
-      }
-
-      ss << "};\n";
-      ss << dind << "Domain " << name(dom) << "<" << dom->width << ", "
-         << dom->height << ">(" << val_name << ");\n";
-      break;
-    }
-    case DefType::Kdecl:
-    case DefType::Param: {
-      ss << "Domain &" << name(dom);
-      break;
-    }
-
-    default: {
-      ERRORM("Unsupported deftype @ def(dom)")
-    }
-  }
-}
-
-void hipacc_writer::def(std::stringstream& ss, HipaccMask* mask,
-                        DefType deftype) {
-  // fix this, use OpenVX data types similar to Image
-  // also union access to mask coefficients should be improved
-  std::string dtype = "";
-  if (mask->mask_is_int == false) {
-    dtype = "float";
-  } else {
-    dtype = "int";
-  }
-
-  switch (deftype) {
-    case DefType::Hdecl: {
-      std::string val_name = name(mask) + "_val";
-
-      std::string ind = dind;
-
-      // define an array for the values
-      ss << ind << dtype << " " << val_name << "[" << mask->height << "]["
-         << mask->width << "]"
-         << " = {\n";
-      for (unsigned y = 0; y < mask->height; y++) {
-        ss << ind << sind << "{";
-        for (unsigned x = 0; x < mask->width - 1; x++) {
-          ss << mask->mask[y].at(x).i << ", ";
-        }
-        ss << mask->mask[y].back().i << "}";
-        if (y != mask->height - 1) {
-          ss << ",\n";
-        }
-      }
-      ss << "};\n";
-
-      // define mask
-      ss << ind << "Mask<" << dtype << "> " << name(mask) << "(" << val_name
-         << ");\n";
-      break;
-    }
-
-    case DefType::Param:
-    case DefType::Kdecl: {
-      ss << name(mask) << "<" << dtype << "> &" << name(mask);
-      break;
-    }
-
-    default: {
-      ERRORM("Unsupported deftype @ def(mask)")
-    }
-  }
-}
-
 // TODO: can have a base class for the parameter types, thus one initializer
 // list
 //       , which shortens the code significantly
@@ -609,6 +515,59 @@ void hipacc_writer::def(std::stringstream& ss, CustomNode* kern,
     case DefType::Kdecl:
     default: {
       ERRORM("Unsupported deftype @ def(kern)")
+    }
+  }
+}
+
+void hipacc_writer::def_dom(std::stringstream& ss, HipaccMatrix* mat,
+                            DefType deftype) {
+  std::string dom_name = name(mat) + "_dom";
+  if (domains.find(dom_name) != domains.end()) return;
+  domains.insert(dom_name);
+
+  switch (deftype) {
+    case DefType::Hdecl: {
+      ss << dind << "Domain " << dom_name << "(" << name(mat) << ");\n";
+      break;
+    }
+    default: {
+      ERRORM("Unsupported deftype @ def_dom(HipaccMatrix)")
+    }
+  }
+}
+
+void hipacc_writer::def_mask(std::stringstream& ss, HipaccMatrix* mat,
+                             DefType deftype) {
+  std::string mask_name = name(mat) + "_mask";
+  if (masks.find(mask_name) != masks.end()) return;
+  masks.insert(mask_name);
+
+  switch (deftype) {
+    case DefType::Hdecl: {
+      std::string type;
+      switch (mat->data_type) {
+        case VX_TYPE_INT32:
+          type = "int";
+          break;
+        case VX_TYPE_FLOAT32:
+          type = "float";
+          break;
+        case VX_TYPE_UINT8:
+          type = "unsigned char";
+          break;
+        case VX_TYPE_INT16:
+          type = "short";
+          break;
+        default:
+          ERRORM("Unsupported data_type @ def_mask(HipaccMatrix)")
+      }
+
+      ss << dind << "Mask<" << type << "> " << mask_name << "(" << name(mat)
+         << ");\n";
+      break;
+    }
+    default: {
+      ERRORM("Unsupported deftype @ def_mask(HipaccMatrix)")
     }
   }
 }
@@ -715,15 +674,19 @@ class hipacc_gen : public graph_gen, public hipacc_writer {
   // new
   std::stringstream ss_sc;
   std::stringstream ss_mat;
+  std::stringstream ss_mask;
+  std::stringstream ss_dom;
   std::stringstream ss_array;
 
   std::vector<std::string> already_included_kernels;
 
-  template<typename ParameterList, typename NodeType, typename EdgeType>
-  void add_output_to_kernelparams(ParameterList &list, NodeType node, EdgeType ie);
+  template <typename ParameterList, typename NodeType, typename EdgeType>
+  void add_output_to_kernelparams(ParameterList& list, NodeType node,
+                                  EdgeType ie);
 
-  template<typename ParameterList, typename NodeType, typename EdgeDesc>
-  void add_input_to_kernelparams(ParameterList &list, NodeType node, EdgeDesc ie, std::string dom_name);
+  template <typename ParameterList, typename NodeType, typename EdgeDesc>
+  void add_input_to_kernelparams(ParameterList& list, NodeType node,
+                                 EdgeDesc ie, std::string dom_name);
 
   void def(VertexType* hn);
 
@@ -743,8 +706,14 @@ class hipacc_gen : public graph_gen, public hipacc_writer {
     ss << dind << "// scalars\n";
     ss << ss_sc.str() << "\n";
 
-    ss << dind << "// matrix/mask/domain\n";
+    ss << dind << "// matrix\n";
     ss << ss_mat.str() << "\n";
+
+    ss << dind << "// domains\n";
+    ss << ss_dom.str() << "\n";
+
+    ss << dind << "// masks\n";
+    ss << ss_mask.str() << "\n";
 
     ss << dind << "// arrays\n";
     ss << ss_array.str() << "\n";
@@ -802,9 +771,8 @@ void hipacc_gen::set_edges() {
   }
 }
 
-
-template<typename ParameterList, typename NodeType, typename NodeId>
-size_t get_parameter_index(const ParameterList &list, NodeType n, NodeId id) {
+template <typename ParameterList, typename NodeType, typename NodeId>
+size_t get_parameter_index(const ParameterList& list, NodeType n, NodeId id) {
   // TODO: make n->parameters a hashlist based on its id
   // TODO: fix: multiple edges from same image to same Node
   //            -> have the same ids at n->parameters.
@@ -812,82 +780,122 @@ size_t get_parameter_index(const ParameterList &list, NodeType n, NodeId id) {
   //            make it more cleaver and use edge ids
   size_t i = 0;
   for (; i < n->parameters.size() + 1; i++) {
-      if (id == n->parameters[i]->o->id()) {
-        if (list.at(i) == "") break;
-      }
-      if (i == n->parameters.size())
-        ERRORM("attempt to add a wrong parameter to kernel parameterlist")
+    if (id == n->parameters[i]->o->id()) {
+      if (list.at(i) == "") break;
+    }
+    if (i == n->parameters.size())
+      ERRORM("attempt to add a wrong parameter to kernel parameterlist")
   }
   return i;
 }
 
-
-template<typename ParameterList, typename NodeType, typename EdgeDesc>
-void hipacc_gen::add_input_to_kernelparams(ParameterList &list, NodeType node, EdgeDesc ie, std::string dom_name) {
-  //TODO: get rid of dom_name here
+template <typename ParameterList, typename NodeType, typename EdgeDesc>
+void hipacc_gen::add_input_to_kernelparams(ParameterList& list, NodeType node,
+                                           EdgeDesc ie, std::string dom_name) {
+  // TODO: get rid of dom_name here
   auto src = &(*_g_opt)[ie->m_source];
   auto index = get_parameter_index(list, node, src->id());
-  //if (node->kernel->direction[i] != VX_INPUT) error
-  if (src->type() != node->kernel->type[index]) ERRORM("type mismatch")
+  // if (node->kernel->direction[i] != VX_INPUT) error
+  bool hipacc_param = false;
+  DomVX::HipaccKernel* hk;
+  if (src->type() != node->kernel->type[index]) {
+    hk = dynamic_cast<DomVX::HipaccKernel*>(node->kernel->get());
+    if (!hk || index >= hk->hipacc_type.size() ||
+        hk->hipacc_type[index] == HipaccParameterType::None)
+      ERRORM("type mismatch")
+    else
+      hipacc_param = true;
+  }
 
-  switch (src->type()) {
-    case VX_TYPE_IMAGE: {
-      auto edge = &(*_g_opt)[*ie];
-      if (edge->isImgSet()) {
-        def_acc(ss_acc, edge, DefType::Hdecl, dom_name);
-      }
-      list.at(index) = name(edge);
-    } break;
-    case VX_TYPE_SCALAR: {
-      list.at(index) = name((HipaccScalar*)src);
-    } break;
-    case VX_TYPE_MATRIX: {
-      //TODO: below is wrong
-      list.at(index) = name((HipaccMatrix*)src) + "_dom";
-      list.push_back(name((HipaccMatrix*)src));
-    } break;
-    default:
-      ERRORM("no case for src->type()")
+  if (hipacc_param) {
+    switch (hk->hipacc_type[index]) {
+      case HipaccParameterType::Accessor: {
+        auto edge = &(*_g_opt)[*ie];
+        if (edge->isImgSet()) {
+          def_acc(ss_acc, edge, DefType::Hdecl, dom_name);
+        }
+        list.at(index) = name(edge);
+      } break;
+      case HipaccParameterType::Mask: {
+        def_mask(ss_mask, (HipaccMatrix*)src->get());
+        std::string mask_name = name((HipaccMatrix*)src) + "_mask";
+        list.at(index) = mask_name;
+      } break;
+      case HipaccParameterType::Domain: {
+        def_dom(ss_dom, (HipaccMatrix*)src->get());
+        std::string dom_name = name((HipaccMatrix*)src) + "_dom";
+        list.at(index) = dom_name;
+      } break;
+      default:
+        ERRORM("no case for hk->hipacc_type[index]")
+    }
+  } else {
+    switch (src->type()) {
+      case VX_TYPE_SCALAR: {
+        list.at(index) = name((HipaccScalar*)src);
+      } break;
+      default:
+        ERRORM("no case for src->type()")
+    }
   }
 }
 
-template<typename ParameterList, typename NodeType, typename EdgeType>
-void hipacc_gen::add_output_to_kernelparams(ParameterList &list, NodeType node, EdgeType ie) {
+template <typename ParameterList, typename NodeType, typename EdgeType>
+void hipacc_gen::add_output_to_kernelparams(ParameterList& list, NodeType node,
+                                            EdgeType ie) {
   auto target = &(*_g_opt)[ie->m_target];
   auto index = get_parameter_index(list, node, target->id());
-  //if (node->kernel->direction[i] != VX_OUTPUT) error
-  if (target->type() != node->kernel->type[index]) ERRORM("type mismatch")
+  // if (node->kernel->direction[i] != VX_OUTPUT) error
+  bool hipacc_param = false;
+  DomVX::HipaccKernel* hk;
+  if (target->type() != node->kernel->type[index]) {
+    hk = dynamic_cast<DomVX::HipaccKernel*>(node->kernel->get());
+    if (!hk || index >= hk->hipacc_type.size() ||
+        hk->hipacc_type[index] == HipaccParameterType::None)
+      ERRORM("type mismatch")
+    else
+      hipacc_param = true;
+  }
 
-  switch (target->type()) {
-    case VX_TYPE_IMAGE: {
-      auto edge = &(*_g_opt)[*ie];
-      if (edge->isImgSet()) {
-        def_is(ss_is, edge, DefType::Hdecl);
-      }
-      list.at(index) = name(edge);
-    } break;
-    case VX_TYPE_SCALAR: {
-      list.at(index) = name((HipaccScalar*)target);
-    } break;
-    default:
-      ERRORM("no case for target->type()")
+  if (hipacc_param) {
+    switch (hk->hipacc_type[index]) {
+      case HipaccParameterType::IterationSpace: {
+        auto edge = &(*_g_opt)[*ie];
+        if (edge->isImgSet()) {
+          def_is(ss_is, edge, DefType::Hdecl);
+        }
+        list.at(index) = name(edge);
+      } break;
+      default:
+        ERRORM("no case for hk->hipacc_type[index]")
+    }
+  } else {
+    switch (target->type()) {
+      case VX_TYPE_SCALAR: {
+        list.at(index) = name((HipaccScalar*)target);
+      } break;
+      default:
+        ERRORM("no case for target->type()")
+    }
   }
 }
 
-std::string get_kernel_name(std::string const &file, std::string const &filename) {
+std::string get_kernel_name(std::string const& file,
+                            std::string const& filename) {
   if (file == "") ERRORM("Couldn't find file " + filename)
   size_t class_index = file.find("class");
   size_t filename_index = file.find(" ", class_index) + 1;
   size_t filename_end_index = file.find(" ", filename_index);
 
-  std::string file_name = file.substr(
-      filename_index, filename_end_index - filename_index);
+  std::string file_name =
+      file.substr(filename_index, filename_end_index - filename_index);
 
   return file_name;
 }
 
 // TODO: Please simplify this function
-// TODO: we can use namespaces for different components (hVX::template::read_file)
+// TODO: we can use namespaces for different components
+// (hVX::template::read_file)
 // TODO: Please use get functions instead of A->b->((*somecast)C)
 void hipacc_gen::iterate_nodes() {
   for (auto vert : nodes) {
@@ -916,8 +924,8 @@ void hipacc_gen::iterate_nodes() {
 
       bool local = false;
       std::string dom_name = "";
-      for (unsigned int i = 0; i < cn->parameters.size(); i++) {
-        if (cn->kernel->type[i] == VX_TYPE_MATRIX) {
+      for (unsigned int i = 0; i < hk->hipacc_type.size(); i++) {
+        if (hk->hipacc_type[i] == HipaccParameterType::Domain) {
           local = true;
           dom_name =
               (name((HipaccMatrix*)cn->parameters[i]->o->get()) + "_dom");
@@ -927,15 +935,15 @@ void hipacc_gen::iterate_nodes() {
 
       // input parameters: accessor etc
       graphVX::OptGraphInEdgeIter ie, ie_end;
-      for (std::tie(ie, ie_end) = boost::in_edges(vert, *_g_opt);
-           ie != ie_end; ie++) {
+      for (std::tie(ie, ie_end) = boost::in_edges(vert, *_g_opt); ie != ie_end;
+           ie++) {
         add_input_to_kernelparams(param_names, cn, ie, dom_name);
       }
 
       // output parameters: iteration space etc
       graphVX::OptGraphOutEdgeIter it, it_end;
-      for (std::tie(it, it_end) = boost::out_edges(vert, *_g_opt);
-           it != it_end; it++) {
+      for (std::tie(it, it_end) = boost::out_edges(vert, *_g_opt); it != it_end;
+           it++) {
         add_output_to_kernelparams(param_names, cn, it);
       }
 
@@ -1053,7 +1061,7 @@ void hipacc_gen::iterate_nodes() {
                 } break;
                 case VX_TYPE_BOOL: {
                   param_names.push_back((((Bool*)src->get())->value) ? "true"
-                                                              : "false");
+                                                                     : "false");
                 } break;
                 default:
                   ERRORM("no case for src->type()")
@@ -1086,7 +1094,8 @@ void hipacc_gen::iterate_nodes() {
                 } break;
                 case VX_TYPE_ARRAY: {
                   param_names.push_back(name((Array*)target));
-                  param_names.push_back(std::to_string(((Array*)target->get())->size));
+                  param_names.push_back(
+                      std::to_string(((Array*)target->get())->size));
                 } break;
                 case VX_TYPE_SCALAR: {
                   param_names.push_back("&" + name((HipaccScalar*)target));

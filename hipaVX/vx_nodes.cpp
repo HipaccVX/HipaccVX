@@ -599,14 +599,16 @@ VX_API_ENTRY vx_node VX_API_CALL vxGaussian3x3Node(vx_graph graph,
   vx_kernel kern =
       vxHipaccKernel(std::string(HIPACC_KERNEL_DIR) + "/local/gaussian_" +
                      type_str(output) + "_" + type_str(input) + ".hpp");
-  vxAddParameterToKernel(kern, 0, VX_OUTPUT, VX_TYPE_IMAGE, 0);
-  vxAddParameterToKernel(kern, 1, VX_INPUT, VX_TYPE_IMAGE, 0);
-  vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_MATRIX, 0);
+  vxAddParameterToHipaccKernel(kern, 0, VX_OUTPUT, HipaccParameterType::IterationSpace, 0);
+  vxAddParameterToHipaccKernel(kern, 1, VX_INPUT, HipaccParameterType::Accessor, 0);
+  vxAddParameterToHipaccKernel(kern, 2, VX_INPUT, HipaccParameterType::Domain, 0);
+  vxAddParameterToHipaccKernel(kern, 3, VX_INPUT, HipaccParameterType::Mask, 0);
 
   auto hn = vxCreateGenericNode(graph, kern);
   vxSetParameterByIndex(hn, 0, (vx_reference)output);
   vxSetParameterByIndex(hn, 1, (vx_reference)input);
   vxSetParameterByIndex(hn, 2, (vx_reference)box_values);
+  vxSetParameterByIndex(hn, 3, (vx_reference)box_values);
   return hn;
 }
 

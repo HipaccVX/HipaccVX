@@ -6,6 +6,8 @@
 
 #include "../../VX/vx.h"
 
+enum class HipaccParameterType { None = 0, IterationSpace, Accessor, Mask, Domain };
+
 namespace DomVX {
 class Graph;
 

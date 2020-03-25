@@ -34,3 +34,8 @@ vx_kernel vxHipaccKernel(std::string filename);
 vx_kernel vxCppKernel(std::string filename);
 
 void set_output_filename(std::string filename);
+
+vx_status vxAddParameterToHipaccKernel(vx_kernel kernel, vx_uint32 index,
+                                       vx_enum dir,
+                                       HipaccParameterType data_type,
+                                       vx_enum state);

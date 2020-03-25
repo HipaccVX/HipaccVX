@@ -172,6 +172,7 @@ class HipaccKernel : public CustomKernel {
   virtual ~HipaccKernel() override = default;
 
   std::string filename;
+  std::vector<HipaccParameterType> hipacc_type;
 };
 
 class CppKernel : public CustomKernel {
