@@ -1058,8 +1058,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxConvertDepthNode(vx_graph graph,
                                HipaccParameterType::IterationSpace, 0);
   vxAddParameterToHipaccKernel(kern, 1, VX_INPUT, HipaccParameterType::Accessor,
                                0);
-  vxAddParameterToHipaccKernel(kern, 2, VX_INPUT, HipaccParameterType::Accessor,
-                               0);
+  vxAddParameterToKernel(kern, 2, VX_INPUT, VX_TYPE_SCALAR, 0);
 
   auto hn = vxCreateGenericNode(graph, kern);
   vxSetParameterByIndex(hn, 0, (vx_reference)output);
