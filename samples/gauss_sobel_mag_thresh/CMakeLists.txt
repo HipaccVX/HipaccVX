@@ -1,0 +1,4 @@
+add_executable(gauss_sobel_mag_thresh gauss_sobel_mag_thresh.cpp)
+target_include_directories(gauss_sobel_mag_thresh PUBLIC ${COMMON_INC_DIRS})
+target_link_libraries(gauss_sobel_mag_thresh HipaVX_Hipacc)
+create_hipacc_version(gauss_sobel_mag_thresh)

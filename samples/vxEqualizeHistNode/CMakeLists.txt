@@ -1,0 +1,4 @@
+add_executable (vxEqualizeHistNode vxEqualizeHistNode.cpp)
+target_include_directories (vxEqualizeHistNode PUBLIC ${COMMON_INC_DIRS})
+target_link_libraries (vxEqualizeHistNode HipaVX_Hipacc)
+create_hipacc_version(vxEqualizeHistNode)
