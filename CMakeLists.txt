@@ -107,9 +107,17 @@ set_target_properties(hipaccRuntime PROPERTIES IMPORTED_LOCATION ${ROOT_DIR}/hip
 
 find_package( OpenCV REQUIRED )
 
+set(TARGET_PLATFORM "cpu" CACHE STRING "cpu,opencl-cpu,opencl-gpu")
+
+if(TARGET_PLATFORM STREQUAL "cpu")
+	# Nothing special
+elseif(TARGET_PLATFORM STREQUAL "opencl-cpu" OR TARGET_PLATFORM STREQUAL "opencl-gpu")
+	find_package(OpenCL REQUIRED)
+endif(TARGET_PLATFORM STREQUAL "cpu")
+
 function(create_hipacc_version target_name)
 	set("${target_name}_out_filename" "${CMAKE_CURRENT_BINARY_DIR}/${target_name}_hipacc.cpp")
-	set("${target_name}_out_hipacc_cpu_filename" "${CMAKE_CURRENT_BINARY_DIR}/${target_name}_hipacc_cpu.cpp")
+	set("${target_name}_out_hipacc_target_filename" "${CMAKE_CURRENT_BINARY_DIR}/${target_name}_hipacc_${TARGET_PLATFORM}.cpp")
 
 	target_compile_definitions(${target_name} PRIVATE HIPAVX_OUTPUT_FILENAME="${${target_name}_out_filename}")
 	add_custom_command(	
@@ -119,24 +127,25 @@ function(create_hipacc_version target_name)
 		WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
 	)
 	add_custom_command(
-		OUTPUT "${${target_name}_out_hipacc_cpu_filename}"
-		COMMAND "${ROOT_DIR}/hipacc/bin/hipacc" "-emit-cpu" "-std=c++11" "-nostdinc++"
+		OUTPUT "${${target_name}_out_hipacc_target_filename}"
+		COMMAND "${ROOT_DIR}/hipacc/bin/hipacc" "-emit-${TARGET_PLATFORM}" "-std=c++11" "-nostdinc++"
 												"-I${ROOT_DIR}/hipacc/include/c++/v1"
 												"-I${ROOT_DIR}/hipacc/include/clang"
 												"-I${ROOT_DIR}/hipacc/include/dsl"
 												"-I${ROOT_DIR}"
 												"${${target_name}_out_filename}"
-												"-o" "${${target_name}_out_hipacc_cpu_filename}"
+												"-o" "${${target_name}_out_hipacc_target_filename}"
 		DEPENDS "${${target_name}_out_filename}"
 		WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
 	)
   
-  add_executable (hipacc_${target_name} "${${target_name}_out_hipacc_cpu_filename}")
-  target_compile_options(hipacc_${target_name} PRIVATE -std=c++11 -O2)
-  target_include_directories (hipacc_${target_name} PUBLIC "${ROOT_DIR}/hipacc/include")
-  #target_link_directories (hipacc_${target_name} PUBLIC "${ROOT_DIR}/hipacc/lib")
-  #target_link_libraries (hipacc_${target_name} hipaccRuntime ${OpenCV_LIBS})
-  target_link_libraries(hipacc_${target_name} hipaccRuntime ${OpenCV_LIBS})
+	add_executable (hipacc_${target_name} "${${target_name}_out_hipacc_target_filename}")
+	target_compile_options(hipacc_${target_name} PRIVATE -std=c++11 -O2)
+	target_include_directories (hipacc_${target_name} PUBLIC "${ROOT_DIR}/hipacc/include")
+	target_link_libraries(hipacc_${target_name} hipaccRuntime ${OpenCV_LIBS})
+	if(TARGET_PLATFORM STREQUAL "opencl-cpu" OR TARGET_PLATFORM STREQUAL "opencl-gpu")
+		target_link_libraries(hipacc_${target_name} OpenCL::OpenCL)
+	endif(TARGET_PLATFORM STREQUAL "opencl-cpu" OR TARGET_PLATFORM STREQUAL "opencl-gpu")
 
 	if(OpenCV_VERSION VERSION_LESS "4.0")
 		target_compile_definitions(hipacc_${target_name} PRIVATE USE_OPENCV)
