@@ -795,10 +795,14 @@ class hipacc_gen : public graph_gen, public hipacc_writer {
     ss << ss_kern_host.str() << "\n";
 
     ss << dind << "// execution\n";
+    ss << dind << "double timing = 0.0;\n";
     ss << ss_execs.str() << "\n";
 
     ss << dind << "// output image writes\n";
-    ss << ss_out_im.str() << "\n";
+    ss << dind <<  ss_out_im.str() << "\n";
+
+    ss << dind << "// measure performance\n";
+    ss << dind << "fprintf(stdout,\"<HIPACC:> Overall time: %f(ms)\\n\", timing);\n";
 
     ss << dind << "return 0;\n";
     ss << "}\n";
@@ -983,6 +987,7 @@ void hipacc_gen::iterate_nodes() {
       std::string kernel_name = get_kernel_name(file, hk->filename);
       std::string kernel_instance_name = kernel_name + "_" + cn->id();
       ss_execs << dind << kernel_instance_name << ".execute();" << std::endl;
+      ss_execs << dind << "timing += hipacc_last_kernel_timing();" << std::endl;
 
       std::vector<std::string> param_names(cn->parameters.size());
 
