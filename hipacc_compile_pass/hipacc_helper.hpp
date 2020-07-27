@@ -24,6 +24,19 @@ double time_ms () {
     return std::chrono::duration_cast<std::chrono::milliseconds>(time).count();
 }
 
+//void benchmark(unsigned iter, std::function<double()> f) {
+//  std::vector<double> timing_vec(iter);
+//
+//  for(int i = 0; i < iter; i++)
+//    timing_vec[i] = f();
+//
+//  std::sort(timing_vec.begin(), timing_vec.end());
+//
+//  // measure performance
+//  fprintf(stdout,"<HIPACC:> Overall time min: %f(ms)\n", timing_vec[0]);
+//  fprintf(stdout,"<HIPACC:> Overall time med: %f(ms)\n", timing_vec[(iter - 1) /2]);
+//  fprintf(stdout,"<HIPACC:> Overall time max: %f(ms)\n", timing_vec[iter - 1]);
+//}
 
 std::vector<int> create_contiguous_array_from_keypoints(std::vector<vx_keypoint_t> features)
 {

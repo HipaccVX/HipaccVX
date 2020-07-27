@@ -762,6 +762,11 @@ class hipacc_gen : public graph_gen, public hipacc_writer {
   void dump_code() {
     ss << initial_includes() << "\n\n";
 
+    ss << "// benchmarking\n";
+    ss << "#ifndef BENCH_ITER_COUNT\n";
+    ss << dind << "#define BENCH_ITER_COUNT 1\n";
+    ss << "#endif\n";
+
     ss << "// kernel declarations\n";
     ss << ss_kern.str() << "\n";
 
@@ -795,14 +800,22 @@ class hipacc_gen : public graph_gen, public hipacc_writer {
     ss << ss_kern_host.str() << "\n";
 
     ss << dind << "// execution\n";
-    ss << dind << "double timing = 0.0;\n";
-    ss << ss_execs.str() << "\n";
+    ss << dind << "std::vector<double> timing_vec(BENCH_ITER_COUNT);\n";
+    ss << dind << "for(int i = 0; i < BENCH_ITER_COUNT; i++) {\n";
+    ss <<           ss_execs.str();
+    ss << tind <<   "timing_vec[i] = timing;\n";
+    ss << dind << "}\n";
+    ss << dind << std::endl;
+
+    ss << dind << "// performance\n";
+    ss << dind << "std::sort(timing_vec.begin(), timing_vec.end());\n";
+    ss << dind << "fprintf(stdout,\"Number of iterations: %d\\n\", BENCH_ITER_COUNT);\n";
+    ss << dind << "fprintf(stdout,\"<HIPACC:> Overall time min: %f(ms)\\n\", timing_vec[0]);\n";
+    ss << dind << "fprintf(stdout,\"<HIPACC:> Overall time med: %f(ms)\\n\", timing_vec[(BENCH_ITER_COUNT - 1) /2]);\n";
+    ss << dind << "fprintf(stdout,\"<HIPACC:> Overall time max: %f(ms)\\n\", timing_vec[BENCH_ITER_COUNT - 1]);\n";
 
     ss << dind << "// output image writes\n";
     ss << dind <<  ss_out_im.str() << "\n";
-
-    ss << dind << "// measure performance\n";
-    ss << dind << "fprintf(stdout,\"<HIPACC:> Overall time: %f(ms)\\n\", timing);\n";
 
     ss << dind << "return 0;\n";
     ss << "}\n";
@@ -966,6 +979,7 @@ std::string get_kernel_name(std::string const& file,
 // (hVX::template::read_file)
 // TODO: Please use get functions instead of A->b->((*somecast)C)
 void hipacc_gen::iterate_nodes() {
+  ss_execs << tind << "double timing = 0.0;\n" << std::endl;
   for (auto vert : nodes) {
     // here check nodes and print them etc...
     auto v = get_vert(vert);
@@ -986,8 +1000,8 @@ void hipacc_gen::iterate_nodes() {
 
       std::string kernel_name = get_kernel_name(file, hk->filename);
       std::string kernel_instance_name = kernel_name + "_" + cn->id();
-      ss_execs << dind << kernel_instance_name << ".execute();" << std::endl;
-      ss_execs << dind << "timing += hipacc_last_kernel_timing();" << std::endl;
+      ss_execs << tind << kernel_instance_name << ".execute();" << std::endl;
+      ss_execs << tind << "timing += hipacc_last_kernel_timing();" << std::endl;
 
       std::vector<std::string> param_names(cn->parameters.size());
 

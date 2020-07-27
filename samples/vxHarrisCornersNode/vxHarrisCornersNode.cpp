@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
         vx_scalar corners_num = vxCreateScalar(context, VX_TYPE_INT32, (void*)&two);
 
         vx_image img[] = {
-          vxCreateImageFromFile(context, width, height, VX_DF_IMAGE_U8, "200x300_bw_1.png"),
+          vxCreateImageFromFile(context, width, height, VX_DF_IMAGE_U8, ""),
         };
 
         if (graph) {

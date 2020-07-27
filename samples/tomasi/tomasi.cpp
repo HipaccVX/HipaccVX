@@ -7,8 +7,13 @@
 #include "VX/vx_compatibility.h"
 #include "hipaVX/domVX_extensions.hpp"
 
-#define WIDTH  4032
-#define HEIGHT 3024
+#ifndef WIDTH
+  #define WIDTH  4032
+#endif
+#ifndef HEIGHT
+  #define HEIGHT 3024
+#endif
+
 
 int main()
 {

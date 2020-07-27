@@ -7,13 +7,26 @@
 #include "VX/vx_compatibility.h"
 #include "hipaVX/domVX_extensions.hpp"
 
+#define GEN_TEST_IMAGE
+
+#ifdef GEN_TEST_IMAGE
+  #define IMAGE  ""
+  #ifndef WIDTH
+    #define WIDTH  4032
+  #endif
+  #ifndef HEIGHT
+    #define HEIGHT 3024
+  #endif
+#else
+  #define IMAGE  "img/fuerte_ship.jpg"
+  #define WIDTH  4032
+  #define HEIGHT 3024
+#endif
+
 int main(int argc, char *argv[]) {
 #ifdef HIPAVX_OUTPUT_FILENAME
     set_output_filename(HIPAVX_OUTPUT_FILENAME);
 #endif
-    vx_uint32 width = 200;
-    vx_uint32 height = 300;
-
     vx_context context = vxCreateContext();
 
     vx_status status = VX_FAILURE;
@@ -22,9 +35,9 @@ int main(int argc, char *argv[]) {
         vx_graph graph = vxCreateGraph(context);
 
         vx_image img[] = {
-          vxCreateImageFromFile(context, width, height, VX_DF_IMAGE_U8, "200x300_bw_1.png"),
-          vxCreateImage(context, width, height, VX_DF_IMAGE_S16),
-          vxCreateImage(context, width, height, VX_DF_IMAGE_S16)
+          vxCreateImageFromFile(context, WIDTH, HEIGHT, VX_DF_IMAGE_U8, IMAGE),
+          vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_S16),
+          vxCreateImage(context, WIDTH, HEIGHT, VX_DF_IMAGE_S16)
         };
 
         if (graph) {
@@ -37,8 +50,8 @@ int main(int argc, char *argv[]) {
 
         if (status == VX_SUCCESS) {
             status = vxProcessGraph(graph);
-            vxWriteImageAfterGraphCompletion(graph, img[1], "vxSobel3x3Node_1.png");
-            vxWriteImageAfterGraphCompletion(graph, img[2], "vxSobel3x3Node_2.png");
+            vxWriteImageAfterGraphCompletion(graph, img[1], "./vxSobel3x3Node_1.png");
+            vxWriteImageAfterGraphCompletion(graph, img[2], "./vxSobel3x3Node_2.png");
         } else {
             printf("VERIFICATION ERROR: %d\n", status);
         }
