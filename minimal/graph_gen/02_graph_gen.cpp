@@ -2,20 +2,21 @@
 // g++ -Wall -Werror 07*.cpp ../../hipaVX/domVX_types.cpp
 
 #include <iostream>
-#include "../../hipaVX/domVX_types.hpp"
-#include "../../hipaVX/graph.hpp"
-#include "../../hipaVX/graph_gen/hipacc_graph_gen.hpp"
+#include "../../hipaVX/dsl/abstractions.hpp"
+#include "../../hipaVX/graph/graph.hpp"
+#include "../../hipaVX/gen/hipacc_graph.hpp"
 
 
 using graphVX::AppGraphT;
 using graphVX::dag;
-using HipaVX::Image;
-using HipaVX::Node;
-using HipaVX::Scalar;
+using DomVX::Image;
+using DomVX::Node;
+using DomVX::Scalar;
+using DomVX::CustomNode;
 
 int main() {
   dag g;
-  g.gen_rand_acyclic_graph<Node, Image>(12, 42);
+  g.gen_rand_acyclic_graph<CustomNode, Image>(12, 42);
   g.eliminate_dead_nodes();
 
   // g.set_order_of_exec();

@@ -3,18 +3,18 @@
 
 #include <iostream>
 #include "../../hipaVX/dsl/types.hpp"
-#include "../../hipaVX/dsl/ast.hpp"
+//#include "../../hipaVX/dsl/ast.hpp"
 #include "../../hipaVX/dsl/abstractions.hpp"
 #include "../../hipaVX/graph/graph.hpp"
-#include "../../hipaVX/graph_gen/hipacc_graph_gen.hpp"
+#include "../../hipaVX/gen/hipacc_graph.hpp"
 
 
 using graphVX::AppGraphT;
 using graphVX::OptGraphT;
 using graphVX::dag;
-using HipaVX::Image;
-using HipaVX::Node;
-using HipaVX::Scalar;
+using DomVX::Image;
+using DomVX::Node;
+using DomVX::Scalar;
 
 
 int main() {
@@ -22,8 +22,8 @@ int main() {
   std::cout << gen.initial_includes();
 
   // image
-  HipaVX::Image im0(1024, 1024, VX_DF_IMAGE_U8);
-  HipaVX::Image im1(1024, 1024);
+  DomVX::Image im0(1024, 1024, VX_DF_IMAGE_U8);
+  DomVX::Image im1(1024, 1024);
   im1.set_dtype(VX_DF_IMAGE_U8);
 
  auto dom = create_dom(3, 5, {0, 0, 1,

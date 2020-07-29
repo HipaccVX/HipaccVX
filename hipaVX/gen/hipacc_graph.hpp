@@ -1005,11 +1005,11 @@ void hipacc_gen::iterate_nodes() {
 
       std::vector<std::string> param_names(cn->parameters.size());
 
-      bool local = false;
+      //bool local = false;
       std::string dom_name = "";
       for (unsigned int i = 0; i < hk->hipacc_type.size(); i++) {
         if (hk->hipacc_type[i] == HipaccParameterType::Domain) {
-          local = true;
+          //local = true;
           dom_name =
               (name((HipaccMatrix*)cn->parameters[i]->o->get()) + "_dom");
           break;
@@ -1062,11 +1062,11 @@ void hipacc_gen::iterate_nodes() {
 
       std::vector<std::string> param_names;
 
-      bool local = false;
+      //bool local = false;
       std::string dom_name = "";
       for (unsigned int i = 0; i < cn->parameters.size(); i++) {
         if (cn->kernel->type[i] == VX_TYPE_MATRIX) {
-          local = true;
+          //local = true;
           dom_name =
               (name((HipaccMatrix*)cn->parameters[i]->o->get()) + "_dom");
           break;
