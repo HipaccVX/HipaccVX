@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <stdexcept>
 
 #include "../../VX/vx.h"
 
