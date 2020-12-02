@@ -814,6 +814,7 @@ class hipacc_gen : public graph_gen, public hipacc_writer {
     ss << dind << "fprintf(stdout,\"<HIPACC:> Overall time med: %f(ms)\\n\", timing_vec[(BENCH_ITER_COUNT - 1) /2]);\n";
     ss << dind << "fprintf(stdout,\"<HIPACC:> Overall time max: %f(ms)\\n\", timing_vec[BENCH_ITER_COUNT - 1]);\n";
 
+    ss << dind << std::endl;
     ss << dind << "// output image writes\n";
     ss << dind <<  ss_out_im.str() << "\n";
 

@@ -309,7 +309,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxSobel3x3Node(vx_graph graph, vx_image input,
                                  0);
 
     auto hn = vxCreateGenericNode(graph, kern);
-    vxSetParameterByIndex(hn, 0, (vx_reference)output_x);
+    vxSetParameterByIndex(hn, 0, (vx_reference)output_y);
     vxSetParameterByIndex(hn, 1, (vx_reference)input);
     vxSetParameterByIndex(hn, 2, (vx_reference)mat);
     vxSetParameterByIndex(hn, 3, (vx_reference)mat);

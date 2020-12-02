@@ -35,8 +35,8 @@ int main(int argc, char *argv[]) {
         status = vxVerifyGraph(graph);
 
         if (status == VX_SUCCESS) {
-            status = vxProcessGraph(graph);
             vxWriteImageAfterGraphCompletion(graph, img[1], "vxNotNode.png");
+            status = vxProcessGraph(graph);
         } else {
             printf("VERIFICATION ERROR: %d\n", status);
         }

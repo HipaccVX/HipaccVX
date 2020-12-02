@@ -66,11 +66,11 @@ int main(int argc, char *argv[])
 
       if (status == VX_SUCCESS)
       {
-        // GRAPH EXECUTION
-        status = vxProcessGraph(graph);
-
         // WRITE RESULT
         vxWriteImageAfterGraphCompletion(graph, img[1], "result.png");
+
+        // GRAPH EXECUTION
+        status = vxProcessGraph(graph);
       }
 
     }

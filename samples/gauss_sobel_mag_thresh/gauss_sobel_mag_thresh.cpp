@@ -58,11 +58,11 @@ int main(int argc, char *argv[])
 
       if (status == VX_SUCCESS)
       {
+        // WRITE RESULT
+        vxWriteImageAfterGraphCompletion(graph, images[5], "result.png");
+
         // GRAPH EXECUTION
         status = vxProcessGraph(graph);
-
-        // WRITE RESULT
-		    vxWriteImageAfterGraphCompletion(graph, images[5], "result.png");
       }
 
     }
