@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 
     // Images
     vx_image images[] = {
-	  vxCreateImageFromFile(context, width, height, VX_DF_IMAGE_U8, "akif-200x300_bw.png"),
+	  vxCreateImageFromFile(context, width, height, VX_DF_IMAGE_U8, "200x300_bw_1.png"),
       vxCreateImage(context, width, height,  VX_DF_IMAGE_U8),
       vxCreateImage(context, width, height, VX_DF_IMAGE_S16),
       vxCreateImage(context, width, height, VX_DF_IMAGE_S16),
