@@ -4,8 +4,8 @@
 #include "../dsl/types.hpp"
 #include "../graph/graph.hpp"
 #include "../vx_adaptor.hpp"
-#include "cassert"
 #include "gen_template.hpp"
+#include <cassert>
 //#include <iterator>
 //#include "infix_iterator.h"
 
@@ -27,8 +27,6 @@ using HipaccScalar = DomVX::Scalar;
 using HipaccMatrix = DomVX::VX_Matrix;
 using Array = DomVX::Array;
 using Bool = DomVX::Bool;
-using HipaccDomain = DomVX::Domain;
-using HipaccMask = DomVX::Mask;
 using DomVXAcc = DomVX::Acc;
 
 using HipaccAccessor = DomVXAcc;

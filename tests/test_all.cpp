@@ -6,7 +6,6 @@
 #include "VX/vx.h"
 #include "VX/vx_compatibility.h"
 #include "hipaVX/domVX_extensions.hpp"
-#include "hipaVX/dsl/api.hpp"
 #include "hipaVX/vx_adaptor.hpp"
 
 #define WIDTH 200

@@ -5,11 +5,6 @@
 #include "dsl/abstractions.hpp"
 #include "graph/graph.hpp"
 
-vx_node vxHipaccNode(vx_graph graph, std::string filename,
-                     vx_reference *parameters, vx_size count, vx_image out) {
-  return nullptr;
-}
-
 vx_image vxCreateImageFromFile(vx_context context, vx_uint32 width,
                                vx_uint32 height, vx_df_image color,
                                std::string filename) {
@@ -26,8 +21,6 @@ void vxWriteImageAfterGraphCompletion(vx_graph graph, vx_image image,
   ((DomVX::Graph *)(graph->o))
       ->write_after_completion[(DomVX::Image *)(image->o)] = file;
 }
-
-static std::string get_object_name(DomVX::Object *object) { return nullptr; }
 
 vx_kernel vxHipaccKernel(std::string filename) {
   auto kern = new DomVX::HipaccKernel();
