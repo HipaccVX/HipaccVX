@@ -15,8 +15,11 @@ Then the sample applications can be build from `build/samples` directory.
 ## Publication
 
 M. Akif Özkan, Burak Ok, Bo Qiao, Jürgen Teich, and Frank Hannig
+
 HipaccVX: Wedding of OpenVX and DSL-based code generation
+
 Journal of Real-Time Image Processing:1–13, 2020 
+
 DOI : 10.1007/s11554-020-01015-5
 
 link (open access): https://link.springer.com/article/10.1007/s11554-020-01015-5
