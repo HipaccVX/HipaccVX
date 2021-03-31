@@ -15,7 +15,9 @@ This corresponding HipaCC applications uses OpenCL on the CPU and can be found i
 
 ## Publication
 
-HipaccVX: wedding of OpenVX and DSL-based code generation
-Özkan, M.A., Ok, B., Qiao, B., Teich, J., & Hannig, F. (2020). HipaccVX: Wedding of OpenVX and DSL-based Code Generation. Journal of Real-Time Image Processing. https://dx.doi.org/10.1007/s11554-020-01015-5
+M. Akif Özkan, Burak Ok, Bo Qiao, Jürgen Teich, and Frank Hannig
+HipaccVX: Wedding of OpenVX and DSL-based code generation
+Journal of Real-Time Image Processing:1–13, 2020 
+DOI : 10.1007/s11554-020-01015-5
 
-link: https://arxiv.org/pdf/2008.11476.pdf
+link (open access): https://link.springer.com/article/10.1007/s11554-020-01015-5
